@@ -21,6 +21,33 @@ internal static class Palette
     public static readonly Brush Apps = Solid(0xC0, 0x84, 0xFC);
     public static readonly Brush Neutral = Solid(0x94, 0xA3, 0xB8);
 
+    // Usage left: comfortable above 60 %, amber around 30 %, red as it nears 0 %.
+    private const double ComfortablePercent = 60;
+    private const double WarningPercent = 30;
+
+    private static readonly (double Position, WinModes.Core.Rgb Color)[] RemainingStops =
+    [
+        (0, ToRgb(Stop)),
+        (WarningPercent, ToRgb(Power)),
+        (ComfortablePercent, ToRgb(Start)),
+        (100, ToRgb(Start)),
+    ];
+
+    /// <summary>Colour of a meter that shows what is left of a limit: green when there is plenty, redder the closer it gets to 0.</summary>
+    public static Color ForRemaining(double remainingPercent)
+    {
+        var rgb = WinModes.Core.ColorScale.At(remainingPercent, RemainingStops);
+        return Color.FromRgb(rgb.R, rgb.G, rgb.B);
+    }
+
+    public static Brush RemainingBrush(double remainingPercent) => Freeze(new SolidColorBrush(ForRemaining(remainingPercent)));
+
+    private static WinModes.Core.Rgb ToRgb(Brush brush)
+    {
+        var color = ((SolidColorBrush)brush).Color;
+        return new WinModes.Core.Rgb(color.R, color.G, color.B);
+    }
+
     /// <summary>Normal text colour of the current theme.</summary>
     public static Brush Text => Application.Current.TryFindResource("TextFillColorPrimaryBrush") as Brush ?? Brushes.White;
 

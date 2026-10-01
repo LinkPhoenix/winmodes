@@ -30,7 +30,7 @@
                                    Visibility="{Binding IconVisibility}" RenderOptions.BitmapScalingMode="HighQuality" />
                             <TextBlock Text="{Binding Tool}" FontSize="12" VerticalAlignment="Center" Visibility="{Binding NameVisibility}"
                                        Style="{StaticResource SecondaryTextStyle}" />
-                            <TextBlock Text="{Binding Short}" FontWeight="SemiBold" Margin="6,0,0,0" Foreground="#34D399" />
+                            <TextBlock Text="{Binding Short}" FontWeight="SemiBold" Margin="6,0,0,0" Foreground="{Binding ValueBrush}" />
                             <TextBlock Text="{Binding Resets}" FontSize="12" Margin="6,0,0,0" VerticalAlignment="Center" Visibility="{Binding ResetsVisibility}"
                                        Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
@@ -128,7 +128,7 @@
                                                    Visibility="{Binding NameVisibility}" />
                                         <TextBlock Text="{Binding Plan}" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
                                     </StackPanel>
-                                    <TextBlock Text="{Binding Value}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding Value}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="{Binding ValueBrush}" />
                                 </Grid>
                                 <!-- One bar per limit: the short window, then the weekly one when the plan has both. -->
                                 <Grid Margin="0,5,0,0" Visibility="{Binding BarVisibility}">
@@ -137,7 +137,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="{Binding WindowName}" FontSize="11" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
-                                    <controls:SegmentBar Grid.Column="1" Height="8" Accent="#34D399" Value="{Binding Remaining}" />
+                                    <controls:SegmentBar Grid.Column="1" Height="8" Accent="{Binding BarColor}" Value="{Binding Remaining}" />
                                 </Grid>
                                 <Grid Margin="0,4,0,0" Visibility="{Binding SecondBarVisibility}">
                                     <Grid.ColumnDefinitions>
@@ -145,7 +145,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="{Binding SecondWindowName}" FontSize="11" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
-                                    <controls:SegmentBar Grid.Column="1" Height="8" Accent="#34D399" Value="{Binding SecondRemaining}" />
+                                    <controls:SegmentBar Grid.Column="1" Height="8" Accent="{Binding SecondBarColor}" Value="{Binding SecondRemaining}" />
                                 </Grid>
                                 <TextBlock Text="{Binding Detail}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"
                                            Style="{StaticResource SecondaryTextStyle}" />

@@ -143,6 +143,13 @@ public partial class WidgetView : UserControl
 
         public Visibility SecondBarVisibility { get; init; } = Visibility.Collapsed;
 
+        /// <summary>Green with plenty left, redder toward 0; grey when the figure is not known.</summary>
+        public Color BarColor => BarVisibility == Visibility.Visible ? Palette.ForRemaining(Remaining) : ((SolidColorBrush)Palette.Neutral).Color;
+
+        public Color SecondBarColor => Palette.ForRemaining(SecondRemaining);
+
+        public Brush ValueBrush => BarVisibility == Visibility.Visible ? Palette.RemainingBrush(Remaining) : Palette.Neutral;
+
         public Visibility IconVisibility => Icon is null ? Visibility.Collapsed : Visibility.Visible;
 
         /// <summary>The name is shown only while the icon is not known yet.</summary>
