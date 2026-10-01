@@ -23,8 +23,14 @@ public sealed class SystemMonitor
 {
     private const double BytesPerMb = 1024d * 1024;
 
+    private const int SystemProcessorPerformanceInformation = 8;
+    private const double BitsPerMegabit = 1_000_000;
+
     private ulong _lastIdle;
     private ulong _lastTotal;
+    private (long Idle, long Total)[] _lastCores = [];
+    private (long Received, long Sent) _lastNetwork;
+    private readonly Stopwatch _sinceNetworkSample = new();
 
     /// <summary>CPU load in percent since the previous call; the first call returns 0.</summary>
     public double SampleCpuPercent()
@@ -43,6 +49,66 @@ public sealed class SystemMonitor
         _lastTotal = total;
 
         return isFirstSample || deltaTotal == 0 ? 0 : Math.Clamp((1 - (double)deltaIdle / deltaTotal) * 100, 0, 100);
+    }
+
+    /// <summary>Load of each logical processor in percent since the previous call; zeros on the first call.</summary>
+    public IReadOnlyList<double> SampleCoresPercent()
+    {
+        var count = Environment.ProcessorCount;
+        var buffer = new ProcessorPerformance[count];
+        var size = (uint)(Marshal.SizeOf<ProcessorPerformance>() * count);
+        if (NtQuerySystemInformation(SystemProcessorPerformanceInformation, buffer, size, out _) != 0)
+        {
+            return new double[count];
+        }
+
+        var result = new double[count];
+        var previous = _lastCores;
+        var current = new (long Idle, long Total)[count];
+        for (var i = 0; i < count; i++)
+        {
+            // Kernel time already includes idle time.
+            current[i] = (buffer[i].IdleTime, buffer[i].KernelTime + buffer[i].UserTime);
+            if (previous.Length == count)
+            {
+                var total = current[i].Total - previous[i].Total;
+                var idle = current[i].Idle - previous[i].Idle;
+                result[i] = total <= 0 ? 0 : Math.Clamp((1 - (double)idle / total) * 100, 0, 100);
+            }
+        }
+
+        _lastCores = current;
+        return result;
+    }
+
+    /// <summary>Download and upload speed in Mbit/s over all connected adapters since the previous call.</summary>
+    public (double DownMbps, double UpMbps) SampleNetwork()
+    {
+        long received = 0;
+        long sent = 0;
+        foreach (var adapter in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
+        {
+            if (adapter.OperationalStatus != System.Net.NetworkInformation.OperationalStatus.Up
+                || adapter.NetworkInterfaceType == System.Net.NetworkInformation.NetworkInterfaceType.Loopback)
+            {
+                continue;
+            }
+
+            var statistics = adapter.GetIPStatistics();
+            received += statistics.BytesReceived;
+            sent += statistics.BytesSent;
+        }
+
+        var seconds = _sinceNetworkSample.IsRunning ? _sinceNetworkSample.Elapsed.TotalSeconds : 0;
+        var previous = _lastNetwork;
+        _lastNetwork = (received, sent);
+        _sinceNetworkSample.Restart();
+
+        // Counters restart when an adapter reconnects; never report a negative speed.
+        return seconds <= 0
+            ? (0, 0)
+            : (Math.Max(0, received - previous.Received) * 8 / BitsPerMegabit / seconds,
+               Math.Max(0, sent - previous.Sent) * 8 / BitsPerMegabit / seconds);
     }
 
     public static IReadOnlyList<ProcessGroup> GetProcessGroups()
@@ -173,6 +239,21 @@ public sealed class SystemMonitor
             return ServiceStartMode.Unknown;
         }
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct ProcessorPerformance
+    {
+        public long IdleTime;
+        public long KernelTime;
+        public long UserTime;
+        public long DpcTime;
+        public long InterruptTime;
+        public uint InterruptCount;
+    }
+
+    [DllImport("ntdll.dll")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern int NtQuerySystemInformation(int informationClass, [Out] ProcessorPerformance[] information, uint length, out uint returned);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct PerformanceInformation

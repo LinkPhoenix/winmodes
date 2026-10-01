@@ -86,6 +86,10 @@ public partial class DashboardPage : Page
             var memory = SystemMonitor.SampleMemory();
             var culture = CultureInfo.CurrentCulture;
 
+            CoreBars.ItemsSource = _monitor.SampleCoresPercent();
+            var (down, up) = _monitor.SampleNetwork();
+            NetworkValue.Text = string.Create(culture, $"\u2193 {down:0.0}  \u2191 {up:0.0} Mb/s");
+
             Smooth.To(CpuGauge, RingGauge.ValueProperty, cpu);
             CpuValue.Text = string.Create(culture, $"{cpu:0} %");
             Smooth.To(CpuBar, SegmentBar.ValueProperty, cpu);
@@ -103,7 +107,7 @@ public partial class DashboardPage : Page
             MemoryCommitted.Text = string.Create(culture, $"{memory.CommittedGb:0.0} / {memory.CommitLimitGb:0.0} GB");
             MemoryCached.Text = string.Create(culture, $"{memory.CachedGb:0.0} GB");
         }
-        catch (Win32Exception)
+        catch (Exception ex) when (ex is Win32Exception or System.Net.NetworkInformation.NetworkInformationException)
         {
             MemoryDetail.Text = "System figures are unavailable.";
         }
