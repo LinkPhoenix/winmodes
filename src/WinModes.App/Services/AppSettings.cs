@@ -35,6 +35,9 @@ internal sealed record AppSettings
     /// <summary>Notify when AI tools use at least this much memory, in GB; 0 turns the alert off.</summary>
     public int AiMemoryAlertGb { get; init; }
 
+    /// <summary>Hide project names, folders, command lines and the account name.</summary>
+    public bool PrivacyMode { get; init; }
+
     /// <summary>Last position of the desktop widget; null until the user moves it.</summary>
     public double? WidgetLeft { get; init; }
 

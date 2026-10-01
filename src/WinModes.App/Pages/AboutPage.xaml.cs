@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,16 +16,15 @@ public partial class AboutPage : Page
     {
         InitializeComponent();
 
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
-        VersionText.Text = $"Version {version?.ToString(3)}";
+        VersionText.Text = $"Version {AppInfo.Version}";
 
         SystemRows.ItemsSource = new List<KeyValuePair<string, string>>
         {
             new("Windows", RuntimeInformation.OSDescription),
             new("Runtime", RuntimeInformation.FrameworkDescription),
             new("Modes available", string.Join(", ", ModeCatalog.Load().Select(entry => entry.Profile.Label))),
-            new("Switch history", AppPaths.JournalDirectory),
-            new("Profiles", AppServices.ProfilesDirectory),
+            new("Switch history", Services.Privacy.Path(AppPaths.JournalDirectory)),
+            new("Profiles", Services.Privacy.Path(AppServices.ProfilesDirectory)),
         };
     }
 

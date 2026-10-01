@@ -31,7 +31,8 @@ public partial class SettingsPage : Page
         limits.AddRange(AlertLimitsGb.Select(gb => new Limit(gb, $"{gb} GB")));
         AiAlert.ItemsSource = limits;
         AiAlert.SelectedItem = limits.FirstOrDefault(limit => limit.Gb == settings.AiMemoryAlertGb) ?? limits[0];
-        JournalPath.Text = AppPaths.JournalDirectory;
+        JournalPath.Text = Privacy.Path(AppPaths.JournalDirectory);
+        PrivacyMode.IsChecked = settings.PrivacyMode;
 
         var choices = new List<Choice> { new(null, "None") };
         choices.AddRange(ModeCatalog.Load().Select(entry => new Choice(entry.Profile.Mode, entry.Profile.Label)));
@@ -68,9 +69,12 @@ public partial class SettingsPage : Page
             ConfirmBeforeActivate = ConfirmBeforeActivate.IsChecked == true,
             ShowAiMemoryInTray = ShowAiMemoryInTray.IsChecked == true,
             EnableHotkeys = EnableHotkeys.IsChecked == true,
+            PrivacyMode = PrivacyMode.IsChecked == true,
             AiMemoryAlertGb = (AiAlert.SelectedItem as Limit)?.Gb ?? 0,
             AutoActivateMode = (AutoMode.SelectedItem as Choice)?.Mode,
         }).Save();
+        Privacy.Set(PrivacyMode.IsChecked == true);
+        JournalPath.Text = Privacy.Path(AppPaths.JournalDirectory);
         (Application.Current as App)?.ApplyDisplaySettings();
     }
 
@@ -117,7 +121,7 @@ public partial class SettingsPage : Page
         }
         else
         {
-            JournalPath.Text = $"{AppPaths.JournalDirectory} (created at the first mode switch)";
+            JournalPath.Text = $"{Privacy.Path(AppPaths.JournalDirectory)} (created at the first mode switch)";
         }
     }
 

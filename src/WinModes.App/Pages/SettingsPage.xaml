@@ -94,6 +94,25 @@
             </StackPanel>
         </Border>
 
+        <TextBlock Text="PRIVACY" Style="{StaticResource SectionTitleStyle}" />
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Privacy mode" FontWeight="SemiBold" />
+                        <TextBlock Text="Hides project names, folders, command-line details and your account name, so you can share your screen or take a screenshot. Figures and tool names stay visible."
+                                   FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                    </StackPanel>
+                    <ui:ToggleSwitch x:Name="PrivacyMode" Grid.Column="1" VerticalAlignment="Center"
+                                     Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Privacy mode" />
+                </Grid>
+            </Border>
+        </Border>
+
         <TextBlock Text="MODES" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <StackPanel>

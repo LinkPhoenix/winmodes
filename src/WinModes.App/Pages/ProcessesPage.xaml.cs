@@ -272,7 +272,7 @@ public partial class ProcessesPage : Page
             DashboardPage.FormatMemory(shown.MemoryMb, culture),
             shown.MemoryMb >= MbPerGb ? Palette.Stop : shown.MemoryMb >= MediumMemoryMb ? Palette.Power : Brushes.White,
             shown.Threads.ToString(culture),
-            node.CommandLine ?? node.ExecutablePath ?? "",
+            Privacy.CommandLine(node.CommandLine ?? node.ExecutablePath, node.Name),
             icon,
             icon is null ? Visibility.Visible : Visibility.Collapsed,
             isProtected,

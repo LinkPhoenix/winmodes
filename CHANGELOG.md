@@ -20,6 +20,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - `tools/release.ps1` to cut a release in one command.
 - Live preview of the widget on the Widget page.
 - Title bar with the menu button, icon, name and version on one row.
+- Privacy mode (Settings, or `--privacy` for one run): hides project names, folders, command-line details and the account name.
 
 ## [0.2.0] - 2026-10-01
 

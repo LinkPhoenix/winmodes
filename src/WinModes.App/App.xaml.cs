@@ -52,6 +52,8 @@ public partial class App : Application, IDisposable
         Wpf.Ui.Appearance.ApplicationThemeManager.Apply(Wpf.Ui.Appearance.ApplicationTheme.Dark, Wpf.Ui.Controls.WindowBackdropType.None, updateAccent: false);
         // Brand accent instead of the Windows one, so the app looks the same on every PC.
         Wpf.Ui.Appearance.ApplicationAccentColorManager.Apply(Palette.Brand, Wpf.Ui.Appearance.ApplicationTheme.Dark);
+        // The argument turns privacy on for this run only, without changing the saved setting.
+        Services.Privacy.Set(Services.AppSettings.Load().PrivacyMode || e.Args.Contains(Services.Privacy.CommandLineArgument));
         var pageIndex = Array.IndexOf(e.Args, "--page");
         _window = new MainWindow(pageIndex >= 0 && pageIndex + 1 < e.Args.Length ? e.Args[pageIndex + 1] : null);
         _trayIcon = CreateTrayIcon();

@@ -119,8 +119,8 @@ public partial class AiToolsPage : Page
         return new SessionRow(
             session.Root.Pid,
             session.Tool.Name,
-            hasFolder ? Path.GetFileName(folder) is { Length: > 0 } name ? name : folder! : $"{session.Tool.Name} app",
-            hasFolder ? $"{folder}  -  PID {session.Root.Pid}, {started}" : $"PID {session.Root.Pid}, {started}",
+            hasFolder ? Privacy.Project(Path.GetFileName(folder) is { Length: > 0 } name ? name : folder!) : $"{session.Tool.Name} app",
+            hasFolder ? $"{(Privacy.Enabled ? Privacy.HiddenFolder : folder)}  -  PID {session.Root.Pid}, {started}" : $"PID {session.Root.Pid}, {started}",
             hasFolder ? FolderGlyph : AppGlyph,
             hasFolder ? folder : null,
             DescribeProcesses(session, culture),
@@ -165,7 +165,7 @@ public partial class AiToolsPage : Page
             return;
         }
 
-        var names = string.Join("\n", idle.Select(session => $"- {session.Tool.Name}: {session.Root.WorkingDirectory}"));
+        var names = string.Join("\n", idle.Select(session => $"- {session.Tool.Name}: {(Privacy.Enabled ? Privacy.HiddenFolder : session.Root.WorkingDirectory)}"));
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
             Title = idle.Count == 1 ? "End 1 idle session?" : $"End {idle.Count} idle sessions?",
@@ -208,7 +208,7 @@ public partial class AiToolsPage : Page
             node.Pid,
             string.Create(culture, $"{node.CpuPercent:0.0} %"),
             DashboardPage.FormatMemory(node.PrivateMemoryMb, culture),
-            node.CommandLine ?? node.ExecutablePath ?? "",
+            Privacy.CommandLine(node.CommandLine ?? node.ExecutablePath, node.Name),
             icon,
             icon is null ? Visibility.Visible : Visibility.Collapsed,
             IsMcpServer(node) ? Visibility.Visible : Visibility.Collapsed);
