@@ -1,6 +1,7 @@
 {
   ", resets in {0}": ", se restablece en {0}",
   ".NET 10 and WPF (Microsoft, MIT licence). WPF-UI 4.3 by lepo.co (MIT licence). Icons: Segoe Fluent Icons, shipped with Windows 11.": ".NET 10 y WPF (Microsoft, licencia MIT). WPF-UI 4.3 de lepo.co (licencia MIT). Iconos: Segoe Fluent Icons, incluidos en Windows 11.",
+  "Another mode switch is already running. Wait for it to finish.": "Ya hay un cambio de modo en curso. Espera a que termine.",
   "WinModes hit an unexpected error and kept running. The details are in errors.log in %LocalAppData%\\WinModes.": "WinModes encontró un error inesperado y sigue funcionando. Los detalles están en errors.log, en %LocalAppData%\\WinModes.",
   "{0:0.0} GB available": "{0:0.0} GB disponibles",
   "{0:0.0} GB freed": "{0:0.0} GB liberados",

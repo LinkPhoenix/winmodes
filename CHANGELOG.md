@@ -17,6 +17,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Settings, History and Claude status line: files are saved in one step, so a crash or power loss can no longer leave a half-written settings, usage history or Claude Code settings file.
 - Claude status line: installing or removing it keeps the first backup of your Claude Code settings instead of replacing it, and no longer rewrites accents or symbols elsewhere in that file.
 - App: an unexpected error in a page, the tray menu or a hotkey no longer closes WinModes; it is written to `errors.log` in `%LocalAppData%\WinModes` and a notification is shown.
+- Modes: asking for a mode switch while another is still running (page, tray menu, hotkey or automation) is refused with a message instead of stacking administrator prompts.
 
 ## [0.8.0] - 2026-10-01
 

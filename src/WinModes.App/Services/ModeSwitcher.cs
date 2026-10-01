@@ -27,6 +27,8 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     private static readonly TimeSpan MemorySettleDelay = TimeSpan.FromSeconds(4);
     private const double MinFreedGbToReport = 0.1;
 
+    private readonly OperationGate _switchGate = new();
+
     private static readonly Dictionary<string, string> PowerSchemes = new(StringComparer.OrdinalIgnoreCase)
     {
         ["balanced"] = "381b4222-f694-41f0-9685-ff5bb260df2e",
@@ -54,7 +56,18 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     /// <summary>Name of the active mode, or null when Windows is in its normal state.</summary>
     public static string? ActiveMode => ReadUserState()?.Mode;
 
-    public async Task<SwitchReport> ActivateAsync(ModeProfile profile)
+    public Task<SwitchReport> ActivateAsync(ModeProfile profile) => RunExclusiveAsync(() => ActivateCoreAsync(profile));
+
+    public Task<SwitchReport> UndoAsync() => RunExclusiveAsync(UndoCoreAsync);
+
+    /// <summary>The page, the tray, the hotkeys and the auto-switcher all end up here: one switch at a time.</summary>
+    private async Task<SwitchReport> RunExclusiveAsync(Func<Task<SwitchReport>> operation)
+    {
+        var (ran, report) = await _switchGate.TryRunAsync(operation);
+        return ran ? report! : new SwitchReport(false, [Loc.T("Another mode switch is already running. Wait for it to finish.")]);
+    }
+
+    private async Task<SwitchReport> ActivateCoreAsync(ModeProfile profile)
     {
         var lines = new List<string>();
         var previous = ReadUserState();
@@ -92,7 +105,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         return new SwitchReport(true, lines);
     }
 
-    public async Task<SwitchReport> UndoAsync()
+    private async Task<SwitchReport> UndoCoreAsync()
     {
         var lines = new List<string>();
         var state = ReadUserState();
