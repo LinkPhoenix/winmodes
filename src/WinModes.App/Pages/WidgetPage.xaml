@@ -225,7 +225,7 @@
                         <ui:ToggleSwitch x:Name="ReadUsageOnline" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Read the usage online'}" />
                     </Grid>
                 </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                <Border Style="{StaticResource RowStyle}">
                     <Grid>
                         <StackPanel Margin="0,0,80,0">
                             <TextBlock Text="{l:T 'Record Claude usage'}" FontWeight="SemiBold" />
@@ -234,6 +234,20 @@
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="ClaudeUsage" HorizontalAlignment="Right" Click="OnClaudeUsageClicked" AutomationProperties.Name="{l:T 'Record Claude usage'}" />
                     </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                    <StackPanel>
+                        <Grid>
+                            <StackPanel Margin="0,0,120,0">
+                                <TextBlock Text="{l:T 'Check Claude Code'}" FontWeight="SemiBold" />
+                                <TextBlock Text="{l:T 'Shows, one by one, what is missing for the Claude usage to appear.'}" FontSize="12"
+                                           Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <ui:Button x:Name="CheckClaudeButton" Content="{l:T 'Check'}" HorizontalAlignment="Right" Click="OnCheckClaude"
+                                       AutomationProperties.Name="{l:T 'Check Claude Code'}" />
+                        </Grid>
+                        <controls:CheckResults x:Name="ClaudeCheck" Margin="0,14,0,0" />
+                    </StackPanel>
                 </Border>
             </StackPanel>
         </Border>

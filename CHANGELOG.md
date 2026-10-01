@@ -10,6 +10,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Added
 
+- Widget: a "Check Claude Code" button lists, one by one, what is missing for the Claude usage to appear (plan, status line, last call of the status line, usage record, sign-in) and what to do about it.
 - Modes: when the administrator helper fails, the reason is written to `helper-errors.log` in `%ProgramData%\WinModes\logs` instead of being lost.
 
 ### Fixed

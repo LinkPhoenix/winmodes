@@ -7,6 +7,8 @@ try
 {
     Console.InputEncoding = System.Text.Encoding.UTF8;
     var input = Console.In.ReadToEnd();
+    // Which fields arrived (never their values), so the check on the Widget page can tell "never called" from "no limits sent".
+    ClaudeStatusLine.SaveCall(ClaudeStatusLine.DefaultCallPath, ClaudeStatusLine.Describe(input, DateTimeOffset.UtcNow));
     var limits = ClaudeStatusLine.Parse(input, DateTimeOffset.UtcNow);
     if (limits is not null)
     {

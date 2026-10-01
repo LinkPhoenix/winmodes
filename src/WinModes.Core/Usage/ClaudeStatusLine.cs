@@ -9,6 +9,12 @@ namespace WinModes.Core.Usage;
 public sealed record ClaudeLimits(DateTimeOffset SeenAt, LimitWindow? FiveHour, LimitWindow? SevenDay);
 
 /// <summary>
+/// The last time Claude Code ran the status line command, for the check on the Widget page: when, and whether the
+/// limits were among what it sent. Only that and the names of the top-level fields are kept, never a value.
+/// </summary>
+public sealed record StatusCall(DateTimeOffset At, bool HasRateLimits, IReadOnlyList<string> Fields);
+
+/// <summary>
 /// Claude Code gives the usage limits of a Pro or Max plan only to its status line command (JSON on stdin,
 /// see https://code.claude.com/docs/en/statusline). The command records them in a small file the widget reads.
 /// Nothing but the two percentages and their reset times is kept.
@@ -20,6 +26,47 @@ public static class ClaudeStatusLine
 
     public static string DefaultRecordPath { get; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinModes", "claude-limits.json");
+
+    public static string DefaultCallPath { get; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinModes", "claude-status-call.json");
+
+    /// <summary>Describes one call of the status line command without keeping any of its values.</summary>
+    public static StatusCall Describe(string statusJson, DateTimeOffset now)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(statusJson);
+            if (document.RootElement.ValueKind == JsonValueKind.Object)
+            {
+                var fields = document.RootElement.EnumerateObject().Select(property => property.Name).Order(StringComparer.Ordinal).ToList();
+                return new StatusCall(now, fields.Contains("rate_limits"), fields);
+            }
+        }
+        catch (JsonException)
+        {
+            // Not JSON: recorded as a call without fields.
+        }
+
+        return new StatusCall(now, false, []);
+    }
+
+    public static void SaveCall(string path, StatusCall call)
+    {
+        ArgumentNullException.ThrowIfNull(call);
+        AtomicFile.WriteAllText(path, JsonSerializer.Serialize(call));
+    }
+
+    public static StatusCall? LoadCall(string path)
+    {
+        try
+        {
+            return File.Exists(path) ? JsonSerializer.Deserialize<StatusCall>(File.ReadAllText(path)) : null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        {
+            return null;
+        }
+    }
 
     /// <summary>Reads what Claude Code sent; null when it carries no limits (API key, or before the first answer).</summary>
     public static ClaudeLimits? Parse(string statusJson, DateTimeOffset now)

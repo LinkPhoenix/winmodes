@@ -68,6 +68,22 @@ public partial class WidgetPage : Page
 
     private void OnStats(object? sender, StatsReading reading) => Preview.Show(reading);
 
+    private async void OnCheckClaude(object sender, RoutedEventArgs e)
+    {
+        CheckClaudeButton.IsEnabled = false;
+        try
+        {
+            var readOnline = ReadUsageOnline.IsChecked == true;
+            var items = await Task.Run(() => ProviderCheck.Claude(Subscriptions.DefaultClaudeSettings, ClaudeStatusLineSetup.DefaultSettingsPath,
+                ClaudeStatusLine.DefaultRecordPath, OnlineUsage.DefaultClaudeCredentials, ClaudeStatusLine.DefaultCallPath, readOnline, DateTimeOffset.UtcNow));
+            ClaudeCheck.Show(items);
+        }
+        finally
+        {
+            CheckClaudeButton.IsEnabled = true;
+        }
+    }
+
     private const string StatusLineFileName = "WinModes.StatusLine.exe";
     private static string OtherStatusLineText => Loc.T("Claude Code already has a status line of its own, so WinModes leaves it alone. To record the usage, remove it from Claude Code's settings first.");
 

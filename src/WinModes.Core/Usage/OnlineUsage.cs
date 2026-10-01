@@ -158,6 +158,38 @@ public static class OnlineUsage
         return new LimitWindow(usedPercent, minutes, resetsAt);
     }
 
+    /// <summary>Whether a Claude sign-in exists and is still valid. Only its state and expiry are returned, never the token.</summary>
+    public static SignInCheck InspectClaudeSignIn(string credentialsPath, DateTimeOffset now)
+    {
+        using var document = Open(credentialsPath);
+        if (document is null)
+        {
+            return new SignInCheck(File.Exists(credentialsPath) ? SignInState.Unusable : SignInState.Missing);
+        }
+
+        if (!document.RootElement.TryGetProperty("claudeAiOauth", out var oauth) || oauth.ValueKind != JsonValueKind.Object
+            || Text(oauth, "accessToken") is not { Length: > 0 })
+        {
+            return new SignInCheck(SignInState.Unusable);
+        }
+
+        var expiry = oauth.TryGetProperty("expiresAt", out var expires) && expires.ValueKind == JsonValueKind.Number
+            ? UsageNumbers.FromUnixMilliseconds(expires)
+            : null;
+        return expiry is { } at && at <= now ? new SignInCheck(SignInState.Expired, at) : new SignInCheck(SignInState.Valid, expiry);
+    }
+
+    /// <summary>Whether a Codex sign-in exists. Codex gives no expiry here: a stale token shows as a failed request.</summary>
+    public static SignInCheck InspectCodexSignIn(string authPath)
+    {
+        if (!File.Exists(authPath))
+        {
+            return new SignInCheck(SignInState.Missing);
+        }
+
+        return CodexRequest(authPath) is null ? new SignInCheck(SignInState.Unusable) : new SignInCheck(SignInState.Valid);
+    }
+
     private static string? Text(JsonElement element, string name) =>
         element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
 
