@@ -17,7 +17,7 @@
             <SolidColorBrush x:Key="AppCardBrush" Color="#191920" />
             <SolidColorBrush x:Key="AppCardStrokeBrush" Color="#2A2A34" />
             <!-- Slightly see-through card of the desktop widget. -->
-            <SolidColorBrush x:Key="AppWidgetBrush" Color="#F2191920" />
+            <SolidColorBrush x:Key="AppWidgetBrush" Color="#FF191920" />
 
             <FontFamily x:Key="GlyphFontFamily">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 

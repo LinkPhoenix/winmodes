@@ -29,7 +29,7 @@ internal static class Palette
         resources["AppBackgroundBrush"] = Solid(0xF3, 0xF3, 0xF7);
         resources["AppCardBrush"] = Solid(0xFF, 0xFF, 0xFF);
         resources["AppCardStrokeBrush"] = Solid(0xDD, 0xDD, 0xE6);
-        resources["AppWidgetBrush"] = Freeze(new SolidColorBrush(Color.FromArgb(0xF2, 0xFF, 0xFF, 0xFF)));
+        resources["AppWidgetBrush"] = Freeze(new SolidColorBrush(Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF)));
     }
 
     public static Brush ModeGradient(string mode) => mode.ToUpperInvariant() switch
