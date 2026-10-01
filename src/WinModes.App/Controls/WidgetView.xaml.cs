@@ -50,6 +50,10 @@ public partial class WidgetView : UserControl
         AiTools.Visibility = Visible(settings.ShowToolDetail);
         // No line above the AI block when it is the only thing shown.
         AiSeparator.Visibility = Visible(settings.ShowCpu || settings.ShowMemory || settings.ShowNetwork);
+        PlanSection.Visibility = Visible(settings.ShowSubscriptions);
+        CompactPlans.Visibility = Visible(settings.ShowSubscriptions);
+        PlanSeparator.Visibility = Visible(settings.ShowCpu || settings.ShowMemory || settings.ShowNetwork || settings.ShowAiTools);
+        PlanEmpty.Visibility = Visibility.Collapsed;
         // The compact dot depends on the option that may just have changed.
         _modeShown = false;
         ShowMode(ModeSwitcher.ActiveMode);
@@ -79,6 +83,55 @@ public partial class WidgetView : UserControl
                 IconCache.Get(tool.ExecutablePath))).ToList();
 
         ShowMode(ModeSwitcher.ActiveMode);
+        ShowPlans(reading, culture);
+    }
+
+    private void ShowPlans(StatsReading reading, CultureInfo culture)
+    {
+        if (!_settings.ShowSubscriptions)
+        {
+            return;
+        }
+
+        // The icon comes from the tool's own program, seen while it runs and remembered afterwards.
+        // Claude Code comes last so its icon wins over the desktop app's when both run.
+        foreach (var tool in reading.AiTools.Where(tool => tool.ExecutablePath is not null).OrderBy(tool => tool.Name == "Claude Code"))
+        {
+            PlanIconPaths[tool.Name.Split(' ')[0]] = tool.ExecutablePath!;
+        }
+
+        var now = DateTimeOffset.Now;
+        var statuses = SubscriptionMonitor.Get(_settings.ReadUsageOnline);
+        var rows = statuses.Select(status =>
+        {
+            var (value, detail, remaining) = WinModes.Core.Usage.Subscriptions.Describe(status, now, culture);
+            var icon = PlanIconPaths.TryGetValue(status.Tool, out var path) ? IconCache.Get(path) : null;
+            var shortValue = remaining is { } left ? string.Create(culture, $"{left:0} %") : value.Length > 0 ? value : "–";
+            return new PlanRow(status.Tool, status.Plan, value, detail, remaining ?? 0, Visible(remaining is not null), icon, shortValue);
+        }).ToList();
+        if (_settings.Compact)
+        {
+            CompactPlans.ItemsSource = rows;
+        }
+        else
+        {
+            Plans.ItemsSource = rows;
+            PlanEmpty.Visibility = Visible(statuses.Count == 0 && SubscriptionMonitor.HasRead);
+        }
+    }
+
+    /// <summary>First word of the tool name ("Claude", "Codex") to the program its icon is taken from.</summary>
+    private static readonly Dictionary<string, string> PlanIconPaths = new(StringComparer.OrdinalIgnoreCase);
+
+    private sealed record PlanRow(
+        string Tool, string Plan, string Value, string Detail, double Remaining, Visibility BarVisibility, ImageSource? Icon, string Short)
+    {
+        public Visibility IconVisibility => Icon is null ? Visibility.Collapsed : Visibility.Visible;
+
+        /// <summary>The name is shown only while the icon is not known yet.</summary>
+        public Visibility NameVisibility => Icon is null ? Visibility.Visible : Visibility.Collapsed;
+
+        public string ToolTip => $"{Tool} {Plan}\n{Detail}";
     }
 
     /// <summary>Colours the mode label, the border and the compact dot with the colour of the active mode.</summary>

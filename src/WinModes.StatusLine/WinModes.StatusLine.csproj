@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Console program: Claude Code reads the status line from its standard output. -->
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinModes.Core\WinModes.Core.csproj" />
+  </ItemGroup>
+
+</Project>

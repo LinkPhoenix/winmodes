@@ -15,6 +15,25 @@
             <TextBlock x:Name="CompactMemory" Text="…" FontWeight="SemiBold" Margin="6,0,14,0" Foreground="#F472B6" />
             <TextBlock Text="AI" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
             <TextBlock x:Name="CompactAi" Text="…" FontWeight="SemiBold" Margin="6,0,0,0" />
+            <!-- Usage left on the Claude and Codex plans: the tool's icon, then the share left. -->
+            <ItemsControl x:Name="CompactPlans" Visibility="Collapsed" VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="14,0,0,0" ToolTip="{Binding ToolTip}" Background="Transparent">
+                            <Image Source="{Binding Icon}" Width="14" Height="14" VerticalAlignment="Center"
+                                   Visibility="{Binding IconVisibility}" RenderOptions.BitmapScalingMode="HighQuality" />
+                            <TextBlock Text="{Binding Tool}" FontSize="12" VerticalAlignment="Center" Visibility="{Binding NameVisibility}"
+                                       Style="{StaticResource SecondaryTextStyle}" />
+                            <TextBlock Text="{Binding Short}" FontWeight="SemiBold" Margin="6,0,0,0" Foreground="#34D399" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
 
         <StackPanel x:Name="FullPanel">
@@ -83,6 +102,35 @@
                                            Style="{StaticResource SecondaryTextStyle}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                                 <TextBlock Grid.Column="2" Text="{Binding Memory}" FontSize="12" VerticalAlignment="Center" Margin="8,0,0,0" />
                             </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <!-- Plan, usage left and limit reset of Claude and Codex, from their local files. -->
+            <StackPanel x:Name="PlanSection" Visibility="Collapsed">
+                <Border x:Name="PlanSeparator" Height="1" Background="{StaticResource AppCardStrokeBrush}" Margin="0,12,0,10" />
+                <TextBlock Text="Plans" FontWeight="SemiBold" />
+                <TextBlock x:Name="PlanEmpty" Text="No Claude or Codex plan found on this PC" FontSize="12" Margin="0,6,0,0" Visibility="Collapsed"
+                           Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+                <ItemsControl x:Name="Plans">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,8,0,0">
+                                <Grid>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,70,0" ToolTip="{Binding Tool}" Background="Transparent">
+                                        <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"
+                                               Visibility="{Binding IconVisibility}" RenderOptions.BitmapScalingMode="HighQuality" />
+                                        <TextBlock Text="{Binding Tool}" FontSize="12" FontWeight="SemiBold" Margin="0,0,5,0" VerticalAlignment="Center"
+                                                   Visibility="{Binding NameVisibility}" />
+                                        <TextBlock Text="{Binding Plan}" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Value}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                </Grid>
+                                <controls:SegmentBar Height="8" Margin="0,5,0,0" Accent="#34D399" Value="{Binding Remaining}" Visibility="{Binding BarVisibility}" />
+                                <TextBlock Text="{Binding Detail}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"
+                                           Style="{StaticResource SecondaryTextStyle}" />
+                            </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

@@ -44,7 +44,7 @@ foreach ($document in 'LICENSE.md', 'README.md', 'CHANGELOG.md') {
     Copy-Item -LiteralPath (Join-Path $Root $document) -Destination $appDir
 }
 
-foreach ($required in 'WinModes.exe', 'WinModes.Elevated.exe', 'data/protected.json', 'data/tweaks.json', 'data/db/windows-services.json', 'profiles/code.json') {
+foreach ($required in 'WinModes.exe', 'WinModes.Elevated.exe', 'WinModes.StatusLine.exe', 'data/protected.json', 'data/tweaks.json', 'data/db/windows-services.json', 'profiles/code.json') {
     if (-not (Test-Path -LiteralPath (Join-Path $appDir $required))) { throw "The package is missing $required." }
 }
 

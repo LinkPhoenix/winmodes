@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using WinModes.App.Services;
+using WinModes.Core.Usage;
 
 namespace WinModes.App.Pages;
 
@@ -29,6 +30,9 @@ public partial class WidgetPage : Page
         ShowMode.IsChecked = widget.ShowMode;
         ShowAiTools.IsChecked = widget.ShowAiTools;
         ShowToolDetail.IsChecked = widget.ShowToolDetail;
+        ShowSubscriptions.IsChecked = widget.ShowSubscriptions;
+        ReadUsageOnline.IsChecked = widget.ReadUsageOnline;
+        ShowClaudeUsage();
         LockPosition.IsChecked = widget.LockPosition;
         HideOnFullScreen.IsChecked = widget.HideOnFullScreen;
         Compact.IsChecked = widget.Compact;
@@ -59,6 +63,59 @@ public partial class WidgetPage : Page
     }
 
     private void OnStats(object? sender, StatsReading reading) => Preview.Show(reading);
+
+    private const string StatusLineFileName = "WinModes.StatusLine.exe";
+    private const string OtherStatusLineText = "Claude Code already has a status line of its own, so WinModes leaves it alone. To record the usage, remove it from Claude Code's settings first.";
+
+    private void ShowClaudeUsage()
+    {
+        var state = ClaudeStatusLineSetup.Read(ClaudeStatusLineSetup.DefaultSettingsPath);
+        ClaudeUsage.IsChecked = state == ClaudeStatusLineSetup.State.Ours;
+        ClaudeUsage.IsEnabled = state != ClaudeStatusLineSetup.State.Other;
+        if (state == ClaudeStatusLineSetup.State.Other)
+        {
+            ClaudeUsageDetail.Text = OtherStatusLineText;
+        }
+    }
+
+    private void OnClaudeUsageClicked(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var settingsPath = ClaudeStatusLineSetup.DefaultSettingsPath;
+            if (ClaudeUsage.IsChecked == true)
+            {
+                var program = System.IO.Path.Combine(AppContext.BaseDirectory, StatusLineFileName);
+                if (System.IO.File.Exists(program))
+                {
+                    ClaudeStatusLineSetup.Install(settingsPath, ClaudeStatusLineSetup.CommandFor(program, ShortPath));
+                }
+            }
+            else
+            {
+                ClaudeStatusLineSetup.Remove(settingsPath);
+            }
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
+        {
+            ClaudeUsageDetail.Text = "Claude Code's settings could not be changed.";
+        }
+
+        // Show what the settings really say, whatever was clicked.
+        ShowClaudeUsage();
+    }
+
+    /// <summary>The 8.3 form of a folder, or null when the volume keeps none.</summary>
+    private static string? ShortPath(string path)
+    {
+        const int MaxPath = 1024;
+        var buffer = new char[MaxPath];
+        var length = GetShortPathName(path, buffer, MaxPath);
+        return length is > 0 and < MaxPath ? new string(buffer, 0, length) : null;
+    }
+
+    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+    private static extern int GetShortPathName(string longPath, [System.Runtime.InteropServices.Out] char[] shortPath, int size);
 
     private void ShowPreview(AppSettings settings)
     {
@@ -113,6 +170,8 @@ public partial class WidgetPage : Page
                 ShowMode = ShowMode.IsChecked == true,
                 ShowAiTools = ShowAiTools.IsChecked == true,
                 ShowToolDetail = ShowToolDetail.IsChecked == true,
+                ShowSubscriptions = ShowSubscriptions.IsChecked == true,
+                ReadUsageOnline = ReadUsageOnline.IsChecked == true,
                 MaxTools = (MaxTools.SelectedItem as Option)?.Value ?? 4,
                 RefreshSeconds = (Refresh.SelectedItem as Option)?.Value ?? 3,
                 LockPosition = LockPosition.IsChecked == true,

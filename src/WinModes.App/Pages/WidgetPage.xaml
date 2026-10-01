@@ -159,11 +159,41 @@
                         <ui:ToggleSwitch x:Name="ShowToolDetail" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show detail per AI tool" />
                     </Grid>
                 </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                <Border Style="{StaticResource RowStyle}">
                     <Grid>
                         <TextBlock Text="AI tools listed" Style="{StaticResource RowTitleStyle}" />
                         <ComboBox x:Name="MaxTools" HorizontalAlignment="Right" MinWidth="170" DisplayMemberPath="Label"
                                   SelectionChanged="OnSelectionChanged" AutomationProperties.Name="Number of AI tools listed" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel Margin="0,0,80,0">
+                            <TextBlock Text="Claude and Codex plans" FontWeight="SemiBold" />
+                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                                       Text="Your plan, the usage left and when the limit resets. Read from files on this PC: nothing is asked online and no sign-in file is opened. Codex figures date from its last session; Claude needs the option below." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="ShowSubscriptions" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show Claude and Codex plans" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel Margin="0,0,80,0">
+                            <TextBlock Text="Read the usage online" FontWeight="SemiBold" />
+                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                                       Text="Every 5 minutes, ask Anthropic and OpenAI for the live figures and the limit resets you have in reserve, using the sign-in Claude Code and Codex already keep on this PC. The sign-in is sent only to its own provider and is never stored or shown by WinModes. These addresses are the ones the two tools use themselves, not a public API: they may stop working." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="ReadUsageOnline" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Read the usage online" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                    <Grid>
+                        <StackPanel Margin="0,0,80,0">
+                            <TextBlock Text="Record Claude usage" FontWeight="SemiBold" />
+                            <TextBlock x:Name="ClaudeUsageDetail" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                                       Text="Claude Code gives the usage of your plan only to its status line. This adds a WinModes status line to Claude Code's settings (a backup is kept); it records the 5-hour and weekly usage for the widget and shows them in Claude Code. Updated while a Claude Code session is open." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="ClaudeUsage" HorizontalAlignment="Right" Click="OnClaudeUsageClicked" AutomationProperties.Name="Record Claude usage" />
                     </Grid>
                 </Border>
             </StackPanel>
@@ -224,7 +254,10 @@
                         <GradientStop Color="#3A1C36" Offset="1" />
                     </LinearGradientBrush>
                 </Border.Background>
-                <controls:WidgetView x:Name="Preview" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <!-- A long compact line is scaled down to fit instead of being cut. -->
+                <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <controls:WidgetView x:Name="Preview" />
+                </Viewbox>
             </Border>
             <TextBlock x:Name="PreviewNote" FontSize="12" Margin="4,8,0,0" MaxWidth="330" HorizontalAlignment="Left"
                        Style="{StaticResource SecondaryTextStyle}" />

@@ -4,6 +4,7 @@
     <Project Path="src/WinModes.Cli/WinModes.Cli.csproj" />
     <Project Path="src/WinModes.Core/WinModes.Core.csproj" />
     <Project Path="src/WinModes.Elevated/WinModes.Elevated.csproj" />
+    <Project Path="src/WinModes.StatusLine/WinModes.StatusLine.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/WinModes.Core.Tests/WinModes.Core.Tests.csproj" />

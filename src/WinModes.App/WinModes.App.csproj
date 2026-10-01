@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\WinModes.Core\WinModes.Core.csproj" />
     <ProjectReference Include="..\WinModes.Elevated\WinModes.Elevated.csproj" />
+    <ProjectReference Include="..\WinModes.StatusLine\WinModes.StatusLine.csproj" />
   </ItemGroup>
 
   <ItemGroup>

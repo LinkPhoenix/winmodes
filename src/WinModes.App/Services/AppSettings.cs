@@ -156,6 +156,15 @@ internal sealed record WidgetSettings
 
     public int MaxTools { get; init; } = 4;
 
+    /// <summary>Plan, remaining usage and limit reset of Claude and Codex, read from their local files. Off by default.</summary>
+    public bool ShowSubscriptions { get; init; }
+
+    /// <summary>
+    /// Also ask Anthropic and OpenAI for the usage, with the sign-in Claude Code and Codex keep on this PC.
+    /// Off by default: it reads their sign-in files and uses endpoints that are not part of a public API.
+    /// </summary>
+    public bool ReadUsageOnline { get; init; }
+
     /// <summary>Seconds between two refreshes: 1, 3 or 5.</summary>
     public int RefreshSeconds { get; init; } = 3;
 
