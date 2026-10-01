@@ -77,23 +77,45 @@ internal sealed record AppSettings
     /// <summary>Mode activated when the app starts; null means none.</summary>
     public string? AutoActivateMode { get; init; }
 
+    // Read on every sample tick of the tray, the widget and the pages, so the parsed copy is kept. Every field is
+    // init-only, and this process is the only writer: Save replaces the copy. A hand edit of settings.json while
+    // the app runs is picked up at the next start.
+    private static readonly Lock CacheGate = new();
+    private static AppSettings? _cached;
+
     public static AppSettings Load()
     {
-        try
+        lock (CacheGate)
         {
-            return File.Exists(SettingsPath)
-                ? JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsPath)) ?? new AppSettings()
-                : new AppSettings();
-        }
-        catch (Exception ex) when (ex is JsonException or IOException)
-        {
-            return new AppSettings();
+            if (_cached is not null)
+            {
+                return _cached;
+            }
+
+            try
+            {
+                // A failed read gives defaults for this call only: caching them would hide the real file until a restart.
+                if (!File.Exists(SettingsPath))
+                {
+                    return _cached = new AppSettings();
+                }
+
+                return _cached = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsPath)) ?? new AppSettings();
+            }
+            catch (Exception ex) when (ex is JsonException or IOException)
+            {
+                return new AppSettings();
+            }
         }
     }
 
     public void Save()
     {
-        AtomicFile.WriteAllText(SettingsPath, JsonSerializer.Serialize(this));
+        lock (CacheGate)
+        {
+            AtomicFile.WriteAllText(SettingsPath, JsonSerializer.Serialize(this));
+            _cached = this;
+        }
 
         // The Run entry carries the minimized flag, so keep it in step with the setting.
         if (StartsWithWindows)
