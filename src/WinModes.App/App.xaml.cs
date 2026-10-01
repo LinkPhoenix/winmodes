@@ -11,6 +11,7 @@ namespace WinModes.App;
 public partial class App : Application, IDisposable
 {
     private const string SingleInstanceMutexName = @"Local\WinModes.App";
+    private const string OnboardingArgument = "--onboarding";
 
     private Mutex? _singleInstance;
     private Forms.NotifyIcon? _trayIcon;
@@ -56,7 +57,8 @@ public partial class App : Application, IDisposable
         // The argument turns privacy on for this run only, without changing the saved setting.
         Services.Privacy.Set(Services.AppSettings.Load().PrivacyMode || e.Args.Contains(Services.Privacy.CommandLineArgument));
         var pageIndex = Array.IndexOf(e.Args, "--page");
-        _window = new MainWindow(pageIndex >= 0 && pageIndex + 1 < e.Args.Length ? e.Args[pageIndex + 1] : null);
+        _window = new MainWindow(pageIndex >= 0 && pageIndex + 1 < e.Args.Length ? e.Args[pageIndex + 1] : null,
+            showOnboarding: e.Args.Contains(OnboardingArgument));
         _trayIcon = CreateTrayIcon();
         _trayMeter = new Services.TrayMeter(_trayIcon, _trayIcon.Icon!);
         ApplyDisplaySettings();
@@ -65,8 +67,8 @@ public partial class App : Application, IDisposable
 
     private async void StartSession(string[] args)
     {
-        // At sign-in the app starts hidden; the tray icon opens the window.
-        if (!args.Contains(Services.AppSettings.MinimizedArgument))
+        // At sign-in the app starts hidden; the tray icon opens the window. The first run always shows the guide.
+        if (!args.Contains(Services.AppSettings.MinimizedArgument) || !Services.AppSettings.Load().OnboardingDone)
         {
             _window!.Show();
         }
@@ -140,6 +142,12 @@ public partial class App : Application, IDisposable
             _liveStats.Updated -= OnStats;
             _listening = false;
         }
+    }
+
+    internal void ShowOnboarding()
+    {
+        ShowWindow();
+        _window?.ShowOnboarding();
     }
 
     internal void MoveWidget(WidgetCorner corner) => _widget?.MoveTo(corner);

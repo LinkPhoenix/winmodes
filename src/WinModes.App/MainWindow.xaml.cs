@@ -23,13 +23,37 @@ public partial class MainWindow : FluentWindow
     };
 
     /// <param name="startPage">Page name from the <c>--page</c> argument; unknown or null opens the dashboard.</param>
-    public MainWindow(string? startPage = null)
+    /// <param name="showOnboarding">Show the first-run guide whatever the saved setting says.</param>
+    public MainWindow(string? startPage = null, bool showOnboarding = false)
     {
         InitializeComponent();
         VersionText.Text = $"v{AppInfo.Version}";
 
         var page = startPage is not null && PagesByName.TryGetValue(startPage, out var requested) ? requested : typeof(DashboardPage);
-        Loaded += (_, _) => RootNavigation.Navigate(page);
+        Loaded += (_, _) =>
+        {
+            RootNavigation.Navigate(page);
+            if (showOnboarding || !Services.AppSettings.Load().OnboardingDone)
+            {
+                ShowOnboarding();
+            }
+        };
+    }
+
+    public void ShowOnboarding()
+    {
+        var guide = new Controls.OnboardingView();
+        guide.Completed += (_, openModes) =>
+        {
+            OnboardingHost.Visibility = System.Windows.Visibility.Collapsed;
+            OnboardingHost.Content = null;
+            PaneToggle.IsEnabled = true;
+            // Reload the current page so it reflects the options just chosen.
+            RootNavigation.Navigate(openModes ? typeof(ModesPage) : typeof(DashboardPage));
+        };
+        OnboardingHost.Content = guide;
+        OnboardingHost.Visibility = System.Windows.Visibility.Visible;
+        PaneToggle.IsEnabled = false;
     }
 
     private void OnTogglePane(object sender, System.Windows.RoutedEventArgs e) => RootNavigation.IsPaneOpen = !RootNavigation.IsPaneOpen;

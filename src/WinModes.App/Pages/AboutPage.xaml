@@ -46,6 +46,7 @@
                                FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:Button Content="Welcome guide" Icon="{ui:SymbolIcon Lightbulb24}" Margin="0,0,8,0" Click="OnShowGuide" />
                     <ui:Button Content="Source code" Icon="{ui:SymbolIcon Code24}" Margin="0,0,8,0" Click="OnOpenSource" />
                     <ui:Button Content="Buy me a coffee" Icon="{ui:SymbolIcon DrinkCoffee24}" Appearance="Primary" Click="OnBuyCoffee" />
                 </StackPanel>

@@ -30,6 +30,8 @@ public partial class AboutPage : Page
 
     private void OnBuyCoffee(object sender, RoutedEventArgs e) => Open(CoffeeUrl);
 
+    private void OnShowGuide(object sender, RoutedEventArgs e) => (Application.Current as App)?.ShowOnboarding();
+
     private void OnOpenSource(object sender, RoutedEventArgs e) => Open(SourceUrl);
 
     private static void Open(string url)

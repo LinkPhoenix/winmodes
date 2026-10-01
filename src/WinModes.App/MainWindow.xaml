@@ -71,5 +71,8 @@
                                        TargetPageType="{x:Type pages:AboutPage}" />
             </ui:NavigationView.FooterMenuItems>
         </ui:NavigationView>
+
+        <!-- First-run guide, created only when needed; it covers the pages but not the title bar. -->
+        <ContentControl x:Name="OnboardingHost" Grid.Row="1" Visibility="Collapsed" Focusable="False" />
     </Grid>
 </ui:FluentWindow>

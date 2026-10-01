@@ -22,6 +22,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Title bar with the menu button, icon, name and version on one row.
 - Privacy mode (Settings, or `--privacy` for one run): hides project names, folders, command-line details and the account name.
 - Automation page: opt-in rules that activate a mode when a program starts and undo it when the program closes. Off by default.
+- First-run welcome guide (what the app does, what it never touches, optional features), reopenable from the About page.
 
 ## [0.2.0] - 2026-10-01
 
