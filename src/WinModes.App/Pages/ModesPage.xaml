@@ -17,8 +17,12 @@
                 <TextBlock x:Name="StatusText" Text="No mode is active. Windows is in its normal state."
                            Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
             </StackPanel>
-            <ui:Button x:Name="UndoButton" Grid.Column="1" Content="Undo active mode" Icon="{ui:SymbolIcon ArrowUndo24}"
-                       VerticalAlignment="Top" Visibility="Collapsed" Click="OnUndoClick" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                <ui:Button x:Name="UndoButton" Content="Undo active mode" Icon="{ui:SymbolIcon ArrowUndo24}"
+                           Margin="0,0,8,0" Visibility="Collapsed" Click="OnUndoClick" />
+                <ui:Button Content="Import mode" Icon="{ui:SymbolIcon ArrowDownload24}" Click="OnImportClick"
+                           ToolTip="Add a mode from a profile file. It is checked against the protection list first." />
+            </StackPanel>
         </Grid>
 
         <Border x:Name="ResultCard" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16" Visibility="Collapsed">
@@ -38,13 +42,20 @@
         <ItemsControl x:Name="ModeCards" Margin="0,0,-12,0">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <UniformGrid Rows="1" />
+                    <UniformGrid Columns="3" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border x:Name="Card" Style="{StaticResource CardBorderStyle}" Padding="0" Margin="0,0,12,0" MinHeight="270"
-                            AutomationProperties.Name="{Binding AccessibleName}">
+                    <Border x:Name="Card" Style="{StaticResource CardBorderStyle}" Padding="0" Margin="0,0,12,12" MinHeight="270"
+                            AutomationProperties.Name="{Binding AccessibleName}" ToolTip="Right-click to export, duplicate or delete this mode">
+                        <Border.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Export mode" Click="OnExportClick" />
+                                <MenuItem Header="Duplicate mode" Click="OnDuplicateClick" />
+                                <MenuItem Header="Delete mode" Click="OnDeleteClick" IsEnabled="{Binding CanDelete}" />
+                            </ContextMenu>
+                        </Border.ContextMenu>
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="5" />

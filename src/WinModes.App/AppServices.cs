@@ -15,6 +15,7 @@ internal static class AppServices
     private static ModePlanner? _planner;
     private static ProtectionPolicy? _policy;
     private static ModeSwitcher? _switcher;
+    private static ProfileLibrary? _library;
 
     public static ProfileStore Store => _store ?? throw new InvalidOperationException("App services are not initialized.");
     public static ModePlanner Planner => _planner ?? throw new InvalidOperationException("App services are not initialized.");
@@ -22,6 +23,8 @@ internal static class AppServices
     public static ProtectionPolicy Policy => _policy ?? throw new InvalidOperationException("App services are not initialized.");
 
     public static ModeSwitcher Switcher => _switcher ?? throw new InvalidOperationException("App services are not initialized.");
+
+    public static ProfileLibrary Library => _library ?? throw new InvalidOperationException("App services are not initialized.");
 
     public static string ProfilesDirectory { get; private set; } = "";
 
@@ -32,5 +35,6 @@ internal static class AppServices
         _policy = policy;
         _switcher = new ModeSwitcher(policy);
         ProfilesDirectory = profilesDirectory;
+        _library = new ProfileLibrary(profilesDirectory, policy);
     }
 }

@@ -15,7 +15,7 @@ public partial class ModesPage : Page
 {
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(10);
 
-    private readonly List<ModeCard> _cards;
+    private List<ModeCard> _cards = [];
     private readonly DispatcherTimer _timer = new() { Interval = RefreshInterval };
     private bool _isBusy;
 
@@ -23,8 +23,7 @@ public partial class ModesPage : Page
     {
         InitializeComponent();
 
-        _cards = [.. ModeCatalog.Load().Select(entry => new ModeCard(entry))];
-        ModeCards.ItemsSource = _cards;
+        ReloadCards();
 
         _timer.Tick += async (_, _) => await RefreshAsync();
         Loaded += async (_, _) =>
@@ -33,6 +32,106 @@ public partial class ModesPage : Page
             await RefreshAsync();
         };
         Unloaded += (_, _) => _timer.Stop();
+    }
+
+    private void ReloadCards()
+    {
+        _cards = [.. ModeCatalog.Load().Select(entry => new ModeCard(entry))];
+        ModeCards.ItemsSource = _cards;
+    }
+
+    private static ModeCard? CardOf(object sender) => (sender as FrameworkElement)?.DataContext as ModeCard;
+
+    private async Task ChangeLibraryAsync(string done, Action change)
+    {
+        try
+        {
+            change();
+            ReloadCards();
+            ResultCard.Visibility = Visibility.Visible;
+            ResultTitle.Text = done;
+            ResultLines.ItemsSource = null;
+            await RefreshAsync();
+        }
+        catch (Exception ex) when (ex is ProfileException or System.IO.IOException or UnauthorizedAccessException)
+        {
+            ResultCard.Visibility = Visibility.Visible;
+            ResultTitle.Text = "Not done";
+            ResultLines.ItemsSource = new[] { ex.Message };
+        }
+    }
+
+    private async void OnImportClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog { Title = "Import a mode", Filter = "Mode profile (*.json)|*.json" };
+        if (dialog.ShowDialog() == true)
+        {
+            await ChangeLibraryAsync("Mode imported", () => AppServices.Library.Import(dialog.FileName));
+        }
+    }
+
+    private async void OnExportClick(object sender, RoutedEventArgs e)
+    {
+        if (CardOf(sender) is not { } card)
+        {
+            return;
+        }
+
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = $"Export {card.Label} mode",
+            Filter = "Mode profile (*.json)|*.json",
+            FileName = card.Profile.Mode + ".json",
+        };
+        if (dialog.ShowDialog() == true)
+        {
+            await ChangeLibraryAsync($"{card.Label} mode exported", () => AppServices.Library.Export(card.Profile.Mode, dialog.FileName));
+        }
+    }
+
+    private async void OnDuplicateClick(object sender, RoutedEventArgs e)
+    {
+        if (CardOf(sender) is not { } card)
+        {
+            return;
+        }
+
+        // First free name: code-2, code-3...
+        var existing = AppServices.Store.ListModes();
+        var index = 2;
+        while (existing.Contains($"{card.Profile.Mode}-{index}", StringComparer.OrdinalIgnoreCase))
+        {
+            index++;
+        }
+
+        await ChangeLibraryAsync($"{card.Label} mode duplicated",
+            () => AppServices.Library.Duplicate(card.Profile.Mode, $"{card.Profile.Mode}-{index}", $"{card.Label} {index}"));
+    }
+
+    private async void OnDeleteClick(object sender, RoutedEventArgs e)
+    {
+        if (CardOf(sender) is not { } card)
+        {
+            return;
+        }
+
+        if (card.IsActive)
+        {
+            await ChangeLibraryAsync("", () => throw new ProfileException("Deactivate this mode before deleting it."));
+            return;
+        }
+
+        var confirm = new Wpf.Ui.Controls.MessageBox
+        {
+            Title = $"Delete {card.Label} mode?",
+            Content = "Its profile file is removed. Export it first if you want to keep a copy.",
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
+        };
+        if (await confirm.ShowDialogAsync() == Wpf.Ui.Controls.MessageBoxResult.Primary)
+        {
+            await ChangeLibraryAsync($"{card.Label} mode deleted", () => AppServices.Library.Delete(card.Profile.Mode));
+        }
     }
 
     private async Task RefreshAsync()
@@ -246,6 +345,7 @@ public partial class ModesPage : Page
         public bool IsHighlighted => _isSelected || _isActive;
         public string PillText => _isActive ? "ACTIVE" : "PREVIEWING";
         public string ActionText => _isActive ? "Deactivate" : "Activate";
+        public bool CanDelete => !ProfileLibrary.IsBuiltIn(Profile.Mode);
 
         public bool IsSelected
         {
