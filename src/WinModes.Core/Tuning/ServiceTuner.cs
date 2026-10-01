@@ -50,18 +50,7 @@ public sealed class TweakStore(string directory)
     public void SaveLastResults(IEnumerable<TuneResult> results) => Write(ResultFile, results.ToList());
 
     private T? Read<T>(string file)
-        where T : class
-    {
-        try
-        {
-            var path = Path.Combine(directory, file);
-            return File.Exists(path) ? JsonSerializer.Deserialize<T>(File.ReadAllText(path), Options) : null;
-        }
-        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
-        {
-            return null;
-        }
-    }
+        where T : class => StateFile.Read<T>(Path.Combine(directory, file), Options);
 
     private void Write<T>(string file, T value)
     {

@@ -76,18 +76,12 @@ public sealed class JournalStore(string directory)
         }
 
         var sessions = new List<JournalSession>();
-        foreach (var file in System.IO.Directory.EnumerateFiles(Directory, "*.json"))
+        foreach (var file in System.IO.Directory.GetFiles(Directory, "*.json"))
         {
-            try
+            // A damaged file is quarantined, so it cannot hide the other sessions or be overwritten.
+            if (StateFile.Read<JournalSession>(file, Options) is { } session)
             {
-                if (JsonSerializer.Deserialize<JournalSession>(File.ReadAllText(file), Options) is { } session)
-                {
-                    sessions.Add(session);
-                }
-            }
-            catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
-            {
-                // A damaged or unreadable file must not hide the other sessions.
+                sessions.Add(session);
             }
         }
 

@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using WinModes.Core.Engine;
 
 namespace WinModes.Core.Tuning;
 
@@ -64,17 +65,7 @@ public sealed class TweakJournal(string filePath)
         Converters = { new JsonStringEnumConverter() },
     };
 
-    public IReadOnlyList<TweakRecord> Load()
-    {
-        try
-        {
-            return File.Exists(filePath) ? JsonSerializer.Deserialize<List<TweakRecord>>(File.ReadAllText(filePath), Options) ?? [] : [];
-        }
-        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
-        {
-            return [];
-        }
-    }
+    public IReadOnlyList<TweakRecord> Load() => StateFile.Read<List<TweakRecord>>(filePath, Options) ?? [];
 
     public void Save(IEnumerable<TweakRecord> records)
     {
