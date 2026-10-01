@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <!-- WinForms is used only for the notification-area icon (WPF has none). -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>WinModes</AssemblyName>
+    <RootNamespace>WinModes.App</RootNamespace>
+    <ApplicationIcon>Assets\winmodes.ico</ApplicationIcon>
+    <Version>0.1.0</Version>
+    <!-- WPF0001: the Fluent ThemeMode API is still marked experimental in .NET 10. -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\winmodes.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinModes.Core\WinModes.Core.csproj" />
+    <ProjectReference Include="..\WinModes.Elevated\WinModes.Elevated.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>

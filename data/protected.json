@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "reviewed": "2026-10-01",
+  "purpose": "Hard blocklist enforced by the win-modes engine. No mode, preset or imported tweak may stop, disable, remove or block anything listed here.",
+  "requiredCapabilities": {
+    "winget": {
+      "why": "winget ships inside App Installer, which is installed and updated through the Microsoft Store.",
+      "appx": ["Microsoft.DesktopAppInstaller", "Microsoft.WindowsStore", "Microsoft.StorePurchaseApp", "Microsoft.VCLibs.*", "Microsoft.UI.Xaml.*", "Microsoft.WindowsAppRuntime.*"],
+      "services": ["AppXSvc", "ClipSVC", "InstallService", "LicenseManager", "AppReadiness", "StateRepository", "TokenBroker", "wlidsvc", "BITS", "DoSvc", "CryptSvc"]
+    },
+    "chocolatey": {
+      "why": "Chocolatey needs PowerShell, .NET Framework 4.8, TLS 1.2+ and HTTPS downloads; many packages also run MSI installers.",
+      "services": ["msiserver", "BITS", "CryptSvc", "Dnscache", "WinHttpAutoProxySvc"],
+      "other": ["Do not disable PowerShell, .NET Framework or TLS 1.2/1.3", "Do not block chocolatey.org or community.chocolatey.org"]
+    },
+    "wsl": {
+      "why": "WSL2 and Docker Desktop run in a Hyper-V utility VM.",
+      "features": ["Microsoft-Windows-Subsystem-Linux", "VirtualMachinePlatform", "HypervisorPlatform"],
+      "services": ["WSLService", "WslInstaller", "vmcompute", "hns", "HvHost", "nvagent", "SharedAccess", "iphlpsvc", "P9RdrService", "vmms"],
+      "other": ["Keep bcdedit hypervisorlaunchtype=Auto", "Do not disable VBS/HVCI (it shares the hypervisor)", "Do not disable memory compression", "Do not fully disable IPv6 (breaks mirrored networking)"],
+      "modeNote": "Modes may run `wsl --shutdown` or edit .wslconfig limits; they must never uninstall WSL or disable its services."
+    },
+    "edge-webview2": {
+      "why": "WebView2 powers many Windows and third-party apps (Widgets, Teams, Claude/Codex desktop, installers); Edge is the system handler for several Windows flows.",
+      "appx": ["Microsoft.MicrosoftEdge.Stable"],
+      "programs": ["Microsoft Edge", "Microsoft Edge WebView2 Runtime"],
+      "services": ["edgeupdate", "edgeupdatem"],
+      "allowed": ["Edge policies such as StartupBoostEnabled=0 or BackgroundModeEnabled=0"]
+    },
+    "user-apps": {
+      "why": "Daily tools that must keep working in every mode. A mode may close or not auto-start one of them only if the user explicitly configured it in that mode's profile; the engine never uninstalls them, blocks their network access, firewall rules, updaters, services, protocol handlers (discord://, vscode://, claude://) or their runtimes.",
+      "apps": {
+        "claude-desktop": { "detected": true, "path": "%LOCALAPPDATA%\\AnthropicClaude", "needs": ["Edge WebView2 / Electron runtime", "Squirrel updater", "claude:// protocol handler"] },
+        "claude-code": { "detected": true, "path": "%LOCALAPPDATA%\\Microsoft\\WinGet\\Packages\\Anthropic.ClaudeCode_*", "needs": ["winget", "git", "Node/npx for MCP servers", "Docker for MCP gateway", "WSL"] },
+        "codex": { "detected": true, "appx": "OpenAI.Codex_2p2nqsd0c76g0", "cli": "%APPDATA%\\npm\\codex.ps1", "services": ["CodexSandboxService.OpenAI.Codex"], "needs": ["AppX/MSIX infrastructure (AppXSvc, ClipSVC, StateRepository)", "Node/npm"] },
+        "t3code": { "detected": true, "name": "T3 Code (Alpha)" },
+        "opencode": { "detected": true, "name": "OpenCode", "related": ["OpenCodexTray", "opencode-proxy scheduled task"] },
+        "cursor": { "detected": true, "path": "%LOCALAPPDATA%\\Programs\\cursor" },
+        "vscode": { "detected": false, "note": "Declared by the user; not found in uninstall keys or PATH on 2026-10-01. Still protected.", "needs": ["vscode:// protocol handler", "Code Helper processes", "WSL remote extension"] },
+        "discord": { "detected": true, "path": "%LOCALAPPDATA%\\Discord", "needs": ["Squirrel Update.exe", "audio services (Audiosrv, AudioEndpointBuilder)", "UDP voice ports not blocked"] },
+        "spotify": { "detected": false, "note": "Declared by the user; not found on 2026-10-01 (may be a Store or portable install). Still protected.", "needs": ["audio services", "media keys / SMTC (NPSMSvc)"] },
+        "ai-tooling": { "detected": true, "items": ["Harness Control", "BurnRate", "Ollama/LM Studio if installed later"], "needs": ["Node", "Bun", "Git", "GitHub CLI", "Docker Desktop in Code mode"] }
+      },
+      "services": ["Audiosrv", "AudioEndpointBuilder", "NPSMSvc", "CodexSandboxService.OpenAI.Codex", "Dnscache", "WinHttpAutoProxySvc"],
+      "startupIds": ["Discord", "Harness Control", "BurnRate", "OpenCodexTray-*", "opencodex-proxy", "Docker Desktop"],
+      "processes": ["claude", "Codex", "Code", "Cursor", "Discord", "Spotify", "opencode", "T3 Code", "burnrate-widget", "node", "bun", "git", "vmmemWSL", "wslservice", "com.docker.backend", "Docker Desktop"],
+      "startupIdsNote": "Knowledge-base ids of protected startup entries: never suggested for closing by the generator. Docker Desktop is closed only through the mode's wsl.docker setting.",
+      "rule": "Any other AI or developer tool the user adds later inherits this protection."
+    },
+    "security-and-updates": {
+      "services": ["WinDefend", "MDCoreSvc", "WdNisSvc", "SecurityHealthService", "wscsvc", "mpssvc", "BFE", "webthreatdefsvc", "wuauserv", "UsoSvc", "WaaSMedicSvc", "Adguard Service", "VSSERV", "BDAppSrv", "BDAuxSrv", "BDProtSrv", "UPDATESRV", "bdredline", "bdredline_agent", "BDSafepaySrv", "ProductAgentService"],
+      "processes": ["AdguardSvc", "Adguard", "bdservicehost", "bdagent", "bdredline", "MsMpEng", "MpDefenderCoreService", "SecurityHealthService"],
+      "allowed": ["Pausing or deferring Windows Update through supported settings"]
+    }
+  },
+  "neverInModes": {
+    "why": "Irreversible or reboot-bound changes belong in a one-shot setup page, not in mode switching.",
+    "types": ["appx removal", "Windows optional feature enable/disable", "program uninstall"]
+  }
+}

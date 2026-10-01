@@ -1,0 +1,2525 @@
+[
+  {
+    "id": "svc-diagtrack",
+    "type": "service",
+    "target": "DiagTrack",
+    "value": "Disabled",
+    "theme": "telemetry",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Windows10Debloater",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "winutil"
+    ],
+    "consensusCount": 10,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 2,
+      "work": 1,
+      "game": 2
+    },
+    "notes": "Connected User Experiences and Telemetry; universally disabled.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/atlas/services.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/disable-services.ps1",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/Privacy/Telemetry.cs",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml",
+      "https://github.com/undergroundwires/privacy.sexy/blob/master/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-allowtelemetry",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection\\AllowTelemetry",
+    "value": "0 (DWORD)",
+    "theme": "telemetry",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "consensusCount": 12,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "notes": "0 only honored on Enterprise/Education; 1 on Pro/Home.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/privacy/disable-pca.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Telemetry.reg",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/block-telemetry.ps1",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/Privacy/Telemetry.cs",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/privacy/telemetry.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-advertisingid",
+    "type": "registry",
+    "target": "HKCU\\...\\AdvertisingInfo\\Enabled",
+    "value": "0",
+    "theme": "telemetry",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "consensusCount": 12,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 1,
+      "game": 0
+    },
+    "notes": "",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/privacy/advertising/disable-advertising-info.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Telemetry.reg",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/fix-privacy-settings.ps1",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/Ads/PersonalizedAds.cs",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-consumerfeatures",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent\\DisableWindowsConsumerFeatures",
+    "value": "1",
+    "theme": "background",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Windows10Debloater",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "consensusCount": 9,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "notes": "Stops auto-install of promoted apps.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/3.%20General%20Configuration/Mobile%20Devices%20(Phone%20Link)/Enable%20Mobile%20Device%20Settings.cmd",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/remove-default-apps.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/privacy/cloud-content.yml",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-bgapps",
+    "type": "registry",
+    "target": "HKCU\\...\\BackgroundAccessApplications\\GlobalUserDisabled",
+    "value": "1",
+    "theme": "background",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Winhance",
+      "privacy.sexy",
+      "winutil"
+    ],
+    "consensusCount": 5,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 2,
+      "work": 1,
+      "game": 3
+    },
+    "notes": "Breaks notifications of UWP apps (Teams/Phone Link) in Work mode; good for Game.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/performance/disable-background-apps.yml",
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks/performance/disable-background-apps.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-activityhistory",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System\\EnableActivityFeed/PublishUserActivities/UploadUserActivities",
+    "value": "0",
+    "theme": "telemetry",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "winutil"
+    ],
+    "consensusCount": 7,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Privacy, no perf effect.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/privacy/disable-activity-feed.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Telemetry.reg",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-recall",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI\\DisableAIDataAnalysis",
+    "value": "1",
+    "theme": "search-ai",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "consensusCount": 8,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 2,
+      "work": 1,
+      "game": 2
+    },
+    "notes": "Recall snapshots cost disk/CPU on Copilot+ PCs.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/3.%20General%20Configuration/AI%20Features/Recall/Disable%20Recall%20Support%20(default).cmd",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_AI_Recall.reg",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles/Disable_AI_Recall.reg",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/AI/Recall.cs",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-copilot",
+    "type": "registry",
+    "target": "HKCU\\Software\\Policies\\Microsoft\\Windows\\WindowsCopilot\\TurnOffWindowsCopilot",
+    "value": "1",
+    "theme": "search-ai",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder"
+    ],
+    "consensusCount": 8,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 1,
+      "game": 2
+    },
+    "notes": "Policy partly deprecated; app removal is the modern way.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/taskbar/disable-copilot.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Copilot.reg",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles/Disable_Copilot.reg",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/AI/CopilotTaskbar.cs",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-bingsearch",
+    "type": "registry",
+    "target": "HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer\\DisableSearchBoxSuggestions",
+    "value": "1",
+    "theme": "search-ai",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "consensusCount": 12,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 2,
+      "work": 2,
+      "game": 1
+    },
+    "notes": "Removes web results from Start search; faster local search.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/privacy/search-settings.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Bing_Cortana_In_Search.reg",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles/Disable_Bing_Cortana_In_Search.reg",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/optimize-user-interface.ps1",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/FeatureLoader.cs",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/search.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Customize/Models/StartMenuCustomizations.cs",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-widgets",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh\\AllowNewsAndInterests",
+    "value": "0",
+    "theme": "search-ai",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "consensusCount": 6,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 2,
+      "work": 1,
+      "game": 2
+    },
+    "notes": "Kills Widgets host (msedgewebview2 RAM).",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/taskbar/disable-news-and-interests.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/taskbar.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Customize/Models/TaskbarCustomizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-gamedvr",
+    "type": "registry",
+    "target": "HKCU\\System\\GameConfigStore\\GameDVR_Enabled + HKLM\\...\\PolicyManager\\default\\ApplicationManagement\\AllowGameDVR",
+    "value": "0",
+    "theme": "game",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "consensusCount": 9,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 2
+    },
+    "notes": "Background recording overhead; keep Game Bar if user records.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/performance/disable-game-bar.yml",
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks/performance/disable-game-bar.yml",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_DVR.reg",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles/Disable_DVR.reg",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/optimize-user-interface.ps1",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/Gaming/GameDVR.cs",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-gamemode",
+    "type": "registry",
+    "target": "HKCU\\Software\\Microsoft\\GameBar\\AutoGameModeEnabled",
+    "value": "1",
+    "theme": "game",
+    "projects": [
+      "Winhance",
+      "optimizer",
+      "winutil"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 3
+    },
+    "notes": "Keep ON; only some old guides disable it.",
+    "sources": [
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-hags",
+    "type": "registry",
+    "target": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\HwSchMode",
+    "value": "2",
+    "theme": "game",
+    "projects": [
+      "ReviOS",
+      "Sophia",
+      "Winhance",
+      "optimizer"
+    ],
+    "consensusCount": 4,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 2
+    },
+    "notes": "Reboot required; driver dependent. Not a live mode switch.",
+    "sources": [
+      "https://github.com/farag2/Sophia-Script-for-Windows",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-visualfx",
+    "type": "registry",
+    "target": "HKCU\\Control Panel\\Desktop (DragFullWindows, MenuShowDelay, MinAnimate) + VisualFXSetting=2",
+    "value": "best performance",
+    "theme": "ui",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "winutil"
+    ],
+    "consensusCount": 8,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Live-ish (logoff for some). Cosmetic, small gains.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/shell/disable-menu-delay.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Animations.reg",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles/Disable_Animations.reg",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/optimize-user-interface.ps1",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/FeatureLoader.cs",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/control-panel.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-transparency",
+    "type": "registry",
+    "target": "HKCU\\...\\Themes\\Personalize\\EnableTransparency",
+    "value": "0",
+    "theme": "ui",
+    "projects": [
+      "CrapFixer",
+      "ReviOS",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer"
+    ],
+    "consensusCount": 5,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Instant, fully reversible.",
+    "sources": [
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Transparency.reg",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles/Disable_Transparency.reg",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/UI/Transparency.cs",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Customize/Models/WindowsThemeCustomizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-deliveryopt",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization\\DODownloadMode",
+    "value": "0",
+    "theme": "network",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "winutil"
+    ],
+    "consensusCount": 9,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 2,
+      "work": 1,
+      "game": 2
+    },
+    "notes": "Stops P2P upload; updates still work. Prefer Settings value over disabling DoSvc.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/windows-update/disable-delivery-optimization.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Delivery_Optimization.reg",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles/Disable_Delivery_Optimization.reg",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/optimize-windows-update.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/updates/updates.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/UpdateOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-longpaths",
+    "type": "registry",
+    "target": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\\LongPathsEnabled",
+    "value": "1",
+    "theme": "dev",
+    "projects": [
+      "Atlas",
+      "Sophia",
+      "Winhance",
+      "optimizer",
+      "winutil"
+    ],
+    "consensusCount": 5,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 3,
+      "work": 1,
+      "game": 0
+    },
+    "notes": "Useful for node_modules; global, not per mode.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/explorer/enable-long-paths.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Customize/Models/ExplorerCustomizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-endtask",
+    "type": "registry",
+    "target": "HKCU\\...\\TaskbarDeveloperSettings\\TaskbarEndTask",
+    "value": "1",
+    "theme": "ui",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "winutil"
+    ],
+    "consensusCount": 7,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 2,
+      "work": 1,
+      "game": 1
+    },
+    "notes": "",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/taskbar/end-task.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Enable_End_Task.reg",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/FeatureLoader.cs",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/explorer.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Customize/Models/TaskbarCustomizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-storagesense",
+    "type": "registry",
+    "target": "HKCU\\...\\StorageSense\\Parameters\\StoragePolicy\\01",
+    "value": "0",
+    "theme": "storage",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "winutil"
+    ],
+    "consensusCount": 6,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Controversial: saves little, loses cleanup.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/debloat/config-storage-sense.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Storage_Sense.reg",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-fastboot",
+    "type": "registry",
+    "target": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power\\HiberbootEnabled",
+    "value": "0",
+    "theme": "power",
+    "projects": [
+      "Atlas",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance"
+    ],
+    "consensusCount": 4,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "notes": "Avoids stale driver state after shutdown; helps WSL/Docker networking issues.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/scripts/script-power.yml",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Fast_Startup.reg",
+      "https://github.com/Raphire/Win11Debloat/tree/master/Regfiles/Disable_Fast_Startup.reg",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/lower-ram-usage.reg",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PowerOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "svc-sysmain",
+    "type": "service",
+    "target": "SysMain",
+    "value": "Disabled",
+    "theme": "performance",
+    "projects": [
+      "Atlas",
+      "W4RH4WK",
+      "Winhance",
+      "optimizer"
+    ],
+    "consensusCount": 4,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Controversial on SSD; small benefit, hurts app launch. Prefer keep.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/6.%20Advanced%20Configuration/Services/Superfetch/Disable%20SuperFetch.cmd",
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/disable-memory-compression.ps1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "svc-wsearch",
+    "type": "service",
+    "target": "WSearch",
+    "value": "Disabled/Manual",
+    "theme": "search-ai",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "consensusCount": 7,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 2
+    },
+    "notes": "Breaks Start/Outlook search. Better: exclude dev folders from index.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/privacy/search-settings.yml",
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Scripts/Get.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/disable-services.ps1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/search.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "svc-mapsbroker",
+    "type": "service",
+    "target": "MapsBroker",
+    "value": "Manual/Disabled",
+    "theme": "background",
+    "projects": [
+      "Atlas",
+      "W4RH4WK",
+      "Winhance",
+      "privacy.sexy",
+      "winutil"
+    ],
+    "consensusCount": 5,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "notes": "",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/3.%20General%20Configuration/Location/Disable%20Location%20(default).cmd",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/disable-services.ps1",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "svc-lfsvc",
+    "type": "service",
+    "target": "lfsvc",
+    "value": "Disabled",
+    "theme": "privacy",
+    "projects": [
+      "Atlas",
+      "W4RH4WK",
+      "Windows10Debloater",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "winutil"
+    ],
+    "consensusCount": 7,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Breaks location/time zone auto set.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/3.%20General%20Configuration/Location/Disable%20Location%20(default).cmd",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/disable-services.ps1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "svc-dmwappush",
+    "type": "service",
+    "target": "dmwappushservice",
+    "value": "Disabled",
+    "theme": "telemetry",
+    "projects": [
+      "W4RH4WK",
+      "Windows10Debloater",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder"
+    ],
+    "consensusCount": 5,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Also used by MDM/Intune; leave on managed PCs.",
+    "sources": [
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/disable-services.ps1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml",
+      "https://github.com/undergroundwires/privacy.sexy/blob/master/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "svc-xbox",
+    "type": "service",
+    "target": "XblAuthManager,XblGameSave,XboxNetApiSvc,XboxGipSvc",
+    "value": "Manual/Disabled",
+    "theme": "game",
+    "projects": [
+      "W4RH4WK",
+      "Windows10Debloater",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "consensusCount": 5,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 1,
+      "work": 1,
+      "game": 0
+    },
+    "notes": "Disabling breaks Game Pass/Xbox app; Manual is enough.",
+    "sources": [
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/disable-services.ps1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "svc-spooler",
+    "type": "service",
+    "target": "Spooler",
+    "value": "Manual/Disabled",
+    "theme": "background",
+    "projects": [
+      "Atlas",
+      "Winhance",
+      "optimizer"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 2
+    },
+    "notes": "Mode candidate: off in Game/Code if no printer.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/6.%20Advanced%20Configuration/Services/Printing/Disable%20Printing.cmd",
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "svc-wu",
+    "type": "service",
+    "target": "wuauserv,UsoSvc,WaaSMedicSvc",
+    "value": "Disabled",
+    "theme": "update",
+    "projects": [
+      "Atlas",
+      "W4RH4WK",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder"
+    ],
+    "consensusCount": 6,
+    "reversible": false,
+    "risk": "never",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "NEVER: security updates, Defender signatures. Allowed alternative: pause/active hours during Game. Code check: Atlas desktop toggle and tiny11Coremaker disable wuauserv; optimizer, W4RH4WK and Winhance use the NoAutoUpdate policy; privacy.sexy has a non-recommended service script. Sophia and ReviOS only stop it temporarily.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/3.%20General%20Configuration/Windows%20Updates/Toggle%20Windows%20Updates.cmd",
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/optimize-windows-update.ps1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/UpdateOptimizations.cs",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "task-ceip",
+    "type": "task",
+    "target": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator, UsbCeip",
+    "value": "Disabled",
+    "theme": "telemetry",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "Winhance",
+      "privacy.sexy"
+    ],
+    "consensusCount": 8,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/debloat/disable-scheduled-tasks.yml",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Scripts/Features/Telemetry-ScheduledTasks.ps1",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/disable-scheduled-tasks.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Executables/FINALIZE.cmd",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml",
+      "https://github.com/undergroundwires/privacy.sexy/blob/master/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "task-appcompat",
+    "type": "task",
+    "target": "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser, ProgramDataUpdater",
+    "value": "Disabled",
+    "theme": "telemetry",
+    "projects": [
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "privacy.sexy",
+      "tiny11builder"
+    ],
+    "consensusCount": 7,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Appraiser causes CPU spikes.",
+    "sources": [
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Scripts/Features/Telemetry-ScheduledTasks.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/block-telemetry.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Executables/FINALIZE.cmd",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml",
+      "https://github.com/undergroundwires/privacy.sexy/blob/master/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "task-diskdiag",
+    "type": "task",
+    "target": "\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector",
+    "value": "Disabled",
+    "theme": "telemetry",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "privacy.sexy"
+    ],
+    "consensusCount": 7,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/debloat/disable-scheduled-tasks.yml",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Scripts/Features/Telemetry-ScheduledTasks.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/disable-scheduled-tasks.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Executables/FINALIZE.cmd",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml",
+      "https://github.com/undergroundwires/privacy.sexy/blob/master/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "task-feedback",
+    "type": "task",
+    "target": "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient*",
+    "value": "Disabled",
+    "theme": "telemetry",
+    "projects": [
+      "ReviOS",
+      "W4RH4WK",
+      "Windows10Debloater",
+      "Winhance"
+    ],
+    "consensusCount": 4,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "",
+    "sources": [
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/disable-scheduled-tasks.ps1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/privacy/privacy.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/master/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "appx-bing",
+    "type": "appx",
+    "target": "Microsoft.BingNews, BingWeather, BingSearch, MicrosoftStickyNotes?...",
+    "value": "Remove",
+    "theme": "debloat",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "consensusCount": 8,
+    "reversible": false,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Reinstall via Store/winget only; not a mode action.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/atlas/appx.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/preset.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Config/Apps.json",
+      "https://github.com/Raphire/Win11Debloat/blob/master/Config/Apps.json",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/remove-default-apps.ps1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/packages/appx.yml",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "appx-clipchamp-solitaire",
+    "type": "appx",
+    "target": "Clipchamp.Clipchamp, Microsoft.MicrosoftSolitaireCollection, Microsoft.GetHelp, Microsoft.Todos, MicrosoftTeams(consumer)",
+    "value": "Remove",
+    "theme": "debloat",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "consensusCount": 8,
+    "reversible": false,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "One-shot setup step, outside modes.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/atlas/appx.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/preset.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Config/Apps.json",
+      "https://github.com/Raphire/Win11Debloat/blob/master/Config/Apps.json",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/remove-default-apps.ps1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/packages/appx.yml",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "appx-copilot",
+    "type": "appx",
+    "target": "Microsoft.Copilot, Microsoft.Windows.Ai.Copilot.Provider",
+    "value": "Remove",
+    "theme": "search-ai",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "consensusCount": 8,
+    "reversible": false,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/atlas/appx.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/preset.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Config/Apps.json",
+      "https://github.com/Raphire/Win11Debloat/blob/master/Config/Apps.json",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/packages/app-win32.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "appx-xbox",
+    "type": "appx",
+    "target": "Microsoft.GamingApp, XboxGamingOverlay, Xbox.TCUI",
+    "value": "Remove",
+    "theme": "game",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "privacy.sexy",
+      "tiny11builder"
+    ],
+    "consensusCount": 8,
+    "reversible": false,
+    "risk": "high",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Breaks Game Pass; never in our app.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/config-start-menu.yml",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Config/Apps.json",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/remove-default-apps.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/packages/appx.yml",
+      "https://github.com/ntdevlabs/tiny11builder",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "power-ultimate",
+    "type": "powercfg",
+    "target": "powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61",
+    "value": "activate",
+    "theme": "power",
+    "projects": [
+      "Atlas",
+      "Winhance",
+      "winutil"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 2,
+      "work": 0,
+      "game": 3
+    },
+    "notes": "Mode switch = powercfg /setactive <GUID>; instant and reversible. Bad on battery.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasModules/Scripts/ScriptWrappers/DisablePowerSaving.ps1",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PowerOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "power-hibernate",
+    "type": "powercfg",
+    "target": "powercfg /hibernate off",
+    "value": "off",
+    "theme": "power",
+    "projects": [
+      "Atlas",
+      "Sophia",
+      "W4RH4WK",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "winutil"
+    ],
+    "consensusCount": 7,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Frees hiberfil.sys but kills Fast Startup/hibernate on laptops.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/visual-effects.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/lower-ram-usage.reg",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/Utilities.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "net-ipv6-off",
+    "type": "registry",
+    "target": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters\\DisabledComponents",
+    "value": "255",
+    "theme": "network",
+    "projects": [
+      "winutil"
+    ],
+    "consensusCount": 1,
+    "reversible": true,
+    "risk": "high",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Microsoft unsupported; breaks WSL2 mirrored networking and some Docker/Hyper-V scenarios. Prefer 32 (prefer IPv4) if anything. Code check: no read project fully disables IPv6. winutil only sets DisabledComponents=0x20 (prefer IPv4 over IPv6). Full disable (0xFF) breaks Hyper-V/WSL networking and is unsupported by Microsoft.",
+    "sources": [
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/ChrisTitusTech/winutil/blob/main/config/tweaks.json"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "net-throttling",
+    "type": "registry",
+    "target": "HKLM\\...\\Multimedia\\SystemProfile\\NetworkThrottlingIndex / SystemResponsiveness",
+    "value": "ffffffff / 10",
+    "theme": "game",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "W4RH4WK",
+      "Winhance",
+      "optimizer"
+    ],
+    "consensusCount": 6,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 2
+    },
+    "notes": "Placebo-ish on modern builds; MMCSS profile (Atlas config-mmcss.yml).",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/performance/config-mmcss.yml",
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks/performance/config-mmcss.yml",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/lower-ram-usage.reg",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/FeatureLoader.cs",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/system/multimedia.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "mem-compression",
+    "type": "other",
+    "target": "Disable-MMAgent -MemoryCompression",
+    "value": "Disabled",
+    "theme": "performance",
+    "projects": [
+      "ReviOS",
+      "W4RH4WK"
+    ],
+    "consensusCount": 2,
+    "reversible": true,
+    "risk": "high",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Increases paging/RAM pressure; very bad with WSL2/Docker VMs. Keep enabled. Code check: ReviOS runs Disable-MMAgent -mc in final.yml; W4RH4WK ships utils/disable-memory-compression.ps1. Current Atlas and Winhance do not.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/disable-memory-compression.ps1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/final.yml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "sec-defender-off",
+    "type": "other",
+    "target": "Defender (WinDefend, Tamper Protection, real-time)",
+    "value": "Disabled",
+    "theme": "security",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "W4RH4WK",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder"
+    ],
+    "consensusCount": 6,
+    "reversible": false,
+    "risk": "never",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "NEVER. Allowed alternative: Defender exclusions for dev dirs / Dev Drive performance mode. Code check: optimizer and W4RH4WK set DisableAntiSpyware; tiny11Coremaker removes the Defender package; Atlas (defender-disable) and ReviOS (disable-defender) offer it as an install option; privacy.sexy has it under non-recommended scripts. Winhance does not.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/atlas/components.yml",
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/disable-windows-defender.ps1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/packages/win-sxs.yml",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "sec-vbs-hvci-off",
+    "type": "other",
+    "target": "HVCI / Memory Integrity / VBS (DeviceGuard EnableVirtualizationBasedSecurity)",
+    "value": "0",
+    "theme": "security",
+    "projects": [
+      "Atlas",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "consensusCount": 4,
+    "reversible": false,
+    "risk": "never",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "NEVER. Also breaks Credential Guard; bcdedit hypervisorlaunchtype off breaks WSL2/Docker/Hyper-V.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/7.%20Security/Core%20Isolation%20(VBS)/Disable%20VBS.cmd",
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "sec-smartscreen-off",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System\\EnableSmartScreen",
+    "value": "0",
+    "theme": "security",
+    "projects": [
+      "Sophia",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "never",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "NEVER.",
+    "sources": [
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml",
+      "https://github.com/undergroundwires/privacy.sexy/blob/master/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "sec-spectre-off",
+    "type": "registry",
+    "target": "HKLM\\...\\Memory Management\\FeatureSettingsOverride",
+    "value": "3",
+    "theme": "security",
+    "projects": [
+      "Atlas",
+      "privacy.sexy"
+    ],
+    "consensusCount": 2,
+    "reversible": true,
+    "risk": "never",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "NEVER: disables CPU mitigations. Code check: Atlas script-mitigations.yml and privacy.sexy. ReviOS only deletes FeatureSettingsOverride in revert.yml (restores defaults).",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/7.%20Security/Mitigations/Disable%20All%20Mitigations.cmd",
+      "https://github.com/Atlas-OS/Atlas/tree/main/src/playbook/Configuration/tweaks",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "dev-devdrive",
+    "type": "other",
+    "target": "Dev Drive (ReFS) + Defender performance mode",
+    "value": "create",
+    "theme": "dev",
+    "projects": [],
+    "consensusCount": 0,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 3,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Only security-safe dev perf win; Microsoft-supported. Not offered by most projects -> gap. No read project creates a Dev Drive or sets Defender performance mode (privacy.sexy only mentions Dev Drive in docs). Gap for win-modes.",
+    "sources": [
+      "https://learn.microsoft.com/windows/dev-drive/"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "dev-wslconfig",
+    "type": "other",
+    "target": "%USERPROFILE%\\.wslconfig memory/processors/autoMemoryReclaim",
+    "value": "per mode",
+    "theme": "dev",
+    "projects": [],
+    "consensusCount": 0,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 3,
+      "work": 1,
+      "game": 2
+    },
+    "notes": "No project manages it -> gap. wsl --shutdown to reclaim VmmemWSL in Game. No read project writes .wslconfig. Gap for win-modes.",
+    "sources": [
+      "https://learn.microsoft.com/windows/wsl/wsl-config"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "feat-wsl",
+    "type": "feature",
+    "target": "Microsoft-Windows-Subsystem-Linux + VirtualMachinePlatform",
+    "value": "Enabled",
+    "theme": "dev",
+    "projects": [
+      "Sophia",
+      "Win11Debloat",
+      "winutil"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 2,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "One-shot setup prerequisite, never toggled by a mode (reboot, and disabling breaks WSL/Docker). Offered as an enable action (Sophia Install-WSL, winutil WPFFeaturewsl, Win11Debloat optional feature). A mode must never disable it: that breaks WSL2 and Docker.",
+    "sources": [
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/feature.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Scripts/Features/Get-CurrentTweakState.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "feat-hyperv",
+    "type": "feature",
+    "target": "Microsoft-Hyper-V-All",
+    "value": "Enabled",
+    "theme": "dev",
+    "projects": [
+      "privacy.sexy",
+      "winutil"
+    ],
+    "consensusCount": 2,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "One-shot setup prerequisite, never toggled by a mode (reboot, and disabling breaks WSL/Docker). winutil enables it; privacy.sexy only references it. Disabling belongs on the hard blocklist (Docker, WSL2 and Sandbox need the hypervisor).",
+    "sources": [
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/feature.json",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "feat-sandbox",
+    "type": "feature",
+    "target": "Containers-DisposableClientVM",
+    "value": "Enabled",
+    "theme": "dev",
+    "projects": [
+      "Sophia",
+      "Win11Debloat",
+      "winutil"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 1,
+      "game": 0
+    },
+    "notes": "One-shot setup prerequisite, never toggled by a mode (reboot, and disabling breaks WSL/Docker). Windows Sandbox enable action.",
+    "sources": [
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/feature.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Scripts/Features/Get-CurrentTweakState.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-devmode",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock\\AllowDevelopmentWithoutDevLicense",
+    "value": "1",
+    "theme": "dev",
+    "projects": [
+      "Winhance"
+    ],
+    "consensusCount": 1,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 2,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Developer Mode (symlinks without admin). Only Winhance exposes it.",
+    "sources": [
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "cmd-sudo",
+    "type": "command",
+    "target": "sudo config --enable normal",
+    "value": "enabled",
+    "theme": "dev",
+    "projects": [
+      "ReviOS",
+      "winutil"
+    ],
+    "consensusCount": 2,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Windows sudo. Adds an elevation surface; keep opt-in.",
+    "sources": [
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/applications.json",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-showfileext",
+    "type": "registry",
+    "target": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\HideFileExt",
+    "value": "0",
+    "theme": "qol",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "winutil"
+    ],
+    "consensusCount": 8,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 2,
+      "work": 1,
+      "game": 0
+    },
+    "notes": "Show file extensions; near-universal.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/explorer/show-files.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Show_Extensions_For_Known_File_Types.reg",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/optimize-user-interface.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/view.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Customize/Models/ExplorerCustomizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "sys-restorepoint",
+    "type": "command",
+    "target": "Checkpoint-Computer + SystemRestorePointCreationFrequency",
+    "value": "create before apply",
+    "theme": "safety",
+    "projects": [
+      "Sophia",
+      "Win11Debloat",
+      "winutil"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "notes": "Safety net before changes.",
+    "sources": [
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Scripts/Features/Invoke-SystemRestorePoint.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-powerthrottling",
+    "type": "registry",
+    "target": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling\\PowerThrottlingOff",
+    "value": "1",
+    "theme": "power",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "W4RH4WK",
+      "Winhance"
+    ],
+    "consensusCount": 4,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Disables EcoQoS/power throttling globally. Hurts battery; prefer per-mode.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasModules/Scripts/ScriptWrappers/DefaultPowerSaving.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/lower-ram-usage.reg",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/Gaming/PowerThrotteling.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PowerOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "power-coreparking",
+    "type": "powercfg",
+    "target": "SUB_PROCESSOR CPMINCORES (0cc5b647-c1df-4637-891a-dec35c318583)",
+    "value": "100",
+    "theme": "power",
+    "projects": [
+      "Winhance",
+      "optimizer"
+    ],
+    "consensusCount": 2,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Unpark all cores. Stored per power plan, so it fits a Game plan without global side effects.",
+    "sources": [
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/Utilities.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PowerOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "power-usbsuspend",
+    "type": "powercfg",
+    "target": "USB selective suspend (2a737441-1930-4402-8d77-b2bebba308a3)",
+    "value": "0",
+    "theme": "power",
+    "projects": [
+      "Atlas",
+      "W4RH4WK",
+      "Winhance"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Per-plan setting.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasModules/Scripts/ScriptWrappers/DisablePowerSaving.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/lower-ram-usage.reg",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PowerOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-mouseaccel",
+    "type": "registry",
+    "target": "HKCU\\Control Panel\\Mouse\\MouseSpeed/MouseThreshold1/MouseThreshold2",
+    "value": "0/0/0",
+    "theme": "game",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "winutil"
+    ],
+    "consensusCount": 6,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 2
+    },
+    "notes": "Disable Enhance Pointer Precision. Per-user, instant.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/disable-mouse-accel.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Enhance_Pointer_Precision.reg",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/optimize-user-interface.ps1",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/control-panel.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-mmcss-games",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games (GPU Priority, Priority, Scheduling Category)",
+    "value": "8 / 6 / High",
+    "theme": "game",
+    "projects": [
+      "W4RH4WK",
+      "Winhance",
+      "optimizer"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "MMCSS game task profile. Measured effect is debated.",
+    "sources": [
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/lower-ram-usage.reg",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-win32prioritysep",
+    "type": "registry",
+    "target": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl\\Win32PrioritySeparation",
+    "value": "0x26 (programs) / 0x18 (background)",
+    "theme": "performance",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Winhance"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Foreground quantum boost. Takes effect instantly; good per-mode candidate.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/performance/system/win32-priority-separation.yml",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/system/win32ps.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-prefetcher",
+    "type": "registry",
+    "target": "HKLM\\...\\Memory Management\\PrefetchParameters\\EnablePrefetcher/EnableSuperfetch",
+    "value": "0",
+    "theme": "memory",
+    "projects": [
+      "W4RH4WK",
+      "Winhance",
+      "optimizer"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "HDD-era tweak. Winhance makes it depend on SysMain.",
+    "sources": [
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/disable-prefetch-prelaunch.ps1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-svchostsplit",
+    "type": "registry",
+    "target": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\SvcHostSplitThresholdInKB",
+    "value": "RAM size in KB",
+    "theme": "memory",
+    "projects": [
+      "ReviOS",
+      "W4RH4WK",
+      "Winhance",
+      "optimizer",
+      "winutil"
+    ],
+    "consensusCount": 5,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Groups services into fewer svchost processes. Cosmetic memory gain, less isolation, needs reboot. Not for modes.",
+    "sources": [
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/lower-ram-usage.reg",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/Utilities.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/revert.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-pagingexecutive",
+    "type": "registry",
+    "target": "HKLM\\...\\Memory Management\\DisablePagingExecutive / LargeSystemCache",
+    "value": "1",
+    "theme": "memory",
+    "projects": [
+      "Atlas"
+    ],
+    "consensusCount": 1,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Only Atlas. Little benefit on modern RAM sizes.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/performance/system/disable-paging.yml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "fs-lastaccess",
+    "type": "command",
+    "target": "fsutil behavior set disablelastaccess 1",
+    "value": "1",
+    "theme": "dev",
+    "projects": [
+      "Atlas",
+      "W4RH4WK",
+      "optimizer"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Fewer metadata writes on large repos. Windows already system-manages this on big volumes.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/performance/system/optimize-ntfs.yml",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/ssd-tune.ps1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "fs-8dot3",
+    "type": "command",
+    "target": "fsutil 8dot3name set 1",
+    "value": "disabled",
+    "theme": "dev",
+    "projects": [
+      "Atlas",
+      "ReviOS"
+    ],
+    "consensusCount": 2,
+    "reversible": false,
+    "risk": "medium",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Only affects new files; stripping existing short names is not reversible and can break old installers.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/performance/system/optimize-ntfs.yml",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/final.yml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "net-teredo",
+    "type": "command",
+    "target": "netsh interface teredo set state disabled",
+    "value": "disabled",
+    "theme": "network",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "winutil"
+    ],
+    "consensusCount": 3,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "winutil itself warns it can break some games.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/misc/config-oem-information.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/revert.yml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "net-nagle",
+    "type": "registry",
+    "target": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\{GUID}\\TcpAckFrequency/TCPNoDelay",
+    "value": "1",
+    "theme": "network",
+    "projects": [
+      "Winhance"
+    ],
+    "consensusCount": 1,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Per-interface; only Winhance. Little effect for games using UDP.",
+    "sources": [
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-edge-startupboost",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge\\StartupBoostEnabled",
+    "value": "0",
+    "theme": "background",
+    "projects": [
+      "CrapFixer",
+      "privacy.sexy"
+    ],
+    "consensusCount": 2,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Stops Edge preloading at logon.",
+    "sources": [
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/Edge/StartupBoost.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-wu-nodrivers",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\ExcludeWUDriversInQualityUpdate",
+    "value": "1",
+    "theme": "updates",
+    "projects": [
+      "Atlas",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "consensusCount": 4,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Stops WU replacing GPU drivers. You then own driver updates.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/2.%20Drivers/Drivers%20from%20Windows%20Update/Disable%20Drivers%20from%20Windows%20Update.reg",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/UpdateOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-wu-defer-pause",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate (DeferFeatureUpdates / PauseUpdates* / TargetReleaseVersion)",
+    "value": "defer or pause",
+    "theme": "updates",
+    "projects": [
+      "Atlas",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "consensusCount": 4,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Safe alternative to disabling WU services. A pause must expire.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/qol/windows-update/disable-feature-updates.yml",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/UpdateOptimizations.cs",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-notifications",
+    "type": "registry",
+    "target": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\PushNotifications\\ToastEnabled",
+    "value": "0",
+    "theme": "focus",
+    "projects": [
+      "Atlas",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "winutil"
+    ],
+    "consensusCount": 6,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 1,
+      "work": 0,
+      "game": 2
+    },
+    "notes": "Global toast toggle. For modes, Do Not Disturb is instant and native.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/DISABLENOTIFS.cmd",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Notifications.reg",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/NotificationOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-tailoredexperiences",
+    "type": "registry",
+    "target": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy\\TailoredExperiencesWithDiagnosticDataEnabled",
+    "value": "0",
+    "theme": "telemetry",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "tiny11builder",
+      "winutil"
+    ],
+    "consensusCount": 9,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 1,
+      "game": 0
+    },
+    "notes": "Near-universal.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/tweaks/privacy/disable-tailored-experiences.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/Raphire/Win11Debloat/blob/HEAD/Regfiles/Disable_Telemetry.reg",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/Ads/TailoredExperiences.cs",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/explorer/win-settings.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "svc-wer",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting\\Disabled / WerSvc",
+    "value": "1 / Manual",
+    "theme": "telemetry",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "consensusCount": 9,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Loses crash dumps that help debug your own code. Leave on in Code mode.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Configuration/atlas/services.yml",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/disable-scheduled-tasks.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/registry/privacy/privacy.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "appx-onedrive",
+    "type": "uninstall",
+    "target": "OneDriveSetup.exe /uninstall",
+    "value": "removed",
+    "theme": "debloat",
+    "projects": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Windows10Debloater",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "consensusCount": 9,
+    "reversible": false,
+    "risk": "high",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Data-loss risk with Known Folder Move. Cleanup page only, never a mode.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/ONED.cmd",
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/Sycnex/Windows10Debloater/blob/HEAD/Windows10Debloater.ps1",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/scripts/remove-onedrive.ps1",
+      "https://github.com/farag2/Sophia-Script-for-Windows/blob/HEAD/src/Sophia_Script_for_Windows_11/Module/Sophia.psm1",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/packages/app-win32.yml",
+      "https://github.com/ntdevlabs/tiny11builder/blob/HEAD/tiny11Coremaker.ps1",
+      "https://github.com/undergroundwires/privacy.sexy/blob/HEAD/src/application/collections/windows.yaml"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-globaltimerres",
+    "type": "registry",
+    "target": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel\\GlobalTimerResolutionRequests",
+    "value": "1",
+    "theme": "game",
+    "projects": [
+      "Atlas"
+    ],
+    "consensusCount": 1,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Only Atlas. Restores global timer resolution behaviour; raises idle power.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/3.%20General%20Configuration/Timer%20Resolution/Disable%20timer%20resolution%20(default).cmd"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-fso",
+    "type": "registry",
+    "target": "HKCU\\System\\GameConfigStore\\GameDVR_FSEBehavior(Mode)",
+    "value": "2",
+    "theme": "game",
+    "projects": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "W4RH4WK",
+      "Winhance",
+      "optimizer"
+    ],
+    "consensusCount": 6,
+    "reversible": true,
+    "risk": "low",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Disable fullscreen optimizations globally. Mostly obsolete with flip model.",
+    "sources": [
+      "https://github.com/Atlas-OS/Atlas/blob/HEAD/src/playbook/Executables/AtlasDesktop/3.%20General%20Configuration/FSO%20and%20Game%20Bar/Disable%20FSO%20and%20Game%20Bar%20Support.cmd",
+      "https://github.com/W4RH4WK/Debloat-Windows-10/blob/HEAD/utils/lower-ram-usage.reg",
+      "https://github.com/builtbybel/CrapFixer/blob/HEAD/CFixer/Features/Gaming/GameDVR.cs",
+      "https://github.com/hellzerg/optimizer/blob/HEAD/Optimizer/OptimizeHelper.cs",
+      "https://github.com/meetrevision/playbook/blob/HEAD/src/Configuration/Tasks/final.yml",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "reg-mpo",
+    "type": "registry",
+    "target": "HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm\\OverlayTestMode",
+    "value": "5",
+    "theme": "game",
+    "projects": [
+      "Winhance",
+      "winutil"
+    ],
+    "consensusCount": 2,
+    "reversible": true,
+    "risk": "medium",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "notes": "Disables multiplane overlay (flicker fix on some GPUs). Needs reboot.",
+    "sources": [
+      "https://github.com/ChrisTitusTech/winutil/blob/HEAD/config/tweaks.json",
+      "https://github.com/memstechtips/Winhance/blob/HEAD/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs"
+    ],
+    "evidence": "code"
+  },
+  {
+    "id": "appx-store",
+    "type": "appx",
+    "target": "Microsoft.WindowsStore, Microsoft.StorePurchaseApp",
+    "value": "remove",
+    "theme": "debloat",
+    "projects": [],
+    "consensusCount": null,
+    "reversible": false,
+    "risk": "never",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Blocked by data/protected.json. Removing the Store breaks winget (App Installer updates), Store app licensing and Game Pass. projects/consensusCount not recomputed from code for this entry.",
+    "sources": [],
+    "evidence": "policy"
+  },
+  {
+    "id": "appx-appinstaller",
+    "type": "appx",
+    "target": "Microsoft.DesktopAppInstaller",
+    "value": "remove",
+    "theme": "debloat",
+    "projects": [],
+    "consensusCount": null,
+    "reversible": false,
+    "risk": "never",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Blocked by data/protected.json. Removes winget itself. projects/consensusCount not recomputed from code for this entry.",
+    "sources": [],
+    "evidence": "policy"
+  },
+  {
+    "id": "edge-remove",
+    "type": "appx",
+    "target": "Microsoft Edge / Edge WebView2 Runtime uninstall",
+    "value": "remove",
+    "theme": "debloat",
+    "projects": [],
+    "consensusCount": null,
+    "reversible": false,
+    "risk": "never",
+    "relevance": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "notes": "Blocked by data/protected.json. WebView2 is used by Windows components and many desktop apps (Claude, Codex, installers); Edge removal breaks Windows flows and updates. projects/consensusCount not recomputed from code for this entry.",
+    "sources": [],
+    "evidence": "policy"
+  }
+]

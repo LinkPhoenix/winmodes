@@ -1,0 +1,16 @@
+# Local runtime state (journals, backups) - never commit
+state/
+*.log
+*.bak
+Thumbs.db
+bin/
+obj/
+outputs/
+
+# Local agent tooling, private notes and machine-specific data - never published
+AGENTS.md
+CLAUDE.md
+.ai/
+.claude/
+docs/
+data/raw/

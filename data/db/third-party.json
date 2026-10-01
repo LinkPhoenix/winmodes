@@ -1,0 +1,2180 @@
+[
+  {
+    "id": "BraveSoftwareUpdateTaskUser",
+    "kind": "scheduled-task",
+    "displayName": "Brave update tasks (Core + UA)",
+    "vendor": "Brave Software",
+    "category": "update",
+    "description": "Per-user Brave update tasks (Core and UA variants merged).",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Short-lived. Browser security updates: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: Get-ScheduledTask (Core + UA tasks run BraveUpdate.exe /c and /ua) + VersionInfo(CompanyName=BraveSoftware Inc., FileDescription=BraveSoftware Update)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "CreateExplorerShellUnelevatedTask",
+    "kind": "scheduled-task",
+    "displayName": "CreateExplorerShellUnelevatedTask",
+    "vendor": "Microsoft",
+    "category": "core-system",
+    "description": "Windows Explorer task used to relaunch explorer unelevated.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Built-in Windows Explorer task; never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: Get-ScheduledTask (Author=ExplorerShellUnelevated, action explorer.exe /NoUACCheck) + VersionInfo(CompanyName=Microsoft Corporation, FileDescription=Windows Explorer)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "DelayedItems\\BraveSoftware Update",
+    "kind": "scheduled-task",
+    "displayName": "Brave Update (delayed start)",
+    "vendor": "Chemtable (Autorun Organizer)",
+    "category": "update",
+    "description": "Delayed-start copy of Brave Update created by Chemtable Autorun Organizer.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Launcher for the Brave updater; never touch updates.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: Get-ScheduledTask \\DelayedItemsByChemtableSoftware\\BraveSoftware Update runs BraveUpdateCore.exe + VersionInfo(CompanyName=BraveSoftware Inc., FileDescription=BraveSoftware Update)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "DelayedItems\\MEGAsync",
+    "kind": "scheduled-task",
+    "displayName": "MEGAsync (delayed start)",
+    "vendor": "Chemtable (Autorun Organizer)",
+    "category": "sync",
+    "description": "Delayed-start launcher for MEGAsync.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Duplicates the MEGAsync startup entry. Mode-driven: Work.",
+    "modes": {
+      "code": 1,
+      "work": 2,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [
+      "MEGAsync"
+    ],
+    "sources": [
+      "https://www.chemtable.com/autorun-organizer.htm"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "DelayedItems\\ShareX",
+    "kind": "scheduled-task",
+    "displayName": "ShareX (delayed start), incl. ShareX (2) and (3)",
+    "vendor": "Chemtable (Autorun Organizer)",
+    "category": "other",
+    "description": "Three delayed-start launchers for ShareX (numbered duplicates merged).",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "none",
+    "usefulness": "useless",
+    "why": "Duplicates of the ShareX startup entry; ShareX is single-instance so they add nothing.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Disabled",
+    "risk": "low",
+    "dependsOn": [
+      "ShareX"
+    ],
+    "sources": [
+      "https://www.chemtable.com/autorun-organizer.htm"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "DelayedItems\\WingetUI",
+    "kind": "scheduled-task",
+    "displayName": "UniGetUI (delayed start), incl. WingetUI (2)",
+    "vendor": "Chemtable (Autorun Organizer)",
+    "category": "update",
+    "description": "Two delayed-start launchers for UniGetUI (duplicates merged).",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "none",
+    "usefulness": "useless",
+    "why": "Duplicates the WingetUI startup entry.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Disabled",
+    "risk": "low",
+    "dependsOn": [
+      "WingetUI"
+    ],
+    "sources": [
+      "https://www.chemtable.com/autorun-organizer.htm"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "MEGAsync Update Task",
+    "kind": "scheduled-task",
+    "displayName": "MEGAsync Update Task",
+    "vendor": "MEGA",
+    "category": "update",
+    "description": "Checks for MEGAsync updates.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "none",
+    "usefulness": "useful",
+    "why": "Short-lived updater; keep.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: Get-ScheduledTask \\MEGA\\MEGAsync Update Task (Author=MEGA Limited, action MEGAupdater.exe)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "NVIDIA App SelfUpdate",
+    "kind": "scheduled-task",
+    "displayName": "NVIDIA App SelfUpdate",
+    "vendor": "NVIDIA",
+    "category": "update",
+    "description": "Self-update task for the NVIDIA App.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "none",
+    "usefulness": "useful",
+    "why": "Short-lived updater. Update component: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: Get-ScheduledTask (Author=NVIDIA Corporation, action NVIDIA App.exe) + VersionInfo(CompanyName=NVIDIA Corporation, ProductName=NVIDIA App)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "opencodex-proxy",
+    "kind": "scheduled-task",
+    "displayName": "opencodex-proxy",
+    "vendor": "User (own tooling)",
+    "category": "dev",
+    "description": "User's own OpenCodex proxy service launcher (bun).",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "high",
+    "usefulness": "useful",
+    "why": "Running; bun process measured 648 MB private bytes (2026-10-01). User AI tooling: required in Code mode; could be stopped in Game mode.",
+    "modes": {
+      "code": 3,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: Get-ScheduledTask (wscript opencodex-service-launcher.vbs, generated by `ocx service install`)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "PowerToys Autorun",
+    "kind": "scheduled-task",
+    "displayName": "Autorun for <user> (PowerToys)",
+    "vendor": "Microsoft",
+    "category": "ui-shell",
+    "description": "Starts PowerToys at logon (elevated-capable).",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "situational",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown).",
+    "modes": {
+      "code": 2,
+      "work": 2,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/windows/powertoys/general"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "ProxyBridge",
+    "kind": "scheduled-task",
+    "displayName": "ProxyBridge",
+    "vendor": "Unknown (binary missing; InterceptSuite probable)",
+    "category": "network",
+    "description": "Logon task that starts C:\\Program Files\\ProxyBridge\\ProxyBridge.exe --minimized. The executable is missing (only WinDivert64.sys remains), so the task fails every logon.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "none",
+    "usefulness": "useless",
+    "why": "Orphaned task: ProxyBridge.exe is no longer on disk and the last run returned 0x80070002 (file not found). It does nothing; Proxifier covers per-app proxying. Disable or delete the task, or reinstall ProxyBridge if it is still wanted.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Disabled",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://github.com/InterceptSuite/ProxyBridge",
+      "local: Get-ScheduledTask \\ProxyBridge action \"C:\\Program Files\\ProxyBridge\\ProxyBridge.exe\" --minimized; folder holds only WinDivert64.sys; Get-ScheduledTaskInfo LastTaskResult=0x80070002 (file not found)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "Adguard Service",
+    "kind": "service",
+    "displayName": "Adguard Service",
+    "vendor": "AdGuard",
+    "category": "security",
+    "description": "AdGuard for Windows filtering service that blocks ads, trackers and malicious sites by filtering network traffic.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "high",
+    "usefulness": "essential",
+    "why": "Measured 1056 MB private bytes (AdguardSvc.exe, 2026-10-01). Stopping it removes all ad/tracker/phishing filtering. Security product: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://adguard.com/kb/adguard-for-windows/overview/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Apple Mobile Device Service",
+    "kind": "service",
+    "displayName": "Apple Mobile Device Service",
+    "vendor": "Apple",
+    "category": "peripheral",
+    "description": "Lets iTunes/Apple Devices communicate with iPhone/iPad over USB.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped; only needed when syncing an Apple device. Already Manual.",
+    "modes": {
+      "code": 0,
+      "work": 1,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://support.apple.com/en-us/102347"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "BDAppSrv",
+    "kind": "service",
+    "displayName": "Bitdefender App Service",
+    "vendor": "Bitdefender",
+    "category": "security",
+    "description": "Hosts the Bitdefender Security App user-facing components.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "high",
+    "usefulness": "essential",
+    "why": "Part of Bitdefender antivirus; the five bdservicehost.exe instances together measured 994 MB private bytes (2026-10-01), not attributable per service. Disabling would weaken real-time protection. Security product: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Bitdefender App Service; StartMode=Auto) + VersionInfo of bdservicehost.exe (CompanyName=Bitdefender; FileDescription=bdservicehost)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "BDAuxSrv",
+    "kind": "service",
+    "displayName": "Bitdefender Auxiliary Service",
+    "vendor": "Bitdefender",
+    "category": "security",
+    "description": "Auxiliary Bitdefender protection functions.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "high",
+    "usefulness": "essential",
+    "why": "Part of Bitdefender antivirus; the five bdservicehost.exe instances together measured 994 MB private bytes (2026-10-01), not attributable per service. Disabling would weaken real-time protection. Security product: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/bdservicehost.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "BDProtSrv",
+    "kind": "service",
+    "displayName": "Bitdefender Protected Service",
+    "vendor": "Bitdefender",
+    "category": "security",
+    "description": "Protected-process Bitdefender core service used for self-protection and antimalware.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "high",
+    "usefulness": "essential",
+    "why": "Part of Bitdefender antivirus; the five bdservicehost.exe instances together measured 994 MB private bytes (2026-10-01), not attributable per service. Disabling would weaken real-time protection. Security product: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Bitdefender Protected Service; StartMode=Auto) + VersionInfo of bdservicehost.exe (CompanyName=Bitdefender; FileDescription=bdservicehost)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "bdredline",
+    "kind": "service",
+    "displayName": "Bitdefender RedLine Service",
+    "vendor": "Bitdefender",
+    "category": "security",
+    "description": "Bitdefender RedLine component used for installation integrity and product repair/updates.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "Measured 8 MB total for bdredline.exe processes (2026-10-01). Part of Bitdefender; never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/bdredline.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "bdredline_agent",
+    "kind": "service",
+    "displayName": "Bitdefender Agent RedLine Service",
+    "vendor": "Bitdefender",
+    "category": "security",
+    "description": "RedLine component of the Bitdefender Agent (product management/installation).",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "Measured 8 MB total for bdredline.exe processes (shared with bdredline, 2026-10-01). Part of Bitdefender; never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/bdredline.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "BDSafepaySrv",
+    "kind": "service",
+    "displayName": "Bitdefender Safepay Service",
+    "vendor": "Bitdefender",
+    "category": "security",
+    "description": "Supports Bitdefender Safepay, the isolated browser for banking.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "high",
+    "usefulness": "essential",
+    "why": "Part of Bitdefender antivirus; the five bdservicehost.exe instances together measured 994 MB private bytes (2026-10-01), not attributable per service. Disabling would weaken real-time protection. Security product: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Bitdefender Safepay Service; StartMode=Auto) + VersionInfo of bdservicehost.exe (CompanyName=Bitdefender; FileDescription=bdservicehost)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "BEService",
+    "kind": "service",
+    "displayName": "BattlEye Service",
+    "vendor": "BattlEye",
+    "category": "gaming",
+    "description": "BattlEye anti-cheat service started on demand by protected games.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped; games start it themselves. Must stay Manual or protected games will not launch.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 2
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.battleye.com/support/faq/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Bonjour Service",
+    "kind": "service",
+    "displayName": "Service Bonjour",
+    "vendor": "Apple",
+    "category": "network",
+    "description": "Apple mDNS/zero-configuration networking (service discovery for printers, AirPlay, iTunes).",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped; rarely needed. Already Manual.",
+    "modes": {
+      "code": 0,
+      "work": 1,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://developer.apple.com/bonjour/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "CdRomArbiterService",
+    "kind": "service",
+    "displayName": "CdRom Device Arbiter service",
+    "vendor": "GuinpinSoft (MakeMKV)",
+    "category": "storage",
+    "description": "WinCdArb service installed by MakeMKV: lets applications without administrator rights access optical (CD/DVD/BD) drives while keeping other SCSI devices restricted.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "Only needed by MakeMKV (or other tools) to read optical drives without elevation. If stopped, MakeMKV must run as administrator; nothing else depends on it.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.makemkv.com/wincdarb/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "CodexSandboxService.OpenAI.Codex",
+    "kind": "service",
+    "displayName": "Codex sandbox service (ChatGPT)",
+    "vendor": "OpenAI",
+    "category": "dev",
+    "description": "Windows sandbox service used by the Codex app to run agent commands in isolation.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Measured 2 MB private bytes (2026-10-01). Needed by Codex agent sandboxing. Protected: required for Codex sandboxing; never stopped by a mode.",
+    "modes": {
+      "code": 3,
+      "work": 2,
+      "game": 2
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://developers.openai.com/codex/windows"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "com.docker.service",
+    "kind": "service",
+    "displayName": "Docker Desktop Service",
+    "vendor": "Docker",
+    "category": "virtualization",
+    "description": "Privileged helper used by Docker Desktop for setup and privileged operations.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "useful",
+    "why": "Stopped at inspection (Docker Desktop itself was running: ~1.2 GB across docker/com.docker.* processes plus the shared WSL VM). Docker Desktop starts it on demand; already Manual.",
+    "modes": {
+      "code": 3,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://docs.docker.com/desktop/setup/install/windows-permission-requirements/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "edgeupdate",
+    "kind": "service",
+    "displayName": "Microsoft Edge Update Service (edgeupdate)",
+    "vendor": "Microsoft",
+    "category": "update",
+    "description": "Keeps Microsoft Edge and WebView2 up to date.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Stopped at inspection (runs briefly). Updates browser and WebView2 used by many apps. Update component: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/deployedge/microsoft-edge-update-policies"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "edgeupdatem",
+    "kind": "service",
+    "displayName": "Microsoft Edge Update Service (edgeupdatem)",
+    "vendor": "Microsoft",
+    "category": "update",
+    "description": "On-demand Edge update service.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Stopped. Update component: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/deployedge/microsoft-edge-update-policies"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Everything",
+    "kind": "service",
+    "displayName": "Everything",
+    "vendor": "voidtools",
+    "category": "storage",
+    "description": "Everything search service that reads the NTFS index so the Everything client can run without admin rights.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Measured 3 MB private bytes for Everything.exe (2026-10-01). Instant file search; cheap to keep.",
+    "modes": {
+      "code": 2,
+      "work": 2,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.voidtools.com/support/everything/everything_service/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "FvSvc",
+    "kind": "service",
+    "displayName": "NVIDIA FrameView SDK service",
+    "vendor": "NVIDIA",
+    "category": "gaming",
+    "description": "NVIDIA FrameView SDK used for performance/overlay statistics.",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Already Disabled and stopped. Only needed for NVIDIA overlay performance metrics.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.nvidia.com/en-us/geforce/technologies/frameview/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "GameInputRedistService",
+    "kind": "service",
+    "displayName": "GameInput Redist Service",
+    "vendor": "Microsoft",
+    "category": "input",
+    "description": "Microsoft GameInput runtime service for game controllers and input devices.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Measured 23 MB private bytes (2 processes, 2026-10-01). Needed by games using GameInput API.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/gaming/gdk/docs/features/common/input/overviews/input-overview"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "GamingServices",
+    "kind": "service",
+    "displayName": "Gaming Services",
+    "vendor": "Microsoft",
+    "category": "gaming",
+    "description": "Xbox Gaming Services required for Game Pass/Microsoft Store game installs and launch.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Measured 9 MB private bytes (2026-10-01). Game Pass titles fail to install or launch without it. Low RAM; not worth risking.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Gaming Services; StartMode=Auto) + VersionInfo of GamingServices.exe (CompanyName=Microsoft Corporation; FileDescription=GamingServices)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "GamingServicesNet",
+    "kind": "service",
+    "displayName": "Gaming Services (Net)",
+    "vendor": "Microsoft",
+    "category": "gaming",
+    "description": "Network component of Xbox Gaming Services.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Measured 12 MB private bytes (2026-10-01). Required by Game Pass games.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [
+      "GamingServices"
+    ],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Gaming Services; StartMode=Auto) + VersionInfo of GamingServicesNet.exe (CompanyName=Microsoft Corporation; FileDescription=GamingServices)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "GoogleChromeElevationService",
+    "kind": "service",
+    "displayName": "Google Chrome Elevation Service",
+    "vendor": "Google",
+    "category": "update",
+    "description": "Used by Chrome for elevated operations (recovery, system-level updates).",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped; on demand only. Updater-related: leave as is.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Google Chrome Elevation Service (GoogleChromeElevationService); StartMode=Manual) + VersionInfo of elevation_service.exe (CompanyName=Google LLC; FileDescription=Google Chrome)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "GoogleUpdaterInternalService156.0.8067.0",
+    "kind": "service",
+    "displayName": "Google Updater Internal Service",
+    "vendor": "Google",
+    "category": "update",
+    "description": "Google Updater internal service keeping Chrome and other Google software updated.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Stopped at inspection (runs briefly). Browser security updates: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://support.google.com/chrome/a/answer/6350036"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "GoogleUpdaterService156.0.8067.0",
+    "kind": "service",
+    "displayName": "Google Updater Service",
+    "vendor": "Google",
+    "category": "update",
+    "description": "Google Updater service keeping Chrome updated.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Stopped at inspection. Browser security updates: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://support.google.com/chrome/a/answer/6350036"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "LGHUBUpdaterService",
+    "kind": "service",
+    "displayName": "LGHUB Updater Service",
+    "vendor": "Logitech",
+    "category": "peripheral",
+    "description": "Logitech G HUB updater and privileged helper for device firmware/software updates.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "Measured 32 MB private bytes (2026-10-01). G HUB needs it to install updates and some device functions; the G HUB app is not running. Could be Manual outside Game mode but G HUB may fail to start; uncertain.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 2
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "https://support.logi.com/hc/en-us/articles/360025298133",
+      "https://support.logi.com/hc/en-us/articles/35644288645655-G-HUB-Service-restart-guide"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "MDCoreSvc",
+    "kind": "service",
+    "displayName": "Microsoft Defender Core Service",
+    "vendor": "Microsoft",
+    "category": "security",
+    "description": "Defender platform core service supporting antimalware stability and performance.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "Measured 15 MB private bytes (MpDefenderCoreService, 2026-10-01). Defender platform; never touch even with Bitdefender installed (Windows manages passive mode).",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-windows"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "MEGAVPNTunnel$mega",
+    "kind": "service",
+    "displayName": "MEGA VPN Tunnel: mega",
+    "vendor": "MEGA",
+    "category": "network",
+    "description": "WireGuard-based tunnel service created by MEGA VPN while connected.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped; created/started by the MEGA VPN app when connecting.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://help.mega.io/vpn"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "nordsec-threatprotection-service",
+    "kind": "service",
+    "displayName": "nordsec-threatprotection-service",
+    "vendor": "Nord Security",
+    "category": "security",
+    "description": "NordVPN Threat Protection (malware/ads/tracker blocking).",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Already Disabled by the user; Bitdefender and AdGuard cover the same functions. Security product: do not modify.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=nordsec-threatprotection-service; StartMode=Disabled) + VersionInfo of nordsec-threatprotection-service.exe (CompanyName=NordVPN; FileDescription=nordsec-threatprotection-service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "NordUpdaterService",
+    "kind": "service",
+    "displayName": "NordSec Update Service",
+    "vendor": "Nord Security",
+    "category": "update",
+    "description": "Updates NordVPN applications.",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Already Disabled by the user; NordVPN will not self-update while disabled. Left as is.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=NordSec Update Service; StartMode=Disabled) + VersionInfo of NordUpdateService.exe (CompanyName=nordvpn S.A.; FileDescription=NordSec Update Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "nordvpn-service",
+    "kind": "service",
+    "displayName": "nordvpn-service",
+    "vendor": "Nord Security",
+    "category": "network",
+    "description": "NordVPN background service that creates the VPN tunnel.",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Currently Disabled although the NordVPN startup entry exists: the NordVPN app cannot connect while this is Disabled. Uncertain whether intentional. Manual would allow on-demand use.",
+    "modes": {
+      "code": 1,
+      "work": 2,
+      "game": 1
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://support.nordvpn.com/hc/en-us"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "NvContainerLocalSystem",
+    "kind": "service",
+    "displayName": "NVIDIA LocalSystem Container",
+    "vendor": "NVIDIA",
+    "category": "display",
+    "description": "Hosts NVIDIA App plugins (driver updates, overlay, game settings).",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "medium",
+    "usefulness": "situational",
+    "why": "Measured 92 MB private bytes across 3 nvcontainer processes (2026-10-01). Not required for the driver; needed for NVIDIA App overlay/ShadowPlay/optimization. Can be Manual outside Game mode.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 2
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "https://www.nvidia.com/en-us/software/nvidia-app/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "ONLYOFFICE Update Service",
+    "kind": "service",
+    "displayName": "ONLYOFFICE Update Service",
+    "vendor": "Ascensio System",
+    "category": "update",
+    "description": "Updates ONLYOFFICE Desktop Editors.",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "useless",
+    "why": "Already Disabled by the user.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=ONLYOFFICE Update Service; StartMode=Disabled) + VersionInfo of updatesvc.exe (CompanyName=Ascensio System SIA; FileDescription=ONLYOFFICE Update Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "PDF24",
+    "kind": "service",
+    "displayName": "PDF24",
+    "vendor": "geek software",
+    "category": "print-scan",
+    "description": "PDF24 Creator background service (virtual PDF printer helper).",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Already Disabled; PDF24 app still runs from its startup entry.",
+    "modes": {
+      "code": 0,
+      "work": 1,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=PDF24; StartMode=Disabled) + VersionInfo of pdf24.exe (CompanyName=geek software GmbH; FileDescription=PDF24 Backend)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "postgresql-x64-18",
+    "kind": "service",
+    "displayName": "PostgreSQL Server 18",
+    "vendor": "PostgreSQL Global Development Group",
+    "category": "dev",
+    "description": "Local PostgreSQL 18 database server.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Measured 32 MB private bytes across 10 postgres processes (2026-10-01, idle). Required for local dev; useless outside Code mode. Manual + start from the Code profile saves little RAM but avoids idle background work.",
+    "modes": {
+      "code": 3,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.postgresql.org/docs/18/app-pg-ctl.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "ProductAgentService",
+    "kind": "service",
+    "displayName": "ProductAgentService",
+    "vendor": "Bitdefender",
+    "category": "security",
+    "description": "Bitdefender Agent service that manages the installed Bitdefender products, licensing and updates.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "Measured 10 MB private bytes (2026-10-01). Part of Bitdefender; never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=ProductAgentService; StartMode=Auto) + VersionInfo of ProductAgentService.exe (CompanyName=Bitdefender; FileDescription=Bitdefender Agent)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "Proxifier",
+    "kind": "service",
+    "displayName": "Proxifier",
+    "vendor": "Initex",
+    "category": "network",
+    "description": "Proxifier service mode (proxy rules without the GUI).",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Already Disabled; user runs Proxifier from its startup entry instead.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.proxifier.com/docs/win-v4/service.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Sense",
+    "kind": "service",
+    "displayName": "Windows Defender Advanced Threat Protection Service",
+    "vendor": "Microsoft",
+    "category": "security",
+    "description": "Microsoft Defender for Endpoint sensor; only active when the device is onboarded to an organization.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Stopped at inspection; inactive unless onboarded. Defender platform; never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-endpoint"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "ss_conn_service",
+    "kind": "service",
+    "displayName": "SAMSUNG Mobile Connectivity Service",
+    "vendor": "Samsung",
+    "category": "peripheral",
+    "description": "Samsung USB driver helper for phone connectivity.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped; only for Samsung phone USB tools. Already Manual.",
+    "modes": {
+      "code": 0,
+      "work": 1,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=SAMSUNG Mobile Connectivity Service; StartMode=Manual) + VersionInfo of ss_conn_service.exe (CompanyName=DEVGURU Co., LTD.; FileDescription=MSS CS Connectivity Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "ss_conn_service2",
+    "kind": "service",
+    "displayName": "SAMSUNG Mobile Connectivity Service V2",
+    "vendor": "Samsung",
+    "category": "peripheral",
+    "description": "Samsung USB driver helper (v2).",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped; already Manual.",
+    "modes": {
+      "code": 0,
+      "work": 1,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=SAMSUNG Mobile Connectivity Service V2; StartMode=Manual) + VersionInfo of ss_conn_service2.exe (CompanyName=DEVGURU Co., LTD.; FileDescription=MSS CS Connectivity Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "Steam Client Service",
+    "kind": "service",
+    "displayName": "Steam Client Service",
+    "vendor": "Valve",
+    "category": "gaming",
+    "description": "Steam helper for installs, anti-cheat and privileged operations; started by Steam.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped; Steam starts it when needed. Keep Manual.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 3
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Steam Client Service; StartMode=Manual) + VersionInfo of steamservice.exe (CompanyName=Valve Corporation; FileDescription=Steam Client Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "UPDATESRV",
+    "kind": "service",
+    "displayName": "Bitdefender Desktop Update Service",
+    "vendor": "Bitdefender",
+    "category": "security",
+    "description": "Downloads Bitdefender engine and signature updates.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "Measured 11 MB private bytes (2026-10-01). Stopping it leaves antivirus signatures stale. Security/update: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/updatesrv.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "VSInstallerElevationService",
+    "kind": "service",
+    "displayName": "Visual Studio Installer Elevation Service",
+    "vendor": "Microsoft",
+    "category": "dev",
+    "description": "Elevated helper for Visual Studio Installer.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped, on demand.",
+    "modes": {
+      "code": 1,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Visual Studio Installer Elevation Service; StartMode=Manual) + VersionInfo of VSInstallerElevationService.exe (CompanyName=Microsoft; FileDescription=VSInstallerElevationService)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "VSSERV",
+    "kind": "service",
+    "displayName": "Bitdefender Virus Shield",
+    "vendor": "Bitdefender",
+    "category": "security",
+    "description": "Bitdefender real-time on-access antimalware scanning.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "high",
+    "usefulness": "essential",
+    "why": "Part of Bitdefender antivirus; the five bdservicehost.exe instances together measured 994 MB private bytes (2026-10-01), not attributable per service. Disabling would weaken real-time protection. Security product: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/vsserv.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "VSStandardCollectorService150",
+    "kind": "service",
+    "displayName": "Visual Studio Standard Collector Service 150",
+    "vendor": "Microsoft",
+    "category": "dev",
+    "description": "Visual Studio diagnostics/profiling data collector.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped, on demand.",
+    "modes": {
+      "code": 1,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Visual Studio Standard Collector Service 150; StartMode=Manual) + VersionInfo of StandardCollector.Service.exe (CompanyName=Microsoft Corporation; FileDescription=Microsoft (R) Visual Studio Standard Collector)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "WdNisSvc",
+    "kind": "service",
+    "displayName": "Microsoft Defender Antivirus Network Inspection Service",
+    "vendor": "Microsoft",
+    "category": "security",
+    "description": "Network inspection for Defender against known network exploits.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Stopped at inspection. Defender platform; never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-windows"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "WinDefend",
+    "kind": "service",
+    "displayName": "Microsoft Defender Antivirus Service",
+    "vendor": "Microsoft",
+    "category": "security",
+    "description": "Microsoft Defender Antivirus engine (MsMpEng.exe).",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "medium",
+    "usefulness": "essential",
+    "why": "Measured 241 MB private bytes (MsMpEng, 2026-10-01). Windows switches it to passive/disabled mode automatically when Bitdefender is active. Never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-windows"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "WinFsp.Launcher",
+    "kind": "service",
+    "displayName": "WinFsp.Launcher",
+    "vendor": "Navimatics (WinFsp)",
+    "category": "storage",
+    "description": "Launches WinFsp user-mode file systems (used by e.g. rclone/SSHFS mounts).",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "Measured 1 MB private bytes (2026-10-01). Negligible; apps relying on WinFsp mounts need it.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://winfsp.dev/doc/WinFsp-Service-Architecture/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "WslInstaller",
+    "kind": "service",
+    "displayName": "Windows Subsystem for Linux installer",
+    "vendor": "Microsoft",
+    "category": "virtualization",
+    "description": "Store WSL package installer/updater service.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "none",
+    "usefulness": "useful",
+    "why": "Stopped at inspection. Keeps WSL installed/updated; leave.",
+    "modes": {
+      "code": 2,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/windows/wsl/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "WSLService",
+    "kind": "service",
+    "displayName": "WSL Service",
+    "vendor": "Microsoft",
+    "category": "virtualization",
+    "description": "Manages WSL2 distributions and the lightweight VM (also Docker Desktop backend).",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "high",
+    "usefulness": "useful",
+    "why": "wslservice.exe measured 7 MB, but the WSL VM (vmmemWSL) measured 11618 MB (2026-10-01, including Docker Desktop). Required for WSL/Docker. Outside Code mode run `wsl --shutdown` to free RAM rather than disabling the service.",
+    "modes": {
+      "code": 3,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/windows/wsl/wsl-config"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "zksvc",
+    "kind": "service",
+    "displayName": "Zakynthos Service",
+    "vendor": "KRAFTON (PUBG)",
+    "category": "gaming",
+    "description": "PUBG anti-cheat (Zakynthos) service started by the game.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Stopped; PUBG starts it. Keep Manual.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 2
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Zakynthos Service; StartMode=Manual) + VersionInfo of zksvc.exe (CompanyName=KRAFTON, Inc.; FileDescription=Zakynthos Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "Adguard",
+    "kind": "startup-app",
+    "displayName": "AdGuard (UI)",
+    "vendor": "AdGuard",
+    "category": "security",
+    "description": "AdGuard tray UI.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "Not running at inspection; filtering is done by the Adguard Service. Security product: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [
+      "Adguard Service"
+    ],
+    "sources": [
+      "https://adguard.com/kb/adguard-for-windows/overview/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Bdagent",
+    "kind": "startup-app",
+    "displayName": "Bitdefender Agent (tray)",
+    "vendor": "Bitdefender",
+    "category": "security",
+    "description": "Bitdefender tray agent showing alerts and status.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "Measured 49 MB private bytes (2026-10-01). Security product: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: HKLM Run key + VersionInfo(CompanyName=Bitdefender, FileDescription=Bitdefender agent)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "Betterbird",
+    "kind": "startup-app",
+    "displayName": "Betterbird",
+    "vendor": "Betterbird",
+    "category": "communication",
+    "description": "Email client (Thunderbird fork).",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "useful",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: launch in Work mode; not needed in Code/Game.",
+    "modes": {
+      "code": 1,
+      "work": 3,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.betterbird.eu/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "BraveSoftware Update",
+    "kind": "startup-app",
+    "displayName": "Brave Update",
+    "vendor": "Brave Software",
+    "category": "update",
+    "description": "Brave browser updater.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "BraveUpdate measured 4 MB (2026-10-01). Browser security updates: never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "local: HKCU Run key (BraveUpdateCore.exe) + VersionInfo(CompanyName=BraveSoftware Inc., FileDescription=BraveSoftware Update)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "BurnRate",
+    "kind": "startup-app",
+    "displayName": "BurnRate widget",
+    "vendor": "offbyone1/BurnRate (open source, MIT)",
+    "category": "dev",
+    "description": "BurnRate: always-on-top Tauri widget that shows the Claude and Codex rate-limit usage by reading the credentials the Claude Code and Codex CLIs already store; tray icon and autostart.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "Identified from VersionInfo (CompanyName=offbyone1, ProductName=BurnRate, 0.6.1) and the matching GitHub repo. Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Only useful while using Claude Code or Codex.",
+    "modes": {
+      "code": 2,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://github.com/offbyone1/BurnRate",
+      "local: HKCU Run key + VersionInfo of burnrate-widget.exe (CompanyName=offbyone1, ProductName=BurnRate, ProductVersion=0.6.1)"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "DeepL auto-start",
+    "kind": "startup-app",
+    "displayName": "DeepL",
+    "vendor": "DeepL",
+    "category": "other",
+    "description": "DeepL translator desktop app with global shortcut.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "situational",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: Work mode.",
+    "modes": {
+      "code": 1,
+      "work": 2,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: Startup folder .lnk -> 0install stub (FileDescription=DeepL auto-start); 0install app-list.xml registers interface https://appdownload.deepl.com/windows/0install/deepl.xml"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "Discord",
+    "kind": "startup-app",
+    "displayName": "Discord",
+    "vendor": "Discord",
+    "category": "communication",
+    "description": "Voice/text chat.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "high",
+    "usefulness": "useful",
+    "why": "Measured 832 MB private bytes across 6 processes (2026-10-01). Mode-driven: Work and Game. Protected user app (data/protected.json): kept at login in every mode unless the user removes it from a mode profile.",
+    "modes": {
+      "code": 2,
+      "work": 2,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://support.discord.com/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Docker Desktop",
+    "kind": "startup-app",
+    "displayName": "Docker Desktop",
+    "vendor": "Docker",
+    "category": "virtualization",
+    "description": "Docker Desktop GUI and engine (WSL2 backend).",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "high",
+    "usefulness": "useful",
+    "why": "Measured ~1.29 GB private bytes across Docker Desktop/docker/com.docker.*/docker-mcp processes plus a share of vmmemWSL 11.6 GB (2026-10-01). Mode-driven: launch only in Code mode; biggest win outside Code.",
+    "modes": {
+      "code": 3,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [
+      "WSLService",
+      "com.docker.service"
+    ],
+    "sources": [
+      "https://docs.docker.com/desktop/settings-and-maintenance/settings/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "electron.app.Notion",
+    "kind": "startup-app",
+    "displayName": "Notion",
+    "vendor": "Notion Labs",
+    "category": "communication",
+    "description": "Notion workspace app.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "high",
+    "usefulness": "useful",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Electron app, typically hundreds of MB. Mode-driven: Work.",
+    "modes": {
+      "code": 1,
+      "work": 3,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.notion.com/help"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Everything",
+    "kind": "startup-app",
+    "displayName": "Everything (client)",
+    "vendor": "voidtools",
+    "category": "storage",
+    "description": "Everything search tray client.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Measured 3 MB for Everything.exe (2026-10-01).",
+    "modes": {
+      "code": 2,
+      "work": 2,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [
+      "Everything"
+    ],
+    "sources": [
+      "https://www.voidtools.com/support/everything/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Harness Control",
+    "kind": "startup-app",
+    "displayName": "Harness Control",
+    "vendor": "User (own tooling)",
+    "category": "dev",
+    "description": "User's own AI harness control panel (D:\\.ai-harness dashboard).",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "useful",
+    "why": "Measured ~121 MB (node dashboard server 72 MB + hidden pwsh host 49 MB, 2026-10-01). User AI tooling: needed in Code mode.",
+    "modes": {
+      "code": 3,
+      "work": 1,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: Startup folder .lnk -> pwsh -File D:\\.ai-harness\\tools\\dashboard.ps1 -Tray -NoBrowser"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "LGHUB",
+    "kind": "startup-app",
+    "displayName": "Logitech G HUB",
+    "vendor": "Logitech",
+    "category": "peripheral",
+    "description": "G HUB tray app for Logitech mouse/keyboard/headset profiles.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "useful",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: Game; device onboard profiles still work without it.",
+    "modes": {
+      "code": 0,
+      "work": 1,
+      "game": 3
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [
+      "LGHUBUpdaterService"
+    ],
+    "sources": [
+      "https://support.logi.com/hc/en-us/articles/360025298133"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "MEGAsync",
+    "kind": "startup-app",
+    "displayName": "MEGAsync",
+    "vendor": "MEGA",
+    "category": "sync",
+    "description": "MEGA cloud sync client.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "situational",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Also launched by a delayed task; one launcher is enough.",
+    "modes": {
+      "code": 1,
+      "work": 2,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://help.mega.io/installs-apps/desktop"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "NordVPN",
+    "kind": "startup-app",
+    "displayName": "NordVPN",
+    "vendor": "Nord Security",
+    "category": "network",
+    "description": "NordVPN client.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "situational",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Cannot connect while nordvpn-service is Disabled; launch on demand.",
+    "modes": {
+      "code": 1,
+      "work": 2,
+      "game": 1
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [
+      "nordvpn-service"
+    ],
+    "sources": [
+      "https://support.nordvpn.com/hc/en-us"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "OpenCodexTray-cd84efd8661f",
+    "kind": "startup-app",
+    "displayName": "OpenCodex tray",
+    "vendor": "User (own tooling)",
+    "category": "dev",
+    "description": "User's own OpenCodex tray launcher (wscript VBS).",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Tray itself not observed running; the proxy it controls runs via the opencodex-proxy task. User AI tooling: needed in Code mode.",
+    "modes": {
+      "code": 3,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [
+      "opencodex-proxy"
+    ],
+    "sources": [
+      "local: HKCU Run key -> wscript opencodex-tray.vbs (OpenCodex owned tray launcher, runs opencodex-tray.ps1 with bundled bun)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "org.whispersystems.signal-desktop",
+    "kind": "startup-app",
+    "displayName": "Signal",
+    "vendor": "Signal",
+    "category": "communication",
+    "description": "Signal messenger, starts in tray.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "useful",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: Work.",
+    "modes": {
+      "code": 1,
+      "work": 3,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://support.signal.org/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "PDF24",
+    "kind": "startup-app",
+    "displayName": "PDF24 Creator",
+    "vendor": "geek software",
+    "category": "print-scan",
+    "description": "PDF24 tray/tools.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Launch when needed.",
+    "modes": {
+      "code": 0,
+      "work": 1,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.pdf24.org/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Proxifier",
+    "kind": "startup-app",
+    "displayName": "Proxifier",
+    "vendor": "Initex",
+    "category": "network",
+    "description": "Proxy client that routes app traffic through proxies.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Keep if routing rules must always apply (user choice).",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "https://www.proxifier.com/docs/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "RtkAudUService",
+    "kind": "startup-app",
+    "displayName": "Realtek Audio Universal Service",
+    "vendor": "Realtek",
+    "category": "audio",
+    "description": "Realtek audio control/jack detection helper.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Measured 21 MB across 3 processes (2026-10-01). Audio console and jack detection need it.",
+    "modes": {
+      "code": 2,
+      "work": 2,
+      "game": 2
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "local: HKLM Run key (RtkAudUService64.exe -background) + VersionInfo(CompanyName=Realtek Semiconductor, FileDescription=Realtek HD Audio Universal Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "SecurityHealth",
+    "kind": "startup-app",
+    "displayName": "Windows Security notification icon",
+    "vendor": "Microsoft",
+    "category": "security",
+    "description": "Windows Security tray icon.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "Measured 5 MB (SecurityHealthSystray, 2026-10-01). Security; never touch.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "https://learn.microsoft.com/en-us/windows/security/operating-system-security/system-security/windows-defender-security-center/windows-defender-security-center"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "ShareX",
+    "kind": "startup-app",
+    "displayName": "ShareX",
+    "vendor": "ShareX",
+    "category": "other",
+    "description": "Screenshot/screen recording tool with hotkeys.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "useful",
+    "why": "Measured 177 MB private bytes (2026-10-01). Also launched by 3 delayed tasks (duplicates).",
+    "modes": {
+      "code": 2,
+      "work": 2,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://getsharex.com/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Steam",
+    "kind": "startup-app",
+    "displayName": "Steam",
+    "vendor": "Valve",
+    "category": "gaming",
+    "description": "Steam client started silently at login.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "high",
+    "usefulness": "situational",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Steam typically uses several hundred MB with webhelpers. Mode-driven: launch in Game mode only.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 3
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [
+      "Steam Client Service"
+    ],
+    "sources": [
+      "https://help.steampowered.com/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Stream Deck",
+    "kind": "startup-app",
+    "displayName": "Elgato Stream Deck",
+    "vendor": "Elgato (Corsair)",
+    "category": "peripheral",
+    "description": "Stream Deck software; required for button actions.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "useful",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: Game (and Work if used for shortcuts).",
+    "modes": {
+      "code": 1,
+      "work": 2,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: Run key (StreamDeck.exe --runinbk) + VersionInfo(CompanyName=Corsair Memory, Inc., FileDescription=Stream Deck, 7.6.0)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "TickTick",
+    "kind": "startup-app",
+    "displayName": "TickTick",
+    "vendor": "TickTick",
+    "category": "communication",
+    "description": "Task manager/to-do app.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "useful",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: Work mode.",
+    "modes": {
+      "code": 1,
+      "work": 3,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://help.ticktick.com/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "Volume Controller SD plugin",
+    "kind": "startup-app",
+    "displayName": "Elgato Volume Controller watcher",
+    "vendor": "Elgato (Corsair)",
+    "category": "audio",
+    "description": "Watcher for the Stream Deck Volume Controller plugin audio server.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Only useful with Stream Deck.",
+    "modes": {
+      "code": 0,
+      "work": 1,
+      "game": 2
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [
+      "Stream Deck"
+    ],
+    "sources": [
+      "local: Run key -> C:\\Program Files\\Elgato\\Volume Controller\\ElgatoAudioControlServerWatcher.exe (no VersionInfo); sibling ElgatoAudioControlServer.exe VersionInfo(CompanyName=Corsair Memory, Inc.)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "WingetUI",
+    "kind": "startup-app",
+    "displayName": "UniGetUI",
+    "vendor": "Devolutions (Marti Climent)",
+    "category": "update",
+    "description": "GUI for winget/scoop/npm etc., runs a daemon checking for updates.",
+    "presentOnMachine": true,
+    "currentStartMode": "n/a",
+    "ramImpact": "medium",
+    "usefulness": "situational",
+    "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). .NET app; also launched by 2 delayed tasks. Launch manually when updating packages.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://github.com/marticliment/UniGetUI"
+    ],
+    "verified": "2026-10-01"
+  }
+]

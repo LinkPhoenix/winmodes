@@ -1,0 +1,477 @@
+[
+  {
+    "id": "HPSysInfoCap",
+    "kind": "service",
+    "displayName": "HP System Info HSA Service",
+    "vendor": "HP",
+    "category": "oem",
+    "description": "HP System Info HSA Service: gathers hardware and software system information for HP Support Assistant and related HP apps.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "high",
+    "usefulness": "useless",
+    "why": "HP support telemetry helper; nothing breaks for daily use. Measured ~200 MB private. Measured 204 MB private (2026-10-01).",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/sysinfocap.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "HPDiagsCap",
+    "kind": "service",
+    "displayName": "HP Diagnostics HSA Service",
+    "vendor": "HP",
+    "category": "oem",
+    "description": "HP Diagnostics HSA helper used by HP PC Hardware Diagnostics.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "medium",
+    "usefulness": "situational",
+    "why": "Only needed when running HP diagnostics. Measured 31 MB private (2026-10-01).",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/diagscap.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "HPNetworkCap",
+    "kind": "service",
+    "displayName": "HP Network HSA Service",
+    "vendor": "HP",
+    "category": "oem",
+    "description": "HP Network HSA helper for HP network tooling.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "useless",
+    "why": "No Windows networking depends on it. Measured 4 MB private (2026-10-01).",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 1
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/networkcap.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "HPAppHelperCap",
+    "kind": "service",
+    "displayName": "HP App Helper HSA Service",
+    "vendor": "HP",
+    "category": "oem",
+    "description": "HP App Helper HSA Service: lets HP apps launch interdependent apps, briefly suspend/resume devices, adjust network resources and enable presence-aware sensor features.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "Used by HP apps (OMEN Gaming Hub, HP Support Assistant). Measured 4 MB private (2026-10-01).",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 2
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/apphelpercap.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "HPOmenCap",
+    "kind": "service",
+    "displayName": "HP Omen HSA Service",
+    "vendor": "HP",
+    "category": "oem",
+    "description": "HP OMEN HSA, backend for OMEN Gaming Hub (fan, perf modes, lighting).",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Fan and performance profiles on OMEN laptops rely on it; keep on. Measured 2 MB private (2026-10-01).",
+    "modes": {
+      "code": 2,
+      "work": 2,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/omencap.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "NVDisplay.ContainerLocalSystem",
+    "kind": "service",
+    "displayName": "NVIDIA Display Container LS",
+    "vendor": "NVIDIA",
+    "category": "display",
+    "description": "NVIDIA display container: control panel and driver helper.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "medium",
+    "usefulness": "useful",
+    "why": "NVIDIA Control Panel and some driver features need it. Measured 32 MB private (2026-10-01).",
+    "modes": {
+      "code": 2,
+      "work": 2,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "https://www.howtogeek.com/343120/what-are-all-those-nvidia-processes-running-in-the-background/"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "igfxCUIService",
+    "kind": "service",
+    "displayName": "Intel(R) HD Graphics Control Panel Service",
+    "vendor": "Intel",
+    "category": "display",
+    "description": "Intel HD Graphics control panel service.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "Only needed for Intel graphics settings (hotkeys, display profiles). Measured 2 MB private (2026-10-01).",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/igfxcuiservice.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "igccservice",
+    "kind": "service",
+    "displayName": "Intel(R) Graphics Command Center Service",
+    "vendor": "Intel",
+    "category": "display",
+    "description": "Intel Graphics Command Center service.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "medium",
+    "usefulness": "situational",
+    "why": "UI backend only; display works without it. Measured 36 MB private (2026-10-01).",
+    "modes": {
+      "code": 0,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Intel(R) Graphics Command Center Service; StartMode=Auto) + VersionInfo of OneApp.IGCC.WinService.exe (CompanyName=Intel Corporation; FileDescription=Intel® Graphics Command Center Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "IntelAudioService",
+    "kind": "service",
+    "displayName": "Intel(R) Audio Service",
+    "vendor": "Intel",
+    "category": "audio",
+    "description": "Intel Smart Sound Technology audio service.",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Internal mic and speakers may depend on it on Intel SST laptops.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "high",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Intel(R) Audio Service; StartMode=Disabled) + VersionInfo of IntelAudioService.exe (CompanyName=Intel; FileDescription=IntelAudioService)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "jhi_service",
+    "kind": "service",
+    "displayName": "Intel(R) Dynamic Application Loader Host Interface Service",
+    "vendor": "Intel",
+    "category": "security",
+    "description": "Intel Dynamic Application Loader host interface (ME/DAL).",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "useful",
+    "why": "Used by firmware-backed security features; leave as is.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "high",
+    "dependsOn": [],
+    "sources": [
+      "https://www.file.net/process/jhi_service.exe.html"
+    ],
+    "verified": "2026-10-01"
+  },
+  {
+    "id": "RstMwService",
+    "kind": "service",
+    "displayName": "Intel(R) Storage Middleware Service",
+    "vendor": "Intel",
+    "category": "storage",
+    "description": "Intel Rapid Storage Technology middleware.",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "useful",
+    "why": "Storage/RAID monitoring; do not change on a system disk.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "high",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Intel(R) Storage Middleware Service; StartMode=Disabled) + VersionInfo of RstMwService.exe (CompanyName=Intel Corporation; FileDescription=Intel(R) Rapid Storage Technology Management Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "iaStorAfsService",
+    "kind": "service",
+    "displayName": "Intel(R) Optane(TM) Memory Service",
+    "vendor": "Intel",
+    "category": "storage",
+    "description": "Intel Optane/RST AFS storage service.",
+    "presentOnMachine": true,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "useful",
+    "why": "Storage acceleration component; do not change.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "high",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Intel(R) Optane(TM) Memory Service; StartMode=Manual) + VersionInfo of iaStorAfsService.exe (CompanyName=Intel Corporation; FileDescription=Intel(R) Optane(TM) Memory Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "XTU3SERVICE",
+    "kind": "service",
+    "displayName": "XTUOCDriverService",
+    "vendor": "Intel",
+    "category": "performance",
+    "description": "Intel Extreme Tuning Utility service (undervolt/overclock).",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "medium",
+    "usefulness": "situational",
+    "why": "Needed only when XTU undervolting profiles are applied. Measured 36 MB private (2026-10-01).",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 2
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=XTUOCDriverService; StartMode=Auto) + VersionInfo of XtuService.exe (CompanyName=Intel(R) Corporation; FileDescription=XtuService)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "cplspcon",
+    "kind": "service",
+    "displayName": "Intel(R) Content Protection HDCP Service",
+    "vendor": "Intel",
+    "category": "display",
+    "description": "Intel Content Protection HDCP service.",
+    "presentOnMachine": true,
+    "currentStartMode": "Disabled",
+    "ramImpact": "none",
+    "usefulness": "useful",
+    "why": "HDCP playback on external displays (streaming video).",
+    "modes": {
+      "code": 2,
+      "work": 2,
+      "game": 2
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Intel(R) Content Protection HDCP Service; StartMode=Disabled) + VersionInfo of IntelCpHDCPSvc.exe (CompanyName=Intel Corporation; FileDescription=Intel HD Graphics Drivers for Windows(R))"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "TbtP2pShortcutService",
+    "kind": "service",
+    "displayName": "Thunderbolt(TM) Peer to Peer Shortcut",
+    "vendor": "Intel",
+    "category": "peripheral",
+    "description": "Thunderbolt peer-to-peer shortcut service.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "Only for Thunderbolt PC-to-PC networking. Measured 1 MB private (2026-10-01).",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Thunderbolt(TM) Peer to Peer Shortcut; StartMode=Auto) + VersionInfo of TbtP2pShortcutService.exe (CompanyName=Intel Corporation; FileDescription=Thunderbolt(TM) Shortcut Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "RtkAudioUniversalService",
+    "kind": "service",
+    "displayName": "Realtek Audio Universal Service",
+    "vendor": "Realtek",
+    "category": "audio",
+    "description": "Realtek universal audio service (jack detection, audio console).",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "Headphone jack detection and audio console depend on it. Measured 8 MB private (2026-10-01).",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "high",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Realtek Audio Universal Service; StartMode=Auto) + VersionInfo of RtkAudUService64.exe (CompanyName=Realtek Semiconductor; FileDescription=Realtek HD Audio Universal Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "DtsApo4Service",
+    "kind": "service",
+    "displayName": "DtsApo4Service",
+    "vendor": "DTS",
+    "category": "audio",
+    "description": "DTS audio processing (APO) service.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "useful",
+    "why": "Audio effects; disabling can change or mute audio output. Measured 11 MB private (2026-10-01).",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=DtsApo4Service; StartMode=Auto) + VersionInfo of DtsApo4Service.exe (CompanyName=DTS Inc.; FileDescription=Controls the DTS audio processing object.)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "ETDService",
+    "kind": "service",
+    "displayName": "ELAN Service",
+    "vendor": "ELAN",
+    "category": "input",
+    "description": "ELAN touchpad service (gestures, settings).",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "essential",
+    "why": "Touchpad gestures depend on it. Measured 2 MB private (2026-10-01).",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "high",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=ELAN Service; StartMode=Auto) + VersionInfo of ETDService.exe (CompanyName=ELAN Microelectronics Corp.; FileDescription=Elan Service)"
+    ],
+    "verified": "2026-10-01-local"
+  },
+  {
+    "id": "logi_lamparray_service",
+    "kind": "service",
+    "displayName": "Logitech LampArray Service",
+    "vendor": "Logitech",
+    "category": "peripheral",
+    "description": "Logitech LampArray (Windows Dynamic Lighting) bridge.",
+    "presentOnMachine": true,
+    "currentStartMode": "Auto",
+    "ramImpact": "low",
+    "usefulness": "situational",
+    "why": "RGB lighting for Logitech devices only. Measured 5 MB private (2026-10-01).",
+    "modes": {
+      "code": 0,
+      "work": 1,
+      "game": 2
+    },
+    "recommendedStartMode": "Manual",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "local: sc qc/qdescription + Win32_Service (DisplayName=Logitech LampArray Service; StartMode=Auto) + VersionInfo of logi_lamparray_service.AMD64.exe (CompanyName=Logitech, Inc.; FileDescription=LampArray Translation Service)"
+    ],
+    "verified": "2026-10-01-local"
+  }
+]

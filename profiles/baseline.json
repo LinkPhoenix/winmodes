@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "tools/build-profiles.ps1",
+  "description": "Opt-in, applied once and shared by every mode: reversible low-risk tweaks applied by at least 7 of the 12 code-verified optimizers.",
+  "tweaks": [
+    {
+      "id": "svc-diagtrack",
+      "type": "service",
+      "target": "DiagTrack",
+      "value": "Disabled",
+      "consensusCount": 10,
+      "required": false
+    },
+    {
+      "id": "reg-allowtelemetry",
+      "type": "registry",
+      "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection\\AllowTelemetry",
+      "value": "0 (DWORD)",
+      "consensusCount": 12,
+      "required": false
+    },
+    {
+      "id": "reg-advertisingid",
+      "type": "registry",
+      "target": "HKCU\\...\\AdvertisingInfo\\Enabled",
+      "value": "0",
+      "consensusCount": 12,
+      "required": false
+    },
+    {
+      "id": "reg-consumerfeatures",
+      "type": "registry",
+      "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent\\DisableWindowsConsumerFeatures",
+      "value": "1",
+      "consensusCount": 9,
+      "required": false
+    },
+    {
+      "id": "reg-activityhistory",
+      "type": "registry",
+      "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System\\EnableActivityFeed/PublishUserActivities/UploadUserActivities",
+      "value": "0",
+      "consensusCount": 7,
+      "required": false
+    },
+    {
+      "id": "reg-recall",
+      "type": "registry",
+      "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI\\DisableAIDataAnalysis",
+      "value": "1",
+      "consensusCount": 8,
+      "required": true
+    },
+    {
+      "id": "reg-copilot",
+      "type": "registry",
+      "target": "HKCU\\Software\\Policies\\Microsoft\\Windows\\WindowsCopilot\\TurnOffWindowsCopilot",
+      "value": "1",
+      "consensusCount": 8,
+      "required": true
+    },
+    {
+      "id": "reg-bingsearch",
+      "type": "registry",
+      "target": "HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer\\DisableSearchBoxSuggestions",
+      "value": "1",
+      "consensusCount": 12,
+      "required": false
+    },
+    {
+      "id": "reg-gamedvr",
+      "type": "registry",
+      "target": "HKCU\\System\\GameConfigStore\\GameDVR_Enabled + HKLM\\...\\PolicyManager\\default\\ApplicationManagement\\AllowGameDVR",
+      "value": "0",
+      "consensusCount": 9,
+      "required": false
+    },
+    {
+      "id": "reg-visualfx",
+      "type": "registry",
+      "target": "HKCU\\Control Panel\\Desktop (DragFullWindows, MenuShowDelay, MinAnimate) + VisualFXSetting=2",
+      "value": "best performance",
+      "consensusCount": 8,
+      "required": false
+    },
+    {
+      "id": "reg-deliveryopt",
+      "type": "registry",
+      "target": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization\\DODownloadMode",
+      "value": "0",
+      "consensusCount": 9,
+      "required": false
+    },
+    {
+      "id": "reg-endtask",
+      "type": "registry",
+      "target": "HKCU\\...\\TaskbarDeveloperSettings\\TaskbarEndTask",
+      "value": "1",
+      "consensusCount": 7,
+      "required": false
+    },
+    {
+      "id": "svc-lfsvc",
+      "type": "service",
+      "target": "lfsvc",
+      "value": "Disabled",
+      "consensusCount": 7,
+      "required": false
+    },
+    {
+      "id": "task-ceip",
+      "type": "task",
+      "target": "\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator, UsbCeip",
+      "value": "Disabled",
+      "consensusCount": 8,
+      "required": false
+    },
+    {
+      "id": "task-appcompat",
+      "type": "task",
+      "target": "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser, ProgramDataUpdater",
+      "value": "Disabled",
+      "consensusCount": 7,
+      "required": false
+    },
+    {
+      "id": "task-diskdiag",
+      "type": "task",
+      "target": "\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector",
+      "value": "Disabled",
+      "consensusCount": 7,
+      "required": false
+    },
+    {
+      "id": "reg-showfileext",
+      "type": "registry",
+      "target": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\HideFileExt",
+      "value": "0",
+      "consensusCount": 8,
+      "required": false
+    },
+    {
+      "id": "reg-tailoredexperiences",
+      "type": "registry",
+      "target": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy\\TailoredExperiencesWithDiagnosticDataEnabled",
+      "value": "0",
+      "consensusCount": 9,
+      "required": false
+    }
+  ]
+}

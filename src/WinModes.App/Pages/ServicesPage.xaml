@@ -1,0 +1,70 @@
+<Page x:Class="WinModes.App.Pages.ServicesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Services"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <StackPanel Margin="36,24,36,36" MaxWidth="1100">
+        <TextBlock Text="Services" FontSize="28" FontWeight="SemiBold" />
+        <TextBlock x:Name="Summary" Text="Reading services…" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,16" />
+
+        <Grid Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ui:TextBox x:Name="SearchBox" PlaceholderText="Search by name" Icon="{ui:SymbolIcon Search24}"
+                        TextChanged="OnFilterChanged" AutomationProperties.Name="Search services" />
+            <CheckBox x:Name="RunningOnly" Grid.Column="1" Content="Running only" IsChecked="True" Margin="16,0,0,0"
+                      Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
+            <CheckBox x:Name="ProtectedOnly" Grid.Column="2" Content="Protected only" Margin="8,0,0,0"
+                      Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
+        </Grid>
+
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <ItemsControl x:Name="Rows">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="20,10" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="36" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="110" />
+                                    <ColumnDefinition Width="100" />
+                                </Grid.ColumnDefinitions>
+                                <Grid Width="22" Height="22" HorizontalAlignment="Left">
+                                    <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="15" Text="&#xE912;" Visibility="{Binding GlyphVisibility}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                                    <Image Source="{Binding Icon}" Width="22" Height="22" />
+                                </Grid>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Name}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <Border Grid.Column="2" Style="{StaticResource ChipStyle}" Margin="12,0"
+                                        Background="#337C5CFC" Visibility="{Binding ProtectedVisibility}"
+                                        ToolTip="Protected: no mode can stop or disable this service.">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="11" Text="&#xE72E;" Margin="0,0,6,0" />
+                                        <TextBlock Text="Protected" FontSize="12" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Border>
+                                <TextBlock Grid.Column="3" Text="{Binding StartMode}" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                           Style="{StaticResource SecondaryTextStyle}" />
+                                <Border Grid.Column="4" Style="{StaticResource ChipStyle}" HorizontalAlignment="Right" Background="{Binding StatusTint}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="7" Height="7" Fill="{Binding StatusColor}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                        <TextBlock Text="{Binding Status}" FontSize="12" FontWeight="SemiBold" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+    </StackPanel>
+</Page>

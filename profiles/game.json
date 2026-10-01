@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "mode": "game",
+  "generatedBy": "tools/build-profiles.ps1",
+  "label": "Game",
+  "intent": "Gaming on the OMEN laptop: Steam, Xbox/Game Pass, Logitech G HUB. WSL and Docker stopped, gaming services on.",
+  "power": {
+    "plan": "ultimate-performance",
+    "fallback": "high-performance",
+    "note": "Plug in AC power; OMEN Gaming Hub performance mode stays under the user's control."
+  },
+  "wsl": {
+    "running": false,
+    "action": "wsl --shutdown after quitting Docker Desktop",
+    "docker": "quit"
+  },
+  "apps": {
+    "close": [
+      {
+        "id": "electron.app.Notion",
+        "process": "Notion.exe",
+        "why": "Electron app, 300-500 MB."
+      },
+      {
+        "id": "TickTick",
+        "process": "TickTick.exe",
+        "why": "Task app, not needed while gaming."
+      },
+      {
+        "id": "DeepL auto-start",
+        "process": "DeepL.exe",
+        "why": "Translator tray app."
+      },
+      {
+        "id": "PDF24",
+        "process": "pdf24.exe",
+        "why": "PDF tray tool."
+      },
+      {
+        "id": "WingetUI",
+        "process": "UniGetUI.exe",
+        "why": "Update checker; can start downloads during a game."
+      },
+      {
+        "id": "MEGAsync",
+        "process": "MEGAsync.exe",
+        "why": "Sync uses disk and network during a game; files resync when it restarts."
+      }
+    ],
+    "launch": [
+      {
+        "id": "Steam",
+        "path": "C:\\Program Files (x86)\\Steam\\steam.exe"
+      }
+    ],
+    "keepOpen": [
+      "Discord",
+      "Betterbird",
+      "Harness Control",
+      "BurnRate",
+      "LGHUB"
+    ],
+    "note": "Only apps the user listed here are closed or launched. Protected apps are never uninstalled or blocked.",
+    "suggestedToClose": [
+      {
+        "id": "Betterbird",
+        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: launch in Work mode; not needed in Code/Game."
+      },
+      {
+        "id": "DeepL auto-start",
+        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: Work mode."
+      },
+      {
+        "id": "electron.app.Notion",
+        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Electron app, typically hundreds of MB. Mode-driven: Work."
+      },
+      {
+        "id": "MEGAsync",
+        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Also launched by a delayed task; one launcher is enough."
+      },
+      {
+        "id": "PDF24",
+        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Launch when needed."
+      },
+      {
+        "id": "TickTick",
+        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: Work mode."
+      },
+      {
+        "id": "WingetUI",
+        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). .NET app; also launched by 2 delayed tasks. Launch manually when updating packages."
+      }
+    ]
+  },
+  "services": {
+    "stop": [
+      {
+        "id": "CDPSvc",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Connected Devices Platform (Phone Link, Nearby Share, some notification features). Disabling breaks some Settings pages. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "CdRomArbiterService",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Only needed by MakeMKV (or other tools) to read optical drives without elevation. If stopped, MakeMKV must run as administrator; nothing else depends on it."
+      },
+      {
+        "id": "Everything",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Measured 3 MB private bytes for Everything.exe (2026-10-01). Instant file search; cheap to keep."
+      },
+      {
+        "id": "fdPHost",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Function Discovery Provider Host; network discovery. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "FDResPub",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 0,
+        "ramImpact": "low",
+        "why": "Publishes this PC for network discovery; only needed to share files with other PCs. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "HPDiagsCap",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 0,
+        "ramImpact": "medium",
+        "why": "Only needed when running HP diagnostics. Measured 31 MB private (2026-10-01)."
+      },
+      {
+        "id": "HPNetworkCap",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "No Windows networking depends on it. Measured 4 MB private (2026-10-01)."
+      },
+      {
+        "id": "HPSysInfoCap",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "high",
+        "why": "HP support telemetry helper; nothing breaks for daily use. Measured ~200 MB private. Measured 204 MB private (2026-10-01)."
+      },
+      {
+        "id": "igfxCUIService",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Only needed for Intel graphics settings (hotkeys, display profiles). Measured 2 MB private (2026-10-01)."
+      },
+      {
+        "id": "InventorySvc",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Inventory and compatibility appraisal; tied to upgrade/compatibility checks. Measured working set about 18.5 MB (own process)."
+      },
+      {
+        "id": "lmhosts",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "NetBIOS over TCP/IP helper; legacy name resolution. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "NcdAutoSetup",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Auto-setup of network-connected devices; demand-start. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "NfsClnt",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 0,
+        "ramImpact": "low",
+        "why": "Client for NFS (optional feature installed here, set to Auto). Only needed to mount NFS shares; unknown whether the user relies on it. Measured working set about 1.9 MB (own process)."
+      },
+      {
+        "id": "PcaSvc",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Program Compatibility Assistant; shows compatibility prompts for old apps. Manual is safe. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "PhoneSvc",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 0,
+        "ramImpact": "low",
+        "why": "Telephony state for phone/VoIP integration. Demand-start. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "postgresql-x64-18",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 0,
+        "ramImpact": "low",
+        "why": "Measured 32 MB private bytes across 10 postgres processes (2026-10-01, idle). Required for local dev; useless outside Code mode. Manual + start from the Code profile saves little RAM but avoids idle background work."
+      },
+      {
+        "id": "QWAVE",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Quality Windows Audio Video Experience (home network streaming QoS); demand-start. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "smphost",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Storage Spaces SMP provider; used by Storage Spaces management. Demand-start. Measured working set about 9.3 MB (own process)."
+      },
+      {
+        "id": "SSDPSRV",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "SSDP discovery (UPnP devices, DLNA, casting). Demand-start. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "ssh-agent",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "OpenSSH Authentication Agent; holds SSH keys for git/ssh. Set to Auto on this PC. Measured working set about 2.5 MB (own process)."
+      },
+      {
+        "id": "StiSvc",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 0,
+        "ramImpact": "low",
+        "why": "Windows Image Acquisition (scanners/camera import); no scanner. Set to Auto here although idle. Measured working set about 3.1 MB (own process)."
+      },
+      {
+        "id": "TapiSrv",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 0,
+        "ramImpact": "low",
+        "why": "Telephony API for modems/phones. Demand-start. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "TrkWks",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Distributed Link Tracking client; tracks NTFS shortcut targets across network volumes. Rarely useful; Manual is safe. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "upnphost",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "UPnP Device Host; demand-start. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "WdiSystemHost",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Diagnostic System Host; troubleshooting only, demand-start. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "whesvc",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Windows Health and Optimized Experiences; newer service, scope unclear. Measured working set about 14.0 MB (own process)."
+      },
+      {
+        "id": "WSAIFabricSvc",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Hosts Windows AI workloads (Copilot, Recall, Click to Do, AI search in Settings). A Microsoft Q&A moderator suggests Manual as a workaround when those features are not used; other users report about 5 GB RAM in idle WorkloadsSessionHost.exe on 25H2 (not measured here; the service process itself measured about 1.9 MB). Stopping it disables those AI features only; Office, apps and Windows Update are unaffected per the same thread."
+      }
+    ],
+    "ensureRunning": [
+      {
+        "id": "XblAuthManager",
+        "start": true,
+        "why": "Xbox Live Auth Manager; required for Xbox app/Game Pass sign-in. Demand-start so it idles outside gaming. Not running at inventory time."
+      },
+      {
+        "id": "XblGameSave",
+        "start": true,
+        "why": "Xbox Live Game Save (cloud saves for Game Pass/PC titles). Demand-start. Not running at inventory time."
+      }
+    ]
+  },
+  "tweaks": [
+    {
+      "id": "reg-bgapps",
+      "type": "registry",
+      "target": "HKCU\\...\\BackgroundAccessApplications\\GlobalUserDisabled",
+      "value": "1",
+      "risk": "medium"
+    },
+    {
+      "id": "reg-gamemode",
+      "type": "registry",
+      "target": "HKCU\\Software\\Microsoft\\GameBar\\AutoGameModeEnabled",
+      "value": "1",
+      "risk": "low"
+    },
+    {
+      "id": "power-ultimate",
+      "type": "powercfg",
+      "target": "powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61",
+      "value": "activate",
+      "risk": "low"
+    }
+  ]
+}
