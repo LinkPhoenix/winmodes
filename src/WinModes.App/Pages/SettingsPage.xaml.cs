@@ -47,7 +47,7 @@ public partial class SettingsPage : Page
 
         var minimized = StartMinimized.IsChecked == true;
         AppSettings.SetStartWithWindows(StartWithWindows.IsChecked == true, minimized);
-        new AppSettings
+        (AppSettings.Load() with
         {
             StartMinimized = minimized,
             CloseToTray = CloseToTray.IsChecked == true,
@@ -55,7 +55,7 @@ public partial class SettingsPage : Page
             ShowAiMemoryInTray = ShowAiMemoryInTray.IsChecked == true,
             ShowDesktopWidget = ShowDesktopWidget.IsChecked == true,
             AutoActivateMode = (AutoMode.SelectedItem as Choice)?.Mode,
-        }.Save();
+        }).Save();
         (Application.Current as App)?.ApplyDisplaySettings();
     }
 

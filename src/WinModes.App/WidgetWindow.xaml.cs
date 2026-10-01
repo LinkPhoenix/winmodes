@@ -20,7 +20,20 @@ public partial class WidgetWindow : Window
         InitializeComponent();
         Loaded += (_, _) =>
         {
-            // Start in the bottom-right corner of the work area, above the taskbar.
+            var settings = AppSettings.Load();
+            var screen = new Rect(SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenTop,
+                SystemParameters.VirtualScreenWidth, SystemParameters.VirtualScreenHeight);
+
+            // Reuse the saved position only if it is still on a connected screen.
+            if (settings.WidgetLeft is { } left && settings.WidgetTop is { } top
+                && screen.Contains(new Rect(left, top, ActualWidth, ActualHeight)))
+            {
+                Left = left;
+                Top = top;
+                return;
+            }
+
+            // Otherwise start in the bottom-right corner of the work area, above the taskbar.
             var area = SystemParameters.WorkArea;
             Left = area.Right - ActualWidth - ScreenMargin;
             Top = area.Bottom - ActualHeight - ScreenMargin;
@@ -53,7 +66,9 @@ public partial class WidgetWindow : Window
     {
         if (e.ButtonState == MouseButtonState.Pressed)
         {
+            // DragMove returns when the button is released: that is the new resting place.
             DragMove();
+            (AppSettings.Load() with { WidgetLeft = Left, WidgetTop = Top }).Save();
         }
     }
 

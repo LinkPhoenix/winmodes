@@ -29,6 +29,11 @@ internal sealed record AppSettings
     /// <summary>Show the small always-on-top desktop widget.</summary>
     public bool ShowDesktopWidget { get; init; }
 
+    /// <summary>Last position of the desktop widget; null until the user moves it.</summary>
+    public double? WidgetLeft { get; init; }
+
+    public double? WidgetTop { get; init; }
+
     /// <summary>Mode activated when the app starts; null means none.</summary>
     public string? AutoActivateMode { get; init; }
 
