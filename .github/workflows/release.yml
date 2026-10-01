@@ -34,7 +34,7 @@ jobs:
 
       - name: Package (portable zip and installer)
         shell: pwsh
-        run: pwsh -NoProfile -File tools/package.ps1 -Version '${{ github.ref_name }}'.TrimStart('v') -RequireInstaller
+        run: pwsh -NoProfile -File tools/package.ps1 -Version ('${{ github.ref_name }}'.TrimStart('v')) -RequireInstaller
 
       - name: Release notes
         shell: pwsh
