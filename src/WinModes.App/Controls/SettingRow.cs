@@ -17,6 +17,9 @@ public sealed class SettingRow : System.Windows.Controls.Control
     public static readonly DependencyProperty IconProperty = DependencyProperty.Register(
         nameof(Icon), typeof(SymbolRegular), typeof(SettingRow), new PropertyMetadata(SymbolRegular.Empty));
 
+    public static readonly DependencyProperty PictureProperty = DependencyProperty.Register(
+        nameof(Picture), typeof(ImageSource), typeof(SettingRow), new PropertyMetadata(null, (d, _) => ((SettingRow)d).Refresh()));
+
     public static readonly DependencyProperty AccentProperty = DependencyProperty.Register(
         nameof(Accent), typeof(Brush), typeof(SettingRow), new PropertyMetadata(Palette.Neutral, (d, _) => ((SettingRow)d).Refresh()));
 
@@ -38,6 +41,12 @@ public sealed class SettingRow : System.Windows.Controls.Control
     private static readonly DependencyPropertyKey TileBrushKey = DependencyProperty.RegisterReadOnly(
         nameof(TileBrush), typeof(Brush), typeof(SettingRow), new PropertyMetadata(Brushes.Transparent));
 
+    private static readonly DependencyPropertyKey PictureVisibilityKey = DependencyProperty.RegisterReadOnly(
+        nameof(PictureVisibility), typeof(Visibility), typeof(SettingRow), new PropertyMetadata(Visibility.Collapsed));
+
+    private static readonly DependencyPropertyKey GlyphVisibilityKey = DependencyProperty.RegisterReadOnly(
+        nameof(GlyphVisibility), typeof(Visibility), typeof(SettingRow), new PropertyMetadata(Visibility.Visible));
+
     private static readonly DependencyPropertyKey DescriptionVisibilityKey = DependencyProperty.RegisterReadOnly(
         nameof(DescriptionVisibility), typeof(Visibility), typeof(SettingRow), new PropertyMetadata(Visibility.Collapsed));
 
@@ -47,6 +56,8 @@ public sealed class SettingRow : System.Windows.Controls.Control
     private static readonly DependencyPropertyKey DividerThicknessKey = DependencyProperty.RegisterReadOnly(
         nameof(DividerThickness), typeof(Thickness), typeof(SettingRow), new PropertyMetadata(new Thickness(0, 0, 0, 1)));
 
+    public static readonly DependencyProperty PictureVisibilityProperty = PictureVisibilityKey.DependencyProperty;
+    public static readonly DependencyProperty GlyphVisibilityProperty = GlyphVisibilityKey.DependencyProperty;
     public static readonly DependencyProperty TileBrushProperty = TileBrushKey.DependencyProperty;
     public static readonly DependencyProperty DescriptionVisibilityProperty = DescriptionVisibilityKey.DependencyProperty;
     public static readonly DependencyProperty FooterVisibilityProperty = FooterVisibilityKey.DependencyProperty;
@@ -60,6 +71,13 @@ public sealed class SettingRow : System.Windows.Controls.Control
     {
         get => (SymbolRegular)GetValue(IconProperty);
         set => SetValue(IconProperty, value);
+    }
+
+    /// <summary>A picture (the logo of a tool) shown instead of the glyph when it is known.</summary>
+    public ImageSource? Picture
+    {
+        get => (ImageSource?)GetValue(PictureProperty);
+        set => SetValue(PictureProperty, value);
     }
 
     /// <summary>Colour of the icon; its tint fills the tile behind it.</summary>
@@ -101,6 +119,10 @@ public sealed class SettingRow : System.Windows.Controls.Control
         set => SetValue(ShowDividerProperty, value);
     }
 
+    public Visibility PictureVisibility => (Visibility)GetValue(PictureVisibilityKey.DependencyProperty);
+
+    public Visibility GlyphVisibility => (Visibility)GetValue(GlyphVisibilityKey.DependencyProperty);
+
     public Brush TileBrush => (Brush)GetValue(TileBrushKey.DependencyProperty);
 
     public Visibility DescriptionVisibility => (Visibility)GetValue(DescriptionVisibilityKey.DependencyProperty);
@@ -112,6 +134,8 @@ public sealed class SettingRow : System.Windows.Controls.Control
     private void Refresh()
     {
         SetValue(TileBrushKey, Accent is SolidColorBrush ? Palette.Tint(Accent) : Brushes.Transparent);
+        SetValue(PictureVisibilityKey, Picture is null ? Visibility.Collapsed : Visibility.Visible);
+        SetValue(GlyphVisibilityKey, Picture is null ? Visibility.Visible : Visibility.Collapsed);
         SetValue(DescriptionVisibilityKey, string.IsNullOrEmpty(Description) ? Visibility.Collapsed : Visibility.Visible);
         SetValue(FooterVisibilityKey, Footer is null ? Visibility.Collapsed : Visibility.Visible);
         SetValue(DividerThicknessKey, new Thickness(0, 0, 0, ShowDivider ? 1 : 0));

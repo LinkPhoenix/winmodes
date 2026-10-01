@@ -15,16 +15,14 @@ public sealed record CallbackResult(string? Code, string? Error)
 /// </summary>
 public sealed class CallbackListener : IDisposable
 {
-    private const string PageStart = "<!doctype html><meta charset=\"utf-8\"><title>WinModes</title>"
-        + "<body style=\"font-family:Segoe UI,sans-serif;margin:3em\"><h2>WinModes</h2><p>";
-
     private readonly HttpListener _listener = new();
     private readonly string _path;
+    private readonly string _accountName;
 
     /// <exception cref="HttpListenerException">The port is used by another program.</exception>
-    public CallbackListener(int port, string path)
+    public CallbackListener(int port, string path, string accountName)
     {
-        _path = path;
+        (_path, _accountName) = (path, accountName);
         _listener.Prefixes.Add($"http://localhost:{port}/");
         _listener.Start();
     }
@@ -45,18 +43,18 @@ public sealed class CallbackListener : IDisposable
                     && string.Equals(query["state"], expectedState, StringComparison.Ordinal);
                 if (!matches)
                 {
-                    Reply(context, HttpStatusCode.NotFound, "Not found.");
+                    Reply(context, HttpStatusCode.NotFound, "Not found.", "text/plain");
                     continue;
                 }
 
                 var code = query["code"];
                 if (string.IsNullOrEmpty(code) || query["error"] is { Length: > 0 })
                 {
-                    Reply(context, HttpStatusCode.OK, "The sign-in was refused. You can close this tab.");
+                    Reply(context, HttpStatusCode.OK, CallbackPage.Refused());
                     return new CallbackResult(null, query["error"] is { Length: > 0 } error ? error : "no_code");
                 }
 
-                Reply(context, HttpStatusCode.OK, "You are signed in. You can close this tab and go back to WinModes.");
+                Reply(context, HttpStatusCode.OK, CallbackPage.Success(_accountName));
                 // Claude can append "#state" to the code when it shows it for pasting.
                 var hash = code.IndexOf('#', StringComparison.Ordinal);
                 return new CallbackResult(hash >= 0 ? code[..hash] : code, null);
@@ -70,15 +68,15 @@ public sealed class CallbackListener : IDisposable
 
     public void Dispose() => _listener.Close();
 
-    private static void Reply(HttpListenerContext context, HttpStatusCode status, string message)
+    private static void Reply(HttpListenerContext context, HttpStatusCode status, string body, string contentType = "text/html")
     {
         try
         {
-            var body = Encoding.UTF8.GetBytes(PageStart + WebUtility.HtmlEncode(message) + "</p>");
+            var bytes = Encoding.UTF8.GetBytes(body);
             context.Response.StatusCode = (int)status;
-            context.Response.ContentType = "text/html; charset=utf-8";
-            context.Response.ContentLength64 = body.Length;
-            context.Response.OutputStream.Write(body);
+            context.Response.ContentType = contentType + "; charset=utf-8";
+            context.Response.ContentLength64 = bytes.Length;
+            context.Response.OutputStream.Write(bytes);
             context.Response.Close();
         }
         catch (Exception ex) when (ex is HttpListenerException or ObjectDisposedException)

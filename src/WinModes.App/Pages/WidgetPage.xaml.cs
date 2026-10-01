@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using WinModes.App.Controls;
 using WinModes.App.Services;
 using WinModes.Core;
 using WinModes.Core.Accounts;
@@ -88,10 +89,35 @@ public partial class WidgetPage : Page
 
     private void OnCodexAccount(object sender, RoutedEventArgs e) => _ = ToggleAccountAsync(AccountProvider.ChatGpt);
 
+    /// <summary>The logos of the two tools, as they look on the taskbar and in the widget; the glyphs stay when a tool is not found.</summary>
+    private void ShowToolLogos()
+    {
+        var claude = ToolIcons.For("Claude");
+        var codex = ToolIcons.For("Codex");
+        (ClaudeSection.Picture, ClaudeAccountRow.Picture) = (claude, claude);
+        (CodexSection.Picture, CodexAccountRow.Picture) = (codex, codex);
+    }
+
+    private string? _claudeOnlineText;
+    private string? _codexOnlineText;
+
     private void ShowAccounts()
     {
+        ShowToolLogos();
         ShowAccount(AccountProvider.Claude, ClaudeAccountRow, ClaudeAccountButton);
         ShowAccount(AccountProvider.ChatGpt, CodexAccountRow, CodexAccountButton);
+
+        // Signed in, WinModes reads online with its own session whatever the option says: the option would only mislead.
+        _claudeOnlineText ??= ClaudeOnlineRow.Description;
+        _codexOnlineText ??= CodexOnlineRow.Description;
+        ShowOnlineOption(ClaudeOnlineRow, ReadClaudeOnline, AccountSession.IsSignedIn(AccountProvider.Claude), _claudeOnlineText);
+        ShowOnlineOption(CodexOnlineRow, ReadCodexOnline, AccountSession.IsSignedIn(AccountProvider.ChatGpt), _codexOnlineText);
+    }
+
+    private static void ShowOnlineOption(Controls.SettingRow row, Wpf.Ui.Controls.ToggleSwitch toggle, bool signedIn, string original)
+    {
+        toggle.IsEnabled = !signedIn;
+        row.Description = signedIn ? Loc.T("Not needed while WinModes is signed in: it reads the usage with its own session.") : original;
     }
 
     private static void ShowAccount(AccountProvider provider, Controls.SettingRow row, Wpf.Ui.Controls.Button button)
@@ -117,9 +143,15 @@ public partial class WidgetPage : Page
             return;
         }
 
-        var risk = provider == AccountProvider.Claude ? "\n\n" + Loc.T("Anthropic does not document this sign-in and may restrict it: you use it at your own risk.") : "";
-        var consent = Loc.F("WinModes opens your browser so you can sign in to {0}. It then reads only your plan usage, with a session of its own: the sign-in of Claude Code or Codex is not touched. The tokens are kept encrypted for your Windows account, and Sign out deletes them.", provider.DisplayName) + risk;
-        if (MessageBox.Show(consent, Loc.F("Sign in to {0}", provider.DisplayName), MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+        // The same themed dialog as the other confirmations of the app, with the logo and what is read and kept.
+        var consent = new Wpf.Ui.Controls.MessageBox
+        {
+            Title = Loc.F("Sign in to {0}", provider.DisplayName),
+            Content = SignInPrompt.Create(provider, warnAboutRisk: provider == AccountProvider.Claude),
+            PrimaryButtonText = Loc.T("Open the browser"),
+            CloseButtonText = Loc.T("Cancel"),
+        };
+        if (await consent.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
         {
             return;
         }
@@ -150,8 +182,9 @@ public partial class WidgetPage : Page
         try
         {
             var readOnline = ReadClaudeOnline.IsChecked == true;
+            var signedIn = AccountSession.IsSignedIn(AccountProvider.Claude);
             var items = await Task.Run(() => ProviderCheck.Claude(Subscriptions.DefaultClaudeSettings, ClaudeStatusLineSetup.DefaultSettingsPath,
-                ClaudeStatusLine.DefaultRecordPath, OnlineUsage.DefaultClaudeCredentials, ClaudeStatusLine.DefaultCallPath, readOnline, DateTimeOffset.UtcNow));
+                ClaudeStatusLine.DefaultRecordPath, OnlineUsage.DefaultClaudeCredentials, ClaudeStatusLine.DefaultCallPath, readOnline, DateTimeOffset.UtcNow, signedIn));
             ClaudeCheck.Show(items);
         }
         finally
@@ -166,7 +199,8 @@ public partial class WidgetPage : Page
         try
         {
             var readOnline = ReadCodexOnline.IsChecked == true;
-            var items = await Task.Run(() => ProviderCheck.Codex(Subscriptions.DefaultCodexHome, OnlineUsage.DefaultCodexAuth, readOnline, DateTimeOffset.UtcNow));
+            var signedIn = AccountSession.IsSignedIn(AccountProvider.ChatGpt);
+            var items = await Task.Run(() => ProviderCheck.Codex(Subscriptions.DefaultCodexHome, OnlineUsage.DefaultCodexAuth, readOnline, DateTimeOffset.UtcNow, signedIn));
             CodexCheck.Show(items);
         }
         finally

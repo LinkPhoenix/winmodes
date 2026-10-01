@@ -18,7 +18,7 @@ internal enum SignInOutcome { SignedIn, PortBusy, Refused, TimedOut, Failed }
 /// </summary>
 internal static class AccountSession
 {
-    private static readonly TimeSpan SignInTimeout = TimeSpan.FromMinutes(3);
+    private static readonly TimeSpan SignInTimeout = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan RenewMargin = TimeSpan.FromMinutes(2);
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
 
@@ -62,7 +62,7 @@ internal static class AccountSession
         CallbackListener listener;
         try
         {
-            listener = new CallbackListener(provider.CallbackPort, provider.CallbackPath);
+            listener = new CallbackListener(provider.CallbackPort, provider.CallbackPath, provider.DisplayName);
         }
         catch (HttpListenerException)
         {

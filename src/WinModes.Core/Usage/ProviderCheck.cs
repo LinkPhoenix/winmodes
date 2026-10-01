@@ -34,7 +34,7 @@ public static class ProviderCheck
     private static readonly TimeSpan Fresh = TimeSpan.FromHours(1);
 
     public static IReadOnlyList<CheckItem> Claude(string settingsPath, string statusLineSettingsPath, string limitsRecordPath,
-        string credentialsPath, string statusCallPath, bool readOnline, DateTimeOffset now)
+        string credentialsPath, string statusCallPath, bool readOnline, DateTimeOffset now, bool? ownSession = null)
     {
         var plan = Subscriptions.ReadClaude(settingsPath);
         return
@@ -45,11 +45,12 @@ public static class ProviderCheck
             StatusLine(statusLineSettingsPath),
             Call(statusCallPath, now),
             Record(limitsRecordPath, now),
+            .. OwnSession(ownSession),
             Online(OnlineUsage.InspectClaudeSignIn(credentialsPath, now), readOnline),
         ];
     }
 
-    public static IReadOnlyList<CheckItem> Codex(string codexHome, string authPath, bool readOnline, DateTimeOffset now)
+    public static IReadOnlyList<CheckItem> Codex(string codexHome, string authPath, bool readOnline, DateTimeOffset now, bool? ownSession = null)
     {
         var items = new List<CheckItem>();
         if (!Directory.Exists(codexHome))
@@ -68,6 +69,7 @@ public static class ProviderCheck
                 : new(Loc.T("Plan"), CheckState.Ok, Loc.F("{0} plan found.", status.Plan)));
         }
 
+        items.AddRange(OwnSession(ownSession));
         items.Add(Online(OnlineUsage.InspectCodexSignIn(authPath), readOnline));
         return items;
     }
@@ -124,6 +126,17 @@ public static class ProviderCheck
         return age <= Fresh
             ? new(label, CheckState.Ok, Loc.F("Updated {0} min ago.", Math.Max((int)age.TotalMinutes, 1)))
             : new(label, CheckState.Warning, Loc.F("Last updated {0}.", Local(seen)) + " " + hint);
+    }
+
+    /// <summary>WinModes' own sign-in, when the caller knows it: the most reliable way to get the usage, so it comes before the other sign-in.</summary>
+    private static IEnumerable<CheckItem> OwnSession(bool? signedIn)
+    {
+        if (signedIn is { } known)
+        {
+            yield return known
+                ? new(Loc.T("WinModes account"), CheckState.Ok, Loc.T("Signed in: the usage is read online with a session of its own, renewed by WinModes."))
+                : new(Loc.T("WinModes account"), CheckState.Warning, Loc.T("Not signed in. Use the WinModes account row of this section to sign in."));
+        }
     }
 
     private static CheckItem Online(SignInCheck signIn, bool readOnline)

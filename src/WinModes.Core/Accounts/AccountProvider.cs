@@ -45,7 +45,9 @@ public sealed class AccountProvider
 
     public static AccountProvider ChatGpt { get; } = new("Codex", "ChatGPT", ChatGptClientId,
         new Uri("https://auth.openai.com/oauth/authorize"), new Uri("https://auth.openai.com/oauth/token"),
-        "openid profile email offline_access", 1455, "/auth/callback", jsonTokenRequests: false);
+        // The set the Codex client itself asks for: the sign-in of this client id is known to work with it. WinModes never uses
+        // the connector permissions, it only reads the usage.
+        "openid profile email offline_access api.connectors.read api.connectors.invoke", 1455, "/auth/callback", jsonTokenRequests: false);
 
     public static IReadOnlyList<AccountProvider> All { get; } = [Claude, ChatGpt];
 
@@ -82,6 +84,7 @@ public sealed class AccountProvider
         {
             parameters.Add(("id_token_add_organizations", "true"));
             parameters.Add(("codex_cli_simplified_flow", "true"));
+            parameters.Add(("originator", "winmodes"));
         }
 
         return new Uri($"{_authorizeAddress}?{string.Join("&", parameters.Select(pair => $"{pair.Item1}={Uri.EscapeDataString(pair.Item2)}"))}");

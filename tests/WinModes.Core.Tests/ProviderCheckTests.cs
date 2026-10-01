@@ -24,6 +24,26 @@ public sealed class ProviderCheckTests : IDisposable
     private IReadOnlyList<CheckItem> Claude(bool online = false) =>
         ProviderCheck.Claude(Path_("claude.json"), Path_("settings.json"), Path_("limits.json"), Path_("credentials.json"), Path_("call.json"), online, Now);
 
+    [Theory]
+    [InlineData(true, CheckState.Ok)]
+    [InlineData(false, CheckState.Warning)]
+    public void Claude_ListsTheWinModesAccountBeforeTheOtherSignIn(bool signedIn, CheckState expected)
+    {
+        var items = ProviderCheck.Claude(Path_("claude.json"), Path_("settings.json"), Path_("limits.json"), Path_("credentials.json"), Path_("call.json"), false, Now, signedIn);
+
+        Assert.Equal(["Plan", "Status line", "Status line calls", "Usage record", "WinModes account", "Online reading"], items.Select(item => item.Label));
+        Assert.Equal(expected, StateOf(items, "WinModes account"));
+    }
+
+    [Fact]
+    public void Codex_OmitsTheAccountItemWhenTheCallerDoesNotKnowIt()
+    {
+        var items = ProviderCheck.Codex(Path_("no-codex"), Path_("auth.json"), false, Now);
+
+        Assert.DoesNotContain(items, item => item.Label == "WinModes account");
+        Assert.Contains(ProviderCheck.Codex(Path_("no-codex"), Path_("auth.json"), false, Now, ownSession: true), item => item.Label == "WinModes account");
+    }
+
     private static CheckState StateOf(IReadOnlyList<CheckItem> items, string label) => items.Single(item => item.Label == label).State;
 
     [Fact]

@@ -19,6 +19,18 @@ public sealed class SettingSection : System.Windows.Controls.Control
     public static readonly DependencyProperty AccentProperty = DependencyProperty.Register(
         nameof(Accent), typeof(Brush), typeof(SettingSection), new PropertyMetadata(Palette.Neutral));
 
+    public static readonly DependencyProperty PictureProperty = DependencyProperty.Register(
+        nameof(Picture), typeof(ImageSource), typeof(SettingSection), new PropertyMetadata(null, (d, _) => ((SettingSection)d).RefreshPicture()));
+
+    private static readonly DependencyPropertyKey PictureVisibilityKey = DependencyProperty.RegisterReadOnly(
+        nameof(PictureVisibility), typeof(Visibility), typeof(SettingSection), new PropertyMetadata(Visibility.Collapsed));
+
+    private static readonly DependencyPropertyKey GlyphVisibilityKey = DependencyProperty.RegisterReadOnly(
+        nameof(GlyphVisibility), typeof(Visibility), typeof(SettingSection), new PropertyMetadata(Visibility.Visible));
+
+    public static readonly DependencyProperty PictureVisibilityProperty = PictureVisibilityKey.DependencyProperty;
+    public static readonly DependencyProperty GlyphVisibilityProperty = GlyphVisibilityKey.DependencyProperty;
+
     public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(
         nameof(Header), typeof(string), typeof(SettingSection), new PropertyMetadata(""));
 
@@ -34,6 +46,17 @@ public sealed class SettingSection : System.Windows.Controls.Control
         get => (SymbolRegular)GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
+
+    /// <summary>A picture (the logo of a tool) shown instead of the glyph when it is known.</summary>
+    public ImageSource? Picture
+    {
+        get => (ImageSource?)GetValue(PictureProperty);
+        set => SetValue(PictureProperty, value);
+    }
+
+    public Visibility PictureVisibility => (Visibility)GetValue(PictureVisibilityKey.DependencyProperty);
+
+    public Visibility GlyphVisibility => (Visibility)GetValue(GlyphVisibilityKey.DependencyProperty);
 
     public Brush Accent
     {
@@ -51,6 +74,12 @@ public sealed class SettingSection : System.Windows.Controls.Control
     {
         get => (Panel?)GetValue(RowsProperty);
         set => SetValue(RowsProperty, value);
+    }
+
+    private void RefreshPicture()
+    {
+        SetValue(PictureVisibilityKey, Picture is null ? Visibility.Collapsed : Visibility.Visible);
+        SetValue(GlyphVisibilityKey, Picture is null ? Visibility.Visible : Visibility.Collapsed);
     }
 
     private void HideLastDivider()

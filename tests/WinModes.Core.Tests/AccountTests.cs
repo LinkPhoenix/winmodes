@@ -23,12 +23,13 @@ public sealed class AccountTests
         Assert.Equal(43, first.Length);
         Assert.DoesNotContain('=', first);
         Assert.NotEqual(Pkce.NewState(), Pkce.NewState());
+        Assert.Equal(43, Pkce.NewState().Length);
     }
 
     [Fact]
     public void Claude_AuthorizeUrlAsksOnlyForTheProfile()
     {
-        var url = AccountProvider.Claude.BuildAuthorizeUrl("challenge", "state-1").ToString();
+        var url = AccountProvider.Claude.BuildAuthorizeUrl("challenge", "state-1").AbsoluteUri;
 
         Assert.StartsWith("https://claude.ai/oauth/authorize?", url);
         Assert.Contains("scope=user%3Aprofile", url);
@@ -42,10 +43,13 @@ public sealed class AccountTests
     [Fact]
     public void ChatGpt_AuthorizeUrlAndRedirect()
     {
-        var url = AccountProvider.ChatGpt.BuildAuthorizeUrl("c", "s").ToString();
+        var url = AccountProvider.ChatGpt.BuildAuthorizeUrl("c", "s").AbsoluteUri;
 
         Assert.StartsWith("https://auth.openai.com/oauth/authorize?", url);
         Assert.Contains("client_id=app_EMoamEEZ73f0CkXaXp7hrann", url);
+        Assert.Contains("originator=winmodes", url);
+        Assert.Contains("codex_cli_simplified_flow=true", url);
+        Assert.Contains("scope=openid%20profile%20email%20offline_access", url);
         Assert.Equal("http://localhost:1455/auth/callback", AccountProvider.ChatGpt.RedirectUri);
     }
 
@@ -228,13 +232,16 @@ public sealed class CallbackListenerTests
     public async Task Redirect_WithTheExpectedState_GivesTheCode()
     {
         var port = FreePort();
-        using var listener = new CallbackListener(port, "/auth/callback");
+        using var listener = new CallbackListener(port, "/auth/callback", "ChatGPT");
         var waiting = listener.WaitAsync("good-state", TimeSpan.FromSeconds(10), CancellationToken.None);
 
         using var response = await Browser.GetAsync(new Uri($"http://localhost:{port}/auth/callback?code=the-code&state=good-state"));
 
         var result = await waiting;
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        var page = await response.Content.ReadAsStringAsync();
+        Assert.Contains("ChatGPT", page);
+        Assert.Contains("<svg", page);
         Assert.Equal("the-code", result!.Code);
         Assert.True(result.Succeeded);
     }
@@ -243,7 +250,7 @@ public sealed class CallbackListenerTests
     public async Task ForgedOrStrayRequests_AreIgnoredUntilTheRealRedirect()
     {
         var port = FreePort();
-        using var listener = new CallbackListener(port, "/callback");
+        using var listener = new CallbackListener(port, "/callback", "Claude");
         var waiting = listener.WaitAsync("good-state", TimeSpan.FromSeconds(10), CancellationToken.None);
 
         using var wrongState = await Browser.GetAsync(new Uri($"http://localhost:{port}/callback?code=evil&state=other"));
@@ -259,7 +266,7 @@ public sealed class CallbackListenerTests
     public async Task Refusal_IsReportedWithoutCode()
     {
         var port = FreePort();
-        using var listener = new CallbackListener(port, "/callback");
+        using var listener = new CallbackListener(port, "/callback", "Claude");
         var waiting = listener.WaitAsync("s", TimeSpan.FromSeconds(10), CancellationToken.None);
 
         using var response = await Browser.GetAsync(new Uri($"http://localhost:{port}/callback?error=access_denied&state=s"));
@@ -272,7 +279,7 @@ public sealed class CallbackListenerTests
     [Fact]
     public async Task NoRedirect_TimesOut()
     {
-        using var listener = new CallbackListener(FreePort(), "/callback");
+        using var listener = new CallbackListener(FreePort(), "/callback", "Claude");
 
         Assert.Null(await listener.WaitAsync("s", TimeSpan.FromMilliseconds(200), CancellationToken.None));
     }
@@ -280,7 +287,7 @@ public sealed class CallbackListenerTests
     [Fact]
     public async Task Cancelling_StopsTheWait()
     {
-        using var listener = new CallbackListener(FreePort(), "/callback");
+        using var listener = new CallbackListener(FreePort(), "/callback", "Claude");
         using var source = new CancellationTokenSource();
         var waiting = listener.WaitAsync("s", TimeSpan.FromSeconds(30), source.Token);
 

@@ -23,8 +23,12 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <Border Style="{DynamicResource IconBadgeStyle}" Margin="0,0,14,0" Background="{TemplateBinding TileBrush}">
-                                    <ui:SymbolIcon Symbol="{TemplateBinding Icon}" Foreground="{TemplateBinding Accent}" FontSize="18"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <Grid>
+                                        <ui:SymbolIcon Symbol="{TemplateBinding Icon}" Foreground="{TemplateBinding Accent}" FontSize="18"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{TemplateBinding GlyphVisibility}" />
+                                        <Image Source="{TemplateBinding Picture}" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               RenderOptions.BitmapScalingMode="HighQuality" Visibility="{TemplateBinding PictureVisibility}" />
+                                    </Grid>
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
                                     <TextBlock Text="{TemplateBinding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
@@ -52,7 +56,10 @@
                 <ControlTemplate TargetType="{x:Type controls:SettingSection}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="4,22,0,10">
-                            <ui:SymbolIcon Symbol="{TemplateBinding Icon}" Foreground="{TemplateBinding Accent}" FontSize="16" VerticalAlignment="Center" />
+                            <ui:SymbolIcon Symbol="{TemplateBinding Icon}" Foreground="{TemplateBinding Accent}" FontSize="16" VerticalAlignment="Center"
+                                           Visibility="{TemplateBinding GlyphVisibility}" />
+                            <Image Source="{TemplateBinding Picture}" Width="18" Height="18" VerticalAlignment="Center"
+                                   RenderOptions.BitmapScalingMode="HighQuality" Visibility="{TemplateBinding PictureVisibility}" />
                             <TextBlock Text="{TemplateBinding Header}" Style="{DynamicResource CardCaptionStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                         <Border Style="{DynamicResource CardBorderStyle}" Padding="0">

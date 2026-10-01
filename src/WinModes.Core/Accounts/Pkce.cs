@@ -7,7 +7,8 @@ namespace WinModes.Core.Accounts;
 public static class Pkce
 {
     private const int VerifierBytes = 32;
-    private const int StateBytes = 16;
+    // Same length as Claude Code: 32 random bytes, 43 characters. A 16-byte state (22 characters) made Claude answer "Invalid request format".
+    private const int StateBytes = 32;
 
     /// <summary>A random secret kept by the app until the code is exchanged; 43 characters.</summary>
     public static string NewVerifier() => Base64Url(RandomNumberGenerator.GetBytes(VerifierBytes));
