@@ -25,6 +25,10 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Settings: preferences are read from disk once instead of at every refresh of the tray, widget and pages.
 - Dashboard and widget: the live graphs redraw at most 30 times a second instead of 60, which lowers the CPU use of the app.
 
+### Security
+
+- The administrator helper now refuses any command, service name, tweak id or mode name that is not in the expected form, including through the silent switch.
+
 ## [0.8.0] - 2026-10-01
 
 ### Added

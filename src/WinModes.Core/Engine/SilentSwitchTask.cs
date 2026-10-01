@@ -117,7 +117,8 @@ public static class SilentSwitchTask
     /// </summary>
     public static int? Run(string helperPath, string verb, string mode = "")
     {
-        if (!IsInstalled(helperPath))
+        // The mode is quoted into the task's arguments, so a name with a quote must never get that far.
+        if (verb is not ("apply" or "revert") || (mode.Length > 0 && !HelperArguments.IsValidName(mode)) || !IsInstalled(helperPath))
         {
             return null;
         }

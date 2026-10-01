@@ -12,32 +12,17 @@ using WinModes.Core.Tuning;
 const int ExitOk = 0;
 const int ExitFailed = 1;
 const int ExitUsage = 2;
-const string ChangeVerb = "change";
-const char ActionPrefix = ':';
 
-const string TaskVerb = "task";
-
-// Started by the silent-switch task: no prompt was shown, so only a mode switch is accepted. The task passes
-// an empty mode for "revert".
-var fromTask = args.Length > 0 && args[0] == SilentSwitchTask.HelperVerb;
-if (fromTask)
-{
-    args = [.. args.Skip(1).Where(argument => argument.Length > 0)];
-}
-
-var isModeVerb = args is ["revert"] or ["apply", _];
-var isChangeVerb = !fromTask && args.Length > 1 && args[0] == ChangeVerb;
-var isTaskVerb = !fromTask && args is [TaskVerb, "install" or "remove"];
-if (!isModeVerb && !isChangeVerb && !isTaskVerb)
+if (HelperArguments.Parse(args) is not { } command)
 {
     return ExitUsage;
 }
 
 try
 {
-    if (isTaskVerb)
+    if (command.Kind is HelperCommandKind.TaskInstall or HelperCommandKind.TaskRemove)
     {
-        if (args[1] == "remove")
+        if (command.Kind == HelperCommandKind.TaskRemove)
         {
             SilentSwitchTask.Remove();
         }
@@ -61,9 +46,9 @@ try
     var policy = ProtectionPolicy.Load(Path.Combine(root, "data", "protected.json"));
     var control = new WindowsServiceControl();
 
-    if (isChangeVerb)
+    if (command.Kind == HelperCommandKind.Change)
     {
-        return Change(args[1..], root, control, policy, journal);
+        return Change(command.Groups!, root, control, policy, journal);
     }
 
     var engine = new ModeEngine(control, new ModePlanner(new WindowsSystemProbe(), policy), policy, journal);
@@ -74,10 +59,10 @@ try
         engine.Revert(active);
     }
 
-    if (args[0] == "apply")
+    if (command.Kind == HelperCommandKind.Apply)
     {
         // ProfileStore only loads a name that matches an existing profile file.
-        engine.Apply(new ProfileStore(Path.Combine(root, "profiles")).Load(args[1]));
+        engine.Apply(new ProfileStore(Path.Combine(root, "profiles")).Load(command.Mode!));
     }
 
     return ExitOk;
@@ -87,33 +72,8 @@ catch (Exception ex) when (ex is ProfileException or IOException or Unauthorized
     return ExitFailed;
 }
 
-// Arguments are groups: ":manual A B :stop A :tweak widgets". ":restore" and ":untweak" without a name
-// undo every recorded change of their kind.
-static int Change(string[] arguments, string root, WindowsServiceControl control, ProtectionPolicy policy, JournalStore journal)
+static int Change(IReadOnlyList<ChangeGroup> groups, string root, WindowsServiceControl control, ProtectionPolicy policy, JournalStore journal)
 {
-    var groups = new List<(TuneAction Action, List<string> Names)>();
-    foreach (var argument in arguments)
-    {
-        if (argument.StartsWith(ActionPrefix))
-        {
-            // Names only: a number would also parse as an enum value.
-            if (!Enum.GetNames<TuneAction>().Contains(argument[1..], StringComparer.OrdinalIgnoreCase))
-            {
-                return ExitUsage;
-            }
-
-            groups.Add((Enum.Parse<TuneAction>(argument[1..], ignoreCase: true), []));
-        }
-        else if (groups.Count == 0)
-        {
-            return ExitUsage;
-        }
-        else
-        {
-            groups[^1].Names.Add(argument);
-        }
-    }
-
     AppPaths.EnsureProtectedDirectory(AppPaths.TweaksDirectory);
     var store = new TweakStore(AppPaths.TweaksDirectory);
     var changedByMode = (journal.FindActive()?.Entries ?? [])
