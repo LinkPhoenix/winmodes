@@ -35,10 +35,10 @@ public partial class ModeEditorWindow : FluentWindow
 
         LabelBox.Text = _profile["label"]?.GetValue<string>() ?? mode;
         IntentBox.Text = _profile["intent"]?.GetValue<string>() ?? "";
-        Title = $"Edit {LabelBox.Text} mode";
+        Title = Loc.F("Edit {0} mode", LabelBox.Text);
         EditorTitleBar.Title = Title;
 
-        PowerPlan.ItemsSource = PowerPlans.Select(plan => plan.Label).ToList();
+        PowerPlan.ItemsSource = PowerPlans.Select(plan => Loc.T(plan.Label)).ToList();
         var currentPlan = _profile["power"]?["plan"]?.GetValue<string>() ?? "";
         PowerPlan.SelectedIndex = Math.Max(0, Array.FindIndex(PowerPlans, plan => plan.Value == currentPlan));
         WslRunning.IsChecked = _profile["wsl"]?["running"]?.GetValue<bool>() ?? true;
@@ -73,7 +73,7 @@ public partial class ModeEditorWindow : FluentWindow
     {
         if (AddServiceBox.SelectedItem is ServiceChoice choice && !_services.Any(item => item.Id == choice.Name))
         {
-            _services.Add(new Item(choice.Name, "Added by the user", null, null));
+            _services.Add(new Item(choice.Name, Loc.T("Added by the user"), null, null));
             AddServiceBox.SelectedItem = null;
         }
     }
@@ -94,13 +94,13 @@ public partial class ModeEditorWindow : FluentWindow
         // A name only, never a path: the engine closes processes by name.
         if (process != Path.GetFileName(process))
         {
-            ErrorText.Text = "Enter a process name such as steam.exe, not a path.";
+            ErrorText.Text = Loc.T("Enter a process name such as steam.exe, not a path.");
             return;
         }
 
         if (AppServices.Policy.IsProtectedProcess(process))
         {
-            ErrorText.Text = $"{process} is protected and cannot be closed by a mode.";
+            ErrorText.Text = Loc.F("{0} is protected and cannot be closed by a mode.", process);
             return;
         }
 
@@ -114,7 +114,7 @@ public partial class ModeEditorWindow : FluentWindow
         var label = LabelBox.Text.Trim();
         if (label.Length == 0)
         {
-            ErrorText.Text = "The mode needs a name.";
+            ErrorText.Text = Loc.T("The mode needs a name.");
             return;
         }
 

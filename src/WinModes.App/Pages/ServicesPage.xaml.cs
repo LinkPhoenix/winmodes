@@ -86,7 +86,8 @@ public partial class ServicesPage : Page
 
         Rows.ItemsSource = visible;
         Summary.Text =
-            $"{_services.Count(service => service.IsRunning)} of {_services.Count} services are running. Showing {visible.Count}. Right-click a service to start it, stop it or change its start type.";
+            Loc.F("{0} of {1} services are running. Showing {2}. Right-click a service to start it, stop it or change its start type.",
+                _services.Count(service => service.IsRunning), _services.Count, visible.Count);
     }
 
     private void OnMenuOpening(object sender, ContextMenuEventArgs e) => _menuOpen = true;
@@ -133,11 +134,10 @@ public partial class ServicesPage : Page
     {
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
-            Title = $"Disable {row.DisplayName}?",
-            Content = "A disabled service cannot start, even when Windows or an app needs it. "
-                + "Prefer Manual unless you are sure. You can restore the original start type from this menu or from the Optimize page.",
-            PrimaryButtonText = "Disable",
-            CloseButtonText = "Cancel",
+            Title = Loc.F("Disable {0}?", row.DisplayName),
+            Content = Loc.T("A disabled service cannot start, even when Windows or an app needs it. Prefer Manual unless you are sure. You can restore the original start type from this menu or from the Optimize page."),
+            PrimaryButtonText = Loc.T("Disable"),
+            CloseButtonText = Loc.T("Cancel"),
         };
         return await confirm.ShowDialogAsync() == Wpf.Ui.Controls.MessageBoxResult.Primary;
     }
@@ -163,7 +163,7 @@ public partial class ServicesPage : Page
         ServiceStartMode? Original, string? Description, ImageSource? Icon)
     {
         public string StartMode => Mode.ToString();
-        public string Status => IsRunning ? "Running" : "Stopped";
+        public string Status => Loc.T(IsRunning ? "Running" : "Stopped");
         public Visibility ProtectedVisibility => IsProtected ? Visibility.Visible : Visibility.Collapsed;
         public Visibility GlyphVisibility => Icon is null ? Visibility.Visible : Visibility.Collapsed;
 
@@ -174,6 +174,6 @@ public partial class ServicesPage : Page
         public bool IsAutomatic => Mode == ServiceStartMode.Automatic;
         public bool IsManual => Mode == ServiceStartMode.Manual;
         public bool IsDisabled => Mode == ServiceStartMode.Disabled;
-        public string RestoreHeader => Original is { } original ? $"Restore original start type ({original})" : "Restore original start type";
+        public string RestoreHeader => Original is { } original ? Loc.F("Restore original start type ({0})", original) : Loc.T("Restore original start type");
     }
 }

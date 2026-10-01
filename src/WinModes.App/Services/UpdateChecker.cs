@@ -30,7 +30,7 @@ internal static class UpdateChecker
             using var response = await Client.GetAsync(new Uri(LatestReleaseApi));
             if (!response.IsSuccessStatusCode)
             {
-                return Last = new UpdateStatus(false, null, $"GitHub answered {(int)response.StatusCode}.");
+                return Last = new UpdateStatus(false, null, Loc.F("GitHub answered {0}.", (int)response.StatusCode));
             }
 
             using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -40,7 +40,7 @@ internal static class UpdateChecker
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
         {
-            return Last = new UpdateStatus(false, null, "GitHub could not be reached.");
+            return Last = new UpdateStatus(false, null, Loc.T("GitHub could not be reached."));
         }
     }
 

@@ -1,8 +1,9 @@
 <Window x:Class="WinModes.App.WidgetWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:WinModes.App.Localization"
         xmlns:controls="clr-namespace:WinModes.App.Controls"
-        Title="WinModes widget"
+        Title="{l:T 'WinModes widget'}"
         SizeToContent="WidthAndHeight"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" ShowActivated="False"
@@ -10,9 +11,9 @@
         MouseLeftButtonDown="OnDrag">
     <Window.ContextMenu>
         <ContextMenu>
-            <MenuItem Header="Open WinModes" Click="OnOpenApp" />
-            <MenuItem Header="Widget settings" Click="OnOpenSettings" />
-            <MenuItem Header="Hide widget" Click="OnHide" />
+            <MenuItem Header="{l:T 'Open WinModes'}" Click="OnOpenApp" />
+            <MenuItem Header="{l:T 'Widget settings'}" Click="OnOpenSettings" />
+            <MenuItem Header="{l:T 'Hide widget'}" Click="OnHide" />
         </ContextMenu>
     </Window.ContextMenu>
 

@@ -56,7 +56,7 @@ public partial class ModesPage : Page
         catch (Exception ex) when (ex is ProfileException or System.IO.IOException or UnauthorizedAccessException)
         {
             ResultCard.Visibility = Visibility.Visible;
-            ResultTitle.Text = "Not done";
+            ResultTitle.Text = Loc.T("Not done");
             ResultLines.ItemsSource = new[] { ex.Message };
         }
     }
@@ -70,23 +70,23 @@ public partial class ModesPage : Page
 
         if (card.IsActive)
         {
-            await ChangeLibraryAsync("", () => throw new ProfileException("Deactivate this mode before editing it."));
+            await ChangeLibraryAsync("", () => throw new ProfileException(Loc.T("Deactivate this mode before editing it.")));
             return;
         }
 
         var editor = new ModeEditorWindow(card.Profile.Mode) { Owner = Window.GetWindow(this) };
         if (editor.ShowDialog() == true)
         {
-            await ChangeLibraryAsync($"{card.Label} mode saved", () => { });
+            await ChangeLibraryAsync(Loc.F("{0} mode saved", card.Label), () => { });
         }
     }
 
     private async void OnImportClick(object sender, RoutedEventArgs e)
     {
-        var dialog = new Microsoft.Win32.OpenFileDialog { Title = "Import a mode", Filter = "Mode profile (*.json)|*.json" };
+        var dialog = new Microsoft.Win32.OpenFileDialog { Title = Loc.T("Import a mode"), Filter = Loc.T("Mode profile") + " (*.json)|*.json" };
         if (dialog.ShowDialog() == true)
         {
-            await ChangeLibraryAsync("Mode imported", () => AppServices.Library.Import(dialog.FileName));
+            await ChangeLibraryAsync(Loc.T("Mode imported"), () => AppServices.Library.Import(dialog.FileName));
         }
     }
 
@@ -99,13 +99,13 @@ public partial class ModesPage : Page
 
         var dialog = new Microsoft.Win32.SaveFileDialog
         {
-            Title = $"Export {card.Label} mode",
-            Filter = "Mode profile (*.json)|*.json",
+            Title = Loc.F("Export {0} mode", card.Label),
+            Filter = Loc.T("Mode profile") + " (*.json)|*.json",
             FileName = card.Profile.Mode + ".json",
         };
         if (dialog.ShowDialog() == true)
         {
-            await ChangeLibraryAsync($"{card.Label} mode exported", () => AppServices.Library.Export(card.Profile.Mode, dialog.FileName));
+            await ChangeLibraryAsync(Loc.F("{0} mode exported", card.Label), () => AppServices.Library.Export(card.Profile.Mode, dialog.FileName));
         }
     }
 
@@ -124,7 +124,7 @@ public partial class ModesPage : Page
             index++;
         }
 
-        await ChangeLibraryAsync($"{card.Label} mode duplicated",
+        await ChangeLibraryAsync(Loc.F("{0} mode duplicated", card.Label),
             () => AppServices.Library.Duplicate(card.Profile.Mode, $"{card.Profile.Mode}-{index}", $"{card.Label} {index}"));
     }
 
@@ -137,20 +137,20 @@ public partial class ModesPage : Page
 
         if (card.IsActive)
         {
-            await ChangeLibraryAsync("", () => throw new ProfileException("Deactivate this mode before deleting it."));
+            await ChangeLibraryAsync("", () => throw new ProfileException(Loc.T("Deactivate this mode before deleting it.")));
             return;
         }
 
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
-            Title = $"Delete {card.Label} mode?",
-            Content = "Its profile file is removed. Export it first if you want to keep a copy.",
-            PrimaryButtonText = "Delete",
-            CloseButtonText = "Cancel",
+            Title = Loc.F("Delete {0} mode?", card.Label),
+            Content = Loc.T("Its profile file is removed. Export it first if you want to keep a copy."),
+            PrimaryButtonText = Loc.T("Delete"),
+            CloseButtonText = Loc.T("Cancel"),
         };
         if (await confirm.ShowDialogAsync() == Wpf.Ui.Controls.MessageBoxResult.Primary)
         {
-            await ChangeLibraryAsync($"{card.Label} mode deleted", () => AppServices.Library.Delete(card.Profile.Mode));
+            await ChangeLibraryAsync(Loc.F("{0} mode deleted", card.Label), () => AppServices.Library.Delete(card.Profile.Mode));
         }
     }
 
@@ -175,8 +175,8 @@ public partial class ModesPage : Page
 
         var activeCard = _cards.FirstOrDefault(card => card.IsActive);
         StatusText.Text = activeCard is null
-            ? "No mode is active. Windows is in its normal state."
-            : $"{activeCard.Label} mode is active.";
+            ? Loc.T("No mode is active. Windows is in its normal state.")
+            : Loc.F("{0} mode is active.", activeCard.Label);
         UndoButton.Visibility = activeCard is null ? Visibility.Collapsed : Visibility.Visible;
     }
 
@@ -189,39 +189,39 @@ public partial class ModesPage : Page
 
         if (card.IsActive)
         {
-            await RunSwitchAsync($"Deactivating {card.Label} mode…", "Deactivate", AppServices.Switcher.UndoAsync);
+            await RunSwitchAsync(Loc.F("Deactivating {0} mode…", card.Label), Loc.T("Deactivate"), AppServices.Switcher.UndoAsync);
             return;
         }
 
         if (!Services.AppSettings.Load().ConfirmBeforeActivate)
         {
-            await RunSwitchAsync($"Activating {card.Label} mode…", $"{card.Label} mode", () => AppServices.Switcher.ActivateAsync(card.Profile));
+            await RunSwitchAsync(Loc.F("Activating {0} mode…", card.Label), Loc.F("{0} mode", card.Label), () => AppServices.Switcher.ActivateAsync(card.Profile));
             return;
         }
 
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
-            Title = $"Activate {card.Label} mode?",
+            Title = Loc.F("Activate {0} mode?", card.Label),
             Content = $"{card.ChangeCount} {card.ChangeCaption}.\n\n"
-                + "Services are stopped and set to Manual, never Disabled. Windows will ask for administrator permission once.\n"
-                + (card.Profile.Wsl.Running ? "" : "WSL and Docker Desktop will be shut down: running containers and WSL sessions will end.\n")
-                + "\nYou can undo the switch at any time.",
-            PrimaryButtonText = "Activate",
-            CloseButtonText = "Cancel",
+                + Loc.T("Services are stopped and set to Manual, never Disabled. Windows will ask for administrator permission once.") + "\n"
+                + (card.Profile.Wsl.Running ? "" : Loc.T("WSL and Docker Desktop will be shut down: running containers and WSL sessions will end.") + "\n")
+                + "\n" + Loc.T("You can undo the switch at any time."),
+            PrimaryButtonText = Loc.T("Activate"),
+            CloseButtonText = Loc.T("Cancel"),
         };
         if (await confirm.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
         {
             return;
         }
 
-        await RunSwitchAsync($"Activating {card.Label} mode…", $"{card.Label} mode", () => AppServices.Switcher.ActivateAsync(card.Profile));
+        await RunSwitchAsync(Loc.F("Activating {0} mode…", card.Label), Loc.F("{0} mode", card.Label), () => AppServices.Switcher.ActivateAsync(card.Profile));
     }
 
     private async void OnUndoClick(object sender, RoutedEventArgs e)
     {
         if (!_isBusy)
         {
-            await RunSwitchAsync("Restoring the previous state…", "Undo", AppServices.Switcher.UndoAsync);
+            await RunSwitchAsync(Loc.T("Restoring the previous state…"), Loc.T("Undo"), AppServices.Switcher.UndoAsync);
         }
     }
 
@@ -236,7 +236,7 @@ public partial class ModesPage : Page
         try
         {
             var report = await action();
-            ResultTitle.Text = report.Succeeded ? $"{title}: done" : $"{title}: not applied";
+            ResultTitle.Text = Loc.F(report.Succeeded ? "{0}: done" : "{0}: not applied", title);
             ResultLines.ItemsSource = report.Lines;
         }
         finally
@@ -284,8 +284,8 @@ public partial class ModesPage : Page
             other.IsSelected = ReferenceEquals(other, card);
         }
 
-        DetailTitle.Text = $"{card.Label} mode";
-        DetailSummary.Text = "Reading the current state of this PC…";
+        DetailTitle.Text = Loc.F("{0} mode", card.Label);
+        DetailSummary.Text = Loc.T("Reading the current state of this PC…");
         ChangeGroups.ItemsSource = null;
 
         try
@@ -293,8 +293,10 @@ public partial class ModesPage : Page
             var plan = await Task.Run(() => AppServices.Planner.Plan(card.Profile));
             ChangeGroups.ItemsSource = BuildGroups(plan);
             DetailSummary.Text = plan.Changes.Count == 0
-                ? "This PC already matches the mode. Nothing would change."
-                : $"{Pluralize(plan.Changes.Count, "change")} would be made. {Pluralize(plan.Skipped.Count, "item")} already in the target state. Nothing is changed by a preview.";
+                ? Loc.T("This PC already matches the mode. Nothing would change.")
+                : Loc.N(plan.Changes.Count, "1 change would be made.", "{0} changes would be made.") + " "
+                    + Loc.N(plan.Skipped.Count, "1 item already in the target state.", "{0} items already in the target state.") + " "
+                    + Loc.T("Nothing is changed by a preview.");
         }
         catch (ProfileException ex)
         {
@@ -311,7 +313,7 @@ public partial class ModesPage : Page
                 group.Key.Glyph,
                 group.Key.Color,
                 Palette.Tint(group.Key.Color),
-                Pluralize(group.Count(), "change"),
+                Loc.N(group.Count(), "1 change", "{0} changes"),
                 IsExpanded: index == 0,
                 [.. group.Select(ToRow)]))];
 
@@ -319,29 +321,28 @@ public partial class ModesPage : Page
     {
         var (verb, glyph, color) = change.Kind switch
         {
-            ChangeKind.StopService => ("Stop", "", Palette.Stop),
-            ChangeKind.StartService => ("Start", "", Palette.Start),
-            ChangeKind.CloseApp => ("Close", "", Palette.Stop),
-            ChangeKind.LaunchApp => ("Launch", "", Palette.Start),
-            ChangeKind.ShutdownWsl => ("Stop", "", Palette.Stop),
-            ChangeKind.StartDocker => ("Start", "", Palette.Start),
-            ChangeKind.SetPowerPlan => ("Switch", "", Palette.Power),
+            ChangeKind.StopService => (Loc.T("Stop"), "", Palette.Stop),
+            ChangeKind.StartService => (Loc.T("Start"), "", Palette.Start),
+            ChangeKind.CloseApp => (Loc.T("Close"), "", Palette.Stop),
+            ChangeKind.LaunchApp => (Loc.T("Launch"), "", Palette.Start),
+            ChangeKind.ShutdownWsl => (Loc.T("Stop"), "", Palette.Stop),
+            ChangeKind.StartDocker => (Loc.T("Start"), "", Palette.Start),
+            ChangeKind.SetPowerPlan => (Loc.T("Switch"), "", Palette.Power),
             _ => (change.Kind.ToString(), "", Palette.Neutral),
         };
 
         return new ChangeRow(glyph, color, Palette.Tint(color), verb, change.Target, change.Reason, change.From, change.To,
-            $"{verb} {change.Target}, from {change.From} to {change.To}");
+            Loc.F("{0} {1}, from {2} to {3}", verb, change.Target, change.From, change.To));
     }
 
     private static (int Order, string Title, string Glyph, Brush Color) Categorize(ChangeKind kind) => kind switch
     {
-        ChangeKind.StopService or ChangeKind.StartService => (0, "Services", "", Palette.Start),
-        ChangeKind.CloseApp or ChangeKind.LaunchApp => (1, "Apps", "", Palette.Apps),
-        ChangeKind.ShutdownWsl or ChangeKind.StartDocker => (2, "WSL and Docker", "", Palette.Container),
-        _ => (3, "Power", "", Palette.Power),
+        ChangeKind.StopService or ChangeKind.StartService => (0, Loc.T("Services"), "", Palette.Start),
+        ChangeKind.CloseApp or ChangeKind.LaunchApp => (1, Loc.T("Apps"), "", Palette.Apps),
+        ChangeKind.ShutdownWsl or ChangeKind.StartDocker => (2, Loc.T("WSL and Docker"), "", Palette.Container),
+        _ => (3, Loc.T("Power"), "", Palette.Power),
     };
 
-    private static string Pluralize(int count, string noun) => count == 1 ? $"1 {noun}" : $"{count} {noun}s";
 
     private sealed class ModeCard(ModeCatalog.Entry entry) : INotifyPropertyChanged
     {
@@ -349,7 +350,7 @@ public partial class ModesPage : Page
         private bool _isActive;
         private bool _canActivate = true;
         private string _changeCount = "…";
-        private string _changeCaption = "checking this PC";
+        private string _changeCaption = Loc.T("checking this PC");
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -357,14 +358,14 @@ public partial class ModesPage : Page
         public string Glyph => entry.Glyph;
         public Brush Accent => entry.Accent;
         public string Label => Profile.Label;
-        public string Intent => Profile.Intent;
+        public string Intent => Loc.T(Profile.Intent);
         public string ChangeCount => _changeCount;
         public string ChangeCaption => _changeCaption;
-        public string AccessibleName => $"{Label} mode, {ChangeCount} {ChangeCaption}";
+        public string AccessibleName => Loc.F("{0} mode", Label) + $", {ChangeCount} {ChangeCaption}";
 
         public bool IsHighlighted => _isSelected || _isActive;
-        public string PillText => _isActive ? "ACTIVE" : "PREVIEWING";
-        public string ActionText => _isActive ? "Deactivate" : "Activate";
+        public string PillText => Loc.T(_isActive ? "ACTIVE" : "PREVIEWING");
+        public string ActionText => Loc.T(_isActive ? "Deactivate" : "Activate");
         public bool CanDelete => !ProfileLibrary.IsBuiltIn(Profile.Mode);
 
         public bool IsSelected
@@ -407,14 +408,14 @@ public partial class ModesPage : Page
         public void SetChangeCount(int count)
         {
             _changeCount = count.ToString(CultureInfo.CurrentCulture);
-            _changeCaption = count == 1 ? "change from the current state" : "changes from the current state";
+            _changeCaption = Loc.T(count == 1 ? "change from the current state" : "changes from the current state");
             NotifySummary();
         }
 
         public void SetBlocked()
         {
             _changeCount = "!";
-            _changeCaption = "blocked by the protection policy";
+            _changeCaption = Loc.T("blocked by the protection policy");
             NotifySummary();
         }
 

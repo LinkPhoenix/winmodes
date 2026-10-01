@@ -148,15 +148,14 @@ public partial class ProcessesPage : Page
         }
 
         Reconcile(rows);
-        SortName.Content = "Name" + Arrow("Name");
+        SortName.Content = Loc.T("Name") + Arrow("Name");
         SortPid.Content = "PID" + Arrow("Pid");
         SortCpu.Content = "CPU" + Arrow("Cpu");
-        SortMemory.Content = "Memory" + Arrow("Memory");
-        SortThreads.Content = "Threads" + Arrow("Threads");
+        SortMemory.Content = Loc.T("Memory") + Arrow("Memory");
+        SortThreads.Content = Loc.T("Threads") + Arrow("Threads");
 
         var totalGb = _nodes.Sum(node => node.PrivateMemoryMb) / MbPerGb;
-        Summary.Text = string.Create(culture,
-            $"{_nodes.Count} processes use {totalGb:0.0} GB of private memory. Showing {rows.Count}. Right-click a row for actions.");
+        Summary.Text = Loc.F("{0} processes use {1:0.0} GB of private memory. Showing {2}. Right-click a row for actions.", _nodes.Count, totalGb, rows.Count);
     }
 
     /// <summary>

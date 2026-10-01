@@ -16,7 +16,7 @@ public partial class AboutPage : Page
     {
         InitializeComponent();
 
-        VersionText.Text = $"Version {AppInfo.Version}";
+        VersionText.Text = Loc.F("Version {0}", AppInfo.Version);
         CheckAtStartup.IsChecked = Services.AppSettings.Load().CheckForUpdates;
         _loaded = true;
         if (Services.UpdateChecker.Last is { } last)
@@ -28,9 +28,9 @@ public partial class AboutPage : Page
         {
             new("Windows", RuntimeInformation.OSDescription),
             new("Runtime", RuntimeInformation.FrameworkDescription),
-            new("Modes available", string.Join(", ", ModeCatalog.Load().Select(entry => entry.Profile.Label))),
-            new("Switch history", Services.Privacy.Path(AppPaths.JournalDirectory)),
-            new("Profiles", Services.Privacy.Path(AppServices.ProfilesDirectory)),
+            new(Loc.T("Modes available"), string.Join(", ", ModeCatalog.Load().Select(entry => entry.Profile.Label))),
+            new(Loc.T("Switch history"), Services.Privacy.Path(AppPaths.JournalDirectory)),
+            new(Loc.T("Profiles"), Services.Privacy.Path(AppServices.ProfilesDirectory)),
         };
     }
 
@@ -49,7 +49,7 @@ public partial class AboutPage : Page
     private async void OnCheckUpdates(object sender, RoutedEventArgs e)
     {
         CheckButton.IsEnabled = false;
-        UpdateText.Text = "Checking...";
+        UpdateText.Text = Loc.T("Checking...");
         ShowUpdate(await Services.UpdateChecker.CheckAsync());
         CheckButton.IsEnabled = true;
     }
@@ -58,15 +58,15 @@ public partial class AboutPage : Page
     {
         UpdateText.Text = status switch
         {
-            { Error: { } error } => $"{error} Try again later.",
-            { IsNewer: true } => $"Version {status.LatestTag} is available. You have v{AppInfo.Version}.",
-            _ => $"You have the latest version (v{AppInfo.Version}).",
+            { Error: { } error } => Loc.F("{0} Try again later.", error),
+            { IsNewer: true } => Loc.F("Version {0} is available. You have v{1}.", status.LatestTag, AppInfo.Version),
+            _ => Loc.F("You have the latest version (v{0}).", AppInfo.Version),
         };
         _latestTag = status.IsNewer ? status.LatestTag : null;
         ReleasePageButton.Visibility = status.IsNewer ? Visibility.Visible : Visibility.Collapsed;
         // A portable copy cannot be replaced by the installer: it gets the new zip in the Downloads folder instead.
         InstallButton.Visibility = status.IsNewer ? Visibility.Visible : Visibility.Collapsed;
-        InstallButton.Content = Services.UpdateInstaller.IsInstalledBuild ? "Download and install" : "Download";
+        InstallButton.Content = Loc.T(Services.UpdateInstaller.IsInstalledBuild ? "Download and install" : "Download");
     }
 
     private async Task DownloadPortableAsync(string tag)
@@ -75,9 +75,9 @@ public partial class AboutPage : Page
         CheckButton.IsEnabled = false;
         try
         {
-            var progress = new Progress<double>(percent => UpdateText.Text = $"Downloading {tag}: {percent:0} %");
+            var progress = new Progress<double>(percent => UpdateText.Text = Loc.F("Downloading {0}: {1:0} %", tag, percent));
             var zip = await Services.UpdateInstaller.DownloadPortableAsync(tag, progress, CancellationToken.None);
-            UpdateText.Text = $"{System.IO.Path.GetFileName(zip)} is in your Downloads folder, checked against the release checksum. Close WinModes and extract it over this copy.";
+            UpdateText.Text = Loc.F("{0} is in your Downloads folder, checked against the release checksum. Close WinModes and extract it over this copy.", System.IO.Path.GetFileName(zip));
             Services.UpdateInstaller.Reveal(zip);
         }
         catch (Services.UpdateException ex)
@@ -112,11 +112,10 @@ public partial class AboutPage : Page
 
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
-            Title = $"Install WinModes {tag}?",
-            Content = "The installer is downloaded from the GitHub release and checked against its published checksum. "
-                + "WinModes then closes and the installer starts; Windows asks for permission.",
-            PrimaryButtonText = "Download and install",
-            CloseButtonText = "Cancel",
+            Title = Loc.F("Install WinModes {0}?", tag),
+            Content = Loc.T("The installer is downloaded from the GitHub release and checked against its published checksum. WinModes then closes and the installer starts; Windows asks for permission."),
+            PrimaryButtonText = Loc.T("Download and install"),
+            CloseButtonText = Loc.T("Cancel"),
         };
         if (await confirm.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
         {
@@ -127,9 +126,9 @@ public partial class AboutPage : Page
         CheckButton.IsEnabled = false;
         try
         {
-            var progress = new Progress<double>(percent => UpdateText.Text = $"Downloading {tag}: {percent:0} %");
+            var progress = new Progress<double>(percent => UpdateText.Text = Loc.F("Downloading {0}: {1:0} %", tag, percent));
             var installer = await Services.UpdateInstaller.DownloadAsync(tag, progress, CancellationToken.None);
-            UpdateText.Text = "Starting the installer...";
+            UpdateText.Text = Loc.T("Starting the installer...");
             Services.UpdateInstaller.Run(installer);
             Application.Current.Shutdown();
         }
@@ -139,7 +138,7 @@ public partial class AboutPage : Page
         }
         catch (System.ComponentModel.Win32Exception)
         {
-            UpdateText.Text = "The installer could not be started. Open the release page instead.";
+            UpdateText.Text = Loc.T("The installer could not be started. Open the release page instead.");
         }
         finally
         {
@@ -152,7 +151,7 @@ public partial class AboutPage : Page
     {
         var dialog = new Microsoft.Win32.SaveFileDialog
         {
-            Title = "Export a WinModes report",
+            Title = Loc.T("Export a WinModes report"),
             FileName = $"winmodes-report-{DateTime.Now:yyyyMMdd-HHmm}.md",
             Filter = "Markdown (*.md)|*.md|Text (*.txt)|*.txt",
         };
@@ -179,11 +178,11 @@ public partial class AboutPage : Page
                     WinModes.Core.Planning.AiToolCatalog.FindSessions(Services.ProcessActions.Sample())));
             });
             await System.IO.File.WriteAllTextAsync(dialog.FileName, report);
-            ReportText.Text = "Report saved. Read it before sharing it: it lists the programs running on this PC.";
+            ReportText.Text = Loc.T("Report saved. Read it before sharing it: it lists the programs running on this PC.");
         }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception)
         {
-            ReportText.Text = "The report could not be saved there. Choose another folder.";
+            ReportText.Text = Loc.T("The report could not be saved there. Choose another folder.");
         }
     }
 

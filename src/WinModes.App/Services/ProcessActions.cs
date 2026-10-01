@@ -29,16 +29,16 @@ internal static class ProcessActions
     {
         if (pid is SystemIdlePid or SystemPid || pid == Environment.ProcessId)
         {
-            return "This process cannot be ended from WinModes.";
+            return Loc.T("This process cannot be ended from WinModes.");
         }
 
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
-            Title = wholeTree ? $"End {name} and everything it started?" : $"End {name}?",
-            Content = $"Process {pid} will be closed immediately. Unsaved work in it is lost."
-                + (isProtected ? "\n\nThis app is on the protected list: no mode would close it. End it only if you are sure." : ""),
-            PrimaryButtonText = wholeTree ? "End process tree" : "End task",
-            CloseButtonText = "Cancel",
+            Title = Loc.F(wholeTree ? "End {0} and everything it started?" : "End {0}?", name),
+            Content = Loc.F("Process {0} will be closed immediately. Unsaved work in it is lost.", pid)
+                + (isProtected ? "\n\n" + Loc.T("This app is on the protected list: no mode would close it. End it only if you are sure.") : ""),
+            PrimaryButtonText = Loc.T(wholeTree ? "End process tree" : "End task"),
+            CloseButtonText = Loc.T("Cancel"),
         };
         if (await confirm.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
         {
@@ -53,11 +53,11 @@ internal static class ProcessActions
         }
         catch (ArgumentException)
         {
-            return $"{name} had already exited.";
+            return Loc.F("{0} had already exited.", name);
         }
         catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or AggregateException)
         {
-            return $"{name} could not be ended: Windows denied access.";
+            return Loc.F("{0} could not be ended: Windows denied access.", name);
         }
     }
 

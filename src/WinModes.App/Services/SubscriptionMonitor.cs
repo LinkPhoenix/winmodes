@@ -60,7 +60,7 @@ internal static class SubscriptionMonitor
                         // A failed request keeps the previous online figures; they are dated in the widget.
                         _onlineCodex = codexWanted ? await AskAsync(OnlineUsage.CodexRequest(OnlineUsage.DefaultCodexAuth), json => OnlineUsage.ParseCodex(json, now)) ?? _onlineCodex : null;
                         _onlineClaude = !claudeWanted ? null : await AskAsync(OnlineUsage.ClaudeRequest(OnlineUsage.DefaultClaudeCredentials, now),
-                            json => OnlineUsage.ParseClaude(json, claude?.Plan ?? "Plan unknown", now)) ?? _onlineClaude;
+                            json => OnlineUsage.ParseClaude(json, claude?.Plan ?? Loc.T("Plan unknown"), now)) ?? _onlineClaude;
                     }
 
                     Current = [.. new[] { claudeWanted ? Newest(_onlineClaude, claude) : null, codexWanted ? Newest(_onlineCodex, codex) : null }.OfType<SubscriptionStatus>()];

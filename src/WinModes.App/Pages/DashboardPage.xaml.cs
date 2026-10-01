@@ -38,7 +38,7 @@ public partial class DashboardPage : Page
 
         _modes = [.. ModeCatalog.Load().Select(mode => new QuickMode(mode))];
         QuickModes.ItemsSource = _modes;
-        CpuDetail.Text = $"{Environment.ProcessorCount} logical processors";
+        CpuDetail.Text = Loc.F("{0} logical processors", Environment.ProcessorCount);
         CpuChartDetail.Text = CpuDetail.Text;
 
         _timer.Tick += async (_, _) => await OnTickAsync();
@@ -102,7 +102,7 @@ public partial class DashboardPage : Page
             Smooth.To(MemoryGauge, RingGauge.ValueProperty, memory.UsedPercent);
             MemoryValue.Text = string.Create(culture, $"{memory.UsedPercent:0} %");
             MemoryDetail.Text = string.Create(culture, $"{memory.UsedGb:0.0} / {memory.TotalGb:0.0} GB");
-            MemoryFree.Text = string.Create(culture, $"{memory.AvailableGb:0.0} GB available");
+            MemoryFree.Text = Loc.F("{0:0.0} GB available", memory.AvailableGb);
             Smooth.To(MemoryBar, SegmentBar.ValueProperty, memory.UsedPercent);
             MemoryChart.Push(memory.UsedPercent);
             MemoryChartValue.Text = string.Create(culture, $"{memory.UsedPercent:0.0} %");
@@ -113,7 +113,7 @@ public partial class DashboardPage : Page
         }
         catch (Exception ex) when (ex is Win32Exception or System.Net.NetworkInformation.NetworkInformationException)
         {
-            MemoryDetail.Text = "System figures are unavailable.";
+            MemoryDetail.Text = Loc.T("System figures are unavailable.");
         }
     }
 
@@ -143,8 +143,7 @@ public partial class DashboardPage : Page
             {
                 DiskChart.Push(disk);
                 DiskChartValue.Text = string.Create(culture, $"{disk:0.0} %");
-                DiskDetail.Text = string.Create(culture,
-                    $"All disks  -  read {reading.DiskReadMbPerSecond:0.0} MB/s, write {reading.DiskWriteMbPerSecond:0.0} MB/s");
+                DiskDetail.Text = Loc.F("All disks  -  read {0:0.0} MB/s, write {1:0.0} MB/s", reading.DiskReadMbPerSecond, reading.DiskWriteMbPerSecond);
             }
 
             GpuDiskRow.Visibility = reading.GpuPercent is null && reading.DiskActivePercent is null ? Visibility.Collapsed : Visibility.Visible;
@@ -204,7 +203,7 @@ public partial class DashboardPage : Page
 
         return [.. tools.Select((tool, index) =>
         {
-            var detail = (tool.Sessions == 1 ? "1 session" : $"{tool.Sessions} sessions") + $", {tool.Processes} processes";
+            var detail = Loc.N(tool.Sessions, "1 session", "{0} sessions") + ", " + Loc.N(tool.Processes, "1 process", "{0} processes");
             var memory = FormatMemory(tool.MemoryMb, culture);
             return new AiToolRow(
                 tool.Tool.Name,
@@ -231,7 +230,7 @@ public partial class DashboardPage : Page
         var share = snapshot.TotalMemoryGb <= 0 ? 0 : totalMb / MbPerGb / snapshot.TotalMemoryGb * 100;
         AiSummary.Text = rows.Count == 0
             ? ""
-            : string.Create(culture, $"{FormatMemory(totalMb, culture)} in total, {share:0} % of this PC's memory");
+            : Loc.F("{0} in total, {1:0} % of this PC's memory", FormatMemory(totalMb, culture), share);
     }
 
     private void OnAiToolClick(object sender, RoutedEventArgs e) =>
@@ -241,7 +240,7 @@ public partial class DashboardPage : Page
     {
         var active = ModeSwitcher.ActiveMode;
         var activeMode = _modes.FirstOrDefault(mode => mode.Profile.Mode.Equals(active, StringComparison.OrdinalIgnoreCase));
-        ActiveModeText.Text = activeMode is null ? "Active mode: none" : $"Active mode: {activeMode.Label}";
+        ActiveModeText.Text = activeMode is null ? Loc.T("Active mode: none") : Loc.F("Active mode: {0}", activeMode.Label);
         ActiveModeDot.Fill = activeMode?.Accent ?? InactiveDot;
 
         foreach (var mode in _modes)
@@ -249,12 +248,12 @@ public partial class DashboardPage : Page
             try
             {
                 var plan = await Task.Run(() => AppServices.Planner.Plan(mode.Profile));
-                mode.Summary = ReferenceEquals(mode, activeMode) ? "Active"
-                    : plan.Changes.Count == 1 ? "1 change" : $"{plan.Changes.Count} changes";
+                mode.Summary = ReferenceEquals(mode, activeMode) ? Loc.T("Active")
+                    : Loc.N(plan.Changes.Count, "1 change", "{0} changes");
             }
             catch (ProfileException)
             {
-                mode.Summary = "Blocked by protection";
+                mode.Summary = Loc.T("Blocked by protection");
             }
         }
     }
@@ -269,7 +268,7 @@ public partial class DashboardPage : Page
 
     private sealed class QuickMode(ModeCatalog.Entry entry) : INotifyPropertyChanged
     {
-        private string _summary = "Checking…";
+        private string _summary = Loc.T("Checking…");
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

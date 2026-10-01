@@ -39,8 +39,8 @@ public partial class OnboardingView : UserControl
         var last = _index == _steps.Length - 1;
         BackButton.Visibility = _index == 0 ? Visibility.Collapsed : Visibility.Visible;
         SkipButton.Visibility = last ? Visibility.Collapsed : Visibility.Visible;
-        NextButton.Content = last ? "Open Modes" : "Next";
-        StepText.Text = $"Step {_index + 1} of {_steps.Length}";
+        NextButton.Content = Loc.T(last ? "Open Modes" : "Next");
+        StepText.Text = Loc.F("Step {0} of {1}", _index + 1, _steps.Length);
     }
 
     private void OnBack(object sender, RoutedEventArgs e)

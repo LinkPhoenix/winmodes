@@ -1,8 +1,9 @@
 <Page x:Class="WinModes.App.Pages.SettingsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-      Title="Settings"
+      Title="{l:T 'Settings'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Page.Resources>
         <Style x:Key="RowStyle" TargetType="Border">
@@ -16,10 +17,10 @@
     </Page.Resources>
 
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <TextBlock Text="Settings" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock Text="Changes are saved as you make them." Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
+        <TextBlock Text="{l:T 'Settings'}" FontSize="28" FontWeight="SemiBold" />
+        <TextBlock Text="{l:T 'Changes are saved as you make them.'}" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
 
-        <TextBlock Text="STARTUP" Style="{StaticResource SectionTitleStyle}" />
+        <TextBlock Text="{l:T 'STARTUP'}" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <StackPanel>
                 <Border Style="{StaticResource RowStyle}">
@@ -29,11 +30,11 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Start with Windows" FontWeight="SemiBold" />
-                            <TextBlock Text="Start WinModes automatically when you sign in." FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                            <TextBlock Text="{l:T 'Start with Windows'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'Start WinModes automatically when you sign in.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="StartWithWindows" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Start with Windows" />
+                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Start with Windows'}" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">
@@ -43,18 +44,18 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Start minimized" FontWeight="SemiBold" />
-                            <TextBlock Text="When started with Windows, stay hidden in the notification area instead of opening the window."
+                            <TextBlock Text="{l:T 'Start minimized'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'When started with Windows, stay hidden in the notification area instead of opening the window.'}"
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="StartMinimized" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Start minimized" />
+                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Start minimized'}" />
                     </Grid>
                 </Border>
             </StackPanel>
         </Border>
 
-        <TextBlock Text="WINDOW" Style="{StaticResource SectionTitleStyle}" />
+        <TextBlock Text="{l:T 'WINDOW'}" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <Border Style="{StaticResource RowStyle}" BorderThickness="0">
                 <Grid>
@@ -63,17 +64,17 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Keep running in the notification area" FontWeight="SemiBold" />
-                        <TextBlock Text="The close button hides the window; use Quit in the tray menu to exit. Turn off to exit when the window closes."
+                        <TextBlock Text="{l:T 'Keep running in the notification area'}" FontWeight="SemiBold" />
+                        <TextBlock Text="{l:T 'The close button hides the window; use Quit in the tray menu to exit. Turn off to exit when the window closes.'}"
                                    FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                     </StackPanel>
                     <ui:ToggleSwitch x:Name="CloseToTray" Grid.Column="1" VerticalAlignment="Center"
-                                     Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Keep running in the notification area" />
+                                     Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Keep running in the notification area'}" />
                 </Grid>
             </Border>
         </Border>
 
-        <TextBlock Text="DISPLAY" Style="{StaticResource SectionTitleStyle}" />
+        <TextBlock Text="{l:T 'DISPLAY'}" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <StackPanel>
                 <Border Style="{StaticResource RowStyle}">
@@ -83,12 +84,27 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Theme" FontWeight="SemiBold" />
-                            <TextBlock x:Name="ThemeNote" Text="Dark or light. Applied the next time WinModes starts."
+                            <TextBlock Text="{l:T 'Theme'}" FontWeight="SemiBold" />
+                            <TextBlock x:Name="ThemeNote" Text="{l:T 'Dark or light. Applied the next time WinModes starts.'}"
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ComboBox x:Name="Theme" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
-                                  DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged" AutomationProperties.Name="Theme" />
+                                  DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged" AutomationProperties.Name="{l:T 'Theme'}" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{l:T 'Language'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'Applied the next time WinModes starts.'}"
+                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ComboBox x:Name="LanguageChoice" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                                  DisplayMemberPath="Name" SelectionChanged="OnAutoModeChanged" AutomationProperties.Name="{l:T 'Language'}" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">
@@ -98,18 +114,18 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Show AI memory on the tray icon" FontWeight="SemiBold" />
-                            <TextBlock Text="The notification-area icon shows the memory used by AI tools, in GB. Hover it for the detail per tool."
+                            <TextBlock Text="{l:T 'Show AI memory on the tray icon'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'The notification-area icon shows the memory used by AI tools, in GB. Hover it for the detail per tool.'}"
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="ShowAiMemoryInTray" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show AI memory on the tray icon" />
+                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show AI memory on the tray icon'}" />
                     </Grid>
                 </Border>
             </StackPanel>
         </Border>
 
-        <TextBlock Text="PRIVACY" Style="{StaticResource SectionTitleStyle}" />
+        <TextBlock Text="{l:T 'PRIVACY'}" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <Border Style="{StaticResource RowStyle}" BorderThickness="0">
                 <Grid>
@@ -118,17 +134,17 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Privacy mode" FontWeight="SemiBold" />
-                        <TextBlock Text="Hides project names, folders, command-line details and your account name, so you can share your screen or take a screenshot. Figures and tool names stay visible."
+                        <TextBlock Text="{l:T 'Privacy mode'}" FontWeight="SemiBold" />
+                        <TextBlock Text="{l:T 'Hides project names, folders, command-line details and your account name, so you can share your screen or take a screenshot. Figures and tool names stay visible.'}"
                                    FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                     </StackPanel>
                     <ui:ToggleSwitch x:Name="PrivacyMode" Grid.Column="1" VerticalAlignment="Center"
-                                     Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Privacy mode" />
+                                     Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Privacy mode'}" />
                 </Grid>
             </Border>
         </Border>
 
-        <TextBlock Text="MODES" Style="{StaticResource SectionTitleStyle}" />
+        <TextBlock Text="{l:T 'MODES'}" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <StackPanel>
                 <Border Style="{StaticResource RowStyle}">
@@ -138,11 +154,11 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Ask before activating a mode" FontWeight="SemiBold" />
-                            <TextBlock Text="Show a summary of the changes and wait for your confirmation." FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                            <TextBlock Text="{l:T 'Ask before activating a mode'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'Show a summary of the changes and wait for your confirmation.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="ConfirmBeforeActivate" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Ask before activating a mode" />
+                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Ask before activating a mode'}" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">
@@ -152,19 +168,19 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Activate a mode when WinModes starts" FontWeight="SemiBold" />
-                            <TextBlock Text="Windows asks for administrator permission each time. Skipped when a mode is already active."
+                            <TextBlock Text="{l:T 'Activate a mode when WinModes starts'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'Windows asks for administrator permission each time. Skipped when a mode is already active.'}"
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ComboBox x:Name="AutoMode" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
                                   DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
-                                  AutomationProperties.Name="Mode to activate when WinModes starts" />
+                                  AutomationProperties.Name="{l:T 'Mode to activate when WinModes starts'}" />
                     </Grid>
                 </Border>
             </StackPanel>
         </Border>
 
-        <TextBlock Text="SHORTCUTS AND ALERTS" Style="{StaticResource SectionTitleStyle}" />
+        <TextBlock Text="{l:T 'SHORTCUTS AND ALERTS'}" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <StackPanel>
                 <Border Style="{StaticResource RowStyle}">
@@ -174,12 +190,12 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Global keyboard shortcuts" FontWeight="SemiBold" />
-                            <TextBlock Text="Ctrl+Alt+1, 2, 3 activate the modes in the order of their cards; Ctrl+Alt+0 deactivates. They work from any app."
+                            <TextBlock Text="{l:T 'Global keyboard shortcuts'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'Ctrl+Alt+1, 2, 3 activate the modes in the order of their cards; Ctrl+Alt+0 deactivates. They work from any app.'}"
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="EnableHotkeys" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Global keyboard shortcuts" />
+                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Global keyboard shortcuts'}" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}">
@@ -189,13 +205,13 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Alert when AI tools use too much memory" FontWeight="SemiBold" />
-                            <TextBlock Text="Shows a notification when all AI tools together reach the limit."
+                            <TextBlock Text="{l:T 'Alert when AI tools use too much memory'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'Shows a notification when all AI tools together reach the limit.'}"
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ComboBox x:Name="AiAlert" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
                                   DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
-                                  AutomationProperties.Name="AI tools memory alert limit" />
+                                  AutomationProperties.Name="{l:T 'AI tools memory alert limit'}" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}">
@@ -205,13 +221,13 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
-                            <TextBlock Text="Alert when one AI tool uses too much memory" FontWeight="SemiBold" />
-                            <TextBlock Text="Shows a notification when a single tool, all its sessions together, reaches the limit."
+                            <TextBlock Text="{l:T 'Alert when one AI tool uses too much memory'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'Shows a notification when a single tool, all its sessions together, reaches the limit.'}"
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ComboBox x:Name="AiToolAlert" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
                                   DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
-                                  AutomationProperties.Name="Alert when one AI tool uses too much memory" />
+                                  AutomationProperties.Name="{l:T 'Alert when one AI tool uses too much memory'}" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">
@@ -221,19 +237,19 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
-                            <TextBlock Text="End idle AI sessions automatically" FontWeight="SemiBold" />
-                            <TextBlock Text="Off by default. Closes a project session, and everything it started, after it used no CPU for this long. Unsaved work in it is lost. Desktop apps are never closed."
+                            <TextBlock Text="{l:T 'End idle AI sessions automatically'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'Off by default. Closes a project session, and everything it started, after it used no CPU for this long. Unsaved work in it is lost. Desktop apps are never closed.'}"
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ComboBox x:Name="AutoEndIdle" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
                                   DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
-                                  AutomationProperties.Name="End idle AI sessions automatically" />
+                                  AutomationProperties.Name="{l:T 'End idle AI sessions automatically'}" />
                     </Grid>
                 </Border>
             </StackPanel>
         </Border>
 
-        <TextBlock Text="WSL AND DOCKER" Style="{StaticResource SectionTitleStyle}" />
+        <TextBlock Text="{l:T 'WSL AND DOCKER'}" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <Border Style="{StaticResource RowStyle}" BorderThickness="0">
                 <Grid>
@@ -242,18 +258,18 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Memory limit for WSL and Docker Desktop" FontWeight="SemiBold" />
+                        <TextBlock Text="{l:T 'Memory limit for WSL and Docker Desktop'}" FontWeight="SemiBold" />
                         <TextBlock x:Name="WslNote" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
-                                   Text="Sets 'memory' in your .wslconfig. It applies the next time WSL starts; a backup of the file is kept beside it." />
+                                   Text="{l:T 'Sets \'memory\' in your .wslconfig. It applies the next time WSL starts; a backup of the file is kept beside it.'}" />
                     </StackPanel>
                     <ComboBox x:Name="WslMemory" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
                               DisplayMemberPath="Label" SelectionChanged="OnWslMemoryChanged"
-                              AutomationProperties.Name="Memory limit for WSL and Docker Desktop" />
+                              AutomationProperties.Name="{l:T 'Memory limit for WSL and Docker Desktop'}" />
                 </Grid>
             </Border>
         </Border>
 
-        <TextBlock Text="DATA" Style="{StaticResource SectionTitleStyle}" />
+        <TextBlock Text="{l:T 'DATA'}" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <Border Style="{StaticResource RowStyle}" BorderThickness="0">
                 <Grid>
@@ -262,15 +278,15 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Switch history" FontWeight="SemiBold" />
+                        <TextBlock Text="{l:T 'Switch history'}" FontWeight="SemiBold" />
                         <TextBlock x:Name="JournalPath" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                     </StackPanel>
-                    <ui:Button Grid.Column="1" Content="Open folder" Icon="{ui:SymbolIcon FolderOpen24}" Click="OnOpenJournal" />
+                    <ui:Button Grid.Column="1" Content="{l:T 'Open folder'}" Icon="{ui:SymbolIcon FolderOpen24}" Click="OnOpenJournal" />
                 </Grid>
             </Border>
         </Border>
 
         <TextBlock Margin="4,16,0,0" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
-                   Text="Automatic switching when a program starts is on the Automation page. Planned, not built yet: switching without a permission prompt." />
+                   Text="{l:T 'Automatic switching when a program starts is on the Automation page. Planned, not built yet: switching without a permission prompt.'}" />
     </StackPanel>
 </Page>

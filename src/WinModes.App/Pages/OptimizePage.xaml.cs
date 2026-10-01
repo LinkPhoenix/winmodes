@@ -19,7 +19,7 @@ public partial class OptimizePage : Page
 {
     // Projects whose code was read for the survey in research/oss-optimizers.
     private const int SurveyedTools = 12;
-    private const string ServicesTitle = "Services";
+    private static string ServicesTitle => Loc.T("Services");
     private const string AdminGlyph = "";
     private const string AccountGlyph = "";
 
@@ -64,7 +64,7 @@ public partial class OptimizePage : Page
             .Select(group =>
             {
                 var (glyph, color, subtitle) = Categories.GetValueOrDefault(group.Key, ("", Palette.Neutral, ""));
-                return new Group(group.Key, subtitle, glyph, color, [.. group.Select(tweak => Row.For(tweak, states[tweak.Id], undoable.Contains(tweak.Id)))]);
+                return new Group(Loc.T(group.Key), Loc.T(subtitle), glyph, color, [.. group.Select(tweak => Row.For(tweak, states[tweak.Id], undoable.Contains(tweak.Id)))]);
             })];
 
         // Services: what the knowledge base advises, then what was already changed (kept so it can be switched back).
@@ -75,17 +75,17 @@ public partial class OptimizePage : Page
             .ToList();
         if (serviceRows.Count > 0)
         {
-            _groups.Add(new Group(ServicesTitle, "Services that start with Windows although they are only needed now and then.", "", Palette.Container, serviceRows));
+            _groups.Add(new Group(ServicesTitle, Loc.T("Services that start with Windows although they are only needed now and then."), "", Palette.Container, serviceRows));
         }
 
         var recommended = Rows.Where(row => row.IsRecommended || (row.IsService && row.IsApplied)).ToList();
         var applied = recommended.Count(row => row.IsApplied);
-        ScoreValue.Text = $"{applied} of {recommended.Count}";
+        ScoreValue.Text = Loc.F("{0} of {1}", applied, recommended.Count);
         ScoreBar.Value = recommended.Count == 0 ? 0 : applied * 100d / recommended.Count;
         Summary.Text = Rows.Any()
-            ? $"{Rows.Count(row => !row.IsRecommended && !row.IsApplied)} more settings are optional. Recommendations come from a survey of "
-                + $"{SurveyedTools} open-source Windows optimizers whose code was read, and from the service knowledge base shipped with WinModes."
-            : "The tweak catalog (data/tweaks.json) and the knowledge base (data/db) are missing from this copy of WinModes.";
+            ? Loc.F("{0} more settings are optional. Recommendations come from a survey of {1} open-source Windows optimizers whose code was read, and from the service knowledge base shipped with WinModes.",
+                Rows.Count(row => !row.IsRecommended && !row.IsApplied), SurveyedTools)
+            : Loc.T("The tweak catalog (data/tweaks.json) and the knowledge base (data/db) are missing from this copy of WinModes.");
         SelectRecommendedButton.IsEnabled = recommended.Any(row => row.CanToggle && !row.IsApplied);
         UndoAllButton.IsEnabled = _hasChangedServices || undoable.Count > 0;
 
@@ -135,13 +135,13 @@ public partial class OptimizePage : Page
         var toUndo = pending.Count - toApply;
         ReviewTitle.Text = (toApply, toUndo) switch
         {
-            (_, 0) => $"{toApply} to apply",
-            (0, _) => $"{toUndo} to undo",
-            _ => $"{toApply} to apply, {toUndo} to undo",
+            (_, 0) => Loc.F("{0} to apply", toApply),
+            (0, _) => Loc.F("{0} to undo", toUndo),
+            _ => Loc.F("{0} to apply, {1} to undo", toApply, toUndo),
         };
         ReviewDetail.Text = pending.Any(row => row.NeedsElevation)
-            ? "Nothing has changed yet. Windows will ask for administrator permission once."
-            : "Nothing has changed yet. These settings belong to your account: no administrator permission is needed.";
+            ? Loc.T("Nothing has changed yet. Windows will ask for administrator permission once.")
+            : Loc.T("Nothing has changed yet. These settings belong to your account: no administrator permission is needed.");
         StopNow.Visibility = pending.Any(row => row is { IsService: true, IsOn: true, IsRunning: true }) ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -191,11 +191,10 @@ public partial class OptimizePage : Page
     {
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "Undo everything WinModes changed?",
-            Content = "Every setting and service changed from this page or from the Services page goes back to the value recorded before the change. "
-                + "A value that something else has changed since is left as it is.",
-            PrimaryButtonText = "Undo everything",
-            CloseButtonText = "Cancel",
+            Title = Loc.T("Undo everything WinModes changed?"),
+            Content = Loc.T("Every setting and service changed from this page or from the Services page goes back to the value recorded before the change. A value that something else has changed since is left as it is."),
+            PrimaryButtonText = Loc.T("Undo everything"),
+            CloseButtonText = Loc.T("Cancel"),
         };
         if (await confirm.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
         {
@@ -260,7 +259,7 @@ public partial class OptimizePage : Page
         /// <summary>Rows that pass the current filter.</summary>
         public List<Row> Rows { get; private set; } = [];
 
-        public string Progress => $"{_all.Count(row => row.IsApplied)} of {_all.Count} applied";
+        public string Progress => Loc.F("{0} of {1} applied", _all.Count(row => row.IsApplied), _all.Count);
         public double Percent => _all.Count == 0 ? 0 : _all.Count(row => row.IsApplied) * 100d / _all.Count;
 
         public void Show(Func<Row, bool> filter) => Rows = [.. _all.Where(filter)];
@@ -319,9 +318,9 @@ public partial class OptimizePage : Page
 
         public bool IsPending => IsOn != IsApplied;
 
-        public string Status => IsPending
+        public string Status => Loc.T(IsPending
             ? IsOn ? "Will be applied" : "Will be undone"
-            : IsApplied ? "Applied" : IsPartial ? "Partly applied" : "Not applied";
+            : IsApplied ? "Applied" : IsPartial ? "Partly applied" : "Not applied");
 
         public Brush StatusBrush => IsPending
             ? Palette.Apps
@@ -331,9 +330,9 @@ public partial class OptimizePage : Page
 
         public string ScopeGlyph => NeedsElevation ? AdminGlyph : AccountGlyph;
 
-        public string ScopeTip => NeedsElevation
+        public string ScopeTip => Loc.T(NeedsElevation
             ? "Applies to the whole PC. Windows asks for administrator permission."
-            : "Applies to your account only. No administrator permission needed.";
+            : "Applies to your account only. No administrator permission needed.");
 
         public Visibility WarningVisibility => Visible(!string.IsNullOrEmpty(Warning));
         public Visibility ToolsVisibility => Visible(Tools.Length > 0);
@@ -344,9 +343,9 @@ public partial class OptimizePage : Page
         {
             var (restart, restartTip) = tweak.Restart switch
             {
-                "sign-out" => ("Shows after sign-out", "Visible after you sign out and back in."),
-                "explorer" => ("Shows in new Explorer windows", "Visible in File Explorer windows opened afterwards."),
-                "restart" => ("Shows after a restart", "Visible after Windows restarts."),
+                "sign-out" => (Loc.T("Shows after sign-out"), Loc.T("Visible after you sign out and back in.")),
+                "explorer" => (Loc.T("Shows in new Explorer windows"), Loc.T("Visible in File Explorer windows opened afterwards.")),
+                "restart" => (Loc.T("Shows after a restart"), Loc.T("Visible after Windows restarts.")),
                 _ => ("", ""),
             };
             var applied = state == TweakState.Applied;
@@ -354,9 +353,9 @@ public partial class OptimizePage : Page
             return new Row
             {
                 Id = tweak.Id,
-                Title = tweak.Title,
-                Description = tweak.Description,
-                Warning = tweak.Warning,
+                Title = Loc.T(tweak.Title),
+                Description = Loc.T(tweak.Description),
+                Warning = string.IsNullOrEmpty(tweak.Warning) ? tweak.Warning : Loc.T(tweak.Warning),
                 IsRecommended = tweak.Recommended,
                 IsApplied = applied,
                 IsPartial = state == TweakState.Partial,
@@ -364,16 +363,16 @@ public partial class OptimizePage : Page
                 NeedsElevation = tweak.NeedsElevation,
                 // Applied before WinModes touched it: there is no earlier value on record to put back.
                 CanToggle = !applied || canUndo,
-                ToggleTip = applied && !canUndo ? "Already set on this PC before WinModes changed anything, so there is no earlier value to put back." : null,
-                Note = tweak.Recommended ? "Recommended" : medium ? "Check first" : "Optional",
+                ToggleTip = applied && !canUndo ? Loc.T("Already set on this PC before WinModes changed anything, so there is no earlier value to put back.") : null,
+                Note = Loc.T(tweak.Recommended ? "Recommended" : medium ? "Check first" : "Optional"),
                 NoteTint = Palette.Tint(tweak.Recommended ? Palette.Start : medium ? Palette.Power : Palette.Neutral),
-                NoteTip = tweak.Recommended
+                NoteTip = Loc.T(tweak.Recommended
                     ? "Low risk and shipped by several open-source optimizers whose code was read."
                     : tweak.Tools.Count > 0
                         ? "A matter of preference or with a side effect: read the note before applying it."
-                        : "Well-known setting, but not part of the code-verified survey: optional.",
-                Tools = tweak.Tools.Count > 0 ? $"{tweak.Tools.Count} of {SurveyedTools} optimizers" : "",
-                ToolsTip = $"Also set by: {string.Join(", ", tweak.Tools)}.",
+                        : "Well-known setting, but not part of the code-verified survey: optional."),
+                Tools = tweak.Tools.Count > 0 ? Loc.F("{0} of {1} optimizers", tweak.Tools.Count, SurveyedTools) : "",
+                ToolsTip = Loc.F("Also set by: {0}.", string.Join(", ", tweak.Tools)),
                 Restart = restart,
                 RestartTip = restartTip,
             };
@@ -393,16 +392,16 @@ public partial class OptimizePage : Page
                 IsService = true,
                 IsRunning = recommendation.Service.IsRunning,
                 ServiceTarget = target,
-                Note = recommendation.IsConfident ? "Recommended" : "Check first",
+                Note = Loc.T(recommendation.IsConfident ? "Recommended" : "Check first"),
                 NoteTint = Palette.Tint(recommendation.IsConfident ? Palette.Start : Palette.Power),
-                NoteTip = recommendation.IsConfident
+                NoteTip = Loc.T(recommendation.IsConfident
                     ? "Backed by a published source and rated low risk."
                     : recommendation.Advice.IsSourced
                         ? "Rated medium risk: switch it on only if you do not use this feature."
-                        : "Identified on a PC but not backed by a published source yet: switch it on only if you know you do not need it.",
+                        : "Identified on a PC but not backed by a published source yet: switch it on only if you know you do not need it."),
                 Change = $"{recommendation.Service.StartMode} → {target}",
-                Restart = recommendation.Service.IsRunning ? "Running now" : "Not running",
-                RestartTip = "Changing the start type does not stop the service: it applies the next time Windows starts.",
+                Restart = Loc.T(recommendation.Service.IsRunning ? "Running now" : "Not running"),
+                RestartTip = Loc.T("Changing the start type does not stop the service: it applies the next time Windows starts."),
             };
         }
 
@@ -418,9 +417,9 @@ public partial class OptimizePage : Page
             NeedsElevation = true,
             IsService = true,
             IsRunning = service?.IsRunning ?? false,
-            Note = "Changed by you",
+            Note = Loc.T("Changed by you"),
             NoteTint = Palette.Tint(Palette.Neutral),
-            NoteTip = string.Create(CultureInfo.CurrentCulture, $"Changed {tweak.ChangedUtc.ToLocalTime():g}. Switch it off to restore {tweak.OriginalStartMode}."),
+            NoteTip = Loc.F("Changed {0:g}. Switch it off to restore {1}.", tweak.ChangedUtc.ToLocalTime(), tweak.OriginalStartMode),
             Change = $"{tweak.OriginalStartMode} → {service?.StartMode ?? tweak.SetTo}",
         };
 

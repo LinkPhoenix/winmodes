@@ -33,10 +33,10 @@ internal sealed class TrayMeter(Forms.NotifyIcon trayIcon, Icon defaultIcon) : I
         _current = icon;
 
         var lines = reading.AiTools.Count == 0
-            ? "No AI tool is running"
+            ? Loc.T("No AI tool is running")
             : string.Join("\n", reading.AiTools.Select(tool =>
                 string.Create(CultureInfo.CurrentCulture, $"{tool.Name}: {tool.MemoryMb / MbPerGb:0.0} GB")));
-        var tooltip = string.Create(CultureInfo.CurrentCulture, $"WinModes - AI tools {gigabytes:0.0} GB\n{lines}");
+        var tooltip = Loc.F("WinModes - AI tools {0:0.0} GB", gigabytes) + "\n" + lines;
         trayIcon.Text = tooltip.Length > MaxTooltipLength ? tooltip[..MaxTooltipLength] : tooltip;
     }
 

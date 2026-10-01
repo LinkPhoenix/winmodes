@@ -49,10 +49,10 @@ public partial class HistoryPage : Page
         Sessions.ItemsSource = sessions.Select(session =>
         {
             var entry = catalog.FirstOrDefault(mode => mode.Profile.Mode.Equals(session.Mode, StringComparison.OrdinalIgnoreCase));
-            var status = session.Reverted ? ("Undone", Palette.Neutral) : session.DoneCount > 0 ? ("Active", Palette.Start) : ("No change", Palette.Neutral);
+            var status = session.Reverted ? (Loc.T("Undone"), Palette.Neutral) : session.DoneCount > 0 ? (Loc.T("Active"), Palette.Start) : (Loc.T("No change"), Palette.Neutral);
             return new SessionRow(
-                $"{entry?.Profile.Label ?? session.Mode} mode",
-                string.Create(CultureInfo.CurrentCulture, $"{session.StartedUtc.ToLocalTime():g} - {session.Entries.Count} services"),
+                Loc.F("{0} mode", entry?.Profile.Label ?? session.Mode),
+                Loc.F("{0:g} - {1} services", session.StartedUtc.ToLocalTime(), session.Entries.Count),
                 entry?.Glyph ?? DefaultGlyph,
                 entry?.Accent ?? Palette.Neutral,
                 status.Item1,
@@ -62,21 +62,21 @@ public partial class HistoryPage : Page
 
         EmptyState.Visibility = sessions.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         Summary.Text = sessions.Count == 0
-            ? "Every mode switch is recorded here with the state it replaced."
-            : $"{sessions.Count} switch(es) recorded. Undo the active one from the Modes page.";
+            ? Loc.T("Every mode switch is recorded here with the state it replaced.")
+            : Loc.F("{0} switch(es) recorded. Undo the active one from the Modes page.", sessions.Count);
     }
 
     private static EntryRow ToRow(JournalEntry entry)
     {
-        var verb = entry.Kind == EntryKind.StopService ? "Stop" : "Start";
-        var before = $"Before: {entry.BeforeStartMode}, {(entry.BeforeRunning ? "running" : "stopped")}";
+        var verb = Loc.T(entry.Kind == EntryKind.StopService ? "Stop" : "Start");
+        var before = Loc.F("Before: {0}, {1}", entry.BeforeStartMode, Loc.T(entry.BeforeRunning ? "running" : "stopped"));
         var color = entry.Outcome switch
         {
             EntryOutcome.Done or EntryOutcome.Reverted => Palette.Start,
             EntryOutcome.Failed => Palette.Stop,
             _ => Palette.Neutral,
         };
-        return new EntryRow($"{verb} {entry.Target}", entry.Detail is null ? before : $"{before}. {entry.Detail}", entry.Outcome.ToString(), color);
+        return new EntryRow($"{verb} {entry.Target}", entry.Detail is null ? before : $"{before}. {entry.Detail}", Loc.T(entry.Outcome.ToString()), color);
     }
 
     private sealed record SessionRow(

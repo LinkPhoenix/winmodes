@@ -8,7 +8,7 @@ namespace WinModes.App.Services;
 internal static class Privacy
 {
     public const string CommandLineArgument = "--privacy";
-    public const string HiddenFolder = "folder hidden";
+    public static string HiddenFolder => Loc.T("folder hidden");
 
     private static readonly Dictionary<string, int> ProjectNumbers = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Lock Gate = new();
@@ -45,7 +45,7 @@ internal static class Privacy
                 ProjectNumbers[name] = number;
             }
 
-            return $"Project {number}";
+            return Loc.F("Project {0}", number);
         }
     }
 
@@ -60,5 +60,5 @@ internal static class Privacy
 
     /// <summary>Arguments often hold folders, file names and prompts: only the process name is kept.</summary>
     public static string CommandLine(string? commandLine, string processName) =>
-        Enabled ? $"{processName} (details hidden)" : commandLine ?? "";
+        Enabled ? Loc.F("{0} (details hidden)", processName) : commandLine ?? "";
 }

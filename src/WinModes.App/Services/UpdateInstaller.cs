@@ -50,7 +50,7 @@ internal static class UpdateInstaller
     {
         if (!ReleaseVersion.TryParse(tag, out _))
         {
-            throw new UpdateException("The release name is not a version.");
+            throw new UpdateException(Loc.T("The release name is not a version."));
         }
 
         using var client = new HttpClient { Timeout = Timeout };
@@ -68,7 +68,7 @@ internal static class UpdateInstaller
             if (!actual.Equals(expected, StringComparison.OrdinalIgnoreCase))
             {
                 File.Delete(path);
-                throw new UpdateException("The downloaded file does not match the checksum of the release. It was deleted.");
+                throw new UpdateException(Loc.T("The downloaded file does not match the checksum of the release. It was deleted."));
             }
 
             return path;
@@ -76,7 +76,7 @@ internal static class UpdateInstaller
         catch (Exception ex) when (ex is HttpRequestException or JsonException or IOException or UnauthorizedAccessException
             || (ex is TaskCanceledException && !cancellation.IsCancellationRequested))
         {
-            throw new UpdateException("The update could not be downloaded. Check the connection and try again.", ex);
+            throw new UpdateException(Loc.T("The update could not be downloaded. Check the connection and try again."), ex);
         }
     }
 
@@ -113,7 +113,7 @@ internal static class UpdateInstaller
         }
 
         return name is null || url is null || checksumUrl is null
-            ? throw new UpdateException("This release has no such file with a checksum. Open the release page instead.")
+            ? throw new UpdateException(Loc.T("This release has no such file with a checksum. Open the release page instead."))
             : (name, url, checksumUrl);
     }
 
@@ -129,7 +129,7 @@ internal static class UpdateInstaller
             }
         }
 
-        throw new UpdateException("The release does not list a checksum for this file. Open the release page instead.");
+        throw new UpdateException(Loc.T("The release does not list a checksum for this file. Open the release page instead."));
     }
 
     private static async Task<string> DownloadFileAsync(HttpClient client, string url, string path, IProgress<double> progress, CancellationToken cancellation)

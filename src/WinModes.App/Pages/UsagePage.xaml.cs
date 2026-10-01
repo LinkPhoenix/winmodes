@@ -10,9 +10,9 @@ namespace WinModes.App.Pages;
 /// <summary>Opt-in history of the memory used by AI tools, per project, over the last days.</summary>
 public partial class UsagePage : Page
 {
-    private const string DesktopApp = "Desktop app";
+    private static string DesktopApp => Loc.T("Desktop app");
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(10);
-    private static readonly PeriodChoice[] Periods = [new(1, "Today"), new(7, "Last 7 days"), new(30, "Last 30 days")];
+    private static readonly PeriodChoice[] Periods = [new(1, Loc.T("Today")), new(7, Loc.T("Last 7 days")), new(30, Loc.T("Last 30 days"))];
     private static readonly Brush[] BarColors = [Palette.Apps, Palette.Container, Palette.Start, Palette.Power, Palette.Stop];
 
     private readonly DispatcherTimer _timer = new() { Interval = RefreshInterval };
@@ -54,13 +54,13 @@ public partial class UsagePage : Page
         var recording = Enabled.IsChecked == true;
         ListCard.Visibility = summaries.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         EmptyState.Visibility = summaries.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
-        EmptyTitle.Text = recording ? "Nothing recorded yet" : "Usage history is off";
-        EmptyText.Text = recording
+        EmptyTitle.Text = Loc.T(recording ? "Nothing recorded yet" : "Usage history is off");
+        EmptyText.Text = Loc.T(recording
             ? "Figures appear after an AI tool has run for a minute."
-            : "Turn on recording above to see which projects use the most memory.";
+            : "Turn on recording above to see which projects use the most memory.");
         Summary.Text = summaries.Count == 0
-            ? "How much memory your AI tools used, per project."
-            : $"{summaries.Count} project(s), ranked by memory held over time. {(recording ? "Recording is on." : "Recording is off.")}";
+            ? Loc.T("How much memory your AI tools used, per project.")
+            : Loc.F("{0} project(s), ranked by memory held over time.", summaries.Count) + " " + Loc.T(recording ? "Recording is on." : "Recording is off.");
     }
 
     private static string FormatDuration(TimeSpan duration) =>
@@ -90,10 +90,10 @@ public partial class UsagePage : Page
     {
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "Clear the usage history?",
-            Content = "Every recorded day is deleted. This cannot be undone.",
-            PrimaryButtonText = "Clear history",
-            CloseButtonText = "Cancel",
+            Title = Loc.T("Clear the usage history?"),
+            Content = Loc.T("Every recorded day is deleted. This cannot be undone."),
+            PrimaryButtonText = Loc.T("Clear history"),
+            CloseButtonText = Loc.T("Cancel"),
         };
         if (await confirm.ShowDialogAsync() == Wpf.Ui.Controls.MessageBoxResult.Primary)
         {

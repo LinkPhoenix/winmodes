@@ -80,6 +80,10 @@ if ($DryRun) {
     return
 }
 
+# Every text of the interface must have its translation in each language.
+& (Join-Path $PSScriptRoot 'extract-texts.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'Translations are missing or unused; the release was not created.' }
+
 dotnet test (Join-Path $Root 'WinModes.slnx') --nologo -v q
 if ($LASTEXITCODE -ne 0) { throw 'Tests failed; the release was not created.' }
 

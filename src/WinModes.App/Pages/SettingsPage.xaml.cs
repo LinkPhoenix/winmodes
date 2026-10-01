@@ -11,7 +11,7 @@ namespace WinModes.App.Pages;
 public partial class SettingsPage : Page
 {
     private static readonly int[] AlertLimitsGb = [2, 4, 6, 8, 12, 16, 24];
-    private static readonly Choice[] ThemeChoices = [new(AppSettings.DarkTheme, "Dark"), new(AppSettings.LightTheme, "Light")];
+    private static readonly Choice[] ThemeChoices = [new(AppSettings.DarkTheme, Loc.T("Dark")), new(AppSettings.LightTheme, Loc.T("Light"))];
     private static readonly int[] IdleMinutes = [30, 60, 120, 240];
     private static readonly int[] WslLimitsGb = [4, 6, 8, 12, 16];
 
@@ -29,28 +29,30 @@ public partial class SettingsPage : Page
         ShowAiMemoryInTray.IsChecked = settings.ShowAiMemoryInTray;
         EnableHotkeys.IsChecked = settings.EnableHotkeys;
 
-        var limits = new List<Limit> { new(0, "Off") };
+        var limits = new List<Limit> { new(0, Loc.T("Off")) };
         limits.AddRange(AlertLimitsGb.Select(gb => new Limit(gb, $"{gb} GB")));
         AiAlert.ItemsSource = limits;
         AiAlert.SelectedItem = limits.FirstOrDefault(limit => limit.Gb == settings.AiMemoryAlertGb) ?? limits[0];
         Theme.ItemsSource = ThemeChoices;
         Theme.SelectedItem = ThemeChoices.FirstOrDefault(choice => choice.Mode == settings.Theme) ?? ThemeChoices[0];
+        LanguageChoice.ItemsSource = Loc.Languages;
+        LanguageChoice.SelectedItem = Loc.Languages.FirstOrDefault(language => language.Code == settings.Language) ?? Loc.Languages[0];
         AiToolAlert.ItemsSource = limits;
         AiToolAlert.SelectedItem = limits.FirstOrDefault(limit => limit.Gb == settings.AiToolAlertGb) ?? limits[0];
-        var idleChoices = new List<Limit> { new(0, "Never") };
-        idleChoices.AddRange(IdleMinutes.Select(minutes => new Limit(minutes, minutes < 60 ? $"After {minutes} minutes" : $"After {minutes / 60} h")));
+        var idleChoices = new List<Limit> { new(0, Loc.T("Never")) };
+        idleChoices.AddRange(IdleMinutes.Select(minutes => new Limit(minutes, minutes < 60 ? Loc.F("After {0} minutes", minutes) : Loc.F("After {0} h", minutes / 60))));
         AutoEndIdle.ItemsSource = idleChoices;
         AutoEndIdle.SelectedItem = idleChoices.FirstOrDefault(choice => choice.Gb == settings.AutoEndIdleMinutes) ?? idleChoices[0];
         JournalPath.Text = Privacy.Path(AppPaths.JournalDirectory);
         PrivacyMode.IsChecked = settings.PrivacyMode;
 
-        var choices = new List<Choice> { new(null, "None") };
+        var choices = new List<Choice> { new(null, Loc.T("None")) };
         choices.AddRange(ModeCatalog.Load().Select(entry => new Choice(entry.Profile.Mode, entry.Profile.Label)));
         AutoMode.ItemsSource = choices;
         AutoMode.SelectedItem = choices.FirstOrDefault(choice => choice.Mode == settings.AutoActivateMode) ?? choices[0];
 
         var currentWsl = File.Exists(WslConfig.DefaultPath) ? WslConfig.ReadMemoryGb(File.ReadAllText(WslConfig.DefaultPath)) : null;
-        var wslChoices = new List<Limit> { new(0, "No limit set") };
+        var wslChoices = new List<Limit> { new(0, Loc.T("No limit set")) };
         wslChoices.AddRange(WslLimitsGb.Union(currentWsl is { } gb ? [gb] : []).Order().Select(value => new Limit(value, $"{value} GB")));
         WslMemory.ItemsSource = wslChoices;
         WslMemory.SelectedItem = wslChoices.FirstOrDefault(choice => choice.Gb == (currentWsl ?? 0)) ?? wslChoices[0];
@@ -83,6 +85,7 @@ public partial class SettingsPage : Page
             AiMemoryAlertGb = (AiAlert.SelectedItem as Limit)?.Gb ?? 0,
             AiToolAlertGb = (AiToolAlert.SelectedItem as Limit)?.Gb ?? 0,
             Theme = (Theme.SelectedItem as Choice)?.Mode ?? AppSettings.DarkTheme,
+            Language = (LanguageChoice.SelectedItem as Language)?.Code ?? Loc.DefaultLanguage,
             AutoEndIdleMinutes = (AutoEndIdle.SelectedItem as Limit)?.Gb ?? 0,
             AutoActivateMode = (AutoMode.SelectedItem as Choice)?.Mode,
         }).Save();
@@ -116,11 +119,11 @@ public partial class SettingsPage : Page
             }
 
             File.WriteAllText(path, updated);
-            WslNote.Text = "Saved. It applies the next time WSL starts (after 'wsl --shutdown' or a restart of Docker Desktop).";
+            WslNote.Text = Loc.T("Saved. It applies the next time WSL starts (after 'wsl --shutdown' or a restart of Docker Desktop).");
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            WslNote.Text = $"The .wslconfig file could not be written: {ex.Message}";
+            WslNote.Text = Loc.F("The .wslconfig file could not be written: {0}", ex.Message);
         }
     }
 
@@ -134,7 +137,7 @@ public partial class SettingsPage : Page
         }
         else
         {
-            JournalPath.Text = $"{Privacy.Path(AppPaths.JournalDirectory)} (created at the first mode switch)";
+            JournalPath.Text = Loc.F("{0} (created at the first mode switch)", Privacy.Path(AppPaths.JournalDirectory));
         }
     }
 

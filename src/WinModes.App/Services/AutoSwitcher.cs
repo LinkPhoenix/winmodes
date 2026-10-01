@@ -78,10 +78,10 @@ internal sealed class AutoSwitcher
             switch (decision.Kind)
             {
                 case AutoSwitchKind.Activate:
-                    await _switch(AutoSwitchConditions.IsCondition(decision.Process!) ? AutoSwitchConditions.Describe(decision.Process!) : $"{decision.Process} started", () => AppServices.Switcher.ActivateAsync(AppServices.Store.Load(decision.Mode!)));
+                    await _switch(AutoSwitchConditions.IsCondition(decision.Process!) ? AutoSwitchConditions.Describe(decision.Process!) : Loc.F("{0} started", decision.Process), () => AppServices.Switcher.ActivateAsync(AppServices.Store.Load(decision.Mode!)));
                     break;
                 case AutoSwitchKind.Revert:
-                    await _switch(AutoSwitchConditions.IsCondition(decision.Process!) ? $"No longer: {AutoSwitchConditions.Describe(decision.Process!)}" : $"{decision.Process} closed", AppServices.Switcher.UndoAsync);
+                    await _switch(AutoSwitchConditions.IsCondition(decision.Process!) ? Loc.F("No longer: {0}", AutoSwitchConditions.Describe(decision.Process!)) : Loc.F("{0} closed", decision.Process), AppServices.Switcher.UndoAsync);
                     break;
             }
         }

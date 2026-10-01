@@ -1,3 +1,4 @@
+using WinModes.Core.Localization;
 using WinModes.Core.Profiles;
 using WinModes.Core.Protection;
 
@@ -37,7 +38,7 @@ public sealed class ModePlanner(ISystemProbe probe, ProtectionPolicy policy)
 
         if (!string.IsNullOrEmpty(profile.Power.Plan))
         {
-            changes.Add(new PlannedChange(ChangeKind.SetPowerPlan, "power plan", "current", profile.Power.Plan, "Mode power plan"));
+            changes.Add(new PlannedChange(ChangeKind.SetPowerPlan, Loc.T("power plan"), Loc.T("current"), profile.Power.Plan, Loc.T("Mode power plan")));
         }
 
         return new ModePlan(profile.Mode, changes, skipped);
@@ -67,7 +68,7 @@ public sealed class ModePlanner(ISystemProbe probe, ProtectionPolicy policy)
                 continue;
             }
 
-            changes.Add(new PlannedChange(ChangeKind.StopService, stop.Id, Describe(state), "Manual/Stopped", stop.Why));
+            changes.Add(new PlannedChange(ChangeKind.StopService, stop.Id, Describe(state), $"{Loc.T("Manual")}/{Loc.T("Stopped")}", Loc.T(stop.Why)));
         }
     }
 
@@ -90,7 +91,7 @@ public sealed class ModePlanner(ISystemProbe probe, ProtectionPolicy policy)
             }
             else
             {
-                changes.Add(new PlannedChange(ChangeKind.StartService, start.Id, Describe(state), $"{state.StartMode}/Running", "Required by this mode"));
+                changes.Add(new PlannedChange(ChangeKind.StartService, start.Id, Describe(state), $"{Loc.T(state.StartMode.ToString())}/{Loc.T("Running")}", Loc.T("Required by this mode")));
             }
         }
     }
@@ -99,11 +100,11 @@ public sealed class ModePlanner(ISystemProbe probe, ProtectionPolicy policy)
     {
         changes.AddRange(profile.Apps.Close
             .Where(app => probe.IsProcessRunning(app.Process))
-            .Select(app => new PlannedChange(ChangeKind.CloseApp, app.Id, "running", "closed", app.Why)));
+            .Select(app => new PlannedChange(ChangeKind.CloseApp, app.Id, Loc.T("running"), Loc.T("closed"), Loc.T(app.Why))));
 
         changes.AddRange(profile.Apps.Launch
             .Where(app => !probe.IsProcessRunning(Path.GetFileName(app.Path)))
-            .Select(app => new PlannedChange(ChangeKind.LaunchApp, app.Id, "not running", "running", "Launched by this mode")));
+            .Select(app => new PlannedChange(ChangeKind.LaunchApp, app.Id, Loc.T("not running"), Loc.T("running"), Loc.T("Launched by this mode"))));
     }
 
     private void PlanWsl(ModeProfile profile, List<PlannedChange> changes)
@@ -111,14 +112,14 @@ public sealed class ModePlanner(ISystemProbe probe, ProtectionPolicy policy)
         var wslRunning = probe.IsWslRunning();
         if (!profile.Wsl.Running && wslRunning)
         {
-            changes.Add(new PlannedChange(ChangeKind.ShutdownWsl, "WSL + Docker Desktop", "running", "stopped", "Frees the WSL2 VM memory"));
+            changes.Add(new PlannedChange(ChangeKind.ShutdownWsl, "WSL + Docker Desktop", Loc.T("running"), Loc.T("stopped"), Loc.T("Frees the WSL2 VM memory")));
         }
         else if (profile.Wsl.Running && profile.Wsl.Docker == "start" && !probe.IsProcessRunning("Docker Desktop.exe"))
         {
-            changes.Add(new PlannedChange(ChangeKind.StartDocker, "Docker Desktop", "not running", "running", "Dev stack for this mode"));
+            changes.Add(new PlannedChange(ChangeKind.StartDocker, "Docker Desktop", Loc.T("not running"), Loc.T("running"), Loc.T("Dev stack for this mode")));
         }
     }
 
     private static string Describe(ServiceState state) =>
-        $"{state.StartMode}/{(state.IsRunning ? "Running" : "Stopped")}";
+        $"{Loc.T(state.StartMode.ToString())}/{Loc.T(state.IsRunning ? "Running" : "Stopped")}";
 }

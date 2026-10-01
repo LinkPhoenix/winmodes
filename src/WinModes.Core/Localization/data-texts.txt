@@ -1,0 +1,22 @@
+# Texts translated when shown although no Loc call names them in the source: values of enumerations,
+# labels kept in tables and the one-line purpose of each Optimize category. One text per line.
+Automatic
+Manual
+Disabled
+Unknown
+Done
+Skipped
+Failed
+Reverted
+RevertSkipped
+Pending
+Leave unchanged
+Balanced
+High performance
+Ultimate performance
+What Windows records about you and sends to Microsoft.
+Promoted apps, tips and ads in Start, Settings, the lock screen and File Explorer.
+Web results in Start search, Widgets, Recall and Windows Copilot.
+Game Mode, background recording and pointer behaviour.
+What keeps running or loading when you are not using it.
+Small conveniences for File Explorer, the taskbar and development.

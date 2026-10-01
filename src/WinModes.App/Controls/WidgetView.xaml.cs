@@ -76,7 +76,7 @@ public partial class WidgetView : UserControl
         CompactMemory.Text = MemoryText.Text;
         CompactAi.Text = AiTotal.Text;
         AiTools.ItemsSource = reading.AiTools.Count == 0
-            ? [new ToolRow("None running", "", null)]
+            ? [new ToolRow(Loc.T("None running"), "", null)]
             : reading.AiTools.Take(Math.Max(_settings.MaxTools, 1)).Select(tool => new ToolRow(
                 tool.Sessions > 1 ? $"{tool.Name} ×{tool.Sessions}" : tool.Name,
                 string.Create(culture, $"{tool.MemoryMb / MbPerGb:0.0} GB"),
@@ -108,7 +108,15 @@ public partial class WidgetView : UserControl
             var (value, detail, remaining) = WinModes.Core.Usage.Subscriptions.Describe(status, now, culture);
             var icon = PlanIconPaths.TryGetValue(status.Tool, out var path) ? IconCache.Get(path) : null;
             var shortValue = remaining is { } left ? string.Create(culture, $"{left:0} %") : value.Length > 0 ? value : "–";
-            return new PlanRow(status.Tool, status.Plan, value, detail, remaining ?? 0, Visible(remaining is not null), icon, shortValue, status.ResetCredits is { } credits ? $"↻ {credits}" : "");
+            // The second limit gets its own bar unless it has started over since the figure was recorded.
+            var second = remaining is not null && status.Secondary is { } secondary && !secondary.HasReset(now) ? secondary : null;
+            return new PlanRow(status.Tool, status.Plan, value, detail, remaining ?? 0, Visible(remaining is not null), icon, shortValue, status.ResetCredits is { } credits ? $"↻ {credits}" : "")
+            {
+                WindowName = Capitalize(status.Primary?.WindowName),
+                SecondWindowName = Capitalize(second?.WindowName),
+                SecondRemaining = second?.RemainingPercent ?? 0,
+                SecondBarVisibility = Visible(second is not null),
+            };
         }).ToList();
         if (_settings.Compact)
         {
@@ -127,6 +135,14 @@ public partial class WidgetView : UserControl
     private sealed record PlanRow(
         string Tool, string Plan, string Value, string Detail, double Remaining, Visibility BarVisibility, ImageSource? Icon, string Short, string Resets)
     {
+        public string WindowName { get; init; } = "";
+
+        public string SecondWindowName { get; init; } = "";
+
+        public double SecondRemaining { get; init; }
+
+        public Visibility SecondBarVisibility { get; init; } = Visibility.Collapsed;
+
         public Visibility IconVisibility => Icon is null ? Visibility.Collapsed : Visibility.Visible;
 
         /// <summary>The name is shown only while the icon is not known yet.</summary>
@@ -147,7 +163,7 @@ public partial class WidgetView : UserControl
         }
 
         (_shownMode, _modeShown) = (mode, true);
-        ModeText.Text = mode is null ? "No mode" : $"{CultureInfo.CurrentCulture.TextInfo.ToTitleCase(mode)} mode";
+        ModeText.Text = mode is null ? Loc.T("No mode") : Loc.F("{0} mode", CultureInfo.CurrentCulture.TextInfo.ToTitleCase(mode));
         if (mode is null)
         {
             ModeChip.Background = Brushes.Transparent;
@@ -173,6 +189,8 @@ public partial class WidgetView : UserControl
     {
         public Visibility IconVisibility => Icon is null ? Visibility.Collapsed : Visibility.Visible;
     }
+
+    private static string Capitalize(string? text) => string.IsNullOrEmpty(text) ? "" : char.ToUpper(text[0], CultureInfo.CurrentCulture) + text[1..];
 
     private static Visibility Visible(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
 }

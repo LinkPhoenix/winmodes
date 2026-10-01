@@ -12,6 +12,7 @@ public partial class App : Application, IDisposable
 {
     private const string SingleInstanceMutexName = @"Local\WinModes.App";
     private const string OnboardingArgument = "--onboarding";
+    private const string LanguageArgument = "--language";
 
     private Mutex? _singleInstance;
     private Forms.NotifyIcon? _trayIcon;
@@ -40,10 +41,14 @@ public partial class App : Application, IDisposable
             return;
         }
 
+        // The argument sets the language for this run only, without changing the saved setting.
+        var languageIndex = Array.IndexOf(e.Args, LanguageArgument);
+        UseLanguage(languageIndex >= 0 && languageIndex + 1 < e.Args.Length ? e.Args[languageIndex + 1] : Services.AppSettings.Load().Language);
+
         var root = RepositoryLocator.Find(AppContext.BaseDirectory) ?? RepositoryLocator.Find(Environment.CurrentDirectory);
         if (root is null)
         {
-            MessageBox.Show("Cannot find the win-modes data (data/protected.json).", "WinModes", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(Loc.T("Cannot find the win-modes data (data/protected.json)."), "WinModes", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown();
             return;
         }
@@ -75,6 +80,25 @@ public partial class App : Application, IDisposable
         StartSession(e.Args);
     }
 
+    /// <summary>
+    /// Chosen before any window exists, since every text is read when its screen is built. In English the
+    /// formats of Windows are kept; another language also brings its own dates and numbers.
+    /// </summary>
+    private static void UseLanguage(string language)
+    {
+        Loc.Use(language);
+        if (Loc.Current == Loc.DefaultLanguage)
+        {
+            return;
+        }
+
+        var culture = System.Globalization.CultureInfo.GetCultureInfo(Loc.Current);
+        System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
+        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+        System.Globalization.CultureInfo.CurrentCulture = culture;
+        System.Globalization.CultureInfo.CurrentUICulture = culture;
+    }
+
     private async void StartSession(string[] args)
     {
         // At sign-in the app starts hidden; the tray icon opens the window. The first run always shows the guide.
@@ -95,7 +119,7 @@ public partial class App : Application, IDisposable
         {
             var report = await AppServices.Switcher.ActivateAsync(AppServices.Store.Load(autoMode));
             _trayIcon?.ShowBalloonTip(4000, "WinModes",
-                report.Succeeded ? $"{autoMode} mode activated automatically." : report.Lines[0], Forms.ToolTipIcon.Info);
+                report.Succeeded ? Loc.F("{0} mode activated automatically.", autoMode) : report.Lines[0], Forms.ToolTipIcon.Info);
         }
         catch (ProfileException ex)
         {
@@ -114,8 +138,8 @@ public partial class App : Application, IDisposable
         if (status.IsNewer && _trayIcon is not null)
         {
             _trayIcon.BalloonTipClicked += OnUpdateBalloonClicked;
-            _trayIcon.ShowBalloonTip(8000, "WinModes update available",
-                $"Version {status.LatestTag} is out (you have v{AppInfo.Version}). Click to see it on the About page.", Forms.ToolTipIcon.Info);
+            _trayIcon.ShowBalloonTip(8000, Loc.T("WinModes update available"),
+                Loc.F("Version {0} is out (you have v{1}). Click to see it on the About page.", status.LatestTag, AppInfo.Version), Forms.ToolTipIcon.Info);
         }
     }
 
@@ -226,7 +250,7 @@ public partial class App : Application, IDisposable
         {
             if (Services.ModeSwitcher.ActiveMode is not null)
             {
-                await SwitchFromTrayAsync("Deactivate", AppServices.Switcher.UndoAsync);
+                await SwitchFromTrayAsync(Loc.T("Deactivate"), AppServices.Switcher.UndoAsync);
             }
         });
     }
@@ -265,10 +289,9 @@ public partial class App : Application, IDisposable
         if (usedGb >= settings.AiMemoryAlertGb && !_alertRaised)
         {
             _alertRaised = true;
-            var top = reading.AiTools.Count > 0 ? $" Largest: {reading.AiTools[0].Name}." : "";
-            _trayIcon?.ShowBalloonTip(6000, "WinModes - AI tools memory",
-                string.Create(System.Globalization.CultureInfo.CurrentCulture,
-                    $"AI tools use {usedGb:0.0} GB, above your {settings.AiMemoryAlertGb} GB limit.{top}"),
+            var top = reading.AiTools.Count > 0 ? " " + Loc.F("Largest: {0}.", reading.AiTools[0].Name) : "";
+            _trayIcon?.ShowBalloonTip(6000, Loc.T("WinModes - AI tools memory"),
+                Loc.F("AI tools use {0:0.0} GB, above your {1} GB limit.", usedGb, settings.AiMemoryAlertGb) + top,
                 Forms.ToolTipIcon.Warning);
         }
         else if (usedGb < settings.AiMemoryAlertGb * RearmRatio)
@@ -324,8 +347,7 @@ public partial class App : Application, IDisposable
             if (usedGb >= limitGb && _toolAlertsRaised.Add(tool.Name))
             {
                 _trayIcon?.ShowBalloonTip(6000, $"WinModes - {tool.Name}",
-                    string.Create(System.Globalization.CultureInfo.CurrentCulture,
-                        $"{tool.Name} uses {usedGb:0.0} GB, above your {limitGb} GB limit per tool."),
+                    Loc.F("{0} uses {1:0.0} GB, above your {2} GB limit per tool.", tool.Name, usedGb, limitGb),
                     Forms.ToolTipIcon.Warning);
             }
             else if (usedGb < limitGb * RearmRatio)
@@ -354,8 +376,8 @@ public partial class App : Application, IDisposable
             var project = Services.Privacy.Project(Services.AiSessions.ProjectName(session));
             if (Services.AiSessions.End(session))
             {
-                _trayIcon?.ShowBalloonTip(5000, "WinModes - idle session ended",
-                    $"{session.Tool.Name} in {project} used no CPU for {idleMinutes} minutes and was closed.", Forms.ToolTipIcon.Info);
+                _trayIcon?.ShowBalloonTip(5000, Loc.T("WinModes - idle session ended"),
+                    Loc.F("{0} in {1} used no CPU for {2} minutes and was closed.", session.Tool.Name, project, idleMinutes), Forms.ToolTipIcon.Info);
             }
         }
     }
@@ -404,7 +426,7 @@ public partial class App : Application, IDisposable
     private void FillTrayMenu(Forms.ContextMenuStrip menu)
     {
         menu.Items.Clear();
-        menu.Items.Add("Open WinModes", null, (_, _) => ShowWindow());
+        menu.Items.Add(Loc.T("Open WinModes"), null, (_, _) => ShowWindow());
         menu.Items.Add(new Forms.ToolStripSeparator());
 
         var active = Services.ModeSwitcher.ActiveMode;
@@ -412,7 +434,7 @@ public partial class App : Application, IDisposable
         {
             var profile = entry.Profile;
             var isActive = profile.Mode.Equals(active, StringComparison.OrdinalIgnoreCase);
-            var item = new Forms.ToolStripMenuItem(isActive ? $"{profile.Label} mode (active)" : $"Activate {profile.Label} mode")
+            var item = new Forms.ToolStripMenuItem(Loc.F(isActive ? "{0} mode (active)" : "Activate {0} mode", profile.Label))
             {
                 Checked = isActive,
                 Enabled = !isActive,
@@ -421,12 +443,12 @@ public partial class App : Application, IDisposable
             menu.Items.Add(item);
         }
 
-        var undo = new Forms.ToolStripMenuItem("Deactivate current mode") { Enabled = active is not null };
-        undo.Click += async (_, _) => await SwitchFromTrayAsync("Deactivate", AppServices.Switcher.UndoAsync);
+        var undo = new Forms.ToolStripMenuItem(Loc.T("Deactivate current mode")) { Enabled = active is not null };
+        undo.Click += async (_, _) => await SwitchFromTrayAsync(Loc.T("Deactivate"), AppServices.Switcher.UndoAsync);
         menu.Items.Add(undo);
 
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("Quit", null, (_, _) => Shutdown());
+        menu.Items.Add(Loc.T("Quit"), null, (_, _) => Shutdown());
     }
 
     /// <summary>Runs a switch started outside the main window and reports the outcome in a notification.</summary>

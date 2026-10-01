@@ -8,6 +8,15 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+### Added
+
+- Settings: the interface can be shown in French, Spanish or Italian as well as English (the default). The language applies the next time WinModes starts and covers every page, the widget, the tray menu, the dialogs and the notifications.
+- Widget: each plan shows a second bar for its weekly limit, next to the bar of the 5-hour limit; both bars are labelled.
+
+### Changed
+
+- With French, Spanish or Italian selected, dates and numbers follow that language; in English they keep the format of Windows.
+
 ## [0.7.0] - 2026-10-01
 
 ### Added

@@ -37,7 +37,7 @@ public partial class AutomationPage : Page
         else
         {
             Silent.IsEnabled = false;
-            SilentDetail.Text = "Available when WinModes is installed with its setup program: a task that runs without a prompt must start from a folder only administrators can change.";
+            SilentDetail.Text = Loc.T("Available when WinModes is installed with its setup program: a task that runs without a prompt must start from a folder only administrators can change.");
         }
     }
 
@@ -50,7 +50,7 @@ public partial class AutomationPage : Page
         var installed = await Task.Run(() => ModeSwitcher.SwitchesSilently);
         Silent.IsChecked = installed;
         Silent.IsEnabled = true;
-        Status.Text = error ?? (installed == wanted
+        Status.Text = error ?? Loc.T(installed == wanted
             ? (installed ? "Modes now switch without a permission prompt." : "Windows asks for permission at each switch again.")
             : "The scheduled task could not be changed.");
     }
@@ -62,8 +62,8 @@ public partial class AutomationPage : Page
             var entry = _modes.FirstOrDefault(mode => mode.Profile.Mode.Equals(rule.Mode, StringComparison.OrdinalIgnoreCase));
             return new RuleRow(
                 rule,
-                $"{AutoSwitchConditions.Describe(rule.Process)}  →  {entry?.Profile.Label ?? rule.Mode} mode",
-                entry is null ? "This mode no longer exists: the rule is ignored." : Explain(rule.Process),
+                AutoSwitchConditions.Describe(rule.Process) + "  →  " + Loc.F("{0} mode", entry?.Profile.Label ?? rule.Mode),
+                entry is null ? Loc.T("This mode no longer exists: the rule is ignored.") : Explain(rule.Process),
                 entry?.Glyph ?? DefaultGlyph,
                 entry?.Accent ?? Palette.Neutral);
         }).ToList();
@@ -104,9 +104,9 @@ public partial class AutomationPage : Page
 
     private static string Explain(string key) => key switch
     {
-        AutoSwitchConditions.Battery => "While this PC runs on battery",
-        _ when AutoSwitchConditions.TryParseSchedule(key, out _, out _) => "Every day during these hours",
-        _ => "While this program is open",
+        AutoSwitchConditions.Battery => Loc.T("While this PC runs on battery"),
+        _ when AutoSwitchConditions.TryParseSchedule(key, out _, out _) => Loc.T("Every day during these hours"),
+        _ => Loc.T("While this program is open"),
     };
 
     private void OnTriggerChanged(object sender, SelectionChangedEventArgs e)
@@ -132,13 +132,13 @@ public partial class AutomationPage : Page
                     return AutoSwitchConditions.Schedule(from, to);
                 }
 
-                Status.Text = "Type two different times as hours and minutes, for example 09:00 and 18:00.";
+                Status.Text = Loc.T("Type two different times as hours and minutes, for example 09:00 and 18:00.");
                 return null;
             default:
                 var name = AutoSwitchPlanner.Normalize(ProcessName.Text ?? "");
                 if (name.Length == 0 || AutoSwitchConditions.IsCondition(name))
                 {
-                    Status.Text = "Type or pick a program name.";
+                    Status.Text = Loc.T("Type or pick a program name.");
                     return null;
                 }
 
@@ -150,7 +150,7 @@ public partial class AutomationPage : Page
     {
         if (Mode.SelectedItem is not ModeChoice choice)
         {
-            Status.Text = "Choose a mode.";
+            Status.Text = Loc.T("Choose a mode.");
             return;
         }
 
@@ -163,13 +163,13 @@ public partial class AutomationPage : Page
         var rules = AppSettings.Load().AutoSwitch.Rules;
         if (rules.Any(rule => rule.Process.Equals(key, StringComparison.OrdinalIgnoreCase)))
         {
-            Status.Text = $"There is already a rule for \"{label}\". Remove it first to change its mode.";
+            Status.Text = Loc.F("There is already a rule for \"{0}\". Remove it first to change its mode.", label);
             return;
         }
 
         Save([.. rules, new AutoSwitchRule(key, choice.Mode)]);
         ProcessName.Text = "";
-        Status.Text = Enabled.IsChecked == true ? $"Rule added: {label}." : $"Rule added: {label}. Turn automatic switching on to use it.";
+        Status.Text = Loc.F(Enabled.IsChecked == true ? "Rule added: {0}." : "Rule added: {0}. Turn automatic switching on to use it.", label);
     }
 
     private void OnRemove(object sender, RoutedEventArgs e)
@@ -177,7 +177,7 @@ public partial class AutomationPage : Page
         if ((sender as FrameworkElement)?.DataContext is RuleRow row)
         {
             Save([.. AppSettings.Load().AutoSwitch.Rules.Where(rule => rule != row.Rule)]);
-            Status.Text = $"Rule removed: {AutoSwitchConditions.Describe(row.Rule.Process)}.";
+            Status.Text = Loc.F("Rule removed: {0}.", AutoSwitchConditions.Describe(row.Rule.Process));
         }
     }
 
@@ -190,9 +190,9 @@ public partial class AutomationPage : Page
 
     private static readonly TriggerChoice[] TriggerChoices =
     [
-        new(TriggerKind.Program, "When a program runs"),
-        new(TriggerKind.Battery, "When on battery"),
-        new(TriggerKind.Schedule, "During these hours"),
+        new(TriggerKind.Program, Loc.T("When a program runs")),
+        new(TriggerKind.Battery, Loc.T("When on battery")),
+        new(TriggerKind.Schedule, Loc.T("During these hours")),
     ];
 
     private sealed record TriggerChoice(TriggerKind Kind, string Label);

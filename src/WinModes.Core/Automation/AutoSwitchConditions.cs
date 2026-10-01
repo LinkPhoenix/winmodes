@@ -1,4 +1,5 @@
 using System.Globalization;
+using WinModes.Core.Localization;
 
 namespace WinModes.Core.Automation;
 
@@ -59,11 +60,11 @@ public static class AutoSwitchConditions
         ArgumentNullException.ThrowIfNull(key);
         if (key == Battery)
         {
-            return "On battery";
+            return Loc.T("On battery");
         }
 
         return TryParseSchedule(key, out var from, out var to)
-            ? $"From {from.ToString(TimeFormat, CultureInfo.InvariantCulture)} to {to.ToString(TimeFormat, CultureInfo.InvariantCulture)}"
-            : $"{key} is running";
+            ? Loc.F("From {0} to {1}", from.ToString(TimeFormat, CultureInfo.InvariantCulture), to.ToString(TimeFormat, CultureInfo.InvariantCulture))
+            : Loc.F("{0} is running", key);
     }
 }

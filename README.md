@@ -29,6 +29,7 @@ WinModes switches your PC between modes (Code, Work, Game) to free memory and cu
 - **Updates**: WinModes checks the GitHub releases at startup (can be turned off); an installed copy can download the new installer, check it against the release checksum and start it.
 - **Report**: export a snapshot of the PC (program names and totals only) to ask for help.
 - **Dark and light themes**.
+- **Four languages**: English (default), French, Spanish and Italian, chosen on the Settings page.
 - **Welcome guide** on first run, and a **Settings** page: start with Windows, start minimized, keep running in the notification area, shortcuts, memory alert, WSL memory limit.
 
 | Modes | AI tools |

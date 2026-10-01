@@ -67,8 +67,9 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
 
         var session = _journal.FindActive();
         lines.Add(session is null
-            ? "Services: nothing to change."
-            : $"Services: {session.DoneCount} changed, {session.Entries.Count(entry => entry.Outcome == EntryOutcome.Skipped)} skipped, {session.Entries.Count(entry => entry.Outcome == EntryOutcome.Failed)} failed.");
+            ? Loc.T("Services: nothing to change.")
+            : Loc.F("Services: {0} changed, {1} skipped, {2} failed.", session.DoneCount,
+                session.Entries.Count(entry => entry.Outcome == EntryOutcome.Skipped), session.Entries.Count(entry => entry.Outcome == EntryOutcome.Failed)));
 
         // Keep the very first power plan so Undo returns to it even after several switches.
         var originalScheme = previous?.PreviousPowerScheme ?? await GetActivePowerSchemeAsync();
@@ -83,9 +84,8 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         await Task.Delay(MemorySettleDelay);
         var usedAfterGb = SystemMonitor.SampleMemory().UsedGb;
         var freedGb = usedBeforeGb - usedAfterGb;
-        var culture = System.Globalization.CultureInfo.CurrentCulture;
-        var outcome = freedGb >= MinFreedGbToReport ? string.Create(culture, $"{freedGb:0.0} GB freed") : "no measurable change";
-        lines.Insert(0, string.Create(culture, $"Memory in use: {usedBeforeGb:0.0} GB before, {usedAfterGb:0.0} GB after ({outcome})."));
+        var outcome = freedGb >= MinFreedGbToReport ? Loc.F("{0:0.0} GB freed", freedGb) : Loc.T("no measurable change");
+        lines.Insert(0, Loc.F("Memory in use: {0:0.0} GB before, {1:0.0} GB after ({2}).", usedBeforeGb, usedAfterGb, outcome));
         // Kept for the summary shown when the mode is deactivated.
         WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Math.Max(freedGb, 0)));
         return new SwitchReport(true, lines);
@@ -104,16 +104,16 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
                 return new SwitchReport(false, [helper]);
             }
 
-            lines.Add("Services restored to their previous state.");
+            lines.Add(Loc.T("Services restored to their previous state."));
         }
 
         if (state?.PreviousPowerScheme is { } scheme)
         {
             var result = await RunAsync("powercfg.exe", $"/setactive {scheme}");
-            lines.Add(result.ExitCode == 0 ? "Power plan restored." : "The previous power plan could not be restored.");
+            lines.Add(Loc.T(result.ExitCode == 0 ? "Power plan restored." : "The previous power plan could not be restored."));
         }
 
-        lines.Add("Apps that were closed, WSL and Docker are not restarted automatically.");
+        lines.Add(Loc.T("Apps that were closed, WSL and Docker are not restarted automatically."));
         if (state is not null)
         {
             lines.Insert(0, DescribeSession(state));
@@ -128,8 +128,8 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         var culture = System.Globalization.CultureInfo.CurrentCulture;
         var active = DateTimeOffset.UtcNow - state.SwitchedUtc;
         var duration = active.TotalHours >= 1 ? $"{(int)active.TotalHours} h {active.Minutes:00}" : $"{Math.Max((int)active.TotalMinutes, 1)} min";
-        var freed = state.FreedGb >= MinFreedGbToReport ? string.Create(culture, $" It had freed {state.FreedGb:0.0} GB when activated.") : "";
-        return $"{culture.TextInfo.ToTitleCase(state.Mode)} mode was active for {duration}.{freed}";
+        var freed = state.FreedGb >= MinFreedGbToReport ? " " + Loc.F("It had freed {0:0.0} GB when activated.", state.FreedGb) : "";
+        return Loc.F("{0} mode was active for {1}.", culture.TextInfo.ToTitleCase(state.Mode), duration) + freed;
     }
 
     /// <summary>Returns null on success, or the reason the helper did not complete.</summary>
@@ -138,7 +138,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         var helperPath = Path.Combine(AppContext.BaseDirectory, HelperFileName);
         if (!File.Exists(helperPath))
         {
-            return $"{HelperFileName} is missing next to the app.";
+            return Loc.F("{0} is missing next to the app.", HelperFileName);
         }
 
         // With the opt-in silent switch, a mode switch goes through its task and no prompt is shown.
@@ -146,7 +146,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         if (arguments is ["revert"] or ["apply", _]
             && await Task.Run(() => SilentSwitchTask.Run(helperPath, arguments[0], arguments.Length > 1 ? arguments[1] : "")) is { } exitCode)
         {
-            return exitCode == 0 ? null : "The elevated helper reported an error; nothing else was changed.";
+            return exitCode == 0 ? null : Loc.T("The elevated helper reported an error; nothing else was changed.");
         }
 
         try
@@ -161,15 +161,15 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
             using var process = Process.Start(start);
             if (process is null)
             {
-                return "The elevated helper could not be started.";
+                return Loc.T("The elevated helper could not be started.");
             }
 
             await process.WaitForExitAsync();
-            return process.ExitCode == 0 ? null : "The elevated helper reported an error; nothing else was changed.";
+            return process.ExitCode == 0 ? null : Loc.T("The elevated helper reported an error; nothing else was changed.");
         }
         catch (Win32Exception ex) when (ex.NativeErrorCode == UacCancelledError)
         {
-            return "Cancelled: administrator permission was not given. Nothing was changed.";
+            return Loc.T("Cancelled: administrator permission was not given. Nothing was changed.");
         }
     }
 
@@ -187,13 +187,13 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
             if (plan is not null && PowerSchemes.TryGetValue(plan, out var guid)
                 && (await RunAsync("powercfg.exe", $"/setactive {guid}")).ExitCode == 0)
             {
-                return $"Power plan: {plan}.";
+                return Loc.F("Power plan: {0}.", plan);
             }
         }
 
         return string.IsNullOrEmpty(power.Plan)
-            ? "Power plan: unchanged."
-            : $"Power plan: '{power.Plan}' is not available on this PC; left unchanged.";
+            ? Loc.T("Power plan: unchanged.")
+            : Loc.F("Power plan: '{0}' is not available on this PC; left unchanged.", power.Plan);
     }
 
     private async Task<List<string>> CloseAppsAsync(IReadOnlyList<AppClose> apps)
@@ -224,12 +224,12 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
                 try
                 {
                     await Task.WhenAll(processes.Select(process => process.WaitForExitAsync(timeout.Token)));
-                    lines.Add($"Closed {app.Id}.");
+                    lines.Add(Loc.F("Closed {0}.", app.Id));
                 }
                 catch (OperationCanceledException)
                 {
                     // Never force-kill: the app may hold unsaved work or run only in the tray.
-                    lines.Add($"{app.Id} is still running; close it yourself if you want.");
+                    lines.Add(Loc.F("{0} is still running; close it yourself if you want.", app.Id));
                 }
             }
             finally
@@ -252,7 +252,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
             var isExecutable = Path.IsPathFullyQualified(app.Path) && app.Path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && File.Exists(app.Path);
             if (!isExecutable)
             {
-                lines.Add($"{app.Id}: executable not found, not launched.");
+                lines.Add(Loc.F("{0}: executable not found, not launched.", app.Id));
                 continue;
             }
 
@@ -266,7 +266,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
             if (!alreadyRunning)
             {
                 using var started = Process.Start(new ProcessStartInfo(app.Path) { UseShellExecute = true });
-                lines.Add($"Launched {app.Id}.");
+                lines.Add(Loc.F("Launched {0}.", app.Id));
             }
         }
 
@@ -283,19 +283,19 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
             if (probe.IsProcessRunning("Docker Desktop.exe"))
             {
                 var docker = await RunAsync("docker.exe", "desktop stop");
-                lines.Add(docker.ExitCode == 0 ? "Docker Desktop stopped." : "Docker Desktop could not be stopped from the command line.");
+                lines.Add(Loc.T(docker.ExitCode == 0 ? "Docker Desktop stopped." : "Docker Desktop could not be stopped from the command line."));
             }
 
             if (probe.IsWslRunning())
             {
                 var result = await RunAsync("wsl.exe", "--shutdown");
-                lines.Add(result.ExitCode == 0 ? "WSL shut down." : "WSL could not be shut down.");
+                lines.Add(Loc.T(result.ExitCode == 0 ? "WSL shut down." : "WSL could not be shut down."));
             }
         }
         else if (wsl.Docker == "start" && !probe.IsProcessRunning("Docker Desktop.exe"))
         {
             var docker = await RunAsync("docker.exe", "desktop start");
-            lines.Add(docker.ExitCode == 0 ? "Docker Desktop started." : "Docker Desktop could not be started from the command line.");
+            lines.Add(Loc.T(docker.ExitCode == 0 ? "Docker Desktop started." : "Docker Desktop could not be started from the command line."));
         }
 
         return lines;

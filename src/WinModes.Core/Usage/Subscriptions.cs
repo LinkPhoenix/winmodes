@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using WinModes.Core.Localization;
 
 namespace WinModes.Core.Usage;
 
@@ -17,8 +18,8 @@ public sealed record LimitWindow(double UsedPercent, int WindowMinutes, DateTime
     /// <summary>"5 h", "weekly", "3 d": how the window is called next to its limit.</summary>
     public string WindowName => WindowMinutes switch
     {
-        MinutesPerWeek => "weekly",
-        >= MinutesPerDay when WindowMinutes % MinutesPerDay == 0 => $"{WindowMinutes / MinutesPerDay} d",
+        MinutesPerWeek => Loc.T("weekly"),
+        >= MinutesPerDay when WindowMinutes % MinutesPerDay == 0 => Loc.F("{0} d", WindowMinutes / MinutesPerDay),
         >= MinutesPerHour => $"{WindowMinutes / MinutesPerHour} h",
         _ => $"{WindowMinutes} min",
     };
@@ -124,7 +125,7 @@ public static partial class Subscriptions
             return plan;
         }
 
-        return new SubscriptionStatus(ClaudeTool, plan?.Plan ?? "Plan unknown",
+        return new SubscriptionStatus(ClaudeTool, plan?.Plan ?? Loc.T("Plan unknown"),
             limits.FiveHour ?? limits.SevenDay, limits.FiveHour is null ? null : limits.SevenDay, limits.SeenAt);
     }
 
@@ -177,33 +178,33 @@ public static partial class Subscriptions
         ArgumentNullException.ThrowIfNull(status);
         if (status.Primary is not { } primary)
         {
-            return ("", "Usage is not stored on this PC", null);
+            return ("", Loc.T("Usage is not stored on this PC"), null);
         }
 
         string Local(DateTimeOffset moment) => moment.ToOffset(now.Offset).ToString("d MMM HH:mm", culture);
 
         var hasReset = primary.HasReset(now);
-        var detail = hasReset ? $"{Capitalize(primary.WindowName)} limit reset on {Local(primary.ResetsAt!.Value)}; no use recorded since"
-            : primary.ResetsAt is { } reset ? $"{Capitalize(primary.WindowName)} limit resets in {Span(reset - now)} ({Local(reset)})"
-            : $"{Capitalize(primary.WindowName)} limit";
+        var detail = Capitalize(hasReset ? Loc.F("{0} limit reset on {1}; no use recorded since", primary.WindowName, Local(primary.ResetsAt!.Value))
+            : primary.ResetsAt is { } reset ? Loc.F("{0} limit resets in {1} ({2})", primary.WindowName, Span(reset - now), Local(reset))
+            : Loc.F("{0} limit", primary.WindowName));
         if (status.Secondary is { } secondary && !secondary.HasReset(now))
         {
-            detail += string.Create(culture, $"\n{Capitalize(secondary.WindowName)} limit: {secondary.RemainingPercent:0} % left")
-                + (secondary.ResetsAt is { } second ? $", resets in {Span(second - now)}" : "");
+            detail += "\n" + Capitalize(Loc.In(culture, "{0} limit: {1:0} % left", secondary.WindowName, secondary.RemainingPercent))
+                + (secondary.ResetsAt is { } second ? Loc.F(", resets in {0}", Span(second - now)) : "");
         }
 
         if (status.ResetCredits is { } credits)
         {
-            detail += credits switch { <= 0 => "\nNo limit reset in reserve", 1 => "\n1 limit reset in reserve", _ => $"\n{credits} limit resets in reserve" };
+            detail += "\n" + (credits <= 0 ? Loc.T("No limit reset in reserve") : Loc.N(credits, "1 limit reset in reserve", "{0} limit resets in reserve"));
         }
 
         if (status.SeenAt is { } seen && now - seen > StaleAfter)
         {
-            detail += $"\nAs of {Local(seen)}";
+            detail += "\n" + Loc.F("As of {0}", Local(seen));
         }
 
         // A figure from before the reset is not shown as if it still held.
-        return hasReset ? ("reset", detail, null) : (string.Create(culture, $"{primary.RemainingPercent:0} % left"), detail, primary.RemainingPercent);
+        return hasReset ? (Loc.T("reset"), detail, null) : (Loc.In(culture, "{0:0} % left", primary.RemainingPercent), detail, primary.RemainingPercent);
     }
 
     private static readonly TimeSpan StaleAfter = TimeSpan.FromHours(1);
@@ -211,14 +212,14 @@ public static partial class Subscriptions
     private static string Capitalize(string text) => text.Length == 0 ? text : char.ToUpperInvariant(text[0]) + text[1..];
 
     private static string Span(TimeSpan span) =>
-        span.TotalDays >= 1 ? $"{(int)span.TotalDays} d {span.Hours} h"
+        span.TotalDays >= 1 ? Loc.F("{0} d {1} h", (int)span.TotalDays, span.Hours)
         : span.TotalHours >= 1 ? $"{(int)span.TotalHours} h {span.Minutes} min"
         : $"{Math.Max((int)span.TotalMinutes, 1)} min";
 
     public static string CodexPlanName(string? raw) => PlanName(CodexPlans, raw);
 
     private static string PlanName(Dictionary<string, string> known, string? raw) =>
-        string.IsNullOrWhiteSpace(raw) ? "Plan unknown"
+        string.IsNullOrWhiteSpace(raw) ? Loc.T("Plan unknown")
         : known.TryGetValue(raw, out var name) ? name
         : CultureInfo.InvariantCulture.TextInfo.ToTitleCase(raw.Replace('_', ' '));
 

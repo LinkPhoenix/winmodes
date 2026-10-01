@@ -112,15 +112,15 @@ internal static class ServiceTuning
 
     private static string Describe(List<TuneResult> results)
     {
-        string Name(TuneResult result) => Catalog.Find(result.Target)?.Title ?? result.Target;
+        string Name(TuneResult result) => Catalog.Find(result.Target) is { } tweak ? Loc.T(tweak.Title) : result.Target;
 
         if (results is [var only])
         {
             return only.Outcome switch
             {
-                TuneOutcome.Done => $"{Name(only)}: done. {only.Detail}".TrimEnd(),
-                TuneOutcome.Skipped => $"{Name(only)}: not changed. {only.Detail}",
-                _ => $"{Name(only)}: failed. {only.Detail}",
+                TuneOutcome.Done => Loc.F("{0}: done. {1}", Name(only), only.Detail).TrimEnd(),
+                TuneOutcome.Skipped => Loc.F("{0}: not changed. {1}", Name(only), only.Detail),
+                _ => Loc.F("{0}: failed. {1}", Name(only), only.Detail),
             };
         }
 
@@ -128,7 +128,7 @@ internal static class ServiceTuning
         var problems = results.Where(result => result.Outcome != TuneOutcome.Done)
             .Select(result => $"{Name(result)} ({result.Detail})").ToList();
         return problems.Count == 0
-            ? $"{done} changes made."
-            : $"{done} changes made, {problems.Count} not made: {string.Join("; ", problems)}";
+            ? Loc.F("{0} changes made.", done)
+            : Loc.F("{0} changes made, {1} not made: {2}", done, problems.Count, string.Join("; ", problems));
     }
 }

@@ -87,7 +87,7 @@ public partial class AiToolsPage : Page
                 var icon = IconCache.Get(group.First().Root.ExecutablePath);
                 return new ToolRow(
                     group.Key.Name,
-                    $"{Pluralize(rows.Count, "session")}, {DashboardPage.FormatMemory(group.Sum(session => session.TotalMemoryMb), culture)}",
+                    $"{Loc.N(rows.Count, "1 session", "{0} sessions")}, {DashboardPage.FormatMemory(group.Sum(session => session.TotalMemoryMb), culture)}",
                     icon,
                     icon is null ? Visibility.Visible : Visibility.Collapsed,
                     rows);
@@ -100,23 +100,25 @@ public partial class AiToolsPage : Page
         DuplicateCard.Visibility = duplicates.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         Duplicates.ItemsSource = duplicates.Select(duplicate => new DuplicateRow(
             duplicate.Name,
-            $"in {duplicate.Sessions} sessions, {Pluralize(duplicate.Processes, "process", "processes")}",
+            Loc.F("in {0} sessions, {1}", duplicate.Sessions, Loc.N(duplicate.Processes, "1 process", "{0} processes")),
             DashboardPage.FormatMemory(duplicate.MemoryMb, culture))).ToList();
         DuplicateSummary.Text = duplicates.Count == 0
             ? ""
-            : $"{DashboardPage.FormatMemory(duplicates.Sum(duplicate => duplicate.MemoryMb), culture)} in total. Each session starts its own copy of the MCP servers it is configured with; closing sessions you no longer use frees them.";
+            : Loc.F("{0} in total. Each session starts its own copy of the MCP servers it is configured with; closing sessions you no longer use frees them.",
+                DashboardPage.FormatMemory(duplicates.Sum(duplicate => duplicate.MemoryMb), culture));
 
         // Only project sessions are offered for cleanup; desktop apps are left to the user.
         _idleSessions = [.. sessions.Where(session => HasProjectFolder(session) && AiActivityTracker.IdleFor(session) >= IdleThreshold)];
         EndIdleButton.IsEnabled = _idleSessions.Count > 0;
-        EndIdleButton.Content = _idleSessions.Count > 0 ? $"End idle sessions ({_idleSessions.Count})" : "End idle sessions";
+        EndIdleButton.Content = _idleSessions.Count > 0 ? Loc.F("End idle sessions ({0})", _idleSessions.Count) : Loc.T("End idle sessions");
         EmptyState.Visibility = tools.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
         var processCount = sessions.Sum(session => session.Descendants.Count + 1);
         Summary.Text = tools.Count == 0
-            ? "No AI or coding tool is running."
-            : string.Create(culture,
-                $"{Pluralize(sessions.Count, "session")} across {Pluralize(tools.Count, "tool")}: {processCount} processes using {DashboardPage.FormatMemory(sessions.Sum(session => session.TotalMemoryMb), culture)}. Right-click a session for actions.");
+            ? Loc.T("No AI or coding tool is running.")
+            : Loc.F("{0} across {1}: {2} processes using {3}. Right-click a session for actions.",
+                Loc.N(sessions.Count, "1 session", "{0} sessions"), Loc.N(tools.Count, "1 tool", "{0} tools"), processCount,
+                DashboardPage.FormatMemory(sessions.Sum(session => session.TotalMemoryMb), culture));
     }
 
     private SessionRow ToRow(AiSession session, CultureInfo culture)
@@ -124,13 +126,13 @@ public partial class AiToolsPage : Page
         var folder = session.Root.WorkingDirectory;
         var hasFolder = HasProjectFolder(session);
         var idle = AiActivityTracker.IdleFor(session);
-        var started = session.Root.StartTime is { } start ? string.Create(culture, $"started {start:g}") : "start time unknown";
+        var started = session.Root.StartTime is { } start ? Loc.F("started {0:g}", start) : Loc.T("start time unknown");
         var nodes = new[] { session.Root }.Concat(session.Descendants.OrderByDescending(node => node.PrivateMemoryMb));
 
         return new SessionRow(
             session.Root.Pid,
             session.Tool.Name,
-            hasFolder ? Privacy.Project(Path.GetFileName(folder) is { Length: > 0 } name ? name : folder!) : $"{session.Tool.Name} app",
+            hasFolder ? Privacy.Project(Path.GetFileName(folder) is { Length: > 0 } name ? name : folder!) : Loc.F("{0} app", session.Tool.Name),
             hasFolder ? $"{(Privacy.Enabled ? Privacy.HiddenFolder : folder)}  -  PID {session.Root.Pid}, {started}" : $"PID {session.Root.Pid}, {started}",
             hasFolder ? FolderGlyph : AppGlyph,
             hasFolder ? folder : null,
@@ -138,13 +140,13 @@ public partial class AiToolsPage : Page
             string.Create(culture, $"{session.TotalCpuPercent:0.0} %"),
             DashboardPage.FormatMemory(session.TotalMemoryMb, culture),
             _expanded.Contains(session.Root.Pid),
-            idle >= IdleDisplayThreshold ? $"idle {(int)idle.TotalMinutes} min" : "",
+            idle >= IdleDisplayThreshold ? Loc.F("idle {0} min", (int)idle.TotalMinutes) : "",
             [.. nodes.Select(node => ToProcess(node, culture, node != session.Root && McpServers.IsServer(session, node)))]);
     }
 
     private static string DescribeProcesses(AiSession session, CultureInfo culture)
     {
-        var text = Pluralize(session.Descendants.Count + 1, "process", "processes");
+        var text = Loc.N(session.Descendants.Count + 1, "1 process", "{0} processes");
         var servers = McpServers.Servers(session);
         return servers.Count == 0
             ? text
@@ -164,11 +166,11 @@ public partial class AiToolsPage : Page
         var names = string.Join("\n", idle.Select(session => $"- {session.Tool.Name}: {(Privacy.Enabled ? Privacy.HiddenFolder : session.Root.WorkingDirectory)}"));
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
-            Title = idle.Count == 1 ? "End 1 idle session?" : $"End {idle.Count} idle sessions?",
-            Content = $"These sessions used no CPU for at least {(int)IdleThreshold.TotalMinutes} minutes:\n\n{names}\n\n"
-                + "Each session and every process it started will be closed. Unsaved work in them is lost.",
-            PrimaryButtonText = "End sessions",
-            CloseButtonText = "Cancel",
+            Title = Loc.N(idle.Count, "End 1 idle session?", "End {0} idle sessions?"),
+            Content = Loc.F("These sessions used no CPU for at least {0} minutes:", (int)IdleThreshold.TotalMinutes) + $"\n\n{names}\n\n"
+                + Loc.T("Each session and every process it started will be closed. Unsaved work in them is lost."),
+            PrimaryButtonText = Loc.T("End sessions"),
+            CloseButtonText = Loc.T("Cancel"),
         };
         if (await confirm.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
         {
@@ -180,7 +182,7 @@ public partial class AiToolsPage : Page
         await RefreshAsync();
         if (failed > 0)
         {
-            Summary.Text = $"{failed} session(s) could not be ended.";
+            Summary.Text = Loc.F("{0} session(s) could not be ended.", failed);
         }
     }
 
@@ -198,8 +200,6 @@ public partial class AiToolsPage : Page
             isMcpServer ? Visibility.Visible : Visibility.Collapsed);
     }
 
-    private static string Pluralize(int count, string singular, string? plural = null) =>
-        count == 1 ? $"1 {singular}" : $"{count} {plural ?? singular + "s"}";
 
     private sealed record DuplicateRow(string Name, string Detail, string Memory);
 
@@ -240,7 +240,7 @@ public partial class AiToolsPage : Page
             return;
         }
 
-        var problem = await ProcessActions.EndAsync(row.Pid, $"{row.ToolName} session '{row.Title}'", wholeTree: true, isProtected: true);
+        var problem = await ProcessActions.EndAsync(row.Pid, Loc.F("{0} session '{1}'", row.ToolName, row.Title), wholeTree: true, isProtected: true);
         await RefreshAsync();
         if (problem is not null)
         {

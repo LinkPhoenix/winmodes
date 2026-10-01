@@ -8,8 +8,8 @@ namespace WinModes.App.Pages;
 /// <summary>Every option of the desktop widget. Each change is saved and applied to the widget at once.</summary>
 public partial class WidgetPage : Page
 {
-    private static readonly Option[] RefreshChoices = [new(1, "1 second"), new(3, "3 seconds"), new(5, "5 seconds")];
-    private static readonly Option[] ScaleChoices = [new(80, "Small"), new(100, "Medium"), new(125, "Large"), new(150, "Extra large")];
+    private static readonly Option[] RefreshChoices = [new(1, Loc.T("1 second")), new(3, Loc.T("3 seconds")), new(5, Loc.T("5 seconds"))];
+    private static readonly Option[] ScaleChoices = [new(80, Loc.T("Small")), new(100, Loc.T("Medium")), new(125, Loc.T("Large")), new(150, Loc.T("Extra large"))];
     private static readonly Option[] MaxToolChoices = [new(2, "2"), new(4, "4"), new(6, "6"), new(10, "10")];
 
     private readonly bool _loaded;
@@ -69,7 +69,7 @@ public partial class WidgetPage : Page
     private void OnStats(object? sender, StatsReading reading) => Preview.Show(reading);
 
     private const string StatusLineFileName = "WinModes.StatusLine.exe";
-    private const string OtherStatusLineText = "Claude Code already has a status line of its own, so WinModes leaves it alone. To record the usage, remove it from Claude Code's settings first.";
+    private static string OtherStatusLineText => Loc.T("Claude Code already has a status line of its own, so WinModes leaves it alone. To record the usage, remove it from Claude Code's settings first.");
 
     private void ShowClaudeUsage()
     {
@@ -102,7 +102,7 @@ public partial class WidgetPage : Page
         }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
         {
-            ClaudeUsageDetail.Text = "Claude Code's settings could not be changed.";
+            ClaudeUsageDetail.Text = Loc.T("Claude Code's settings could not be changed.");
         }
 
         // Show what the settings really say, whatever was clicked.
@@ -127,9 +127,9 @@ public partial class WidgetPage : Page
         // The preview keeps its natural size so it always fits; the size option is described instead.
         Preview.Apply(widget, scaled: false);
         Preview.Opacity = Math.Clamp(widget.OpacityPercent, 40, 100) / 100d;
-        var size = ScaleChoices.FirstOrDefault(choice => choice.Value == widget.ScalePercent)?.Label ?? "Medium";
-        PreviewNote.Text = (settings.ShowDesktopWidget ? "The widget is on your desktop. " : "The widget is hidden. ")
-            + $"Size on the desktop: {size}.";
+        var size = ScaleChoices.FirstOrDefault(choice => choice.Value == widget.ScalePercent)?.Label ?? Loc.T("Medium");
+        PreviewNote.Text = Loc.T(settings.ShowDesktopWidget ? "The widget is on your desktop." : "The widget is hidden.") + " "
+            + Loc.F("Size on the desktop: {0}.", size);
     }
 
     private static void Select(ComboBox box, Option[] choices, int value)

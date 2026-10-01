@@ -1,6 +1,7 @@
 <UserControl x:Class="WinModes.App.Controls.OnboardingView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="clr-namespace:WinModes.App.Localization"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
              Background="{StaticResource AppBackgroundBrush}">
@@ -31,9 +32,9 @@
                 <!-- Step 1: what the app is for -->
                 <StackPanel x:Name="StepWelcome">
                     <Image Source="pack://application:,,,/Assets/winmodes.ico" Width="56" Height="56" HorizontalAlignment="Left" Margin="0,0,0,18" />
-                    <TextBlock Text="Welcome to WinModes" Style="{StaticResource StepTitleStyle}" />
+                    <TextBlock Text="{l:T 'Welcome to WinModes'}" Style="{StaticResource StepTitleStyle}" />
                     <TextBlock Style="{StaticResource StepLeadStyle}"
-                               Text="Keep Windows light while Claude Code, Codex, Cursor and your other tools do the heavy work." />
+                               Text="{l:T 'Keep Windows light while Claude Code, Codex, Cursor and your other tools do the heavy work.'}" />
                     <Border Style="{StaticResource PointBorderStyle}">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -42,9 +43,9 @@
                             </Grid.ColumnDefinitions>
                             <ui:SymbolIcon Symbol="Flash24" FontSize="24" HorizontalAlignment="Left" Foreground="#A78BFA" />
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="Modes" FontWeight="SemiBold" />
+                                <TextBlock Text="{l:T 'Modes'}" FontWeight="SemiBold" />
                                 <TextBlock Style="{StaticResource SecondaryTextStyle}"
-                                           Text="Code, Work and Game stop the background services and apps you do not need for that activity, in one click." />
+                                           Text="{l:T 'Code, Work and Game stop the background services and apps you do not need for that activity, in one click.'}" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -56,9 +57,9 @@
                             </Grid.ColumnDefinitions>
                             <ui:SymbolIcon Symbol="Bot24" FontSize="24" HorizontalAlignment="Left" Foreground="#F472B6" />
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="AI tools at a glance" FontWeight="SemiBold" />
+                                <TextBlock Text="{l:T 'AI tools at a glance'}" FontWeight="SemiBold" />
                                 <TextBlock Style="{StaticResource SecondaryTextStyle}"
-                                           Text="See how much memory each AI tool uses, session by session and project by project, and end the ones left idle." />
+                                           Text="{l:T 'See how much memory each AI tool uses, session by session and project by project, and end the ones left idle.'}" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -70,9 +71,9 @@
                             </Grid.ColumnDefinitions>
                             <ui:SymbolIcon Symbol="ArrowUndo24" FontSize="24" HorizontalAlignment="Left" Foreground="#34D399" />
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="Always reversible" FontWeight="SemiBold" />
+                                <TextBlock Text="{l:T 'Always reversible'}" FontWeight="SemiBold" />
                                 <TextBlock Style="{StaticResource SecondaryTextStyle}"
-                                           Text="Every switch records what it changed. Deactivating a mode puts Windows back exactly as it was." />
+                                           Text="{l:T 'Every switch records what it changed. Deactivating a mode puts Windows back exactly as it was.'}" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -81,70 +82,70 @@
                 <!-- Step 2: what is never touched -->
                 <StackPanel x:Name="StepProtection" Visibility="Collapsed">
                     <ui:SymbolIcon Symbol="ShieldCheckmark24" FontSize="52" HorizontalAlignment="Left" Margin="0,0,0,18" Foreground="#34D399" />
-                    <TextBlock Text="What no mode ever touches" Style="{StaticResource StepTitleStyle}" />
+                    <TextBlock Text="{l:T 'What no mode ever touches'}" Style="{StaticResource StepTitleStyle}" />
                     <TextBlock Style="{StaticResource StepLeadStyle}"
-                               Text="A built-in protected list is checked before every change. No mode, no rule and no edited profile can get around it." />
+                               Text="{l:T 'A built-in protected list is checked before every change. No mode, no rule and no edited profile can get around it.'}" />
                     <Border Style="{StaticResource PointBorderStyle}">
                         <StackPanel>
-                            <TextBlock Text="Security and updates" FontWeight="SemiBold" />
-                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="Microsoft Defender, your antivirus, the firewall and Windows Update." />
+                            <TextBlock Text="{l:T 'Security and updates'}" FontWeight="SemiBold" />
+                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:T 'Microsoft Defender, your antivirus, the firewall and Windows Update.'}" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource PointBorderStyle}">
                         <StackPanel>
-                            <TextBlock Text="Developer tooling" FontWeight="SemiBold" />
-                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="WSL and Docker, winget and the Microsoft Store, Chocolatey, Edge and WebView2." />
+                            <TextBlock Text="{l:T 'Developer tooling'}" FontWeight="SemiBold" />
+                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:T 'WSL and Docker, winget and the Microsoft Store, Chocolatey, Edge and WebView2.'}" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource PointBorderStyle}">
                         <StackPanel>
-                            <TextBlock Text="Your daily apps" FontWeight="SemiBold" />
-                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="AI and coding tools, VS Code, Discord, Spotify. A mode closes an app only if you put it in that mode yourself." />
+                            <TextBlock Text="{l:T 'Your daily apps'}" FontWeight="SemiBold" />
+                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:T 'AI and coding tools, VS Code, Discord, Spotify. A mode closes an app only if you put it in that mode yourself.'}" />
                         </StackPanel>
                     </Border>
                     <TextBlock Style="{StaticResource SecondaryTextStyle}" FontSize="12" Margin="4,4,0,0"
-                               Text="Services are set to Manual, never Disabled. Nothing is uninstalled and no Windows feature is removed." />
+                               Text="{l:T 'Services are set to Manual, never Disabled. Nothing is uninstalled and no Windows feature is removed.'}" />
                 </StackPanel>
 
                 <!-- Step 3: optional features, all off unless chosen -->
                 <StackPanel x:Name="StepOptions" Visibility="Collapsed">
                     <ui:SymbolIcon Symbol="Options24" FontSize="52" HorizontalAlignment="Left" Margin="0,0,0,18" Foreground="#A78BFA" />
-                    <TextBlock Text="Make it yours" Style="{StaticResource StepTitleStyle}" />
-                    <TextBlock Style="{StaticResource StepLeadStyle}" Text="All of this is optional and can be changed later in Settings." />
+                    <TextBlock Text="{l:T 'Make it yours'}" Style="{StaticResource StepTitleStyle}" />
+                    <TextBlock Style="{StaticResource StepLeadStyle}" Text="{l:T 'All of this is optional and can be changed later in Settings.'}" />
                     <Border Style="{StaticResource PointBorderStyle}">
                         <Grid>
                             <StackPanel Margin="0,0,70,0">
-                                <TextBlock Text="Start with Windows" FontWeight="SemiBold" />
-                                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="WinModes starts hidden in the notification area when you sign in." />
+                                <TextBlock Text="{l:T 'Start with Windows'}" FontWeight="SemiBold" />
+                                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:T 'WinModes starts hidden in the notification area when you sign in.'}" />
                             </StackPanel>
-                            <ui:ToggleSwitch x:Name="StartWithWindows" HorizontalAlignment="Right" AutomationProperties.Name="Start with Windows" />
+                            <ui:ToggleSwitch x:Name="StartWithWindows" HorizontalAlignment="Right" AutomationProperties.Name="{l:T 'Start with Windows'}" />
                         </Grid>
                     </Border>
                     <Border Style="{StaticResource PointBorderStyle}">
                         <Grid>
                             <StackPanel Margin="0,0,70,0">
-                                <TextBlock Text="AI memory on the tray icon" FontWeight="SemiBold" />
-                                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="The notification-area icon shows the memory used by your AI tools." />
+                                <TextBlock Text="{l:T 'AI memory on the tray icon'}" FontWeight="SemiBold" />
+                                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:T 'The notification-area icon shows the memory used by your AI tools.'}" />
                             </StackPanel>
-                            <ui:ToggleSwitch x:Name="TrayMeter" HorizontalAlignment="Right" AutomationProperties.Name="AI memory on the tray icon" />
+                            <ui:ToggleSwitch x:Name="TrayMeter" HorizontalAlignment="Right" AutomationProperties.Name="{l:T 'AI memory on the tray icon'}" />
                         </Grid>
                     </Border>
                     <Border Style="{StaticResource PointBorderStyle}">
                         <Grid>
                             <StackPanel Margin="0,0,70,0">
-                                <TextBlock Text="Desktop widget" FontWeight="SemiBold" />
-                                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="A small panel on your desktop with CPU, memory and AI tools." />
+                                <TextBlock Text="{l:T 'Desktop widget'}" FontWeight="SemiBold" />
+                                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:T 'A small panel on your desktop with CPU, memory and AI tools.'}" />
                             </StackPanel>
-                            <ui:ToggleSwitch x:Name="Widget" HorizontalAlignment="Right" AutomationProperties.Name="Desktop widget" />
+                            <ui:ToggleSwitch x:Name="Widget" HorizontalAlignment="Right" AutomationProperties.Name="{l:T 'Desktop widget'}" />
                         </Grid>
                     </Border>
                     <Border Style="{StaticResource PointBorderStyle}">
                         <Grid>
                             <StackPanel Margin="0,0,70,0">
-                                <TextBlock Text="Privacy mode" FontWeight="SemiBold" />
-                                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="Hide project names, folders and command lines, for screen sharing and screenshots." />
+                                <TextBlock Text="{l:T 'Privacy mode'}" FontWeight="SemiBold" />
+                                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:T 'Hide project names, folders and command lines, for screen sharing and screenshots.'}" />
                             </StackPanel>
-                            <ui:ToggleSwitch x:Name="PrivacyMode" HorizontalAlignment="Right" AutomationProperties.Name="Privacy mode" />
+                            <ui:ToggleSwitch x:Name="PrivacyMode" HorizontalAlignment="Right" AutomationProperties.Name="{l:T 'Privacy mode'}" />
                         </Grid>
                     </Border>
                 </StackPanel>
@@ -152,25 +153,25 @@
                 <!-- Step 4: how to start -->
                 <StackPanel x:Name="StepReady" Visibility="Collapsed">
                     <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="52" HorizontalAlignment="Left" Margin="0,0,0,18" Foreground="#34D399" />
-                    <TextBlock Text="You are ready" Style="{StaticResource StepTitleStyle}" />
+                    <TextBlock Text="{l:T 'You are ready'}" Style="{StaticResource StepTitleStyle}" />
                     <TextBlock Style="{StaticResource StepLeadStyle}"
-                               Text="Nothing has been changed on this PC, and nothing will be until you activate a mode." />
+                               Text="{l:T 'Nothing has been changed on this PC, and nothing will be until you activate a mode.'}" />
                     <Border Style="{StaticResource PointBorderStyle}">
                         <StackPanel>
-                            <TextBlock Text="1. Open Modes and look at a mode" FontWeight="SemiBold" />
-                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="Each card lists exactly what it stops, closes and starts before you activate it." />
+                            <TextBlock Text="{l:T '1. Open Modes and look at a mode'}" FontWeight="SemiBold" />
+                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:T 'Each card lists exactly what it stops, closes and starts before you activate it.'}" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource PointBorderStyle}">
                         <StackPanel>
-                            <TextBlock Text="2. Activate it" FontWeight="SemiBold" />
-                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="Windows asks for permission once, because stopping services needs administrator rights." />
+                            <TextBlock Text="{l:T '2. Activate it'}" FontWeight="SemiBold" />
+                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:T 'Windows asks for permission once, because stopping services needs administrator rights.'}" />
                         </StackPanel>
                     </Border>
                     <Border Style="{StaticResource PointBorderStyle}">
                         <StackPanel>
-                            <TextBlock Text="3. Deactivate it whenever you want" FontWeight="SemiBold" />
-                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="From the Modes page or the tray icon. The History page shows every change that was made and undone." />
+                            <TextBlock Text="{l:T '3. Deactivate it whenever you want'}" FontWeight="SemiBold" />
+                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:T 'From the Modes page or the tray icon. The History page shows every change that was made and undone.'}" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -183,12 +184,12 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ui:Button x:Name="SkipButton" Content="Skip" Appearance="Transparent" Click="OnSkip" />
+            <ui:Button x:Name="SkipButton" Content="{l:T 'Skip'}" Appearance="Transparent" Click="OnSkip" />
             <TextBlock x:Name="StepText" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"
                        Style="{StaticResource SecondaryTextStyle}" />
             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                <ui:Button x:Name="BackButton" Content="Back" Margin="0,0,8,0" MinWidth="90" Click="OnBack" />
-                <ui:Button x:Name="NextButton" Content="Next" Appearance="Primary" MinWidth="130" Click="OnNext" />
+                <ui:Button x:Name="BackButton" Content="{l:T 'Back'}" Margin="0,0,8,0" MinWidth="90" Click="OnBack" />
+                <ui:Button x:Name="NextButton" Content="{l:T 'Next'}" Appearance="Primary" MinWidth="130" Click="OnNext" />
             </StackPanel>
         </Grid>
     </Grid>

@@ -41,6 +41,9 @@ internal sealed record AppSettings
     /// <summary>"dark" (default) or "light". Read once at startup.</summary>
     public string Theme { get; init; } = DarkTheme;
 
+    /// <summary>Language of the interface: "en" (default), "fr", "es" or "it". Read once at startup.</summary>
+    public string Language { get; init; } = WinModes.Core.Localization.Loc.DefaultLanguage;
+
     /// <summary>Ask GitHub once at startup whether a newer release exists.</summary>
     public bool CheckForUpdates { get; init; } = true;
 
