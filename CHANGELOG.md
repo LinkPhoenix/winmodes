@@ -14,6 +14,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Optional automatic end of project sessions idle for 30 minutes to 4 hours. Off by default.
 - Automation rules can also trigger on battery power or during a daily time range.
 - Deactivating a mode reports how long it was active and the memory it had freed.
+- GPU utilization and disk activity graphs on the dashboard.
 
 ## [0.3.1] - 2026-10-01
 

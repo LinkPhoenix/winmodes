@@ -25,6 +25,7 @@ public partial class DashboardPage : Page
     private static readonly Brush InactiveDot = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
 
     private readonly SystemMonitor _monitor = new();
+    private bool _gpuDiskRunning;
     private readonly DispatcherTimer _timer = new() { Interval = FastInterval };
     private readonly List<QuickMode> _modes;
     private int _tick;
@@ -58,6 +59,7 @@ public partial class DashboardPage : Page
         }
 
         RefreshVitals();
+        _ = RefreshGpuDiskAsync();
 
         var tick = _tick++;
         if (tick % SlowEveryTicks == 0 && !_slowRefreshRunning)
@@ -110,6 +112,44 @@ public partial class DashboardPage : Page
         catch (Exception ex) when (ex is Win32Exception or System.Net.NetworkInformation.NetworkInformationException)
         {
             MemoryDetail.Text = "System figures are unavailable.";
+        }
+    }
+
+    private async Task RefreshGpuDiskAsync()
+    {
+        // Performance counters can take tens of milliseconds: read them off the UI thread, one read at a time.
+        if (_gpuDiskRunning)
+        {
+            return;
+        }
+
+        _gpuDiskRunning = true;
+        try
+        {
+            var reading = await Task.Run(GpuDiskMonitor.Shared.Sample);
+            var culture = CultureInfo.CurrentCulture;
+
+            GpuCard.Visibility = reading.GpuPercent is null ? Visibility.Collapsed : Visibility.Visible;
+            if (reading.GpuPercent is { } gpu)
+            {
+                GpuChart.Push(gpu);
+                GpuChartValue.Text = string.Create(culture, $"{gpu:0.0} %");
+            }
+
+            DiskCard.Visibility = reading.DiskActivePercent is null ? Visibility.Collapsed : Visibility.Visible;
+            if (reading.DiskActivePercent is { } disk)
+            {
+                DiskChart.Push(disk);
+                DiskChartValue.Text = string.Create(culture, $"{disk:0.0} %");
+                DiskDetail.Text = string.Create(culture,
+                    $"All disks  -  read {reading.DiskReadMbPerSecond:0.0} MB/s, write {reading.DiskWriteMbPerSecond:0.0} MB/s");
+            }
+
+            GpuDiskRow.Visibility = reading.GpuPercent is null && reading.DiskActivePercent is null ? Visibility.Collapsed : Visibility.Visible;
+        }
+        finally
+        {
+            _gpuDiskRunning = false;
         }
     }
 

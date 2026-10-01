@@ -204,6 +204,31 @@
             </Border>
         </UniformGrid>
 
+        <!-- GPU and disk, same 60-second window. Each card hides itself when Windows has no counter for it. -->
+        <UniformGrid x:Name="GpuDiskRow" Rows="1" Margin="0,0,-12,12">
+            <Border x:Name="GpuCard" Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="GPU UTILIZATION" Style="{StaticResource CardCaptionStyle}" />
+                        <TextBlock x:Name="GpuChartValue" Text="…" HorizontalAlignment="Right" FontWeight="SemiBold" Foreground="#34D399" />
+                    </Grid>
+                    <controls:HistoryChart x:Name="GpuChart" Height="110" Margin="0,10,0,0" Accent="#34D399" />
+                    <TextBlock Text="Busiest GPU engine (3D, video, copy), all graphics cards" FontSize="12" Margin="0,8,0,0"
+                               Style="{StaticResource SecondaryTextStyle}" />
+                </StackPanel>
+            </Border>
+            <Border x:Name="DiskCard" Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="DISK ACTIVITY" Style="{StaticResource CardCaptionStyle}" />
+                        <TextBlock x:Name="DiskChartValue" Text="…" HorizontalAlignment="Right" FontWeight="SemiBold" Foreground="#FBBF24" />
+                    </Grid>
+                    <controls:HistoryChart x:Name="DiskChart" Height="110" Margin="0,10,0,0" Accent="#FBBF24" />
+                    <TextBlock x:Name="DiskDetail" Text="All disks" FontSize="12" Margin="0,8,0,0" Style="{StaticResource SecondaryTextStyle}" />
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" />
