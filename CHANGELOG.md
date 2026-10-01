@@ -5,6 +5,9 @@ All notable changes to WinModes are listed here. The format follows [Keep a Chan
 To publish a release, list the changes under **Unreleased**, then run `pwsh -NoProfile -File tools/release.ps1 -Bump minor` (or `-Version X.Y.Z`). The script runs the tests, moves **Unreleased** under the new version, commits, tags and pushes; the release workflow then builds and publishes the package with that section as the release notes.
 
 ## [Unreleased]
+
+## [0.5.0] - 2026-10-01
+
 - Optimize page: a catalog of 28 Windows settings (privacy and telemetry, ads, search and AI, gaming, background, Explorer) plus the services the knowledge base advises to start only when needed. Each row shows the live state, how many of the 12 surveyed open-source optimizers ship it, and whether it needs a sign-out. The current value is recorded before each change and Undo puts it back. Security, update, start-up and service keys are refused by the engine. Nothing is uninstalled or deleted.
 - Services page: a right-click starts or stops a service, changes its start type or restores the original one. Protected services cannot be changed, and the original start type is recorded before the first change.
 - Widget: the mode label, the border and the compact dot take the colour of the active mode.
