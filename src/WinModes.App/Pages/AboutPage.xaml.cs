@@ -17,6 +17,12 @@ public partial class AboutPage : Page
         InitializeComponent();
 
         VersionText.Text = $"Version {AppInfo.Version}";
+        CheckAtStartup.IsChecked = Services.AppSettings.Load().CheckForUpdates;
+        _loaded = true;
+        if (Services.UpdateChecker.Last is { } last)
+        {
+            ShowUpdate(last);
+        }
 
         SystemRows.ItemsSource = new List<KeyValuePair<string, string>>
         {
@@ -29,6 +35,37 @@ public partial class AboutPage : Page
     }
 
     private void OnBuyCoffee(object sender, RoutedEventArgs e) => Open(CoffeeUrl);
+
+    private readonly bool _loaded;
+
+    private void OnCheckAtStartupChanged(object sender, RoutedEventArgs e)
+    {
+        if (_loaded)
+        {
+            (Services.AppSettings.Load() with { CheckForUpdates = CheckAtStartup.IsChecked == true }).Save();
+        }
+    }
+
+    private async void OnCheckUpdates(object sender, RoutedEventArgs e)
+    {
+        CheckButton.IsEnabled = false;
+        UpdateText.Text = "Checking...";
+        ShowUpdate(await Services.UpdateChecker.CheckAsync());
+        CheckButton.IsEnabled = true;
+    }
+
+    private void ShowUpdate(Services.UpdateStatus status)
+    {
+        UpdateText.Text = status switch
+        {
+            { Error: { } error } => $"{error} Try again later.",
+            { IsNewer: true } => $"Version {status.LatestTag} is available. You have v{AppInfo.Version}.",
+            _ => $"You have the latest version (v{AppInfo.Version}).",
+        };
+        DownloadButton.Visibility = status.IsNewer ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void OnOpenRelease(object sender, RoutedEventArgs e) => Open(Services.UpdateChecker.ReleasesPage);
 
     private void OnShowGuide(object sender, RoutedEventArgs e) => (Application.Current as App)?.ShowOnboarding();
 

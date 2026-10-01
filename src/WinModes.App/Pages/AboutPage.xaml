@@ -37,6 +37,31 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource IconBadgeStyle}" Background="#3334D399">
+                    <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center" Foreground="#34D399" Text="&#xE895;" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Updates" FontWeight="SemiBold" />
+                    <TextBlock x:Name="UpdateText" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
+                               Text="WinModes can ask GitHub whether a newer release exists. Nothing is downloaded or installed by itself." />
+                    <CheckBox x:Name="CheckAtStartup" Content="Check once when WinModes starts" Margin="0,6,0,0"
+                              Checked="OnCheckAtStartupChanged" Unchecked="OnCheckAtStartupChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:Button x:Name="CheckButton" Content="Check now" Icon="{ui:SymbolIcon ArrowSync24}" Click="OnCheckUpdates" />
+                    <ui:Button x:Name="DownloadButton" Content="Open release page" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Primary"
+                               Margin="8,0,0,0" Visibility="Collapsed" Click="OnOpenRelease" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <Border Style="{StaticResource IconBadgeStyle}" Background="#33FBBF24">
                     <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center" Foreground="#FBBF24" Text="&#xEB51;" />
                 </Border>

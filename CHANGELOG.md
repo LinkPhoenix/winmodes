@@ -6,6 +6,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 - AI tool icons in the desktop widget.
+- Update check against the GitHub releases: once at startup (can be turned off) and on demand from the About page. Nothing is downloaded automatically.
 
 ## [0.3.1] - 2026-10-01
 

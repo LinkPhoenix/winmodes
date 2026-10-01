@@ -73,6 +73,8 @@ public partial class App : Application, IDisposable
             _window!.Show();
         }
 
+        _ = CheckForUpdatesAsync();
+
         var autoMode = Services.AppSettings.Load().AutoActivateMode;
         if (autoMode is null || Services.ModeSwitcher.ActiveMode is not null)
         {
@@ -89,6 +91,29 @@ public partial class App : Application, IDisposable
         {
             _trayIcon?.ShowBalloonTip(4000, "WinModes", ex.Message, Forms.ToolTipIcon.Warning);
         }
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        if (!Services.AppSettings.Load().CheckForUpdates)
+        {
+            return;
+        }
+
+        var status = await Services.UpdateChecker.CheckAsync();
+        if (status.IsNewer && _trayIcon is not null)
+        {
+            _trayIcon.BalloonTipClicked += OnUpdateBalloonClicked;
+            _trayIcon.ShowBalloonTip(8000, "WinModes update available",
+                $"Version {status.LatestTag} is out (you have v{AppInfo.Version}). Click to see it on the About page.", Forms.ToolTipIcon.Info);
+        }
+    }
+
+    private void OnUpdateBalloonClicked(object? sender, EventArgs e)
+    {
+        _trayIcon!.BalloonTipClicked -= OnUpdateBalloonClicked;
+        ShowWindow();
+        _window?.NavigateTo(typeof(Pages.AboutPage));
     }
 
     /// <summary>Turns the tray meter and the desktop widget on or off to match the settings.</summary>

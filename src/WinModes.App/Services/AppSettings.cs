@@ -35,6 +35,9 @@ internal sealed record AppSettings
     /// <summary>Notify when AI tools use at least this much memory, in GB; 0 turns the alert off.</summary>
     public int AiMemoryAlertGb { get; init; }
 
+    /// <summary>Ask GitHub once at startup whether a newer release exists.</summary>
+    public bool CheckForUpdates { get; init; } = true;
+
     /// <summary>The first-run guide was finished or skipped.</summary>
     public bool OnboardingDone { get; init; }
 
