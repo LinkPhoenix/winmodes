@@ -25,6 +25,7 @@ public partial class App : Application, IDisposable
     private bool _listening;
     private Services.HotkeyService? _hotkeys;
     private bool _alertRaised;
+    private Services.AutoSwitcher? _autoSwitcher;
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
@@ -124,6 +125,8 @@ public partial class App : Application, IDisposable
         }
 
         ApplyHotkeys(settings.EnableHotkeys);
+        _autoSwitcher ??= new Services.AutoSwitcher(SwitchFromTrayAsync);
+        _autoSwitcher.Apply(settings.AutoSwitch);
 
         // Sample in the background only while a feature needs it.
         var needed = settings.ShowAiMemoryInTray || settings.ShowDesktopWidget || settings.AiMemoryAlertGb > 0;

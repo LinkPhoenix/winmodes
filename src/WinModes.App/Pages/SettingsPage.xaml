@@ -224,6 +224,6 @@
         </Border>
 
         <TextBlock Margin="4,16,0,0" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
-                   Text="Planned, not built yet: switching by itself when a game or a coding tool starts, and switching without a permission prompt." />
+                   Text="Automatic switching when a program starts is on the Automation page. Planned, not built yet: switching without a permission prompt." />
     </StackPanel>
 </Page>

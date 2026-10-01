@@ -46,6 +46,9 @@ internal sealed record AppSettings
     /// <summary>Look and content of the desktop widget.</summary>
     public WidgetSettings Widget { get; init; } = new();
 
+    /// <summary>Automatic switching when a program starts. Off by default.</summary>
+    public AutoSwitchSettings AutoSwitch { get; init; } = new();
+
     /// <summary>Mode activated when the app starts; null means none.</summary>
     public string? AutoActivateMode { get; init; }
 
@@ -97,6 +100,17 @@ internal sealed record AppSettings
             key.DeleteValue(RunValueName, throwOnMissingValue: false);
         }
     }
+}
+
+/// <summary>Opt-in automatic switching, edited on the Automation page.</summary>
+internal sealed record AutoSwitchSettings
+{
+    public bool Enabled { get; init; }
+
+    /// <summary>Undo an automatically activated mode once its program has exited.</summary>
+    public bool RevertWhenClosed { get; init; } = true;
+
+    public IReadOnlyList<WinModes.Core.Automation.AutoSwitchRule> Rules { get; init; } = [];
 }
 
 /// <summary>Options of the desktop widget, edited on the Widget page.</summary>
