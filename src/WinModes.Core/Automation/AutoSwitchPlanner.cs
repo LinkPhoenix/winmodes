@@ -29,6 +29,27 @@ public sealed class AutoSwitchPlanner
     private string? _activatedMode;
     private string? _activatedBy;
 
+    private bool IsOurMode(string? activeMode) =>
+        _activatedMode is not null && string.Equals(activeMode, _activatedMode, StringComparison.OrdinalIgnoreCase);
+
+    private int? RankOfActivator(IReadOnlyList<AutoSwitchRule> rules)
+    {
+        if (_activatedBy is null)
+        {
+            return null;
+        }
+
+        for (var rank = 0; rank < rules.Count; rank++)
+        {
+            if (string.Equals(Normalize(rules[rank].Process), _activatedBy, StringComparison.OrdinalIgnoreCase))
+            {
+                return rank;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>Process name as Windows reports it: no folder, no ".exe".</summary>
     public static string Normalize(string process)
     {
@@ -61,10 +82,24 @@ public sealed class AutoSwitchPlanner
             _activatedBy = null;
         }
 
-        foreach (var rule in rules)
+        var activatorRank = RankOfActivator(rules);
+        for (var rank = 0; rank < rules.Count; rank++)
         {
+            var rule = rules[rank];
             var name = Normalize(rule.Process);
-            if (name.Length == 0 || !running.Contains(name) || !_handled.Add(name))
+            if (name.Length == 0 || !running.Contains(name))
+            {
+                continue;
+            }
+
+            // The mode a higher-ranked rule set stays while its program runs. The lower rule is not marked
+            // as handled, so it takes over once the higher program exits.
+            if (activatorRank is { } higher && rank > higher && running.Contains(_activatedBy!) && IsOurMode(activeMode))
+            {
+                continue;
+            }
+
+            if (!_handled.Add(name))
             {
                 continue;
             }

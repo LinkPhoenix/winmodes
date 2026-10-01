@@ -69,6 +69,46 @@ public sealed class AutoSwitchPlannerTests
         Assert.Equal(AutoSwitchKind.None, planner.Evaluate(Rules, Running(), "work", true).Kind);
     }
 
+    [Fact]
+    public void Evaluate_KeepsTheModeOfAHigherRuleWhileItsProgramRuns()
+    {
+        var planner = new AutoSwitchPlanner();
+        Assert.Equal("game", planner.Evaluate(Rules, Running("cs2", "code"), null, true).Mode);
+
+        // Next check: the game's mode is active and both programs still run; the lower rule must not override it.
+        Assert.Equal(AutoSwitchKind.None, planner.Evaluate(Rules, Running("cs2", "code"), "game", true).Kind);
+        Assert.Equal(AutoSwitchKind.None, planner.Evaluate(Rules, Running("cs2", "code"), "game", true).Kind);
+    }
+
+    [Fact]
+    public void Evaluate_DoesNotLetALowerRuleThatStartsLaterOverrideAHigherOne()
+    {
+        var planner = new AutoSwitchPlanner();
+        planner.Evaluate(Rules, Running("cs2"), null, true);
+
+        Assert.Equal(AutoSwitchKind.None, planner.Evaluate(Rules, Running("cs2", "code"), "game", true).Kind);
+    }
+
+    [Fact]
+    public void Evaluate_HandsOverToALowerRuleWhenTheHigherProgramExits()
+    {
+        var planner = new AutoSwitchPlanner();
+        planner.Evaluate(Rules, Running("cs2", "code"), null, true);
+        planner.Evaluate(Rules, Running("cs2", "code"), "game", true);
+
+        Assert.Equal(new AutoSwitchDecision(AutoSwitchKind.Activate, "code", "Code"), planner.Evaluate(Rules, Running("code"), "game", true));
+    }
+
+    [Fact]
+    public void Evaluate_LetsALowerRuleActAfterTheUserLeftTheHigherMode()
+    {
+        var planner = new AutoSwitchPlanner();
+        planner.Evaluate(Rules, Running("cs2"), null, true);
+
+        // The user switched to another mode by hand; the game's mode is no longer ours to protect.
+        Assert.Equal("code", planner.Evaluate(Rules, Running("cs2", "code"), "work", true).Mode);
+    }
+
     [Theory]
     [InlineData("09:00", "18:00", "09:00", true)]
     [InlineData("09:00", "18:00", "17:59", true)]

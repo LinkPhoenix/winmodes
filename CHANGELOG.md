@@ -12,6 +12,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 - Modes: a switch interrupted by a crash or a failed restore stays listed as active and is retried on the next undo, instead of being forgotten with services left changed.
 - Services and Optimize: a damaged record of original settings is set aside as a `.corrupt-` file instead of being overwritten, so the values to restore are not lost.
+- Automation: when several rules match, a lower-priority program no longer replaces the mode of a higher-priority program that is still running; it takes over when that program exits.
 
 ## [0.8.0] - 2026-10-01
 
