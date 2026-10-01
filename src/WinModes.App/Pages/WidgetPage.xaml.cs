@@ -84,6 +84,21 @@ public partial class WidgetPage : Page
         }
     }
 
+    private async void OnCheckCodex(object sender, RoutedEventArgs e)
+    {
+        CheckCodexButton.IsEnabled = false;
+        try
+        {
+            var readOnline = ReadUsageOnline.IsChecked == true;
+            var items = await Task.Run(() => ProviderCheck.Codex(Subscriptions.DefaultCodexHome, OnlineUsage.DefaultCodexAuth, readOnline, DateTimeOffset.UtcNow));
+            CodexCheck.Show(items);
+        }
+        finally
+        {
+            CheckCodexButton.IsEnabled = true;
+        }
+    }
+
     private const string StatusLineFileName = "WinModes.StatusLine.exe";
     private static string OtherStatusLineText => Loc.T("Claude Code already has a status line of its own, so WinModes leaves it alone. To record the usage, remove it from Claude Code's settings first.");
 

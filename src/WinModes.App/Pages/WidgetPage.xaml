@@ -235,7 +235,7 @@
                         <ui:ToggleSwitch x:Name="ClaudeUsage" HorizontalAlignment="Right" Click="OnClaudeUsageClicked" AutomationProperties.Name="{l:T 'Record Claude usage'}" />
                     </Grid>
                 </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                <Border Style="{StaticResource RowStyle}">
                     <StackPanel>
                         <Grid>
                             <StackPanel Margin="0,0,120,0">
@@ -247,6 +247,20 @@
                                        AutomationProperties.Name="{l:T 'Check Claude Code'}" />
                         </Grid>
                         <controls:CheckResults x:Name="ClaudeCheck" Margin="0,14,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                    <StackPanel>
+                        <Grid>
+                            <StackPanel Margin="0,0,120,0">
+                                <TextBlock Text="{l:T 'Check Codex'}" FontWeight="SemiBold" />
+                                <TextBlock Text="{l:T 'Shows, one by one, what is missing for the Codex usage to appear.'}" FontSize="12"
+                                           Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <ui:Button x:Name="CheckCodexButton" Content="{l:T 'Check'}" HorizontalAlignment="Right" Click="OnCheckCodex"
+                                       AutomationProperties.Name="{l:T 'Check Codex'}" />
+                        </Grid>
+                        <controls:CheckResults x:Name="CodexCheck" Margin="0,14,0,0" />
                     </StackPanel>
                 </Border>
             </StackPanel>
