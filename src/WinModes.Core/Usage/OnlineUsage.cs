@@ -26,6 +26,9 @@ public static class OnlineUsage
     // The endpoint Claude Code reads for its /usage screen. Anthropic does not document it.
     private static readonly Uri ClaudeAddress = new("https://api.anthropic.com/api/oauth/usage");
 
+    // The same endpoint, also asked for the limit resets the account has in reserve and without the spend block.
+    private static readonly Uri ClaudeAddressWithResets = new("https://api.anthropic.com/api/oauth/usage?cedar_ember=1&skip_spend=1");
+
     public static string DefaultCodexAuth { get; } = Path.Combine(Subscriptions.DefaultCodexHome, "auth.json");
 
     public static string DefaultClaudeCredentials { get; } =
@@ -67,6 +70,31 @@ public static class OnlineUsage
         return new UsageRequest(ClaudeAddress, new Dictionary<string, string>
         {
             ["Authorization"] = $"Bearer {token}",
+            ["anthropic-beta"] = "oauth-2025-04-20",
+            ["User-Agent"] = UserAgent,
+        });
+    }
+
+    /// <summary>A Codex request with the token of WinModes' own sign-in; the token is sent only to the provider that issued it.</summary>
+    public static UsageRequest CodexRequestFor(string accessToken, string? accountId)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(accessToken);
+        var headers = new Dictionary<string, string> { ["Authorization"] = $"Bearer {accessToken}", ["User-Agent"] = UserAgent };
+        if (!string.IsNullOrEmpty(accountId))
+        {
+            headers["ChatGPT-Account-Id"] = accountId;
+        }
+
+        return new UsageRequest(CodexAddress, headers);
+    }
+
+    /// <summary>A Claude request with the token of WinModes' own sign-in.</summary>
+    public static UsageRequest ClaudeRequestFor(string accessToken)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(accessToken);
+        return new UsageRequest(ClaudeAddressWithResets, new Dictionary<string, string>
+        {
+            ["Authorization"] = $"Bearer {accessToken}",
             ["anthropic-beta"] = "oauth-2025-04-20",
             ["User-Agent"] = UserAgent,
         });
@@ -120,12 +148,38 @@ public static class OnlineUsage
             var sevenDay = ClaudeWindow(root, "seven_day", SevenDayMinutes);
             return fiveHour is null && sevenDay is null
                 ? null
-                : new SubscriptionStatus(ClaudeTool, plan, fiveHour ?? sevenDay, fiveHour is null ? null : sevenDay, now);
+                : new SubscriptionStatus(ClaudeTool, plan, fiveHour ?? sevenDay, fiveHour is null ? null : sevenDay, now, ClaudeResets(root));
         }
         catch (Exception ex) when (ex is JsonException or FormatException or InvalidOperationException)
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// The limit resets the account has left in the "cedar_ember" block: the sum over the grants that are not paused. Null when
+    /// the block is absent, the account is not eligible (the answer depends on who asks) or nothing is left.
+    /// </summary>
+    private static int? ClaudeResets(JsonElement root)
+    {
+        if (!root.TryGetProperty("cedar_ember", out var block) || block.ValueKind != JsonValueKind.Object
+            || !block.TryGetProperty("eligible", out var eligible) || eligible.ValueKind != JsonValueKind.True
+            || !block.TryGetProperty("grants", out var grants) || grants.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        var total = 0;
+        foreach (var grant in grants.EnumerateArray())
+        {
+            if (grant.ValueKind == JsonValueKind.Object && !(grant.TryGetProperty("paused", out var paused) && paused.ValueKind == JsonValueKind.True)
+                && grant.TryGetProperty("resets_left", out var left) && left.ValueKind == JsonValueKind.Number && left.TryGetInt32(out var count) && count > 0)
+            {
+                total += count;
+            }
+        }
+
+        return total > 0 ? total : null;
     }
 
     private static LimitWindow? CodexWindow(JsonElement limit, string name)

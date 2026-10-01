@@ -1,4 +1,5 @@
 using System.Net.Http;
+using WinModes.Core.Accounts;
 using WinModes.Core.Usage;
 
 namespace WinModes.App.Services;
@@ -30,6 +31,9 @@ internal static class SubscriptionMonitor
     /// <summary>False until the first read has ended, so "nothing found" is not shown too early.</summary>
     public static bool HasRead { get; private set; }
 
+    /// <summary>Reads again at once, for example right after signing in or out.</summary>
+    public static void RefreshNow() => (_lastRefreshUtc, _lastOnlineUtc) = (DateTime.MinValue, DateTime.MinValue);
+
     /// <summary>Returns what is known now and starts a background read when it is getting old.</summary>
     public static IReadOnlyList<SubscriptionStatus> Get(bool claudeOnline, bool codexOnline, bool claudeWanted = true, bool codexWanted = true)
     {
@@ -49,32 +53,42 @@ internal static class SubscriptionMonitor
                 {
                     var claude = claudeWanted ? Subscriptions.ReadClaude(Subscriptions.DefaultClaudeSettings, ClaudeStatusLine.DefaultRecordPath) : null;
                     var codex = codexWanted ? Subscriptions.ReadCodex(Subscriptions.DefaultCodexHome) : null;
-                    // A tool whose online reading is off, or that is not shown, is not asked and keeps no online figure.
-                    if (!claudeOnline || !claudeWanted)
+                    // Signing in to WinModes is the consent to ask: such a tool is read online with its own session whatever the
+                    // option says. A tool whose online reading is off, or that is not shown, is not asked and keeps no online figure.
+                    var claudeSigned = claudeWanted && AccountSession.IsSignedIn(AccountProvider.Claude);
+                    var codexSigned = codexWanted && AccountSession.IsSignedIn(AccountProvider.ChatGpt);
+                    var askClaude = (claudeOnline && claudeWanted) || claudeSigned;
+                    var askCodex = (codexOnline && codexWanted) || codexSigned;
+                    if (!askClaude)
                     {
                         _onlineClaude = null;
                     }
 
-                    if (!codexOnline || !codexWanted)
+                    if (!askCodex)
                     {
                         _onlineCodex = null;
                     }
 
-                    var anyOnline = (claudeOnline && claudeWanted) || (codexOnline && codexWanted);
+                    var anyOnline = askClaude || askCodex;
                     if (anyOnline && DateTime.UtcNow - _lastOnlineUtc >= OnlineInterval)
                     {
                         _lastOnlineUtc = DateTime.UtcNow;
                         var now = DateTimeOffset.UtcNow;
                         // A failed request keeps the previous online figures; they are dated in the widget.
-                        if (codexOnline && codexWanted)
+                        if (askCodex)
                         {
-                            _onlineCodex = await AskAsync(OnlineUsage.CodexRequest(OnlineUsage.DefaultCodexAuth), json => OnlineUsage.ParseCodex(json, now)) ?? _onlineCodex;
+                            var request = codexSigned
+                                ? await AccountSession.TokensAsync(AccountProvider.ChatGpt) is { } own ? OnlineUsage.CodexRequestFor(own.AccessToken, own.AccountId) : null
+                                : OnlineUsage.CodexRequest(OnlineUsage.DefaultCodexAuth);
+                            _onlineCodex = await AskAsync(request, json => OnlineUsage.ParseCodex(json, now)) ?? _onlineCodex;
                         }
 
-                        if (claudeOnline && claudeWanted)
+                        if (askClaude)
                         {
-                            _onlineClaude = await AskAsync(OnlineUsage.ClaudeRequest(OnlineUsage.DefaultClaudeCredentials, now),
-                                json => OnlineUsage.ParseClaude(json, claude?.Plan ?? Loc.T("Plan unknown"), now)) ?? _onlineClaude;
+                            var request = claudeSigned
+                                ? await AccountSession.TokensAsync(AccountProvider.Claude) is { } own ? OnlineUsage.ClaudeRequestFor(own.AccessToken) : null
+                                : OnlineUsage.ClaudeRequest(OnlineUsage.DefaultClaudeCredentials, now);
+                            _onlineClaude = await AskAsync(request, json => OnlineUsage.ParseClaude(json, claude?.Plan ?? Loc.T("Plan unknown"), now)) ?? _onlineClaude;
                         }
                     }
 

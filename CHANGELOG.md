@@ -11,6 +11,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 ### Added
 
 - Widget: it can sit on the taskbar, on the desktop or on both ("Where it appears"). It fills the free room next to the app icons whether they are centred or on the left, reads that room again within a fraction of a second when you change the alignment or open or close an app, and shows less (network, then mode and CPU, then AI) when there is little room. You choose the side (automatic, left or right). Windows icons in colour and the tools' own icons (kept after the tool is closed) replace the text labels, the AI total is one line, and the limit resets you have in reserve ("↻ 2") are shown next to each plan.
+- Widget: each of Claude Code and Codex has a "WinModes account": sign in once in your browser and WinModes reads the usage reliably, with a session of its own that is renewed by itself and never touches the sign-in of Claude Code or Codex. Tokens are kept encrypted for your Windows account and "Sign out" deletes them. Anthropic does not document the Claude sign-in and may restrict it.
+- Widget: for Claude, the limit resets in reserve are read too when the account is eligible.
 - Widget: a "Check Claude Code" button lists, one by one, what is missing for the Claude usage to appear (plan, status line, last call of the status line, usage record, sign-in) and what to do about it.
 - Widget: a "Check Codex" button does the same for Codex (folder, last usage record, plan, sign-in).
 - Modes: when the administrator helper fails, the reason is written to `helper-errors.log` in `%ProgramData%\WinModes\logs` instead of being lost.

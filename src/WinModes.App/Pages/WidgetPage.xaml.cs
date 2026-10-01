@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using WinModes.App.Services;
 using WinModes.Core;
+using WinModes.Core.Accounts;
 using WinModes.Core.Usage;
 
 namespace WinModes.App.Pages;
@@ -47,6 +48,7 @@ public partial class WidgetPage : Page
         ClaudeAlert.IsChecked = widget.ClaudeLowAlert;
         CodexAlert.IsChecked = widget.CodexLowAlert;
         ShowClaudeUsage();
+        ShowAccounts();
         LockPosition.IsChecked = widget.LockPosition;
         HideOnFullScreen.IsChecked = widget.HideOnFullScreen;
         Compact.IsChecked = widget.Compact;
@@ -72,6 +74,7 @@ public partial class WidgetPage : Page
         };
         Unloaded += (_, _) =>
         {
+            AccountSession.CancelSignIn();
             if (Application.Current is App app)
             {
                 app.Stats.Updated -= OnStats;
@@ -80,6 +83,66 @@ public partial class WidgetPage : Page
     }
 
     private void OnStats(object? sender, StatsReading reading) => Preview.Show(reading);
+
+    private void OnClaudeAccount(object sender, RoutedEventArgs e) => _ = ToggleAccountAsync(AccountProvider.Claude);
+
+    private void OnCodexAccount(object sender, RoutedEventArgs e) => _ = ToggleAccountAsync(AccountProvider.ChatGpt);
+
+    private void ShowAccounts()
+    {
+        ShowAccount(AccountProvider.Claude, ClaudeAccountRow, ClaudeAccountButton);
+        ShowAccount(AccountProvider.ChatGpt, CodexAccountRow, CodexAccountButton);
+    }
+
+    private static void ShowAccount(AccountProvider provider, Controls.SettingRow row, Wpf.Ui.Controls.Button button)
+    {
+        var signedIn = AccountSession.IsSignedIn(provider);
+        button.Content = signedIn ? Loc.T("Sign out") : Loc.T("Sign in");
+        button.IsEnabled = true;
+        row.Description = !signedIn
+            ? Loc.F("Not signed in. Sign in so WinModes reads your {0} usage reliably, with a session of its own.", provider.DisplayName)
+            : AccountSession.Email(provider) is { Length: > 0 } email
+                ? Loc.F("Signed in as {0}. The usage is read online with this session.", email)
+                : Loc.T("Signed in. The usage is read online with this session.");
+    }
+
+    /// <summary>Signs out at once; signing in asks first, opens the browser and waits for it to come back.</summary>
+    private async Task ToggleAccountAsync(AccountProvider provider)
+    {
+        if (AccountSession.IsSignedIn(provider))
+        {
+            AccountSession.SignOut(provider);
+            SubscriptionMonitor.RefreshNow();
+            ShowAccounts();
+            return;
+        }
+
+        var risk = provider == AccountProvider.Claude ? "\n\n" + Loc.T("Anthropic does not document this sign-in and may restrict it: you use it at your own risk.") : "";
+        var consent = Loc.F("WinModes opens your browser so you can sign in to {0}. It then reads only your plan usage, with a session of its own: the sign-in of Claude Code or Codex is not touched. The tokens are kept encrypted for your Windows account, and Sign out deletes them.", provider.DisplayName) + risk;
+        if (MessageBox.Show(consent, Loc.F("Sign in to {0}", provider.DisplayName), MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+        {
+            return;
+        }
+
+        var (row, button) = provider == AccountProvider.Claude ? (ClaudeAccountRow, ClaudeAccountButton) : (CodexAccountRow, CodexAccountButton);
+        button.IsEnabled = false;
+        row.Description = Loc.T("Waiting for you to sign in, in your browser…");
+        var outcome = await AccountSession.SignInAsync(provider);
+        ShowAccounts();
+        if (outcome == SignInOutcome.SignedIn)
+        {
+            SubscriptionMonitor.RefreshNow();
+            return;
+        }
+
+        row.Description = outcome switch
+        {
+            SignInOutcome.PortBusy => Loc.F("Port {0} is used by another program (Claude Code or Codex may be signing in). Close it and try again.", provider.CallbackPort),
+            SignInOutcome.Refused => Loc.T("The sign-in was refused."),
+            SignInOutcome.TimedOut => Loc.T("The sign-in did not finish in time."),
+            _ => Loc.T("The sign-in failed. Try again."),
+        };
+    }
 
     private async void OnCheckClaude(object sender, RoutedEventArgs e)
     {

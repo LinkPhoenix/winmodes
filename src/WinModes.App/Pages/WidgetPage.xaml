@@ -108,7 +108,7 @@
                 <controls:SettingSection Header="{l:T 'PLAN USAGE'}" Icon="Gauge24" Accent="{x:Static app:Palette.Start}">
                     <StackPanel>
                         <controls:SettingRow Icon="Gauge24" Accent="{x:Static app:Palette.BrandBrush}" Title="{l:T 'Show plan usage'}"
-                                             Description="{l:T 'Your plan, the usage left and when the limit resets, for Claude Code and Codex. Choose what is read for each tool in the two sections below. Nothing is asked online unless you turn it on there.'}">
+                                             Description="{l:T 'Your plan, the usage left and when the limit resets, for Claude Code and Codex. Choose what is read for each tool in the two sections below. Nothing is asked online unless you turn it on or sign in there.'}">
                             <ui:ToggleSwitch x:Name="ShowSubscriptions" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show plan usage'}" />
                         </controls:SettingRow>
                     </StackPanel>
@@ -116,6 +116,9 @@
 
                 <controls:SettingSection Header="{l:T 'CLAUDE CODE'}" Icon="Sparkle24" Accent="{x:Static app:Palette.Power}">
                     <StackPanel>
+                        <controls:SettingRow x:Name="ClaudeAccountRow" Icon="Person24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'WinModes account'}">
+                            <ui:Button x:Name="ClaudeAccountButton" MinWidth="110" Click="OnClaudeAccount" AutomationProperties.Name="{l:T 'WinModes account'}" />
+                        </controls:SettingRow>
                         <controls:SettingRow Icon="Eye24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Show Claude usage'}"
                                              Description="{l:T 'Claude is listed in the plans block of the widget. Turned off, it is neither read nor asked online.'}">
                             <ui:ToggleSwitch x:Name="ShowClaudePlan" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show Claude usage'}" />
@@ -143,6 +146,9 @@
 
                 <controls:SettingSection Header="{l:T 'CODEX'}" Icon="Code24" Accent="{x:Static app:Palette.Container}">
                     <StackPanel>
+                        <controls:SettingRow x:Name="CodexAccountRow" Icon="Person24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'WinModes account'}">
+                            <ui:Button x:Name="CodexAccountButton" MinWidth="110" Click="OnCodexAccount" AutomationProperties.Name="{l:T 'WinModes account'}" />
+                        </controls:SettingRow>
                         <controls:SettingRow Icon="Eye24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Show Codex usage'}"
                                              Description="{l:T 'Codex is listed in the plans block of the widget. Turned off, it is neither read nor asked online.'}">
                             <ui:ToggleSwitch x:Name="ShowCodexPlan" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show Codex usage'}" />
