@@ -25,7 +25,6 @@ public partial class SettingsPage : Page
         CloseToTray.IsChecked = settings.CloseToTray;
         ConfirmBeforeActivate.IsChecked = settings.ConfirmBeforeActivate;
         ShowAiMemoryInTray.IsChecked = settings.ShowAiMemoryInTray;
-        ShowDesktopWidget.IsChecked = settings.ShowDesktopWidget;
         EnableHotkeys.IsChecked = settings.EnableHotkeys;
 
         var limits = new List<Limit> { new(0, "Off") };
@@ -68,7 +67,6 @@ public partial class SettingsPage : Page
             CloseToTray = CloseToTray.IsChecked == true,
             ConfirmBeforeActivate = ConfirmBeforeActivate.IsChecked == true,
             ShowAiMemoryInTray = ShowAiMemoryInTray.IsChecked == true,
-            ShowDesktopWidget = ShowDesktopWidget.IsChecked == true,
             EnableHotkeys = EnableHotkeys.IsChecked == true,
             AiMemoryAlertGb = (AiAlert.SelectedItem as Limit)?.Gb ?? 0,
             AutoActivateMode = (AutoMode.SelectedItem as Choice)?.Mode,

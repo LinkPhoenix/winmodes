@@ -40,6 +40,9 @@ internal sealed record AppSettings
 
     public double? WidgetTop { get; init; }
 
+    /// <summary>Look and content of the desktop widget.</summary>
+    public WidgetSettings Widget { get; init; } = new();
+
     /// <summary>Mode activated when the app starts; null means none.</summary>
     public string? AutoActivateMode { get; init; }
 
@@ -91,4 +94,36 @@ internal sealed record AppSettings
             key.DeleteValue(RunValueName, throwOnMissingValue: false);
         }
     }
+}
+
+/// <summary>Options of the desktop widget, edited on the Widget page.</summary>
+internal sealed record WidgetSettings
+{
+    public bool AlwaysOnTop { get; init; } = true;
+
+    /// <summary>40 to 100.</summary>
+    public int OpacityPercent { get; init; } = 95;
+
+    /// <summary>80, 100, 125 or 150.</summary>
+    public int ScalePercent { get; init; } = 100;
+
+    public bool ShowCpu { get; init; } = true;
+    public bool ShowMemory { get; init; } = true;
+    public bool ShowNetwork { get; init; }
+    public bool ShowMode { get; init; } = true;
+    public bool ShowAiTools { get; init; } = true;
+
+    /// <summary>List each tool under the AI total.</summary>
+    public bool ShowToolDetail { get; init; } = true;
+
+    public int MaxTools { get; init; } = 4;
+
+    /// <summary>Seconds between two refreshes: 1, 3 or 5.</summary>
+    public int RefreshSeconds { get; init; } = 3;
+
+    /// <summary>The widget cannot be dragged.</summary>
+    public bool LockPosition { get; init; }
+
+    /// <summary>Mouse clicks go to the window underneath; the widget can then only be changed from this page.</summary>
+    public bool ClickThrough { get; init; }
 }

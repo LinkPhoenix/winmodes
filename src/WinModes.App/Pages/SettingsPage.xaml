@@ -91,21 +91,6 @@
                                          Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show AI memory on the tray icon" />
                     </Grid>
                 </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Desktop widget" FontWeight="SemiBold" />
-                            <TextBlock Text="A small always-on-top panel with CPU, memory and AI tools. Drag it anywhere; right-click it to hide it."
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="ShowDesktopWidget" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Desktop widget" />
-                    </Grid>
-                </Border>
             </StackPanel>
         </Border>
 

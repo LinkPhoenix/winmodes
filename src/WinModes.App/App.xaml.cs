@@ -96,6 +96,11 @@ public partial class App : Application, IDisposable
                 (Services.AppSettings.Load() with { ShowDesktopWidget = false }).Save();
                 ApplyDisplaySettings();
             };
+            _widget.OpenSettingsRequested += (_, _) =>
+            {
+                ShowWindow();
+                _window?.NavigateTo(typeof(Pages.WidgetPage));
+            };
             _widget.Show();
         }
         else if (!settings.ShowDesktopWidget && _widget is not null)
@@ -103,6 +108,9 @@ public partial class App : Application, IDisposable
             _widget.Close();
             _widget = null;
         }
+
+        _widget?.Apply(settings.Widget);
+        _liveStats.RefreshInterval = TimeSpan.FromSeconds(Math.Clamp(settings.Widget.RefreshSeconds, 1, 10));
 
         if (!settings.ShowAiMemoryInTray)
         {
@@ -124,6 +132,8 @@ public partial class App : Application, IDisposable
             _listening = false;
         }
     }
+
+    internal void MoveWidget(WidgetCorner corner) => _widget?.MoveTo(corner);
 
     private void ApplyHotkeys(bool enabled)
     {

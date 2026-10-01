@@ -1,0 +1,174 @@
+<Page x:Class="WinModes.App.Pages.WidgetPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Widget"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <Page.Resources>
+        <Style x:Key="RowStyle" TargetType="Border">
+            <Setter Property="Padding" Value="20,14" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="BorderBrush" Value="{StaticResource AppCardStrokeBrush}" />
+        </Style>
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource CardCaptionStyle}">
+            <Setter Property="Margin" Value="4,20,0,8" />
+        </Style>
+        <Style x:Key="RowTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </Page.Resources>
+
+    <StackPanel Margin="36,24,36,36" MaxWidth="1100">
+        <TextBlock Text="Widget" FontSize="28" FontWeight="SemiBold" />
+        <TextBlock Text="A small panel on your desktop with live figures. Changes apply at once."
+                   Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
+
+        <TextBlock Text="GENERAL" Style="{StaticResource SectionTitleStyle}" />
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <StackPanel>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Text="Show the widget" FontWeight="SemiBold" />
+                            <TextBlock Text="You can also hide it from its right-click menu." FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="Enabled" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
+                                         AutomationProperties.Name="Show the widget" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Text="Always on top" FontWeight="SemiBold" />
+                            <TextBlock Text="Keep the widget above every other window." FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="AlwaysOnTop" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
+                                         AutomationProperties.Name="Always on top" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                    <Grid>
+                        <TextBlock Text="Refresh every" Style="{StaticResource RowTitleStyle}" />
+                        <ComboBox x:Name="Refresh" HorizontalAlignment="Right" MinWidth="170" DisplayMemberPath="Label"
+                                  SelectionChanged="OnSelectionChanged" AutomationProperties.Name="Refresh interval" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="APPEARANCE" Style="{StaticResource SectionTitleStyle}" />
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <StackPanel>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <TextBlock Text="Opacity" Style="{StaticResource RowTitleStyle}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Slider x:Name="OpacitySlider" Width="220" Minimum="40" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
+                                    VerticalAlignment="Center" ValueChanged="OnOpacityChanged" AutomationProperties.Name="Opacity" />
+                            <TextBlock x:Name="OpacityText" Width="48" TextAlignment="Right" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                    <Grid>
+                        <TextBlock Text="Size" Style="{StaticResource RowTitleStyle}" />
+                        <ComboBox x:Name="Scale" HorizontalAlignment="Right" MinWidth="170" DisplayMemberPath="Label"
+                                  SelectionChanged="OnSelectionChanged" AutomationProperties.Name="Size" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="CONTENT" Style="{StaticResource SectionTitleStyle}" />
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <StackPanel>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <TextBlock Text="CPU" Style="{StaticResource RowTitleStyle}" />
+                        <ui:ToggleSwitch x:Name="ShowCpu" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show CPU" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <TextBlock Text="Memory" Style="{StaticResource RowTitleStyle}" />
+                        <ui:ToggleSwitch x:Name="ShowMemory" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show memory" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <TextBlock Text="Network speed" Style="{StaticResource RowTitleStyle}" />
+                        <ui:ToggleSwitch x:Name="ShowNetwork" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show network speed" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <TextBlock Text="Active mode" Style="{StaticResource RowTitleStyle}" />
+                        <ui:ToggleSwitch x:Name="ShowMode" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show active mode" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <TextBlock Text="AI tools total" Style="{StaticResource RowTitleStyle}" />
+                        <ui:ToggleSwitch x:Name="ShowAiTools" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show AI tools total" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <TextBlock Text="Detail per AI tool" Style="{StaticResource RowTitleStyle}" />
+                        <ui:ToggleSwitch x:Name="ShowToolDetail" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show detail per AI tool" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                    <Grid>
+                        <TextBlock Text="AI tools listed" Style="{StaticResource RowTitleStyle}" />
+                        <ComboBox x:Name="MaxTools" HorizontalAlignment="Right" MinWidth="170" DisplayMemberPath="Label"
+                                  SelectionChanged="OnSelectionChanged" AutomationProperties.Name="Number of AI tools listed" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="POSITION AND MOUSE" Style="{StaticResource SectionTitleStyle}" />
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <StackPanel>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Text="Move to a corner" FontWeight="SemiBold" />
+                            <TextBlock Text="Otherwise drag the widget where you want; its position is remembered."
+                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <ui:Button Content="Top left" Tag="TopLeft" Margin="0,0,6,0" Click="OnCorner" />
+                            <ui:Button Content="Top right" Tag="TopRight" Margin="0,0,6,0" Click="OnCorner" />
+                            <ui:Button Content="Bottom left" Tag="BottomLeft" Margin="0,0,6,0" Click="OnCorner" />
+                            <ui:Button Content="Bottom right" Tag="BottomRight" Click="OnCorner" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Text="Lock position" FontWeight="SemiBold" />
+                            <TextBlock Text="The widget cannot be dragged by mistake." FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="LockPosition" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
+                                         AutomationProperties.Name="Lock position" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                    <Grid>
+                        <StackPanel Margin="0,0,80,0">
+                            <TextBlock Text="Click-through" FontWeight="SemiBold" />
+                            <TextBlock Text="Clicks pass through the widget to the window underneath. Its right-click menu is then unavailable: come back here to change it."
+                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="ClickThrough" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
+                                         AutomationProperties.Name="Click-through" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</Page>

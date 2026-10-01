@@ -5,7 +5,7 @@ using WinModes.Core.Planning;
 namespace WinModes.App.Services;
 
 /// <summary>One reading shared by the tray meter and the desktop widget.</summary>
-internal sealed record StatsReading(double CpuPercent, MemorySample Memory, IReadOnlyList<AiToolUsage> AiTools)
+internal sealed record StatsReading(double CpuPercent, MemorySample Memory, IReadOnlyList<AiToolUsage> AiTools, double DownMbps, double UpMbps)
 {
     public double AiMemoryMb => AiTools.Sum(tool => tool.MemoryMb);
 }
@@ -24,6 +24,13 @@ internal sealed class LiveStats
     private readonly SystemMonitor _monitor = new();
     private bool _sampling;
     private EventHandler<StatsReading>? _updated;
+
+    /// <summary>Time between two samples.</summary>
+    public TimeSpan RefreshInterval
+    {
+        get => _timer.Interval;
+        set => _timer.Interval = value;
+    }
 
     public LiveStats() => _timer.Tick += async (_, _) => await SampleAsync();
 
@@ -67,11 +74,12 @@ internal sealed class LiveStats
                     .Select(group => new AiToolUsage(group.Key, group.Count(), group.Sum(session => session.TotalMemoryMb)))
                     .OrderByDescending(tool => tool.MemoryMb)
                     .ToList();
-                return new StatsReading(_monitor.SampleCpuPercent(), SystemMonitor.SampleMemory(), tools);
+                var (down, up) = _monitor.SampleNetwork();
+                return new StatsReading(_monitor.SampleCpuPercent(), SystemMonitor.SampleMemory(), tools, down, up);
             });
             _updated?.Invoke(this, reading);
         }
-        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or System.Net.NetworkInformation.NetworkInformationException)
         {
             // A failed sample is skipped; the next tick tries again.
         }

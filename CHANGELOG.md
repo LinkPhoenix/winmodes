@@ -16,6 +16,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Memory freed is measured and reported after a mode is activated.
 - Per-core load and network speed on the dashboard.
 - The desktop widget remembers its position.
+- Widget page: always on top, opacity, size, content shown, number of tools, refresh speed, corner placement, position lock and click-through.
 - `tools/release.ps1` to cut a release in one command.
 
 ## [0.2.0] - 2026-10-01

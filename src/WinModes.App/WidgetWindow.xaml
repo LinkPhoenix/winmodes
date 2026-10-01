@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:WinModes.App.Controls"
         Title="WinModes widget"
-        Width="270" SizeToContent="Height"
+        SizeToContent="WidthAndHeight"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" ShowActivated="False"
         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -11,18 +11,20 @@
     <Window.ContextMenu>
         <ContextMenu>
             <MenuItem Header="Open WinModes" Click="OnOpenApp" />
+            <MenuItem Header="Widget settings" Click="OnOpenSettings" />
             <MenuItem Header="Hide widget" Click="OnHide" />
         </ContextMenu>
     </Window.ContextMenu>
 
-    <Border Background="#F2191920" BorderBrush="{StaticResource AppCardStrokeBrush}" BorderThickness="1" CornerRadius="12" Padding="16,14">
+    <Border x:Name="Root" Width="270" Background="#F2191920" BorderBrush="{StaticResource AppCardStrokeBrush}" BorderThickness="1"
+            CornerRadius="12" Padding="16,14">
         <StackPanel>
             <Grid>
                 <TextBlock Text="WINMODES" Style="{StaticResource CardCaptionStyle}" />
                 <TextBlock x:Name="ModeText" Text="No mode" FontSize="12" HorizontalAlignment="Right" Style="{StaticResource SecondaryTextStyle}" />
             </Grid>
 
-            <Grid Margin="0,12,0,0">
+            <Grid x:Name="CpuRow" Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="46" />
                     <ColumnDefinition Width="*" />
@@ -32,7 +34,7 @@
                 <controls:SegmentBar x:Name="CpuBar" Grid.Column="1" Height="12" Accent="#7C5CFC" />
                 <TextBlock x:Name="CpuText" Grid.Column="2" Text="…" FontWeight="SemiBold" HorizontalAlignment="Right" />
             </Grid>
-            <Grid Margin="0,8,0,0">
+            <Grid x:Name="MemoryRow" Margin="0,8,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="46" />
                     <ColumnDefinition Width="*" />
@@ -42,22 +44,28 @@
                 <controls:SegmentBar x:Name="MemoryBar" Grid.Column="1" Height="12" Accent="#EC4899" />
                 <TextBlock x:Name="MemoryText" Grid.Column="2" Text="…" FontWeight="SemiBold" HorizontalAlignment="Right" />
             </Grid>
-
-            <Border Height="1" Background="{StaticResource AppCardStrokeBrush}" Margin="0,12,0,10" />
-            <Grid>
-                <TextBlock Text="AI tools" FontWeight="SemiBold" />
-                <TextBlock x:Name="AiTotal" Text="…" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="#A78BFA" />
+            <Grid x:Name="NetworkRow" Margin="0,8,0,0">
+                <TextBlock Text="Network" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
+                <TextBlock x:Name="NetworkText" Text="…" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right" />
             </Grid>
-            <ItemsControl x:Name="AiTools" Margin="0,4,0,0">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="0,3,0,0">
-                            <TextBlock Text="{Binding Key}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="NoWrap" />
-                            <TextBlock Text="{Binding Value}" FontSize="12" HorizontalAlignment="Right" />
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+
+            <StackPanel x:Name="AiSection">
+                <Border x:Name="AiSeparator" Height="1" Background="{StaticResource AppCardStrokeBrush}" Margin="0,12,0,10" />
+                <Grid>
+                    <TextBlock Text="AI tools" FontWeight="SemiBold" />
+                    <TextBlock x:Name="AiTotal" Text="…" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="#A78BFA" />
+                </Grid>
+                <ItemsControl x:Name="AiTools" Margin="0,4,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,3,0,0">
+                                <TextBlock Text="{Binding Key}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="NoWrap" />
+                                <TextBlock Text="{Binding Value}" FontSize="12" HorizontalAlignment="Right" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </StackPanel>
     </Border>
 </Window>
