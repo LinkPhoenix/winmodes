@@ -8,6 +8,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-01
+
 ### Added
 
 - Settings: the interface can be shown in French, Spanish or Italian as well as English (the default). The language applies the next time WinModes starts and covers every page, the widget, the tray menu, the dialogs and the notifications.
@@ -140,7 +142,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Protection: blocklist for security, WSL, Docker, winget, the Microsoft Store, Edge and developer tools.
 - Pages: Dashboard, Services, History, Protection and About.
 
-[Unreleased]: https://github.com/LinkPhoenix/winmodes/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/LinkPhoenix/winmodes/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.4.0...v0.5.0
