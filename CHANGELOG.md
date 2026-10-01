@@ -14,6 +14,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Services and Optimize: a damaged record of original settings is set aside as a `.corrupt-` file instead of being overwritten, so the values to restore are not lost.
 - Automation: when several rules match, a lower-priority program no longer replaces the mode of a higher-priority program that is still running; it takes over when that program exits.
 - Usage and widget: a plan or status-line answer holding an impossible date or number no longer stops the reading; the value is shown as unknown.
+- Settings, History and Claude status line: files are saved in one step, so a crash or power loss can no longer leave a half-written settings, usage history or Claude Code settings file.
+- Claude status line: installing or removing it keeps the first backup of your Claude Code settings instead of replacing it, and no longer rewrites accents or symbols elsewhere in that file.
 
 ## [0.8.0] - 2026-10-01
 

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using WinModes.Core;
 using WinModes.Core.Engine;
 using WinModes.Core.Planning;
 using WinModes.Core.Profiles;
@@ -342,8 +343,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
 
     private static void WriteUserState(UserState state)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(UserStatePath)!);
-        File.WriteAllText(UserStatePath, JsonSerializer.Serialize(state));
+        AtomicFile.WriteAllText(UserStatePath, JsonSerializer.Serialize(state));
     }
 
     private static void DeleteUserState()

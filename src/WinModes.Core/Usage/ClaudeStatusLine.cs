@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Encodings.Web;
 using System.Text.Json.Nodes;
 
 namespace WinModes.Core.Usage;
@@ -77,11 +78,8 @@ public static class ClaudeStatusLine
     public static void Save(string recordPath, ClaudeLimits limits)
     {
         ArgumentNullException.ThrowIfNull(limits);
-        Directory.CreateDirectory(Path.GetDirectoryName(recordPath)!);
-        // Several sessions write at once: replace the file in one step so a reader never sees half of it.
-        var temporary = $"{recordPath}.{Environment.ProcessId}.tmp";
-        File.WriteAllText(temporary, JsonSerializer.Serialize(limits));
-        File.Move(temporary, recordPath, overwrite: true);
+        // Several sessions write at once: the file is replaced in one step so a reader never sees half of it.
+        AtomicFile.WriteAllText(recordPath, JsonSerializer.Serialize(limits));
     }
 
     public static ClaudeLimits? Load(string recordPath)
@@ -117,6 +115,13 @@ public static class ClaudeStatusLine
 /// </summary>
 public static class ClaudeStatusLineSetup
 {
+    // The default encoder rewrites accents, "<", "&" and "+" in the rest of the user's file as escape sequences.
+    private static readonly JsonSerializerOptions SettingsWriteOptions = new()
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
     private const string Key = "statusLine";
     private const string Marker = "WinModes.StatusLine";
 
@@ -199,11 +204,14 @@ public static class ClaudeStatusLineSetup
     private static void Write(string settingsPath, JsonObject settings)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
-        if (File.Exists(settingsPath))
+
+        // Keep the file as it was before WinModes first touched it: a later write must not replace that copy.
+        var backup = settingsPath + ".winmodes.bak";
+        if (File.Exists(settingsPath) && !File.Exists(backup))
         {
-            File.Copy(settingsPath, settingsPath + ".winmodes.bak", overwrite: true);
+            File.Copy(settingsPath, backup);
         }
 
-        File.WriteAllText(settingsPath, settings.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+        AtomicFile.WriteAllText(settingsPath, settings.ToJsonString(SettingsWriteOptions));
     }
 }

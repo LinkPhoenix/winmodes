@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using Microsoft.Win32;
+using WinModes.Core;
 
 namespace WinModes.App.Services;
 
@@ -92,8 +93,7 @@ internal sealed record AppSettings
 
     public void Save()
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
-        File.WriteAllText(SettingsPath, JsonSerializer.Serialize(this));
+        AtomicFile.WriteAllText(SettingsPath, JsonSerializer.Serialize(this));
 
         // The Run entry carries the minimized flag, so keep it in step with the setting.
         if (StartsWithWindows)

@@ -61,11 +61,7 @@ public sealed class JournalStore(string directory)
     public void Save(JournalSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
-        System.IO.Directory.CreateDirectory(Directory);
-        var path = PathOf(session.Id);
-        var temporary = path + ".tmp";
-        File.WriteAllText(temporary, JsonSerializer.Serialize(session, Options));
-        File.Move(temporary, path, overwrite: true);
+        AtomicFile.WriteAllText(PathOf(session.Id), JsonSerializer.Serialize(session, Options));
     }
 
     public IReadOnlyList<JournalSession> LoadAll()

@@ -144,8 +144,7 @@ public sealed class UsageHistory(string directory)
 
         try
         {
-            Directory.CreateDirectory(directory);
-            File.WriteAllText(PathOf(_day), JsonSerializer.Serialize(_today.Values.ToList()));
+            AtomicFile.WriteAllText(PathOf(_day), JsonSerializer.Serialize(_today.Values.ToList()));
 
             var oldest = _day.AddDays(-RetentionDays);
             foreach (var file in Directory.EnumerateFiles(directory, "*.json"))

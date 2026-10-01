@@ -87,9 +87,7 @@ public sealed partial class ProfileLibrary(string profilesDirectory, ProtectionP
         }
 
         var path = PathOf(mode);
-        var temporary = path + ".tmp";
-        File.WriteAllText(temporary, node.ToJsonString(WriteOptions));
-        File.Move(temporary, path, overwrite: true);
+        AtomicFile.WriteAllText(path, node.ToJsonString(WriteOptions));
     }
 
     private string PathOf(string mode)

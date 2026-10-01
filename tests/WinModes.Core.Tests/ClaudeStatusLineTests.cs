@@ -86,4 +86,23 @@ public sealed class ClaudeStatusLineTests : IDisposable
         ClaudeStatusLineSetup.Remove(settings);
         Assert.Equal(Original, File.ReadAllText(settings));
     }
+
+    [Fact]
+    public void Setup_KeepsTheFirstBackupAndTheRestOfTheFileReadable()
+    {
+        Directory.CreateDirectory(_directory);
+        var settings = Path.Combine(_directory, "settings.json");
+        const string Original = """{"note":"café <b> & a+b","theme":"dark"}""";
+        File.WriteAllText(settings, Original);
+
+        Assert.True(ClaudeStatusLineSetup.Install(settings, "D:/x/WinModes.StatusLine.exe"));
+        ClaudeStatusLineSetup.Remove(settings);
+        ClaudeStatusLineSetup.Install(settings, "D:/x/WinModes.StatusLine.exe");
+
+        Assert.Equal(Original, File.ReadAllText(settings + ".winmodes.bak"));
+        var written = File.ReadAllText(settings);
+        Assert.Contains("café <b> & a+b", written, StringComparison.Ordinal);
+        Assert.DoesNotContain("\\u00e9", written, StringComparison.Ordinal);
+        Assert.Empty(Directory.GetFiles(_directory, "*.tmp"));
+    }
 }

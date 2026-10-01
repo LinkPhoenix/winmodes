@@ -69,10 +69,7 @@ public sealed class TweakJournal(string filePath)
 
     public void Save(IEnumerable<TweakRecord> records)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-        var temporary = filePath + ".tmp";
-        File.WriteAllText(temporary, JsonSerializer.Serialize(records.ToList(), Options));
-        File.Move(temporary, filePath, overwrite: true);
+        AtomicFile.WriteAllText(filePath, JsonSerializer.Serialize(records.ToList(), Options));
     }
 }
 

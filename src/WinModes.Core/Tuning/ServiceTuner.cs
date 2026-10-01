@@ -54,11 +54,7 @@ public sealed class TweakStore(string directory)
 
     private void Write<T>(string file, T value)
     {
-        Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, file);
-        var temporary = path + ".tmp";
-        File.WriteAllText(temporary, JsonSerializer.Serialize(value, Options));
-        File.Move(temporary, path, overwrite: true);
+        AtomicFile.WriteAllText(Path.Combine(directory, file), JsonSerializer.Serialize(value, Options));
     }
 }
 

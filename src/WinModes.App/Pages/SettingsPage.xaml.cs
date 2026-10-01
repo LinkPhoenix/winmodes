@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using WinModes.App.Services;
+using WinModes.Core;
 using WinModes.Core.Engine;
 
 namespace WinModes.App.Pages;
@@ -118,7 +119,7 @@ public partial class SettingsPage : Page
                 File.Copy(path, backup);
             }
 
-            File.WriteAllText(path, updated);
+            AtomicFile.WriteAllText(path, updated);
             WslNote.Text = Loc.T("Saved. It applies the next time WSL starts (after 'wsl --shutdown' or a restart of Docker Desktop).");
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
