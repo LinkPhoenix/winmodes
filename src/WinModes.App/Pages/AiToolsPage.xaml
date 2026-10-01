@@ -5,8 +5,19 @@
       Title="AI tools"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <StackPanel Margin="36,24,36,36" MaxWidth="1400">
-        <TextBlock Text="AI tools" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock x:Name="Summary" Text="Looking for AI and coding tools…" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,20" />
+        <Grid Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="AI tools" FontSize="28" FontWeight="SemiBold" />
+                <TextBlock x:Name="Summary" Text="Looking for AI and coding tools…" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
+            </StackPanel>
+            <ui:Button x:Name="EndIdleButton" Grid.Column="1" Content="End idle sessions" Icon="{ui:SymbolIcon Broom24}"
+                       VerticalAlignment="Top" IsEnabled="False" Click="OnEndIdle"
+                       ToolTip="Ends project sessions that used no CPU for 30 minutes while WinModes was watching." />
+        </Grid>
 
         <Border x:Name="EmptyState" Style="{StaticResource CardBorderStyle}" Padding="32" Visibility="Collapsed">
             <StackPanel HorizontalAlignment="Center">
@@ -66,7 +77,13 @@
                                                                Foreground="#A78BFA" Text="{Binding Glyph}" />
                                                 </Border>
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                        <Border Style="{StaticResource ChipStyle}" Margin="10,0,0,0" Padding="8,1" Background="#33FBBF24"
+                                                                Visibility="{Binding IdleVisibility}">
+                                                            <TextBlock Text="{Binding IdleText}" FontSize="11" FontWeight="SemiBold" />
+                                                        </Border>
+                                                    </StackPanel>
                                                     <TextBlock Text="{Binding Subtitle}" FontSize="12" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" ToolTip="{Binding Subtitle}" />
                                                 </StackPanel>

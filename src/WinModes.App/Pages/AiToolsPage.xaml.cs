@@ -18,11 +18,14 @@ public partial class AiToolsPage : Page
     private const string FolderGlyph = "";
     private const string AppGlyph = "";
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan IdleThreshold = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan IdleDisplayThreshold = TimeSpan.FromMinutes(5);
 
     private readonly DispatcherTimer _timer = new() { Interval = RefreshInterval };
     private readonly HashSet<int> _expanded = [];
     private bool _refreshing;
     private bool _menuOpen;
+    private IReadOnlyList<AiSession> _idleSessions = [];
 
     public AiToolsPage()
     {
@@ -50,6 +53,7 @@ public partial class AiToolsPage : Page
             var sessions = await Task.Run(() =>
             {
                 var found = AiToolCatalog.FindSessions(ProcessActions.Sample());
+                AiActivityTracker.Observe(found);
                 // Extract icons off the UI thread; the cache keeps later refreshes cheap.
                 foreach (var session in found)
                 {
@@ -90,6 +94,11 @@ public partial class AiToolsPage : Page
             .ToList();
 
         Tools.ItemsSource = tools;
+
+        // Only project sessions are offered for cleanup; desktop apps are left to the user.
+        _idleSessions = [.. sessions.Where(session => HasProjectFolder(session) && AiActivityTracker.IdleFor(session) >= IdleThreshold)];
+        EndIdleButton.IsEnabled = _idleSessions.Count > 0;
+        EndIdleButton.Content = _idleSessions.Count > 0 ? $"End idle sessions ({_idleSessions.Count})" : "End idle sessions";
         EmptyState.Visibility = tools.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
         var processCount = sessions.Sum(session => session.Descendants.Count + 1);
@@ -102,12 +111,8 @@ public partial class AiToolsPage : Page
     private SessionRow ToRow(AiSession session, CultureInfo culture)
     {
         var folder = session.Root.WorkingDirectory;
-        // A desktop app runs from its own install folder or from System32: that is not a project folder.
-        var isInstallFolder = folder is not null && session.Root.ExecutablePath is { } executable
-            && executable.StartsWith(folder, StringComparison.OrdinalIgnoreCase);
-        var isSystemFolder = folder is not null
-            && folder.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.Windows), StringComparison.OrdinalIgnoreCase);
-        var hasFolder = !string.IsNullOrEmpty(folder) && !isInstallFolder && !isSystemFolder && Directory.Exists(folder);
+        var hasFolder = HasProjectFolder(session);
+        var idle = AiActivityTracker.IdleFor(session);
         var started = session.Root.StartTime is { } start ? string.Create(culture, $"started {start:g}") : "start time unknown";
         var nodes = new[] { session.Root }.Concat(session.Descendants.OrderByDescending(node => node.PrivateMemoryMb));
 
@@ -122,7 +127,65 @@ public partial class AiToolsPage : Page
             string.Create(culture, $"{session.TotalCpuPercent:0.0} %"),
             DashboardPage.FormatMemory(session.TotalMemoryMb, culture),
             _expanded.Contains(session.Root.Pid),
+            idle >= IdleDisplayThreshold ? $"idle {(int)idle.TotalMinutes} min" : "",
             [.. nodes.Select(node => ToProcess(node, culture))]);
+    }
+
+    private static bool HasProjectFolder(AiSession session)
+    {
+        var folder = session.Root.WorkingDirectory;
+        if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+        {
+            return false;
+        }
+
+        // A desktop app runs from its own install folder or from System32: that is not a project folder.
+        var isInstallFolder = session.Root.ExecutablePath is { } executable && executable.StartsWith(folder, StringComparison.OrdinalIgnoreCase);
+        var isSystemFolder = folder.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.Windows), StringComparison.OrdinalIgnoreCase);
+        return !isInstallFolder && !isSystemFolder;
+    }
+
+    private async void OnEndIdle(object sender, RoutedEventArgs e)
+    {
+        var idle = _idleSessions;
+        if (idle.Count == 0)
+        {
+            return;
+        }
+
+        var names = string.Join("\n", idle.Select(session => $"- {session.Tool.Name}: {session.Root.WorkingDirectory}"));
+        var confirm = new Wpf.Ui.Controls.MessageBox
+        {
+            Title = idle.Count == 1 ? "End 1 idle session?" : $"End {idle.Count} idle sessions?",
+            Content = $"These sessions used no CPU for at least {(int)IdleThreshold.TotalMinutes} minutes:\n\n{names}\n\n"
+                + "Each session and every process it started will be closed. Unsaved work in them is lost.",
+            PrimaryButtonText = "End sessions",
+            CloseButtonText = "Cancel",
+        };
+        if (await confirm.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
+        {
+            return;
+        }
+
+        var failed = 0;
+        foreach (var session in idle)
+        {
+            try
+            {
+                using var process = System.Diagnostics.Process.GetProcessById(session.Root.Pid);
+                process.Kill(entireProcessTree: true);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception or AggregateException)
+            {
+                failed++;
+            }
+        }
+
+        await RefreshAsync();
+        if (failed > 0)
+        {
+            Summary.Text = $"{failed} session(s) could not be ended.";
+        }
     }
 
     private static ProcessRow ToProcess(ProcessNode node, CultureInfo culture)
@@ -190,8 +253,9 @@ public partial class AiToolsPage : Page
 
     private sealed record SessionRow(
         int Pid, string ToolName, string Title, string Subtitle, string Glyph, string? Folder, string ProcessText, string CpuText,
-        string MemoryText, bool IsExpanded, IReadOnlyList<ProcessRow> Processes)
+        string MemoryText, bool IsExpanded, string IdleText, IReadOnlyList<ProcessRow> Processes)
     {
+        public Visibility IdleVisibility => IdleText.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         public bool HasFolder => Folder is not null;
     }
 

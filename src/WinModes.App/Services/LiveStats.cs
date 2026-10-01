@@ -60,7 +60,9 @@ internal sealed class LiveStats
         {
             var reading = await Task.Run(() =>
             {
-                var tools = AiToolCatalog.FindSessions(ProcessActions.Sample())
+                var sessions = AiToolCatalog.FindSessions(ProcessActions.Sample());
+                AiActivityTracker.Observe(sessions);
+                var tools = sessions
                     .GroupBy(session => session.Tool.Name)
                     .Select(group => new AiToolUsage(group.Key, group.Count(), group.Sum(session => session.TotalMemoryMb)))
                     .OrderByDescending(tool => tool.MemoryMb)
