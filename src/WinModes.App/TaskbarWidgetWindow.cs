@@ -29,6 +29,7 @@ internal sealed class TaskbarWidgetWindow : Window
     private const double LabelSize = 10;
     private const double ValueSize = 11.5;
     private const double IconSize = 13;
+    private const double ValueColumnWidth = 30;
     private const long StyleToolWindow = 0x00000080;
     private const long StyleNoActivate = 0x08000000;
     private const int ExtendedStyleIndex = -20;
@@ -54,7 +55,6 @@ internal sealed class TaskbarWidgetWindow : Window
     private readonly TextBlock _down = new();
     private readonly TextBlock _up = new();
     private readonly TextBlock _ai = new();
-    private readonly TextBlock _aiTop = new();
     private readonly PlanCell _claude;
     private readonly PlanCell _codex;
     private readonly StackPanel _modeCell;
@@ -98,12 +98,14 @@ internal sealed class TaskbarWidgetWindow : Window
         TextOptions.SetTextFormattingMode(this, TextFormattingMode.Display);
 
         _modeCell = Cell(new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { _modeDot, Styled(_mode, bold: true) } });
-        _cpuLine = Line(Glyph.DeveloperBoard16, _cpu, 30);
-        _memoryLine = Line(Glyph.Memory16, _memory, 30);
+        // Each icon has the colour of its row on the Widget page; the values of CPU and memory turn amber then red as the load rises.
+        _cpuLine = Line(Glyph.DeveloperBoard16, _cpu, 30, Palette.BrandBrush);
+        _memoryLine = Line(Glyph.Memory16, _memory, 30, Palette.Stop);
         _cpuCell = Cell(_cpuLine, _memoryLine);
-        _netCell = Cell(Line(Glyph.ArrowDown16, _down, 34), Line(Glyph.ArrowUp16, _up, 34));
-        _aiLine = Line(Glyph.Sparkle16, _ai, 52);
-        _aiCell = Cell(_aiLine, Styled(_aiTop, dim: true, width: 66));
+        _netCell = Cell(Line(Glyph.ArrowDown16, _down, 34, Palette.Start), Line(Glyph.ArrowUp16, _up, 34, Palette.Container));
+        // The AI total is one line: its icon and the figure, both in the AI colour.
+        _aiLine = Line(Glyph.Sparkle16, _ai, 52, Palette.Apps, Palette.Apps);
+        _aiCell = Cell(_aiLine);
 
         // An almost invisible fill so the whole readout takes the mouse, not only the glyphs.
         _content = new Border { Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)), Padding = new Thickness(2, 0, 2, 0), Child = _row };
@@ -149,7 +151,6 @@ internal sealed class TaskbarWidgetWindow : Window
         _cpuLine.Visibility = Visible(settings.ShowCpu);
         _memoryLine.Visibility = Visible(settings.ShowMemory);
         _aiLine.Visibility = Visible(settings.ShowAiTools);
-        _aiTop.Visibility = Visible(settings.ShowAiTools && settings.ShowToolDetail);
         Redock();
     }
 
@@ -160,17 +161,18 @@ internal sealed class TaskbarWidgetWindow : Window
         _mode.Text = mode is null ? Loc.T("No mode") : culture.TextInfo.ToTitleCase(mode);
         _modeDot.Fill = mode is null ? _dim : Palette.ModeGradient(mode);
         _cpu.Text = string.Create(culture, $"{reading.CpuPercent:0} %");
+        _cpu.Foreground = Palette.RemainingBrush(100 - reading.CpuPercent);
         _memory.Text = string.Create(culture, $"{reading.Memory.UsedPercent:0} %");
+        _memory.Foreground = Palette.RemainingBrush(100 - reading.Memory.UsedPercent);
         _down.Text = string.Create(culture, $"{reading.DownMbps:0.0}");
         _up.Text = string.Create(culture, $"{reading.UpMbps:0.0}");
         _ai.Text = string.Create(culture, $"{reading.AiMemoryMb / 1024:0.0} GB");
-        _aiTop.Text = reading.AiTools.Count == 0 ? Loc.T("None running") : reading.AiTools[0].Name;
 
         ToolIcons.Remember(reading.AiTools);
         var now = DateTimeOffset.Now;
         var statuses = SubscriptionMonitor.Get(_settings.ClaudeOnline, _settings.CodexOnline, _settings.ShowClaudePlan, _settings.ShowCodexPlan);
-        _claude.Show(statuses.FirstOrDefault(status => status.Tool == "Claude"), now, culture);
-        _codex.Show(statuses.FirstOrDefault(status => status.Tool == "Codex"), now, culture);
+        _claude.Show(statuses.FirstOrDefault(status => status.Tool == "Claude"), now, culture, _settings.ShowResetCredits);
+        _codex.Show(statuses.FirstOrDefault(status => status.Tool == "Codex"), now, culture, _settings.ShowResetCredits);
 
         Redock();
     }
@@ -421,17 +423,23 @@ internal sealed class TaskbarWidgetWindow : Window
         return cell;
     }
 
-    private StackPanel Line(Glyph glyph, TextBlock value, double valueWidth)
+    private StackPanel Line(Glyph glyph, TextBlock value, double valueWidth, Brush accent, Brush? valueBrush = null)
     {
-        var icon = new GlyphIcon { Symbol = glyph, FontSize = IconSize, Foreground = _dim, Margin = new Thickness(0, 0, 3, 0), VerticalAlignment = VerticalAlignment.Center };
-        return new StackPanel { Orientation = Orientation.Horizontal, Children = { icon, Styled(value, width: valueWidth) } };
+        var icon = new GlyphIcon { Symbol = glyph, FontSize = IconSize, Foreground = accent, Margin = new Thickness(0, 0, 3, 0), VerticalAlignment = VerticalAlignment.Center };
+        var styled = Styled(value, width: valueWidth);
+        if (valueBrush is not null)
+        {
+            styled.Foreground = valueBrush;
+        }
+
+        return new StackPanel { Orientation = Orientation.Horizontal, Children = { icon, styled } };
     }
 
-    private TextBlock Styled(TextBlock block, bool bold = false, bool dim = false, double width = 0)
+    private TextBlock Styled(TextBlock block, bool bold = false, double width = 0)
     {
-        block.FontSize = dim ? LabelSize : ValueSize;
+        block.FontSize = ValueSize;
         block.FontWeight = bold ? FontWeights.SemiBold : FontWeights.Normal;
-        block.Foreground = dim ? _dim : _text;
+        block.Foreground = _text;
         block.TextTrimming = TextTrimming.CharacterEllipsis;
         block.VerticalAlignment = VerticalAlignment.Center;
         if (width > 0)
@@ -447,8 +455,9 @@ internal sealed class TaskbarWidgetWindow : Window
     {
         private readonly string _tool;
         private readonly Brush _dim;
-        private readonly Image _icon = new() { Width = 16, Height = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) };
+        private readonly Image _icon = new() { Width = 16, Height = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0) };
         private readonly TextBlock _name;
+        private readonly TextBlock _credits;
         private readonly Row[] _rows = [new Row(), new Row()];
 
         public PlanCell(string tool, Brush text, Brush dim)
@@ -456,29 +465,36 @@ internal sealed class TaskbarWidgetWindow : Window
             (_tool, _dim) = (tool, dim);
             var grid = new Grid { Margin = new Thickness(CellMargin, 0, CellMargin, 0), VerticalAlignment = VerticalAlignment.Center };
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto, MinWidth = 32 });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition());
             grid.RowDefinitions.Add(new RowDefinition());
 
             // The tool's own icon once known, its name until then.
-            _name = new TextBlock { Text = tool, FontSize = ValueSize, FontWeight = FontWeights.SemiBold, Foreground = text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) };
+            _name = new TextBlock { Text = tool, FontSize = ValueSize, FontWeight = FontWeights.SemiBold, Foreground = text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0) };
             var identity = new Grid { Children = { _icon, _name } };
             Grid.SetRowSpan(identity, 2);
             grid.Children.Add(identity);
+
+            // Limit resets in reserve (the "banks"), shown only when the account has some.
+            _credits = new TextBlock { FontSize = ValueSize, FontWeight = FontWeights.SemiBold, Foreground = Palette.BrandBrush, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 0, 0), Visibility = Visibility.Collapsed };
+            Grid.SetColumn(_credits, 4);
+            Grid.SetRowSpan(_credits, 2);
+            grid.Children.Add(_credits);
             for (var index = 0; index < _rows.Length; index++)
             {
                 var row = _rows[index];
                 row.Window = new TextBlock { FontSize = LabelSize, Foreground = dim, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 4, 0) };
                 row.Value = new TextBlock { FontSize = ValueSize, Foreground = text, TextAlignment = TextAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
                 row.Fill = new Border { Height = BarHeight, CornerRadius = new CornerRadius(BarHeight / 2), HorizontalAlignment = HorizontalAlignment.Left };
-                var track = new Border
+                row.Track = new Border
                 {
                     Width = BarWidth, Height = BarHeight, CornerRadius = new CornerRadius(BarHeight / 2), Background = new SolidColorBrush(Color.FromArgb(0x33, 0x80, 0x80, 0x80)),
                     Child = row.Fill, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0),
                 };
-                foreach (var (element, column) in new (UIElement, int)[] { (row.Window, 1), (track, 2), (row.Value, 3) })
+                foreach (var (element, column) in new (UIElement, int)[] { (row.Window, 1), (row.Track, 2), (row.Value, 3) })
                 {
                     Grid.SetRow(element, index);
                     Grid.SetColumn(element, column);
@@ -491,7 +507,7 @@ internal sealed class TaskbarWidgetWindow : Window
 
         public UIElement Root { get; }
 
-        public void Show(SubscriptionStatus? status, DateTimeOffset now, CultureInfo culture)
+        public void Show(SubscriptionStatus? status, DateTimeOffset now, CultureInfo culture, bool showCredits)
         {
             var icon = ToolIcons.For(_tool);
             _icon.Source = icon;
@@ -502,16 +518,21 @@ internal sealed class TaskbarWidgetWindow : Window
             for (var index = 0; index < _rows.Length; index++)
             {
                 var row = _rows[index];
-                // A limit that started over since it was recorded no longer holds.
+                // A limit that started over since it was recorded no longer holds. With no figure at all one dash is enough.
                 if (limits[index] is not { } limit || limit.HasReset(now))
                 {
-                    row.Window.Text = limits[index]?.WindowName ?? "";
-                    row.Value.Text = "–";
+                    row.Window.Text = "";
+                    // Only the first line carries the dash; a second limit that is not known leaves its line empty.
+                    row.Value.Text = index > 0 ? "" : "–";
+                    row.Value.MinWidth = 0;
                     row.Value.Foreground = _dim;
                     row.Fill.Width = 0;
+                    row.Track.Visibility = Visibility.Collapsed;
                     continue;
                 }
 
+                row.Track.Visibility = Visibility.Visible;
+                row.Value.MinWidth = ValueColumnWidth;
                 var left = limit.RemainingPercent;
                 row.Window.Text = limit.WindowName;
                 row.Value.Text = string.Create(culture, $"{left:0} %");
@@ -519,6 +540,9 @@ internal sealed class TaskbarWidgetWindow : Window
                 row.Fill.Background = Palette.RemainingBrush(left);
                 row.Fill.Width = BarWidth * left / 100;
             }
+
+            _credits.Text = showCredits && status?.ResetCredits is { } credits && credits > 0 ? string.Create(culture, $"↻ {credits}") : "";
+            _credits.Visibility = _credits.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
             ((FrameworkElement)Root).ToolTip = status is null
                 ? Loc.T("Plan unknown")
@@ -532,6 +556,8 @@ internal sealed class TaskbarWidgetWindow : Window
             public TextBlock Value { get; set; } = new();
 
             public Border Fill { get; set; } = new();
+
+            public Border Track { get; set; } = new();
         }
     }
 

@@ -25,6 +25,14 @@ internal static class IconCache
                 return null;
             }
 
+            // A Store app keeps its logo as a picture next to its program, which has no icon of its own.
+            if (path.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+            {
+                var picture = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                picture.Freeze();
+                return picture;
+            }
+
             using var icon = System.Drawing.Icon.ExtractAssociatedIcon(path);
             if (icon is null)
             {
@@ -36,7 +44,7 @@ internal static class IconCache
             image.Freeze();
             return image;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception or ArgumentException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception or ArgumentException or NotSupportedException or InvalidOperationException)
         {
             return null;
         }
