@@ -23,6 +23,8 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     private const int UacCancelledError = 1223;
     private static readonly TimeSpan AppCloseTimeout = TimeSpan.FromSeconds(6);
     private static readonly TimeSpan CommandTimeout = TimeSpan.FromSeconds(45);
+    private static readonly TimeSpan MemorySettleDelay = TimeSpan.FromSeconds(4);
+    private const double MinFreedGbToReport = 0.1;
 
     private static readonly Dictionary<string, string> PowerSchemes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -45,6 +47,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     {
         var lines = new List<string>();
         var previous = ReadUserState();
+        var usedBeforeGb = SystemMonitor.SampleMemory().UsedGb;
 
         var helper = await RunHelperAsync("apply", profile.Mode);
         if (helper is not null)
@@ -65,6 +68,14 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         lines.AddRange(await ApplyWslAsync(profile.Wsl));
 
         WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow));
+
+        // Stopped services and closed apps release their memory over a few seconds.
+        await Task.Delay(MemorySettleDelay);
+        var usedAfterGb = SystemMonitor.SampleMemory().UsedGb;
+        var freedGb = usedBeforeGb - usedAfterGb;
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        var outcome = freedGb >= MinFreedGbToReport ? string.Create(culture, $"{freedGb:0.0} GB freed") : "no measurable change";
+        lines.Insert(0, string.Create(culture, $"Memory in use: {usedBeforeGb:0.0} GB before, {usedAfterGb:0.0} GB after ({outcome})."));
         return new SwitchReport(true, lines);
     }
 
