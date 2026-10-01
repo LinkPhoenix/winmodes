@@ -5,6 +5,7 @@ All notable changes to WinModes are listed here. The format follows [Keep a Chan
 To publish a release, list the changes under **Unreleased**, then run `pwsh -NoProfile -File tools/release.ps1 -Bump minor` (or `-Version X.Y.Z`). The script runs the tests, moves **Unreleased** under the new version, commits, tags and pushes; the release workflow then builds and publishes the package with that section as the release notes.
 
 ## [Unreleased]
+- The page area starts right under the title bar, level with the menu.
 
 ## [0.3.0] - 2026-10-01
 

@@ -41,7 +41,7 @@
                            OpenPaneLength="220"
                            IsBackButtonVisible="Collapsed"
                            IsPaneToggleVisible="False"
-                           TitleBar="{Binding ElementName=TitleBar, Mode=OneWay}">
+                           FrameMargin="0">
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="Dashboard" Icon="{ui:SymbolIcon Home24}"
                                        TargetPageType="{x:Type pages:DashboardPage}" />
