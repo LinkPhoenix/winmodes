@@ -61,6 +61,26 @@ public partial class ModesPage : Page
         }
     }
 
+    private async void OnEditClick(object sender, RoutedEventArgs e)
+    {
+        if (CardOf(sender) is not { } card)
+        {
+            return;
+        }
+
+        if (card.IsActive)
+        {
+            await ChangeLibraryAsync("", () => throw new ProfileException("Deactivate this mode before editing it."));
+            return;
+        }
+
+        var editor = new ModeEditorWindow(card.Profile.Mode) { Owner = Window.GetWindow(this) };
+        if (editor.ShowDialog() == true)
+        {
+            await ChangeLibraryAsync($"{card.Label} mode saved", () => { });
+        }
+    }
+
     private async void OnImportClick(object sender, RoutedEventArgs e)
     {
         var dialog = new Microsoft.Win32.OpenFileDialog { Title = "Import a mode", Filter = "Mode profile (*.json)|*.json" };

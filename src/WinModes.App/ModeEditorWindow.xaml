@@ -1,0 +1,105 @@
+<ui:FluentWindow x:Class="WinModes.App.ModeEditorWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="Edit mode" Width="760" Height="820" MinWidth="620" MinHeight="520"
+                 ExtendsContentIntoTitleBar="True" WindowBackdropType="None"
+                 Background="{StaticResource AppBackgroundBrush}"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar x:Name="EditorTitleBar" Title="Edit mode" ShowMinimize="False" ShowMaximize="False" />
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="24,8,24,16">
+                <TextBlock Text="NAME" Style="{StaticResource CardCaptionStyle}" Margin="0,0,0,6" />
+                <ui:TextBox x:Name="LabelBox" PlaceholderText="Name shown on the card" AutomationProperties.Name="Mode name" />
+                <ui:TextBox x:Name="IntentBox" PlaceholderText="What this mode is for" Margin="0,8,0,0" TextWrapping="Wrap"
+                            AutomationProperties.Name="Mode description" />
+
+                <TextBlock Text="POWER AND WSL" Style="{StaticResource CardCaptionStyle}" Margin="0,20,0,6" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="16,12">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock Text="Power plan" VerticalAlignment="Center" />
+                            <ComboBox x:Name="PowerPlan" HorizontalAlignment="Right" MinWidth="220" AutomationProperties.Name="Power plan" />
+                        </Grid>
+                        <Grid Margin="0,12,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Keep WSL and Docker Desktop running" />
+                                <TextBlock Text="When off, activating this mode shuts them down." FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                            </StackPanel>
+                            <ui:ToggleSwitch x:Name="WslRunning" HorizontalAlignment="Right" AutomationProperties.Name="Keep WSL and Docker Desktop running" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="SERVICES TO STOP" Style="{StaticResource CardCaptionStyle}" Margin="0,20,0,6" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="16,12">
+                    <StackPanel>
+                        <TextBlock Text="Untick a service to leave it alone in this mode. Services are set to Manual, never Disabled."
+                                   FontSize="12" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,8" />
+                        <ItemsControl x:Name="ServiceList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsIncluded, Mode=TwoWay}" Margin="0,1" ToolTip="{Binding Why}">
+                                        <TextBlock Text="{Binding Id}" />
+                                    </CheckBox>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="AddServiceBox" DisplayMemberPath="Label" AutomationProperties.Name="Service to add" />
+                            <ui:Button Grid.Column="1" Content="Add service" Margin="8,0,0,0" Click="OnAddService" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="APPS TO CLOSE" Style="{StaticResource CardCaptionStyle}" Margin="0,20,0,6" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="16,12">
+                    <StackPanel>
+                        <TextBlock Text="Apps are asked to close; they are never force-closed. Protected apps cannot be added."
+                                   FontSize="12" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,8" />
+                        <ItemsControl x:Name="AppList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsIncluded, Mode=TwoWay}" Margin="0,1">
+                                        <TextBlock Text="{Binding Display}" />
+                                    </CheckBox>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox x:Name="AddAppBox" PlaceholderText="Process name, for example steam.exe" AutomationProperties.Name="App to add" />
+                            <ui:Button Grid.Column="1" Content="Add app" Margin="8,0,0,0" Click="OnAddApp" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="2" Padding="24,12" BorderThickness="0,1,0,0" BorderBrush="{StaticResource AppCardStrokeBrush}">
+            <Grid>
+                <TextBlock x:Name="ErrorText" Foreground="#F87171" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,220,0" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <ui:Button Content="Cancel" Margin="0,0,8,0" Click="OnCancel" IsCancel="True" />
+                    <ui:Button Content="Save" Appearance="Primary" Click="OnSave" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</ui:FluentWindow>

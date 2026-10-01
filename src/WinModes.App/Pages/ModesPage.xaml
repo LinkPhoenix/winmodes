@@ -48,9 +48,11 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border x:Name="Card" Style="{StaticResource CardBorderStyle}" Padding="0" Margin="0,0,12,12" MinHeight="270"
-                            AutomationProperties.Name="{Binding AccessibleName}" ToolTip="Right-click to export, duplicate or delete this mode">
+                            AutomationProperties.Name="{Binding AccessibleName}" ToolTip="Right-click to edit, export, duplicate or delete this mode">
                         <Border.ContextMenu>
                             <ContextMenu>
+                                <MenuItem Header="Edit mode" Click="OnEditClick" />
+                                <Separator />
                                 <MenuItem Header="Export mode" Click="OnExportClick" />
                                 <MenuItem Header="Duplicate mode" Click="OnDuplicateClick" />
                                 <MenuItem Header="Delete mode" Click="OnDeleteClick" IsEnabled="{Binding CanDelete}" />
