@@ -313,7 +313,7 @@ public partial class App : Application, IDisposable
         const double LowPercent = 10;
         const double RearmPercent = 15;
 
-        if (!widget.ShowSubscriptions || !widget.PlanAlert)
+        if (!widget.ShowSubscriptions || (!widget.ClaudeLowAlert && !widget.CodexLowAlert))
         {
             _planAlerted.Clear();
             return;
@@ -323,7 +323,8 @@ public partial class App : Application, IDisposable
         var culture = System.Globalization.CultureInfo.CurrentCulture;
         foreach (var status in Services.SubscriptionMonitor.Current)
         {
-            if (status.Primary is not { } limit || limit.HasReset(now) || limit.RemainingPercent >= RearmPercent)
+            var wanted = status.Tool == "Claude" ? widget.ClaudeLowAlert : widget.CodexLowAlert;
+            if (!wanted || status.Primary is not { } limit || limit.HasReset(now) || limit.RemainingPercent >= RearmPercent)
             {
                 _planAlerted.Remove(status.Tool);
             }

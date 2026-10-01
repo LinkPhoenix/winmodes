@@ -192,14 +192,37 @@ internal sealed record WidgetSettings
     /// <summary>Show how many limit resets the account has in reserve, when the online reading gives it.</summary>
     public bool ShowResetCredits { get; init; } = true;
 
-    /// <summary>Notify once when a plan falls under 10 % left. Off by default.</summary>
+    /// <summary>Notify once when a plan falls under 10 % left. Off by default. Before each tool had its own choice this was shared.</summary>
     public bool PlanAlert { get; init; }
 
     /// <summary>
     /// Also ask Anthropic and OpenAI for the usage, with the sign-in Claude Code and Codex keep on this PC.
     /// Off by default: it reads their sign-in files and uses endpoints that are not part of a public API.
+    /// Before each tool had its own choice this was shared.
     /// </summary>
     public bool ReadUsageOnline { get; init; }
+
+    // Per-tool choices. Null means "never chosen": the shared value above applies, so nothing is lost when the app
+    // is updated. The Widget page saves them explicitly.
+    public bool? ReadClaudeOnline { get; init; }
+
+    public bool? ReadCodexOnline { get; init; }
+
+    public bool? ClaudeAlert { get; init; }
+
+    public bool? CodexAlert { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool ClaudeOnline => ReadClaudeOnline ?? ReadUsageOnline;
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool CodexOnline => ReadCodexOnline ?? ReadUsageOnline;
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool ClaudeLowAlert => ClaudeAlert ?? PlanAlert;
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool CodexLowAlert => CodexAlert ?? PlanAlert;
 
     /// <summary>Seconds between two refreshes: 1, 3 or 5.</summary>
     public int RefreshSeconds { get; init; } = 3;

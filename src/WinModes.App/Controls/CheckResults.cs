@@ -10,7 +10,12 @@ public sealed class CheckResults : StackPanel
 {
     private const double IconSize = 18;
 
-    public CheckResults() => Visibility = Visibility.Collapsed;
+    // Aligned with the text of a setting row, under its icon column; hidden until a check has run.
+    public CheckResults()
+    {
+        Visibility = Visibility.Collapsed;
+        Margin = new Thickness(50, 14, 0, 0);
+    }
 
     public void Show(IReadOnlyList<CheckItem> items)
     {

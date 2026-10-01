@@ -98,29 +98,28 @@
                 <controls:SettingSection Header="{l:T 'PLAN USAGE'}" Icon="Gauge24" Accent="{x:Static app:Palette.Start}">
                     <StackPanel>
                         <controls:SettingRow Icon="Gauge24" Accent="{x:Static app:Palette.BrandBrush}" Title="{l:T 'Show plan usage'}"
-                                             Description="{l:T 'Your plan, the usage left and when the limit resets. Read from files on this PC: nothing is asked online and no sign-in file is opened. Codex figures date from its last session; Claude needs one of the two options at the bottom.'}">
+                                             Description="{l:T 'Your plan, the usage left and when the limit resets, for Claude Code and Codex. Choose what is read for each tool in the two sections below. Nothing is asked online unless you turn it on there.'}">
                             <ui:ToggleSwitch x:Name="ShowSubscriptions" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show plan usage'}" />
                         </controls:SettingRow>
-                        <controls:SettingRow Icon="Sparkle24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Claude'}">
+                    </StackPanel>
+                </controls:SettingSection>
+
+                <controls:SettingSection Header="{l:T 'CLAUDE CODE'}" Icon="Sparkle24" Accent="{x:Static app:Palette.Power}">
+                    <StackPanel>
+                        <controls:SettingRow Icon="Eye24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Show Claude usage'}"
+                                             Description="{l:T 'Claude is listed in the plans block of the widget. Turned off, it is neither read nor asked online.'}">
                             <ui:ToggleSwitch x:Name="ShowClaudePlan" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show Claude usage'}" />
-                        </controls:SettingRow>
-                        <controls:SettingRow Icon="Code24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Codex'}">
-                            <ui:ToggleSwitch x:Name="ShowCodexPlan" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show Codex usage'}" />
-                        </controls:SettingRow>
-                        <controls:SettingRow Icon="ArrowCounterclockwise24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Limit resets in reserve'}"
-                                             Description="{l:T 'How many resets of the usage limit your account holds, shown as ↻ and a number in the compact layout. Only Codex gives it, and only with the online reading.'}">
-                            <ui:ToggleSwitch x:Name="ShowResetCredits" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show limit resets in reserve'}" />
-                        </controls:SettingRow>
-                        <controls:SettingRow Icon="Alert24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Warn when a plan runs low'}"
-                                             Description="{l:T 'A notification, once, when a plan has less than 10 % of its limit left, with the time of the reset.'}">
-                            <ui:ToggleSwitch x:Name="PlanAlert" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when a plan runs low'}" />
-                        </controls:SettingRow>
-                        <controls:SettingRow Icon="CloudArrowDown24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Read the usage online'}"
-                                             Description="{l:T 'Every 5 minutes, ask Anthropic and OpenAI for the live figures and the limit resets you have in reserve, using the sign-in Claude Code and Codex already keep on this PC. The sign-in is sent only to its own provider and is never stored or shown by WinModes. These addresses are the ones the two tools use themselves, not a public API: they may stop working.'}">
-                            <ui:ToggleSwitch x:Name="ReadUsageOnline" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Read the usage online'}" />
                         </controls:SettingRow>
                         <controls:SettingRow x:Name="ClaudeUsageRow" Icon="Record24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Record Claude usage'}">
                             <ui:ToggleSwitch x:Name="ClaudeUsage" Click="OnClaudeUsageClicked" AutomationProperties.Name="{l:T 'Record Claude usage'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="CloudArrowDown24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Read the Claude usage online'}"
+                                             Description="{l:T 'Every 5 minutes, ask Anthropic for the live figures, using the sign-in Claude Code already keeps on this PC. The sign-in is sent only to Anthropic and is never stored or shown by WinModes. This address is the one Claude Code uses itself, not a public API: it may stop working.'}">
+                            <ui:ToggleSwitch x:Name="ReadClaudeOnline" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Read the Claude usage online'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Alert24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Warn when Claude runs low'}"
+                                             Description="{l:T 'A notification, once, when your Claude plan has less than 10 % of its limit left, with the time of the reset.'}">
+                            <ui:ToggleSwitch x:Name="ClaudeAlert" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when Claude runs low'}" />
                         </controls:SettingRow>
                         <controls:SettingRow Icon="Stethoscope24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Check Claude Code'}"
                                              Description="{l:T 'Shows, one by one, what is missing for the Claude usage to appear.'}">
@@ -128,6 +127,27 @@
                                 <controls:CheckResults x:Name="ClaudeCheck" />
                             </controls:SettingRow.Footer>
                             <ui:Button x:Name="CheckClaudeButton" Content="{l:T 'Check'}" Click="OnCheckClaude" AutomationProperties.Name="{l:T 'Check Claude Code'}" />
+                        </controls:SettingRow>
+                    </StackPanel>
+                </controls:SettingSection>
+
+                <controls:SettingSection Header="{l:T 'CODEX'}" Icon="Code24" Accent="{x:Static app:Palette.Container}">
+                    <StackPanel>
+                        <controls:SettingRow Icon="Eye24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Show Codex usage'}"
+                                             Description="{l:T 'Codex is listed in the plans block of the widget. Turned off, it is neither read nor asked online.'}">
+                            <ui:ToggleSwitch x:Name="ShowCodexPlan" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show Codex usage'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="CloudArrowDown24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Read the Codex usage online'}"
+                                             Description="{l:T 'Every 5 minutes, ask OpenAI for the live figures and the limit resets you have in reserve, using the sign-in Codex already keeps on this PC. The sign-in is sent only to OpenAI and is never stored or shown by WinModes. This address is the one Codex uses itself, not a public API: it may stop working. Without it, the figures date from the last Codex session.'}">
+                            <ui:ToggleSwitch x:Name="ReadCodexOnline" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Read the Codex usage online'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="ArrowCounterclockwise24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Limit resets in reserve'}"
+                                             Description="{l:T 'How many resets of the usage limit your account holds, shown as ↻ and a number in the compact layout. Only Codex gives it, and only with the online reading.'}">
+                            <ui:ToggleSwitch x:Name="ShowResetCredits" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show limit resets in reserve'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Alert24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Warn when Codex runs low'}"
+                                             Description="{l:T 'A notification, once, when your Codex plan has less than 10 % of its limit left, with the time of the reset.'}">
+                            <ui:ToggleSwitch x:Name="CodexAlert" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when Codex runs low'}" />
                         </controls:SettingRow>
                         <controls:SettingRow Icon="Stethoscope24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Check Codex'}"
                                              Description="{l:T 'Shows, one by one, what is missing for the Codex usage to appear.'}">

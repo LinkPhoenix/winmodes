@@ -34,7 +34,7 @@
                                 <ContentPresenter Grid.Column="2" Content="{TemplateBinding Control}" VerticalAlignment="Center" />
                             </Grid>
                             <!-- Aligned with the text, under the icon column. -->
-                            <ContentPresenter Grid.Row="1" Content="{TemplateBinding Footer}" Margin="50,14,0,0"
+                            <ContentPresenter Grid.Row="1" Content="{TemplateBinding Footer}"
                                               Visibility="{TemplateBinding FooterVisibility}" />
                         </Grid>
                     </Border>

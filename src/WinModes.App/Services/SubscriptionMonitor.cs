@@ -22,7 +22,7 @@ internal static class SubscriptionMonitor
     private static SubscriptionStatus? _onlineClaude;
     private static SubscriptionStatus? _onlineCodex;
     private static int _refreshing;
-    private static (bool Online, bool Claude, bool Codex) _choice = (false, true, true);
+    private static (bool ClaudeOnline, bool CodexOnline, bool Claude, bool Codex) _choice = (false, false, true, true);
 
     /// <summary>Last statuses read; empty until the first read ends or when no plan is recorded on this PC.</summary>
     public static IReadOnlyList<SubscriptionStatus> Current { get; private set; } = [];
@@ -31,10 +31,10 @@ internal static class SubscriptionMonitor
     public static bool HasRead { get; private set; }
 
     /// <summary>Returns what is known now and starts a background read when it is getting old.</summary>
-    public static IReadOnlyList<SubscriptionStatus> Get(bool online, bool claudeWanted = true, bool codexWanted = true)
+    public static IReadOnlyList<SubscriptionStatus> Get(bool claudeOnline, bool codexOnline, bool claudeWanted = true, bool codexWanted = true)
     {
         // A changed choice is applied at once instead of waiting for the next read.
-        var choice = (online, claudeWanted, codexWanted);
+        var choice = (claudeOnline, codexOnline, claudeWanted, codexWanted);
         if (choice != _choice)
         {
             (_choice, _lastRefreshUtc, _lastOnlineUtc) = (choice, DateTime.MinValue, DateTime.MinValue);
@@ -49,18 +49,33 @@ internal static class SubscriptionMonitor
                 {
                     var claude = claudeWanted ? Subscriptions.ReadClaude(Subscriptions.DefaultClaudeSettings, ClaudeStatusLine.DefaultRecordPath) : null;
                     var codex = codexWanted ? Subscriptions.ReadCodex(Subscriptions.DefaultCodexHome) : null;
-                    if (!online)
+                    // A tool whose online reading is off, or that is not shown, is not asked and keeps no online figure.
+                    if (!claudeOnline || !claudeWanted)
                     {
-                        (_onlineClaude, _onlineCodex) = (null, null);
+                        _onlineClaude = null;
                     }
-                    else if (DateTime.UtcNow - _lastOnlineUtc >= OnlineInterval)
+
+                    if (!codexOnline || !codexWanted)
+                    {
+                        _onlineCodex = null;
+                    }
+
+                    var anyOnline = (claudeOnline && claudeWanted) || (codexOnline && codexWanted);
+                    if (anyOnline && DateTime.UtcNow - _lastOnlineUtc >= OnlineInterval)
                     {
                         _lastOnlineUtc = DateTime.UtcNow;
                         var now = DateTimeOffset.UtcNow;
                         // A failed request keeps the previous online figures; they are dated in the widget.
-                        _onlineCodex = codexWanted ? await AskAsync(OnlineUsage.CodexRequest(OnlineUsage.DefaultCodexAuth), json => OnlineUsage.ParseCodex(json, now)) ?? _onlineCodex : null;
-                        _onlineClaude = !claudeWanted ? null : await AskAsync(OnlineUsage.ClaudeRequest(OnlineUsage.DefaultClaudeCredentials, now),
-                            json => OnlineUsage.ParseClaude(json, claude?.Plan ?? Loc.T("Plan unknown"), now)) ?? _onlineClaude;
+                        if (codexOnline && codexWanted)
+                        {
+                            _onlineCodex = await AskAsync(OnlineUsage.CodexRequest(OnlineUsage.DefaultCodexAuth), json => OnlineUsage.ParseCodex(json, now)) ?? _onlineCodex;
+                        }
+
+                        if (claudeOnline && claudeWanted)
+                        {
+                            _onlineClaude = await AskAsync(OnlineUsage.ClaudeRequest(OnlineUsage.DefaultClaudeCredentials, now),
+                                json => OnlineUsage.ParseClaude(json, claude?.Plan ?? Loc.T("Plan unknown"), now)) ?? _onlineClaude;
+                        }
                     }
 
                     Current = [.. new[] { claudeWanted ? Newest(_onlineClaude, claude) : null, codexWanted ? Newest(_onlineCodex, codex) : null }.OfType<SubscriptionStatus>()];

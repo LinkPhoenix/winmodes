@@ -31,11 +31,13 @@ public partial class WidgetPage : Page
         ShowAiTools.IsChecked = widget.ShowAiTools;
         ShowToolDetail.IsChecked = widget.ShowToolDetail;
         ShowSubscriptions.IsChecked = widget.ShowSubscriptions;
-        ReadUsageOnline.IsChecked = widget.ReadUsageOnline;
+        ReadClaudeOnline.IsChecked = widget.ClaudeOnline;
+        ReadCodexOnline.IsChecked = widget.CodexOnline;
         ShowClaudePlan.IsChecked = widget.ShowClaudePlan;
         ShowCodexPlan.IsChecked = widget.ShowCodexPlan;
         ShowResetCredits.IsChecked = widget.ShowResetCredits;
-        PlanAlert.IsChecked = widget.PlanAlert;
+        ClaudeAlert.IsChecked = widget.ClaudeLowAlert;
+        CodexAlert.IsChecked = widget.CodexLowAlert;
         ShowClaudeUsage();
         LockPosition.IsChecked = widget.LockPosition;
         HideOnFullScreen.IsChecked = widget.HideOnFullScreen;
@@ -73,7 +75,7 @@ public partial class WidgetPage : Page
         CheckClaudeButton.IsEnabled = false;
         try
         {
-            var readOnline = ReadUsageOnline.IsChecked == true;
+            var readOnline = ReadClaudeOnline.IsChecked == true;
             var items = await Task.Run(() => ProviderCheck.Claude(Subscriptions.DefaultClaudeSettings, ClaudeStatusLineSetup.DefaultSettingsPath,
                 ClaudeStatusLine.DefaultRecordPath, OnlineUsage.DefaultClaudeCredentials, ClaudeStatusLine.DefaultCallPath, readOnline, DateTimeOffset.UtcNow));
             ClaudeCheck.Show(items);
@@ -89,7 +91,7 @@ public partial class WidgetPage : Page
         CheckCodexButton.IsEnabled = false;
         try
         {
-            var readOnline = ReadUsageOnline.IsChecked == true;
+            var readOnline = ReadCodexOnline.IsChecked == true;
             var items = await Task.Run(() => ProviderCheck.Codex(Subscriptions.DefaultCodexHome, OnlineUsage.DefaultCodexAuth, readOnline, DateTimeOffset.UtcNow));
             CodexCheck.Show(items);
         }
@@ -205,11 +207,13 @@ public partial class WidgetPage : Page
                 ShowAiTools = ShowAiTools.IsChecked == true,
                 ShowToolDetail = ShowToolDetail.IsChecked == true,
                 ShowSubscriptions = ShowSubscriptions.IsChecked == true,
-                ReadUsageOnline = ReadUsageOnline.IsChecked == true,
+                ReadClaudeOnline = ReadClaudeOnline.IsChecked == true,
+                ReadCodexOnline = ReadCodexOnline.IsChecked == true,
                 ShowClaudePlan = ShowClaudePlan.IsChecked == true,
                 ShowCodexPlan = ShowCodexPlan.IsChecked == true,
                 ShowResetCredits = ShowResetCredits.IsChecked == true,
-                PlanAlert = PlanAlert.IsChecked == true,
+                ClaudeAlert = ClaudeAlert.IsChecked == true,
+                CodexAlert = CodexAlert.IsChecked == true,
                 MaxTools = (MaxTools.SelectedItem as Option)?.Value ?? 4,
                 RefreshSeconds = (Refresh.SelectedItem as Option)?.Value ?? 3,
                 LockPosition = LockPosition.IsChecked == true,
