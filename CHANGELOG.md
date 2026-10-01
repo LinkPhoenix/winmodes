@@ -8,6 +8,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-01
+
 ### Added
 
 - Widget: optional "Plans" block with your Claude and Codex plan, the usage left and when each limit resets. Off by default; read from files on this PC.
@@ -116,7 +118,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Protection: blocklist for security, WSL, Docker, winget, the Microsoft Store, Edge and developer tools.
 - Pages: Dashboard, Services, History, Protection and About.
 
-[Unreleased]: https://github.com/LinkPhoenix/winmodes/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/LinkPhoenix/winmodes/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/LinkPhoenix/winmodes/compare/v0.3.0...v0.3.1
