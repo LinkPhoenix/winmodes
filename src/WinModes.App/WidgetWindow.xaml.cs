@@ -1,10 +1,7 @@
-using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using WinModes.App.Controls;
 using WinModes.App.Services;
 
 namespace WinModes.App;
@@ -19,7 +16,6 @@ internal enum WidgetCorner { TopLeft, TopRight, BottomLeft, BottomRight }
 public partial class WidgetWindow : Window
 {
     private const double ScreenMargin = 16;
-    private const double MbPerGb = 1024;
     private const int ExtendedStyleIndex = -20;
     private const long StyleTransparent = 0x00000020;
     private const long StyleToolWindow = 0x00000080;
@@ -59,40 +55,12 @@ public partial class WidgetWindow : Window
         _settings = settings;
         Topmost = settings.AlwaysOnTop;
         Opacity = Math.Clamp(settings.OpacityPercent, 40, 100) / 100d;
-        var scale = Math.Clamp(settings.ScalePercent, 80, 150) / 100d;
-        Root.LayoutTransform = new ScaleTransform(scale, scale);
-
-        ModeText.Visibility = Show(settings.ShowMode);
-        CpuRow.Visibility = Show(settings.ShowCpu);
-        MemoryRow.Visibility = Show(settings.ShowMemory);
-        NetworkRow.Visibility = Show(settings.ShowNetwork);
-        AiSection.Visibility = Show(settings.ShowAiTools);
-        AiTools.Visibility = Show(settings.ShowToolDetail);
-        // No line above the AI block when it is the only thing shown.
-        AiSeparator.Visibility = Show(settings.ShowCpu || settings.ShowMemory || settings.ShowNetwork);
+        View.Apply(settings);
 
         ApplyClickThrough();
     }
 
-    internal void Show(StatsReading reading)
-    {
-        var culture = CultureInfo.CurrentCulture;
-        Smooth.To(CpuBar, SegmentBar.ValueProperty, reading.CpuPercent);
-        CpuText.Text = string.Create(culture, $"{reading.CpuPercent:0} %");
-        Smooth.To(MemoryBar, SegmentBar.ValueProperty, reading.Memory.UsedPercent);
-        MemoryText.Text = string.Create(culture, $"{reading.Memory.UsedPercent:0} %");
-        NetworkText.Text = string.Create(culture, $"↓ {reading.DownMbps:0.0}  ↑ {reading.UpMbps:0.0} Mb/s");
-
-        AiTotal.Text = string.Create(culture, $"{reading.AiMemoryMb / MbPerGb:0.0} GB");
-        AiTools.ItemsSource = reading.AiTools.Count == 0
-            ? [new KeyValuePair<string, string>("None running", "")]
-            : reading.AiTools.Take(Math.Max(_settings.MaxTools, 1)).Select(tool => new KeyValuePair<string, string>(
-                tool.Sessions > 1 ? $"{tool.Name} ×{tool.Sessions}" : tool.Name,
-                string.Create(culture, $"{tool.MemoryMb / MbPerGb:0.0} GB"))).ToList();
-
-        var mode = ModeSwitcher.ActiveMode;
-        ModeText.Text = mode is null ? "No mode" : $"{culture.TextInfo.ToTitleCase(mode)} mode";
-    }
+    internal void Show(StatsReading reading) => View.Show(reading);
 
     /// <summary>Parks the widget in a corner of the work area and remembers it.</summary>
     internal void MoveTo(WidgetCorner corner)
@@ -102,8 +70,6 @@ public partial class WidgetWindow : Window
         Top = corner is WidgetCorner.TopLeft or WidgetCorner.TopRight ? area.Top + ScreenMargin : area.Bottom - ActualHeight - ScreenMargin;
         (AppSettings.Load() with { WidgetLeft = Left, WidgetTop = Top }).Save();
     }
-
-    private static Visibility Show(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
 
     private void ApplyClickThrough()
     {

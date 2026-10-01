@@ -16,17 +16,31 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <ui:TitleBar x:Name="TitleBar" Title="WinModes">
-            <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/winmodes.ico" />
-            </ui:TitleBar.Icon>
-        </ui:TitleBar>
+        <!-- One row: pane toggle, icon, name and version on the left; the window buttons on the right. -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!-- The toggle sits outside the title bar so it receives clicks instead of dragging the window. -->
+            <ui:Button x:Name="PaneToggle" Width="40" Height="36" Margin="4,6,0,6" Padding="0"
+                       Appearance="Transparent" BorderThickness="0" Click="OnTogglePane"
+                       Icon="{ui:SymbolIcon Navigation24}" ToolTip="Open or close the menu"
+                       AutomationProperties.Name="Toggle navigation" />
+            <ui:TitleBar x:Name="TitleBar" Grid.Column="1" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0" IsHitTestVisible="False">
+                <Image Source="pack://application:,,,/Assets/winmodes.ico" Width="20" Height="20" />
+                <TextBlock Text="WinModes" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0" />
+                <TextBlock x:Name="VersionText" FontSize="12" VerticalAlignment="Center" Margin="8,1,0,0"
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+            </StackPanel>
+        </Grid>
 
         <ui:NavigationView x:Name="RootNavigation" Grid.Row="1"
                            PaneDisplayMode="Left"
                            OpenPaneLength="220"
                            IsBackButtonVisible="Collapsed"
-                           IsPaneToggleVisible="True"
+                           IsPaneToggleVisible="False"
                            TitleBar="{Binding ElementName=TitleBar, Mode=OneWay}">
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="Dashboard" Icon="{ui:SymbolIcon Home24}"

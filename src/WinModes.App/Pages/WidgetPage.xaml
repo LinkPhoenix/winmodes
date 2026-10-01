@@ -2,6 +2,7 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
       Title="Widget"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Page.Resources>
@@ -19,7 +20,13 @@
         </Style>
     </Page.Resources>
 
-    <StackPanel Margin="36,24,36,36" MaxWidth="1100">
+    <Grid Margin="36,24,36,36" MaxWidth="1100">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel>
         <TextBlock Text="Widget" FontSize="28" FontWeight="SemiBold" />
         <TextBlock Text="A small panel on your desktop with live figures. Changes apply at once."
                    Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
@@ -64,7 +71,7 @@
                     <Grid>
                         <TextBlock Text="Opacity" Style="{StaticResource RowTitleStyle}" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Slider x:Name="OpacitySlider" Width="220" Minimum="40" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
+                            <Slider x:Name="OpacitySlider" Width="160" Minimum="40" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
                                     VerticalAlignment="Center" ValueChanged="OnOpacityChanged" AutomationProperties.Name="Opacity" />
                             <TextBlock x:Name="OpacityText" Width="48" TextAlignment="Right" VerticalAlignment="Center" />
                         </StackPanel>
@@ -139,12 +146,12 @@
                             <TextBlock Text="Otherwise drag the widget where you want; its position is remembered."
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <ui:Button Content="Top left" Tag="TopLeft" Margin="0,0,6,0" Click="OnCorner" />
-                            <ui:Button Content="Top right" Tag="TopRight" Margin="0,0,6,0" Click="OnCorner" />
-                            <ui:Button Content="Bottom left" Tag="BottomLeft" Margin="0,0,6,0" Click="OnCorner" />
-                            <ui:Button Content="Bottom right" Tag="BottomRight" Click="OnCorner" />
-                        </StackPanel>
+                        <WrapPanel HorizontalAlignment="Right" MaxWidth="210">
+                            <ui:Button Content="Top left" Tag="TopLeft" Margin="0,0,6,6" Click="OnCorner" />
+                            <ui:Button Content="Top right" Tag="TopRight" Margin="0,0,6,6" Click="OnCorner" />
+                            <ui:Button Content="Bottom left" Tag="BottomLeft" Margin="0,0,6,6" Click="OnCorner" />
+                            <ui:Button Content="Bottom right" Tag="BottomRight" Margin="0,0,6,6" Click="OnCorner" />
+                        </WrapPanel>
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}">
@@ -170,5 +177,23 @@
                 </Border>
             </StackPanel>
         </Border>
-    </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Margin="28,56,0,0" VerticalAlignment="Top">
+            <TextBlock Text="PREVIEW" Style="{StaticResource SectionTitleStyle}" />
+            <Border Width="330" MinHeight="250" CornerRadius="10" Padding="20"
+                    BorderBrush="{StaticResource AppCardStrokeBrush}" BorderThickness="1">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#2B2350" Offset="0" />
+                        <GradientStop Color="#16202E" Offset="0.55" />
+                        <GradientStop Color="#3A1C36" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <controls:WidgetView x:Name="Preview" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock x:Name="PreviewNote" FontSize="12" Margin="4,8,0,0" MaxWidth="330" HorizontalAlignment="Left"
+                       Style="{StaticResource SecondaryTextStyle}" />
+        </StackPanel>
+    </Grid>
 </Page>

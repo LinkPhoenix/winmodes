@@ -17,6 +17,10 @@ public partial class App : Application, IDisposable
     private MainWindow? _window;
     private readonly Services.LiveStats _liveStats = new();
     private Services.TrayMeter? _trayMeter;
+
+    /// <summary>Shared sampler; pages may listen to it while they are shown.</summary>
+    internal Services.LiveStats Stats => _liveStats;
+
     private WidgetWindow? _widget;
     private bool _listening;
     private Services.HotkeyService? _hotkeys;

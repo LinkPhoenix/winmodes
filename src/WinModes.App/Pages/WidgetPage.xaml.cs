@@ -37,6 +37,35 @@ public partial class WidgetPage : Page
 
         // Setting the initial values raises the change events; only user changes are saved.
         _loaded = true;
+        ShowPreview(settings);
+
+        Loaded += (_, _) =>
+        {
+            if (Application.Current is App app)
+            {
+                app.Stats.Updated += OnStats;
+            }
+        };
+        Unloaded += (_, _) =>
+        {
+            if (Application.Current is App app)
+            {
+                app.Stats.Updated -= OnStats;
+            }
+        };
+    }
+
+    private void OnStats(object? sender, StatsReading reading) => Preview.Show(reading);
+
+    private void ShowPreview(AppSettings settings)
+    {
+        var widget = settings.Widget;
+        // The preview keeps its natural size so it always fits; the size option is described instead.
+        Preview.Apply(widget, scaled: false);
+        Preview.Opacity = Math.Clamp(widget.OpacityPercent, 40, 100) / 100d;
+        var size = ScaleChoices.FirstOrDefault(choice => choice.Value == widget.ScalePercent)?.Label ?? "Medium";
+        PreviewNote.Text = (settings.ShowDesktopWidget ? "The widget is on your desktop. " : "The widget is hidden. ")
+            + $"Size on the desktop: {size}.";
     }
 
     private static void Select(ComboBox box, Option[] choices, int value)
@@ -67,7 +96,7 @@ public partial class WidgetPage : Page
         }
 
         var current = AppSettings.Load();
-        (current with
+        var updated = current with
         {
             ShowDesktopWidget = Enabled.IsChecked == true,
             Widget = current.Widget with
@@ -86,7 +115,9 @@ public partial class WidgetPage : Page
                 LockPosition = LockPosition.IsChecked == true,
                 ClickThrough = ClickThrough.IsChecked == true,
             },
-        }).Save();
+        };
+        updated.Save();
+        ShowPreview(updated);
         (Application.Current as App)?.ApplyDisplaySettings();
     }
 

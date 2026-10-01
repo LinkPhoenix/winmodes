@@ -25,10 +25,13 @@ public partial class MainWindow : FluentWindow
     public MainWindow(string? startPage = null)
     {
         InitializeComponent();
+        VersionText.Text = $"v{AppInfo.Version}";
 
         var page = startPage is not null && PagesByName.TryGetValue(startPage, out var requested) ? requested : typeof(DashboardPage);
         Loaded += (_, _) => RootNavigation.Navigate(page);
     }
+
+    private void OnTogglePane(object sender, System.Windows.RoutedEventArgs e) => RootNavigation.IsPaneOpen = !RootNavigation.IsPaneOpen;
 
     public void NavigateTo(Type pageType) => RootNavigation.Navigate(pageType);
 

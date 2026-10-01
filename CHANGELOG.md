@@ -18,6 +18,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - The desktop widget remembers its position.
 - Widget page: always on top, opacity, size, content shown, number of tools, refresh speed, corner placement, position lock and click-through.
 - `tools/release.ps1` to cut a release in one command.
+- Live preview of the widget on the Widget page.
+- Title bar with the menu button, icon, name and version on one row.
 
 ## [0.2.0] - 2026-10-01
 
