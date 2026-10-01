@@ -6,6 +6,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-01
+
 ### Added
 
 - Quick mode menu on the tray icon, and global shortcuts (Ctrl+Alt+1, 2, 3 to activate, Ctrl+Alt+0 to deactivate).
