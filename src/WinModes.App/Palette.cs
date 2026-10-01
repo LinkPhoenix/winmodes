@@ -20,6 +20,18 @@ internal static class Palette
     public static readonly Brush Apps = Solid(0xC0, 0x84, 0xFC);
     public static readonly Brush Neutral = Solid(0x94, 0xA3, 0xB8);
 
+    /// <summary>Normal text colour of the current theme.</summary>
+    public static Brush Text => Application.Current.TryFindResource("TextFillColorPrimaryBrush") as Brush ?? Brushes.White;
+
+    /// <summary>Replaces the surface brushes with their light values. Called once, before any window is created.</summary>
+    public static void UseLightSurfaces(ResourceDictionary resources)
+    {
+        resources["AppBackgroundBrush"] = Solid(0xF3, 0xF3, 0xF7);
+        resources["AppCardBrush"] = Solid(0xFF, 0xFF, 0xFF);
+        resources["AppCardStrokeBrush"] = Solid(0xDD, 0xDD, 0xE6);
+        resources["AppWidgetBrush"] = Freeze(new SolidColorBrush(Color.FromArgb(0xF2, 0xFF, 0xFF, 0xFF)));
+    }
+
     public static Brush ModeGradient(string mode) => mode.ToUpperInvariant() switch
     {
         "CODE" => Gradient(Color.FromRgb(0x7C, 0x5C, 0xFC), Color.FromRgb(0x4F, 0x8B, 0xFF)),

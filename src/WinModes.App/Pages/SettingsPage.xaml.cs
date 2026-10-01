@@ -11,6 +11,7 @@ namespace WinModes.App.Pages;
 public partial class SettingsPage : Page
 {
     private static readonly int[] AlertLimitsGb = [2, 4, 6, 8, 12, 16, 24];
+    private static readonly Choice[] ThemeChoices = [new(AppSettings.DarkTheme, "Dark"), new(AppSettings.LightTheme, "Light")];
     private static readonly int[] IdleMinutes = [30, 60, 120, 240];
     private static readonly int[] WslLimitsGb = [4, 6, 8, 12, 16];
 
@@ -32,6 +33,8 @@ public partial class SettingsPage : Page
         limits.AddRange(AlertLimitsGb.Select(gb => new Limit(gb, $"{gb} GB")));
         AiAlert.ItemsSource = limits;
         AiAlert.SelectedItem = limits.FirstOrDefault(limit => limit.Gb == settings.AiMemoryAlertGb) ?? limits[0];
+        Theme.ItemsSource = ThemeChoices;
+        Theme.SelectedItem = ThemeChoices.FirstOrDefault(choice => choice.Mode == settings.Theme) ?? ThemeChoices[0];
         AiToolAlert.ItemsSource = limits;
         AiToolAlert.SelectedItem = limits.FirstOrDefault(limit => limit.Gb == settings.AiToolAlertGb) ?? limits[0];
         var idleChoices = new List<Limit> { new(0, "Never") };
@@ -79,6 +82,7 @@ public partial class SettingsPage : Page
             PrivacyMode = PrivacyMode.IsChecked == true,
             AiMemoryAlertGb = (AiAlert.SelectedItem as Limit)?.Gb ?? 0,
             AiToolAlertGb = (AiToolAlert.SelectedItem as Limit)?.Gb ?? 0,
+            Theme = (Theme.SelectedItem as Choice)?.Mode ?? AppSettings.DarkTheme,
             AutoEndIdleMinutes = (AutoEndIdle.SelectedItem as Limit)?.Gb ?? 0,
             AutoActivateMode = (AutoMode.SelectedItem as Choice)?.Mode,
         }).Save();

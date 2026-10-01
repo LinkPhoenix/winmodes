@@ -270,7 +270,7 @@ public partial class ProcessesPage : Page
             string.Create(culture, $"{shown.Cpu:0.0} %"),
             shown.Cpu >= BusyCpuPercent ? Palette.Power : Palette.Neutral,
             DashboardPage.FormatMemory(shown.MemoryMb, culture),
-            shown.MemoryMb >= MbPerGb ? Palette.Stop : shown.MemoryMb >= MediumMemoryMb ? Palette.Power : Brushes.White,
+            shown.MemoryMb >= MbPerGb ? Palette.Stop : shown.MemoryMb >= MediumMemoryMb ? Palette.Power : Palette.Text,
             shown.Threads.ToString(culture),
             Privacy.CommandLine(node.CommandLine ?? node.ExecutablePath, node.Name),
             icon,

@@ -12,10 +12,12 @@
                 <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- The app is dark only: near-black surfaces so the mode colours carry the interface. -->
+            <!-- Dark surfaces by default: near-black so the mode colours carry the interface. The light theme replaces these four at startup. -->
             <SolidColorBrush x:Key="AppBackgroundBrush" Color="#0E0E12" />
             <SolidColorBrush x:Key="AppCardBrush" Color="#191920" />
             <SolidColorBrush x:Key="AppCardStrokeBrush" Color="#2A2A34" />
+            <!-- Slightly see-through card of the desktop widget. -->
+            <SolidColorBrush x:Key="AppWidgetBrush" Color="#F2191920" />
 
             <FontFamily x:Key="GlyphFontFamily">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
@@ -38,8 +40,8 @@
             </Style>
 
             <Style x:Key="CardBorderStyle" TargetType="Border">
-                <Setter Property="Background" Value="{StaticResource AppCardBrush}" />
-                <Setter Property="BorderBrush" Value="{StaticResource AppCardStrokeBrush}" />
+                <Setter Property="Background" Value="{DynamicResource AppCardBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource AppCardStrokeBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="CornerRadius" Value="10" />
                 <Setter Property="Padding" Value="20" />

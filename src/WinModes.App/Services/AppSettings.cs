@@ -35,6 +35,12 @@ internal sealed record AppSettings
     /// <summary>Notify when AI tools use at least this much memory, in GB; 0 turns the alert off.</summary>
     public int AiMemoryAlertGb { get; init; }
 
+    public const string LightTheme = "light";
+    public const string DarkTheme = "dark";
+
+    /// <summary>"dark" (default) or "light". Read once at startup.</summary>
+    public string Theme { get; init; } = DarkTheme;
+
     /// <summary>Ask GitHub once at startup whether a newer release exists.</summary>
     public bool CheckForUpdates { get; init; } = true;
 

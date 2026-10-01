@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:WinModes.App.Controls"
              Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-    <Border x:Name="Root" Width="270" Background="#F2191920" BorderBrush="{StaticResource AppCardStrokeBrush}" BorderThickness="1"
+    <Border x:Name="Root" Width="270" Background="{StaticResource AppWidgetBrush}" BorderBrush="{StaticResource AppCardStrokeBrush}" BorderThickness="1"
             CornerRadius="12" Padding="16,14">
         <Grid>
         <!-- Compact mode: one line. -->

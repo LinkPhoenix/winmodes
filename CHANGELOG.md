@@ -17,6 +17,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - GPU utilization and disk activity graphs on the dashboard.
 - Export a report of the PC state (names and totals only) from the About page, to ask for help.
 - Installed copies can download and start the installer of a new version from the About page; the download is checked against the checksum of the release.
+- Light theme (Settings, applied at the next start).
 
 ## [0.3.1] - 2026-10-01
 

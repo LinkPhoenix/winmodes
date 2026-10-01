@@ -54,9 +54,16 @@ public partial class App : Application, IDisposable
 
         AppServices.Initialize(store, planner, policy, Path.Combine(root, "profiles"));
 
-        Wpf.Ui.Appearance.ApplicationThemeManager.Apply(Wpf.Ui.Appearance.ApplicationTheme.Dark, Wpf.Ui.Controls.WindowBackdropType.None, updateAccent: false);
+        var theme = Services.AppSettings.Load().Theme == Services.AppSettings.LightTheme
+            ? Wpf.Ui.Appearance.ApplicationTheme.Light
+            : Wpf.Ui.Appearance.ApplicationTheme.Dark;
+        Wpf.Ui.Appearance.ApplicationThemeManager.Apply(theme, Wpf.Ui.Controls.WindowBackdropType.None, updateAccent: false);
         // Brand accent instead of the Windows one, so the app looks the same on every PC.
-        Wpf.Ui.Appearance.ApplicationAccentColorManager.Apply(Palette.Brand, Wpf.Ui.Appearance.ApplicationTheme.Dark);
+        Wpf.Ui.Appearance.ApplicationAccentColorManager.Apply(Palette.Brand, theme);
+        if (theme == Wpf.Ui.Appearance.ApplicationTheme.Light)
+        {
+            Palette.UseLightSurfaces(Resources);
+        }
         // The argument turns privacy on for this run only, without changing the saved setting.
         Services.Privacy.Set(Services.AppSettings.Load().PrivacyMode || e.Args.Contains(Services.Privacy.CommandLineArgument));
         var pageIndex = Array.IndexOf(e.Args, "--page");
