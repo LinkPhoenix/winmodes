@@ -29,6 +29,30 @@ public partial class AutomationPage : Page
 
         // Setting the initial values raises the change events; only user changes are saved.
         _loaded = true;
+
+        if (ModeSwitcher.CanSwitchSilently)
+        {
+            Silent.IsChecked = ModeSwitcher.SwitchesSilently;
+        }
+        else
+        {
+            Silent.IsEnabled = false;
+            SilentDetail.Text = "Available when WinModes is installed with its setup program: a task that runs without a prompt must start from a folder only administrators can change.";
+        }
+    }
+
+    private async void OnSilentClicked(object sender, RoutedEventArgs e)
+    {
+        var wanted = Silent.IsChecked == true;
+        Silent.IsEnabled = false;
+        var error = await ModeSwitcher.SetSilentSwitchAsync(wanted);
+        // Show what Windows really has, whatever was clicked.
+        var installed = await Task.Run(() => ModeSwitcher.SwitchesSilently);
+        Silent.IsChecked = installed;
+        Silent.IsEnabled = true;
+        Status.Text = error ?? (installed == wanted
+            ? (installed ? "Modes now switch without a permission prompt." : "Windows asks for permission at each switch again.")
+            : "The scheduled task could not be changed.");
     }
 
     private void ShowRules(IReadOnlyList<AutoSwitchRule> rules)

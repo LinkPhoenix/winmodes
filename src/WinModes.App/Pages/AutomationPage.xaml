@@ -28,10 +28,21 @@
                         <StackPanel Margin="0,0,80,0">
                             <TextBlock Text="Switch modes automatically" FontWeight="SemiBold" />
                             <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}"
-                                       Text="WinModes checks every few seconds whether a rule below applies. Windows still asks for permission at each switch that changes services." />
+                                       Text="WinModes checks every few seconds whether a rule below applies. Windows asks for permission at each switch unless the option below is on." />
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="Enabled" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
                                          AutomationProperties.Name="Switch modes automatically" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel Margin="0,0,80,0">
+                            <TextBlock Text="Switch without the Windows permission prompt" FontWeight="SemiBold" />
+                            <TextBlock x:Name="SilentDetail" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                                       Text="Windows asks once, now, to register a scheduled task; after that every mode switch, automatic or by hand, happens with no prompt. The task can only activate or undo a mode." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="Silent" HorizontalAlignment="Right" Click="OnSilentClicked"
+                                         AutomationProperties.Name="Switch without the Windows permission prompt" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">

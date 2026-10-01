@@ -5,7 +5,8 @@ using WinModes.Core.Profiles;
 using WinModes.Core.Protection;
 using WinModes.Core.Tuning;
 
-// Elevated helper. It accepts only a verb with a mode name, service names or tweak ids; profiles, protection
+// Elevated helper. It accepts only a verb with a mode name, service names or tweak ids ("task install|remove"
+// manages the opt-in task that starts it without a prompt); profiles, protection
 // policy, tweak catalog and journals are read from its own location and from the admin-only data folder,
 // never from the caller. It never reads or writes the user's own registry hive or profile.
 const int ExitOk = 0;
@@ -14,15 +15,41 @@ const int ExitUsage = 2;
 const string ChangeVerb = "change";
 const char ActionPrefix = ':';
 
-var isModeVerb = args.Length > 0 && (args[0] == "revert" || (args[0] == "apply" && args.Length == 2));
-var isChangeVerb = args.Length > 1 && args[0] == ChangeVerb;
-if (!isModeVerb && !isChangeVerb)
+const string TaskVerb = "task";
+
+// Started by the silent-switch task: no prompt was shown, so only a mode switch is accepted. The task passes
+// an empty mode for "revert".
+var fromTask = args.Length > 0 && args[0] == SilentSwitchTask.HelperVerb;
+if (fromTask)
+{
+    args = [.. args.Skip(1).Where(argument => argument.Length > 0)];
+}
+
+var isModeVerb = args is ["revert"] or ["apply", _];
+var isChangeVerb = !fromTask && args.Length > 1 && args[0] == ChangeVerb;
+var isTaskVerb = !fromTask && args is [TaskVerb, "install" or "remove"];
+if (!isModeVerb && !isChangeVerb && !isTaskVerb)
 {
     return ExitUsage;
 }
 
 try
 {
+    if (isTaskVerb)
+    {
+        if (args[1] == "remove")
+        {
+            SilentSwitchTask.Remove();
+        }
+        else if (Environment.ProcessPath is { } self)
+        {
+            // Refused outside Program Files: the task must not start a file a non-administrator can replace.
+            SilentSwitchTask.Install(self);
+        }
+
+        return ExitOk;
+    }
+
     var root = RepositoryLocator.Find(AppContext.BaseDirectory);
     if (root is null)
     {
@@ -55,7 +82,7 @@ try
 
     return ExitOk;
 }
-catch (Exception ex) when (ex is ProfileException or IOException or UnauthorizedAccessException or InvalidOperationException)
+catch (Exception ex) when (ex is ProfileException or IOException or UnauthorizedAccessException or InvalidOperationException or System.Runtime.InteropServices.COMException)
 {
     return ExitFailed;
 }

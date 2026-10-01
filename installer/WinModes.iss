@@ -75,6 +75,8 @@ Filename: "{sys}\taskkill.exe"; Parameters: "/IM {#AppExe} /F"; Flags: runhidden
 Filename: "{app}\WinModes.Elevated.exe"; Parameters: "revert"; Flags: runhidden waituntilterminated; RunOnceId: "RevertActiveMode"
 ; Then undo what the Optimize and Services pages changed machine-wide: service start types, policy values, scheduled tasks.
 Filename: "{app}\WinModes.Elevated.exe"; Parameters: "change :restore :untweak"; Flags: runhidden waituntilterminated; RunOnceId: "RestoreServices"
+; Remove the opt-in task that starts the helper without a prompt.
+Filename: "{app}\WinModes.Elevated.exe"; Parameters: "task remove"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveSilentSwitchTask"
 
 [Registry]
 ; "Start with Windows" is written by the app; remove it with the app.

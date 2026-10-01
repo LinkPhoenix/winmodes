@@ -40,6 +40,16 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
 
     public JournalStore Journal => _journal;
 
+    private static string HelperPath => Path.Combine(AppContext.BaseDirectory, HelperFileName);
+
+    /// <summary>The silent switch is only offered for a copy installed under Program Files.</summary>
+    public static bool CanSwitchSilently => SilentSwitchTask.IsTrustedLocation(HelperPath);
+
+    public static bool SwitchesSilently => SilentSwitchTask.IsInstalled(HelperPath);
+
+    /// <summary>Registers or removes the silent-switch task (one prompt). Returns null on success, or the reason.</summary>
+    public static Task<string?> SetSilentSwitchAsync(bool enabled) => RunHelperAsync("task", enabled ? "install" : "remove");
+
     /// <summary>Name of the active mode, or null when Windows is in its normal state.</summary>
     public static string? ActiveMode => ReadUserState()?.Mode;
 
@@ -129,6 +139,14 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         if (!File.Exists(helperPath))
         {
             return $"{HelperFileName} is missing next to the app.";
+        }
+
+        // With the opt-in silent switch, a mode switch goes through its task and no prompt is shown.
+        // When the task cannot be used, the switch falls back to the normal prompt.
+        if (arguments is ["revert"] or ["apply", _]
+            && await Task.Run(() => SilentSwitchTask.Run(helperPath, arguments[0], arguments.Length > 1 ? arguments[1] : "")) is { } exitCode)
+        {
+            return exitCode == 0 ? null : "The elevated helper reported an error; nothing else was changed.";
         }
 
         try
