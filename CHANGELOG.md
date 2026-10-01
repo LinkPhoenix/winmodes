@@ -8,6 +8,17 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+### Added
+
+- Widget: choose whether the plan usage shows Claude, Codex or both; a plan switched off is neither read nor asked online.
+- Widget: the limit resets in reserve are shown in the compact layout too, and an option hides them.
+- Widget: optional notification when a plan has less than 10 % of its limit left. Off by default.
+- About page: a portable copy gets a Download button when a new version is found; the zip is checked against the release checksum and saved in the Downloads folder.
+
+### Changed
+
+- Widget page: the plan usage options have their own section.
+
 ## [0.6.0] - 2026-10-01
 
 ### Added

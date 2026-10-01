@@ -159,21 +159,59 @@
                         <ui:ToggleSwitch x:Name="ShowToolDetail" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show detail per AI tool" />
                     </Grid>
                 </Border>
-                <Border Style="{StaticResource RowStyle}">
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
                     <Grid>
                         <TextBlock Text="AI tools listed" Style="{StaticResource RowTitleStyle}" />
                         <ComboBox x:Name="MaxTools" HorizontalAlignment="Right" MinWidth="170" DisplayMemberPath="Label"
                                   SelectionChanged="OnSelectionChanged" AutomationProperties.Name="Number of AI tools listed" />
                     </Grid>
                 </Border>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="PLAN USAGE" Style="{StaticResource SectionTitleStyle}" />
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <StackPanel>
                 <Border Style="{StaticResource RowStyle}">
                     <Grid>
                         <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="Claude and Codex plans" FontWeight="SemiBold" />
+                            <TextBlock Text="Show plan usage" FontWeight="SemiBold" />
                             <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
-                                       Text="Your plan, the usage left and when the limit resets. Read from files on this PC: nothing is asked online and no sign-in file is opened. Codex figures date from its last session; Claude needs the option below." />
+                                       Text="Your plan, the usage left and when the limit resets. Read from files on this PC: nothing is asked online and no sign-in file is opened. Codex figures date from its last session; Claude needs one of the two options at the bottom." />
                         </StackPanel>
-                        <ui:ToggleSwitch x:Name="ShowSubscriptions" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show Claude and Codex plans" />
+                        <ui:ToggleSwitch x:Name="ShowSubscriptions" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show plan usage" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <TextBlock Text="Claude" Style="{StaticResource RowTitleStyle}" />
+                        <ui:ToggleSwitch x:Name="ShowClaudePlan" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show Claude usage" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <TextBlock Text="Codex" Style="{StaticResource RowTitleStyle}" />
+                        <ui:ToggleSwitch x:Name="ShowCodexPlan" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show Codex usage" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel Margin="0,0,80,0">
+                            <TextBlock Text="Limit resets in reserve" FontWeight="SemiBold" />
+                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                                       Text="How many resets of the usage limit your account holds, shown as ↻ and a number in the compact layout. Only Codex gives it, and only with the online reading." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="ShowResetCredits" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show limit resets in reserve" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel Margin="0,0,80,0">
+                            <TextBlock Text="Warn when a plan runs low" FontWeight="SemiBold" />
+                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                                       Text="A notification, once, when a plan has less than 10 % of its limit left, with the time of the reset." />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="PlanAlert" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Warn when a plan runs low" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}">

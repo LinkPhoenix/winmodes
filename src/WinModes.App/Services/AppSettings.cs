@@ -159,6 +159,17 @@ internal sealed record WidgetSettings
     /// <summary>Plan, remaining usage and limit reset of Claude and Codex, read from their local files. Off by default.</summary>
     public bool ShowSubscriptions { get; init; }
 
+    /// <summary>Which plans the block lists; a plan switched off is neither read nor asked online.</summary>
+    public bool ShowClaudePlan { get; init; } = true;
+
+    public bool ShowCodexPlan { get; init; } = true;
+
+    /// <summary>Show how many limit resets the account has in reserve, when the online reading gives it.</summary>
+    public bool ShowResetCredits { get; init; } = true;
+
+    /// <summary>Notify once when a plan falls under 10 % left. Off by default.</summary>
+    public bool PlanAlert { get; init; }
+
     /// <summary>
     /// Also ask Anthropic and OpenAI for the usage, with the sign-in Claude Code and Codex keep on this PC.
     /// Off by default: it reads their sign-in files and uses endpoints that are not part of a public API.

@@ -32,6 +32,10 @@ public partial class WidgetPage : Page
         ShowToolDetail.IsChecked = widget.ShowToolDetail;
         ShowSubscriptions.IsChecked = widget.ShowSubscriptions;
         ReadUsageOnline.IsChecked = widget.ReadUsageOnline;
+        ShowClaudePlan.IsChecked = widget.ShowClaudePlan;
+        ShowCodexPlan.IsChecked = widget.ShowCodexPlan;
+        ShowResetCredits.IsChecked = widget.ShowResetCredits;
+        PlanAlert.IsChecked = widget.PlanAlert;
         ShowClaudeUsage();
         LockPosition.IsChecked = widget.LockPosition;
         HideOnFullScreen.IsChecked = widget.HideOnFullScreen;
@@ -172,6 +176,10 @@ public partial class WidgetPage : Page
                 ShowToolDetail = ShowToolDetail.IsChecked == true,
                 ShowSubscriptions = ShowSubscriptions.IsChecked == true,
                 ReadUsageOnline = ReadUsageOnline.IsChecked == true,
+                ShowClaudePlan = ShowClaudePlan.IsChecked == true,
+                ShowCodexPlan = ShowCodexPlan.IsChecked == true,
+                ShowResetCredits = ShowResetCredits.IsChecked == true,
+                PlanAlert = PlanAlert.IsChecked == true,
                 MaxTools = (MaxTools.SelectedItem as Option)?.Value ?? 4,
                 RefreshSeconds = (Refresh.SelectedItem as Option)?.Value ?? 3,
                 LockPosition = LockPosition.IsChecked == true,

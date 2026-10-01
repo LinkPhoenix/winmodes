@@ -22,6 +22,7 @@ internal static class SubscriptionMonitor
     private static SubscriptionStatus? _onlineClaude;
     private static SubscriptionStatus? _onlineCodex;
     private static int _refreshing;
+    private static (bool Online, bool Claude, bool Codex) _choice = (false, true, true);
 
     /// <summary>Last statuses read; empty until the first read ends or when no plan is recorded on this PC.</summary>
     public static IReadOnlyList<SubscriptionStatus> Current { get; private set; } = [];
@@ -30,8 +31,15 @@ internal static class SubscriptionMonitor
     public static bool HasRead { get; private set; }
 
     /// <summary>Returns what is known now and starts a background read when it is getting old.</summary>
-    public static IReadOnlyList<SubscriptionStatus> Get(bool online)
+    public static IReadOnlyList<SubscriptionStatus> Get(bool online, bool claudeWanted = true, bool codexWanted = true)
     {
+        // A changed choice is applied at once instead of waiting for the next read.
+        var choice = (online, claudeWanted, codexWanted);
+        if (choice != _choice)
+        {
+            (_choice, _lastRefreshUtc, _lastOnlineUtc) = (choice, DateTime.MinValue, DateTime.MinValue);
+        }
+
         if (DateTime.UtcNow - _lastRefreshUtc >= RefreshInterval && Interlocked.Exchange(ref _refreshing, 1) == 0)
         {
             _lastRefreshUtc = DateTime.UtcNow;
@@ -39,8 +47,8 @@ internal static class SubscriptionMonitor
             {
                 try
                 {
-                    var claude = Subscriptions.ReadClaude(Subscriptions.DefaultClaudeSettings, ClaudeStatusLine.DefaultRecordPath);
-                    var codex = Subscriptions.ReadCodex(Subscriptions.DefaultCodexHome);
+                    var claude = claudeWanted ? Subscriptions.ReadClaude(Subscriptions.DefaultClaudeSettings, ClaudeStatusLine.DefaultRecordPath) : null;
+                    var codex = codexWanted ? Subscriptions.ReadCodex(Subscriptions.DefaultCodexHome) : null;
                     if (!online)
                     {
                         (_onlineClaude, _onlineCodex) = (null, null);
@@ -50,12 +58,12 @@ internal static class SubscriptionMonitor
                         _lastOnlineUtc = DateTime.UtcNow;
                         var now = DateTimeOffset.UtcNow;
                         // A failed request keeps the previous online figures; they are dated in the widget.
-                        _onlineCodex = await AskAsync(OnlineUsage.CodexRequest(OnlineUsage.DefaultCodexAuth), json => OnlineUsage.ParseCodex(json, now)) ?? _onlineCodex;
-                        _onlineClaude = await AskAsync(OnlineUsage.ClaudeRequest(OnlineUsage.DefaultClaudeCredentials, now),
+                        _onlineCodex = codexWanted ? await AskAsync(OnlineUsage.CodexRequest(OnlineUsage.DefaultCodexAuth), json => OnlineUsage.ParseCodex(json, now)) ?? _onlineCodex : null;
+                        _onlineClaude = !claudeWanted ? null : await AskAsync(OnlineUsage.ClaudeRequest(OnlineUsage.DefaultClaudeCredentials, now),
                             json => OnlineUsage.ParseClaude(json, claude?.Plan ?? "Plan unknown", now)) ?? _onlineClaude;
                     }
 
-                    Current = [.. new[] { Newest(_onlineClaude, claude), Newest(_onlineCodex, codex) }.OfType<SubscriptionStatus>()];
+                    Current = [.. new[] { claudeWanted ? Newest(_onlineClaude, claude) : null, codexWanted ? Newest(_onlineCodex, codex) : null }.OfType<SubscriptionStatus>()];
                     HasRead = true;
                 }
                 finally

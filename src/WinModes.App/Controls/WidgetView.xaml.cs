@@ -101,13 +101,14 @@ public partial class WidgetView : UserControl
         }
 
         var now = DateTimeOffset.Now;
-        var statuses = SubscriptionMonitor.Get(_settings.ReadUsageOnline);
-        var rows = statuses.Select(status =>
+        var statuses = SubscriptionMonitor.Get(_settings.ReadUsageOnline, _settings.ShowClaudePlan, _settings.ShowCodexPlan);
+        var rows = statuses.Select(known =>
         {
+            var status = _settings.ShowResetCredits ? known : known with { ResetCredits = null };
             var (value, detail, remaining) = WinModes.Core.Usage.Subscriptions.Describe(status, now, culture);
             var icon = PlanIconPaths.TryGetValue(status.Tool, out var path) ? IconCache.Get(path) : null;
             var shortValue = remaining is { } left ? string.Create(culture, $"{left:0} %") : value.Length > 0 ? value : "–";
-            return new PlanRow(status.Tool, status.Plan, value, detail, remaining ?? 0, Visible(remaining is not null), icon, shortValue);
+            return new PlanRow(status.Tool, status.Plan, value, detail, remaining ?? 0, Visible(remaining is not null), icon, shortValue, status.ResetCredits is { } credits ? $"↻ {credits}" : "");
         }).ToList();
         if (_settings.Compact)
         {
@@ -124,12 +125,15 @@ public partial class WidgetView : UserControl
     private static readonly Dictionary<string, string> PlanIconPaths = new(StringComparer.OrdinalIgnoreCase);
 
     private sealed record PlanRow(
-        string Tool, string Plan, string Value, string Detail, double Remaining, Visibility BarVisibility, ImageSource? Icon, string Short)
+        string Tool, string Plan, string Value, string Detail, double Remaining, Visibility BarVisibility, ImageSource? Icon, string Short, string Resets)
     {
         public Visibility IconVisibility => Icon is null ? Visibility.Collapsed : Visibility.Visible;
 
         /// <summary>The name is shown only while the icon is not known yet.</summary>
         public Visibility NameVisibility => Icon is null ? Visibility.Visible : Visibility.Collapsed;
+
+        /// <summary>Limit resets in reserve, shown in the compact line; empty when not known or switched off.</summary>
+        public Visibility ResetsVisibility => Resets.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
         public string ToolTip => $"{Tool} {Plan}\n{Detail}";
     }

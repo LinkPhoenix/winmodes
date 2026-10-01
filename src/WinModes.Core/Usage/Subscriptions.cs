@@ -192,9 +192,9 @@ public static partial class Subscriptions
                 + (secondary.ResetsAt is { } second ? $", resets in {Span(second - now)}" : "");
         }
 
-        if (status.ResetCredits is > 0)
+        if (status.ResetCredits is { } credits)
         {
-            detail += status.ResetCredits == 1 ? "\n1 limit reset in reserve" : $"\n{status.ResetCredits} limit resets in reserve";
+            detail += credits switch { <= 0 => "\nNo limit reset in reserve", 1 => "\n1 limit reset in reserve", _ => $"\n{credits} limit resets in reserve" };
         }
 
         if (status.SeenAt is { } seen && now - seen > StaleAfter)

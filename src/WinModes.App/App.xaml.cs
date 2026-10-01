@@ -252,6 +252,7 @@ public partial class App : Application, IDisposable
         }
 
         CheckToolAlerts(reading, settings.AiToolAlertGb);
+        CheckPlanAlerts(settings.Widget);
         EndIdleSessions(reading, settings.AutoEndIdleMinutes);
         RecordUsage(reading, settings.RecordUsageHistory);
 
@@ -273,6 +274,36 @@ public partial class App : Application, IDisposable
         else if (usedGb < settings.AiMemoryAlertGb * RearmRatio)
         {
             _alertRaised = false;
+        }
+    }
+
+    private readonly HashSet<string> _planAlerted = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>One notification when a plan falls under 10 % left; armed again once it is clearly above or has reset.</summary>
+    private void CheckPlanAlerts(Services.WidgetSettings widget)
+    {
+        const double LowPercent = 10;
+        const double RearmPercent = 15;
+
+        if (!widget.ShowSubscriptions || !widget.PlanAlert)
+        {
+            _planAlerted.Clear();
+            return;
+        }
+
+        var now = DateTimeOffset.Now;
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        foreach (var status in Services.SubscriptionMonitor.Current)
+        {
+            if (status.Primary is not { } limit || limit.HasReset(now) || limit.RemainingPercent >= RearmPercent)
+            {
+                _planAlerted.Remove(status.Tool);
+            }
+            else if (limit.RemainingPercent < LowPercent && _planAlerted.Add(status.Tool))
+            {
+                var (value, detail, _) = WinModes.Core.Usage.Subscriptions.Describe(status, now, culture);
+                _trayIcon?.ShowBalloonTip(6000, $"WinModes - {status.Tool} {status.Plan}", $"{value}. {detail.Split('\n')[0]}.", Forms.ToolTipIcon.Warning);
+            }
         }
     }
 

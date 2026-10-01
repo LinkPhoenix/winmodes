@@ -30,6 +30,8 @@
                             <TextBlock Text="{Binding Tool}" FontSize="12" VerticalAlignment="Center" Visibility="{Binding NameVisibility}"
                                        Style="{StaticResource SecondaryTextStyle}" />
                             <TextBlock Text="{Binding Short}" FontWeight="SemiBold" Margin="6,0,0,0" Foreground="#34D399" />
+                            <TextBlock Text="{Binding Resets}" FontSize="12" Margin="6,0,0,0" VerticalAlignment="Center" Visibility="{Binding ResetsVisibility}"
+                                       Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
