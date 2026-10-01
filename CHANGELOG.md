@@ -8,6 +8,10 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+### Added
+
+- Modes: when the administrator helper fails, the reason is written to `helper-errors.log` in `%ProgramData%\WinModes\logs` instead of being lost.
+
 ### Fixed
 
 - Modes: a switch interrupted by a crash or a failed restore stays listed as active and is retried on the next undo, instead of being forgotten with services left changed.
@@ -18,6 +22,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Claude status line: installing or removing it keeps the first backup of your Claude Code settings instead of replacing it, and no longer rewrites accents or symbols elsewhere in that file.
 - App: an unexpected error in a page, the tray menu or a hotkey no longer closes WinModes; it is written to `errors.log` in `%LocalAppData%\WinModes` and a notification is shown.
 - Modes: asking for a mode switch while another is still running (page, tray menu, hotkey or automation) is refused with a message instead of stacking administrator prompts.
+- Modes: a switch started from the prompt and one started by the silent task can no longer overlap: the administrator helper runs one command at a time.
 
 ### Changed
 
@@ -29,8 +34,6 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 - The shared WinModes folder in ProgramData is now restricted to administrators, and one that already exists under another owner is refused.
 - The administrator helper now refuses any command, service name, tweak id or mode name that is not in the expected form, including through the silent switch.
-- Modes: the administrator helper runs one command at a time, so a switch started from the prompt and one started by the silent task can no longer overlap.
-- Modes: when the administrator helper fails, the reason is written to `helper-errors.log` in `%ProgramData%\WinModes\logs` instead of being lost.
 
 ## [0.8.0] - 2026-10-01
 
