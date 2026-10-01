@@ -45,9 +45,17 @@
                 <ItemsControl x:Name="AiTools" Margin="0,4,0,0">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="0,3,0,0">
-                                <TextBlock Text="{Binding Key}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="NoWrap" />
-                                <TextBlock Text="{Binding Value}" FontSize="12" HorizontalAlignment="Right" />
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"
+                                       Visibility="{Binding IconVisibility}" RenderOptions.BitmapScalingMode="HighQuality" />
+                                <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="12" VerticalAlignment="Center"
+                                           Style="{StaticResource SecondaryTextStyle}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="2" Text="{Binding Memory}" FontSize="12" VerticalAlignment="Center" Margin="8,0,0,0" />
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

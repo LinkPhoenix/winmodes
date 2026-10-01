@@ -46,13 +46,19 @@ public partial class WidgetView : UserControl
 
         AiTotal.Text = string.Create(culture, $"{reading.AiMemoryMb / MbPerGb:0.0} GB");
         AiTools.ItemsSource = reading.AiTools.Count == 0
-            ? [new KeyValuePair<string, string>("None running", "")]
-            : reading.AiTools.Take(Math.Max(_settings.MaxTools, 1)).Select(tool => new KeyValuePair<string, string>(
+            ? [new ToolRow("None running", "", null)]
+            : reading.AiTools.Take(Math.Max(_settings.MaxTools, 1)).Select(tool => new ToolRow(
                 tool.Sessions > 1 ? $"{tool.Name} ×{tool.Sessions}" : tool.Name,
-                string.Create(culture, $"{tool.MemoryMb / MbPerGb:0.0} GB"))).ToList();
+                string.Create(culture, $"{tool.MemoryMb / MbPerGb:0.0} GB"),
+                IconCache.Get(tool.ExecutablePath))).ToList();
 
         var mode = ModeSwitcher.ActiveMode;
         ModeText.Text = mode is null ? "No mode" : $"{culture.TextInfo.ToTitleCase(mode)} mode";
+    }
+
+    private sealed record ToolRow(string Name, string Memory, ImageSource? Icon)
+    {
+        public Visibility IconVisibility => Icon is null ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private static Visibility Visible(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;

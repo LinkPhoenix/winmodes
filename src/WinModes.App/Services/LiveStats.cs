@@ -10,7 +10,7 @@ internal sealed record StatsReading(double CpuPercent, MemorySample Memory, IRea
     public double AiMemoryMb => AiTools.Sum(tool => tool.MemoryMb);
 }
 
-internal sealed record AiToolUsage(string Name, int Sessions, double MemoryMb);
+internal sealed record AiToolUsage(string Name, int Sessions, double MemoryMb, string? ExecutablePath);
 
 /// <summary>
 /// Background sampling for features that live outside the main window. It runs only while
@@ -71,7 +71,7 @@ internal sealed class LiveStats
                 AiActivityTracker.Observe(sessions);
                 var tools = sessions
                     .GroupBy(session => session.Tool.Name)
-                    .Select(group => new AiToolUsage(group.Key, group.Count(), group.Sum(session => session.TotalMemoryMb)))
+                    .Select(group => new AiToolUsage(group.Key, group.Count(), group.Sum(session => session.TotalMemoryMb), group.First().Root.ExecutablePath))
                     .OrderByDescending(tool => tool.MemoryMb)
                     .ToList();
                 var (down, up) = _monitor.SampleNetwork();
