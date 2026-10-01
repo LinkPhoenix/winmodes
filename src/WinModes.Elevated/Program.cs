@@ -75,11 +75,27 @@ try
 
     return ExitOk;
 }
-catch (Exception ex) when (ex is ProfileException or IOException or UnauthorizedAccessException or InvalidOperationException or System.Runtime.InteropServices.COMException)
+catch (Exception ex) when (ex is not OutOfMemoryException)
 {
+    // Nobody watches this process, so the reason goes to a log the user can read; the exit code stays generic.
+    LogFailure(ex);
     return ExitFailed;
 }
 
+static void LogFailure(Exception exception)
+{
+    try
+    {
+        AppPaths.EnsureProtectedDirectory(AppPaths.LogDirectory);
+        new ErrorLog(AppPaths.HelperErrorLog).Append("helper", exception);
+    }
+    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+    {
+        // Without a safe place to write, the failure is only reported through the exit code.
+    }
+}
+
+// Runs each ":action names" group in order; ":restore" and ":untweak" without a name undo every recorded change of their kind.
 static int Change(IReadOnlyList<ChangeGroup> groups, string root, WindowsServiceControl control, ProtectionPolicy policy, JournalStore journal)
 {
     AppPaths.EnsureProtectedDirectory(AppPaths.TweaksDirectory);
