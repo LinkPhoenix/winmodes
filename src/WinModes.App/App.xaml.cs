@@ -130,6 +130,11 @@ public partial class App : Application, IDisposable
                 (Services.AppSettings.Load() with { ShowDesktopWidget = false }).Save();
                 ApplyDisplaySettings();
             };
+            _widget.OpenAiToolsRequested += (_, _) =>
+            {
+                ShowWindow();
+                _window?.NavigateTo(typeof(Pages.AiToolsPage));
+            };
             _widget.OpenSettingsRequested += (_, _) =>
             {
                 ShowWindow();
@@ -223,7 +228,13 @@ public partial class App : Application, IDisposable
             _trayMeter?.Show(reading);
         }
 
-        _widget?.Show(reading);
+        if (_widget is not null)
+        {
+            _widget.Show(reading);
+            // Checked on each sample: cheap, and a second or two of delay is fine for hiding.
+            var hide = settings.Widget.HideOnFullScreen && WidgetWindow.IsFullScreenAppActive();
+            _widget.Visibility = hide ? Visibility.Hidden : Visibility.Visible;
+        }
 
         if (settings.AiMemoryAlertGb <= 0)
         {

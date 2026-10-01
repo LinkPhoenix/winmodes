@@ -5,7 +5,18 @@
              Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Border x:Name="Root" Width="270" Background="#F2191920" BorderBrush="{StaticResource AppCardStrokeBrush}" BorderThickness="1"
             CornerRadius="12" Padding="16,14">
-        <StackPanel>
+        <Grid>
+        <!-- Compact mode: one line. -->
+        <StackPanel x:Name="CompactPanel" Orientation="Horizontal" Visibility="Collapsed">
+            <TextBlock Text="CPU" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
+            <TextBlock x:Name="CompactCpu" Text="…" FontWeight="SemiBold" Margin="6,0,14,0" Foreground="#A78BFA" />
+            <TextBlock Text="RAM" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
+            <TextBlock x:Name="CompactMemory" Text="…" FontWeight="SemiBold" Margin="6,0,14,0" Foreground="#F472B6" />
+            <TextBlock Text="AI" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
+            <TextBlock x:Name="CompactAi" Text="…" FontWeight="SemiBold" Margin="6,0,0,0" />
+        </StackPanel>
+
+        <StackPanel x:Name="FullPanel">
             <Grid>
                 <TextBlock Text="WINMODES" Style="{StaticResource CardCaptionStyle}" />
                 <TextBlock x:Name="ModeText" Text="No mode" FontSize="12" HorizontalAlignment="Right" Style="{StaticResource SecondaryTextStyle}" />
@@ -36,7 +47,18 @@
                 <TextBlock x:Name="NetworkText" Text="…" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right" />
             </Grid>
 
-            <StackPanel x:Name="AiSection">
+            <Grid x:Name="GraphRow" Margin="0,10,0,0" Height="38" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <controls:HistoryChart x:Name="CpuChart" Accent="#7C5CFC" />
+                <controls:HistoryChart x:Name="MemoryChart" Grid.Column="2" Accent="#EC4899" />
+            </Grid>
+
+            <!-- Clicking the AI block opens the AI tools page. -->
+            <StackPanel x:Name="AiSection" Background="Transparent" Cursor="Hand" ToolTip="Open the AI tools page">
                 <Border x:Name="AiSeparator" Height="1" Background="{StaticResource AppCardStrokeBrush}" Margin="0,12,0,10" />
                 <Grid>
                     <TextBlock Text="AI tools" FontWeight="SemiBold" />
@@ -62,5 +84,6 @@
                 </ItemsControl>
             </StackPanel>
         </StackPanel>
+        </Grid>
     </Border>
 </UserControl>

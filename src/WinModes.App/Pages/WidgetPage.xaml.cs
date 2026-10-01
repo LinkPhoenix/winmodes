@@ -30,6 +30,9 @@ public partial class WidgetPage : Page
         ShowAiTools.IsChecked = widget.ShowAiTools;
         ShowToolDetail.IsChecked = widget.ShowToolDetail;
         LockPosition.IsChecked = widget.LockPosition;
+        HideOnFullScreen.IsChecked = widget.HideOnFullScreen;
+        Compact.IsChecked = widget.Compact;
+        ShowGraph.IsChecked = widget.ShowGraph;
         ClickThrough.IsChecked = widget.ClickThrough;
         Select(Refresh, RefreshChoices, widget.RefreshSeconds);
         Select(Scale, ScaleChoices, widget.ScalePercent);
@@ -113,6 +116,9 @@ public partial class WidgetPage : Page
                 MaxTools = (MaxTools.SelectedItem as Option)?.Value ?? 4,
                 RefreshSeconds = (Refresh.SelectedItem as Option)?.Value ?? 3,
                 LockPosition = LockPosition.IsChecked == true,
+                HideOnFullScreen = HideOnFullScreen.IsChecked == true,
+                Compact = Compact.IsChecked == true,
+                ShowGraph = ShowGraph.IsChecked == true,
                 ClickThrough = ClickThrough.IsChecked == true,
             },
         };

@@ -16,7 +16,14 @@ public partial class WidgetView : UserControl
 
     private WidgetSettings _settings = new();
 
+    private const double FullWidth = 270;
+
     public WidgetView() => InitializeComponent();
+
+    /// <summary>True when the point (relative to this control) is over the AI tools block.</summary>
+    internal bool IsOverAiTools(Point point) =>
+        AiSection.IsVisible && FullPanel.IsVisible
+        && new Rect(AiSection.TranslatePoint(new Point(0, 0), this), AiSection.RenderSize).Contains(point);
 
     /// <param name="scaled">False keeps the natural size whatever the size option says.</param>
     internal void Apply(WidgetSettings settings, bool scaled = true)
@@ -24,6 +31,16 @@ public partial class WidgetView : UserControl
         _settings = settings;
         var scale = scaled ? Math.Clamp(settings.ScalePercent, 80, 150) / 100d : 1;
         Root.LayoutTransform = new ScaleTransform(scale, scale);
+
+        CompactPanel.Visibility = Visible(settings.Compact);
+        FullPanel.Visibility = Visible(!settings.Compact);
+        Root.Width = settings.Compact ? double.NaN : FullWidth;
+        GraphRow.Visibility = Visible(settings.ShowGraph && (settings.ShowCpu || settings.ShowMemory));
+        CpuChart.Visibility = Visible(settings.ShowCpu);
+        MemoryChart.Visibility = Visible(settings.ShowMemory);
+        var interval = TimeSpan.FromSeconds(Math.Clamp(settings.RefreshSeconds, 1, 10));
+        CpuChart.SampleInterval = interval;
+        MemoryChart.SampleInterval = interval;
 
         ModeText.Visibility = Visible(settings.ShowMode);
         CpuRow.Visibility = Visible(settings.ShowCpu);
@@ -44,7 +61,13 @@ public partial class WidgetView : UserControl
         MemoryText.Text = string.Create(culture, $"{reading.Memory.UsedPercent:0} %");
         NetworkText.Text = string.Create(culture, $"↓ {reading.DownMbps:0.0}  ↑ {reading.UpMbps:0.0} Mb/s");
 
+        CpuChart.Push(reading.CpuPercent);
+        MemoryChart.Push(reading.Memory.UsedPercent);
+
         AiTotal.Text = string.Create(culture, $"{reading.AiMemoryMb / MbPerGb:0.0} GB");
+        CompactCpu.Text = CpuText.Text;
+        CompactMemory.Text = MemoryText.Text;
+        CompactAi.Text = AiTotal.Text;
         AiTools.ItemsSource = reading.AiTools.Count == 0
             ? [new ToolRow("None running", "", null)]
             : reading.AiTools.Take(Math.Max(_settings.MaxTools, 1)).Select(tool => new ToolRow(

@@ -57,6 +57,16 @@
                                          AutomationProperties.Name="Always on top" />
                     </Grid>
                 </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel Margin="0,0,70,0">
+                            <TextBlock Text="Hide during full-screen apps" FontWeight="SemiBold" />
+                            <TextBlock Text="The widget disappears while a game, a video or a presentation fills the screen." FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="HideOnFullScreen" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
+                                         AutomationProperties.Name="Hide during full-screen apps" />
+                    </Grid>
+                </Border>
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">
                     <Grid>
                         <TextBlock Text="Refresh every" Style="{StaticResource RowTitleStyle}" />
@@ -78,6 +88,16 @@
                                     VerticalAlignment="Center" ValueChanged="OnOpacityChanged" AutomationProperties.Name="Opacity" />
                             <TextBlock x:Name="OpacityText" Width="48" TextAlignment="Right" VerticalAlignment="Center" />
                         </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel Margin="0,0,70,0">
+                            <TextBlock Text="Compact" FontWeight="SemiBold" />
+                            <TextBlock Text="One line with CPU, memory and the AI total." FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="Compact" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
+                                         AutomationProperties.Name="Compact" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">
@@ -103,6 +123,16 @@
                     <Grid>
                         <TextBlock Text="Memory" Style="{StaticResource RowTitleStyle}" />
                         <ui:ToggleSwitch x:Name="ShowMemory" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Show memory" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel Margin="0,0,70,0">
+                            <TextBlock Text="History graphs" FontWeight="SemiBold" />
+                            <TextBlock Text="Small CPU and memory graphs under the bars." FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="ShowGraph" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
+                                         AutomationProperties.Name="History graphs" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}">

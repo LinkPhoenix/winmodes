@@ -49,6 +49,7 @@ public partial class WidgetWindow : Window
     public event EventHandler? OpenAppRequested;
     public event EventHandler? OpenSettingsRequested;
     public event EventHandler? HideRequested;
+    public event EventHandler? OpenAiToolsRequested;
 
     internal void Apply(WidgetSettings settings)
     {
@@ -71,6 +72,15 @@ public partial class WidgetWindow : Window
         (AppSettings.Load() with { WidgetLeft = Left, WidgetTop = Top }).Save();
     }
 
+    /// <summary>True while a full-screen app, a Direct3D full-screen game or a presentation is in front.</summary>
+    internal static bool IsFullScreenAppActive()
+    {
+        const int Busy = 2;
+        const int Direct3DFullScreen = 3;
+        const int PresentationMode = 4;
+        return SHQueryUserNotificationState(out var state) == 0 && state is Busy or Direct3DFullScreen or PresentationMode;
+    }
+
     private void ApplyClickThrough()
     {
         var handle = new WindowInteropHelper(this).Handle;
@@ -87,11 +97,24 @@ public partial class WidgetWindow : Window
 
     private void OnDrag(object sender, MouseButtonEventArgs e)
     {
-        if (e.ButtonState == MouseButtonState.Pressed && !_settings.LockPosition)
+        if (e.ButtonState != MouseButtonState.Pressed)
+        {
+            return;
+        }
+
+        var overAiTools = View.IsOverAiTools(e.GetPosition(View));
+        var (left, top) = (Left, Top);
+        if (!_settings.LockPosition)
         {
             // DragMove returns when the button is released: that is the new resting place.
             DragMove();
             (AppSettings.Load() with { WidgetLeft = Left, WidgetTop = Top }).Save();
+        }
+
+        // A press and release without moving is a click, not a drag.
+        if (overAiTools && Left == left && Top == top)
+        {
+            OpenAiToolsRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -100,6 +123,10 @@ public partial class WidgetWindow : Window
     private void OnOpenSettings(object sender, RoutedEventArgs e) => OpenSettingsRequested?.Invoke(this, EventArgs.Empty);
 
     private void OnHide(object sender, RoutedEventArgs e) => HideRequested?.Invoke(this, EventArgs.Empty);
+
+    [DllImport("shell32.dll")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern int SHQueryUserNotificationState(out int state);
 
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]

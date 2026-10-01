@@ -144,6 +144,15 @@ internal sealed record WidgetSettings
     /// <summary>Seconds between two refreshes: 1, 3 or 5.</summary>
     public int RefreshSeconds { get; init; } = 3;
 
+    /// <summary>One line with CPU, memory and the AI total instead of the full panel.</summary>
+    public bool Compact { get; init; }
+
+    /// <summary>Small CPU and memory history graphs under the bars.</summary>
+    public bool ShowGraph { get; init; }
+
+    /// <summary>Hide while a full-screen app (game, video, presentation) is in front.</summary>
+    public bool HideOnFullScreen { get; init; } = true;
+
     /// <summary>The widget cannot be dragged.</summary>
     public bool LockPosition { get; init; }
 
