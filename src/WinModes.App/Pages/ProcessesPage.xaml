@@ -26,9 +26,30 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="ChevronButtonStyle" TargetType="Button" BasedOn="{StaticResource SortHeaderStyle}">
+            <Setter Property="Width" Value="22" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontFamily" Value="{StaticResource GlyphFontFamily}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="ProcessRowStyle" TargetType="Border">
+            <Setter Property="Padding" Value="16,7" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="BorderBrush" Value="{StaticResource AppCardStrokeBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#14FFFFFF" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Page.Resources>
 
-    <StackPanel Margin="36,24,36,36" MaxWidth="1100">
+    <StackPanel Margin="36,24,36,36" MaxWidth="1400">
         <TextBlock Text="Processes" FontSize="28" FontWeight="SemiBold" />
         <TextBlock x:Name="Summary" Text="Reading processes…" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,16" />
 
@@ -37,7 +58,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ui:TextBox x:Name="SearchBox" PlaceholderText="Search by name" Icon="{ui:SymbolIcon Search24}"
+            <ui:TextBox x:Name="SearchBox" PlaceholderText="Search by name, PID or command line" Icon="{ui:SymbolIcon Search24}"
                         TextChanged="OnFilterChanged" AutomationProperties.Name="Search processes" />
             <CheckBox x:Name="ProtectedOnly" Grid.Column="1" Content="Protected only" Margin="16,0,0,0"
                       Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
@@ -45,57 +66,80 @@
 
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <StackPanel>
-                <Border Padding="20,8" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AppCardStrokeBrush}">
+                <Border Padding="16,8" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AppCardStrokeBrush}">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="262" />
+                            <ColumnDefinition Width="300" />
+                            <ColumnDefinition Width="70" />
+                            <ColumnDefinition Width="70" />
                             <ColumnDefinition Width="90" />
+                            <ColumnDefinition Width="70" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="110" />
-                            <ColumnDefinition Width="120" />
                         </Grid.ColumnDefinitions>
-                        <Button x:Name="SortName" Style="{StaticResource SortHeaderStyle}" Content="Name" Tag="Name"
-                                HorizontalAlignment="Left" Click="OnSortClick" ToolTip="Sort by name" />
-                        <Button x:Name="SortCount" Grid.Column="1" Style="{StaticResource SortHeaderStyle}" Content="Instances" Tag="Count"
-                                HorizontalAlignment="Left" Click="OnSortClick" ToolTip="Sort by number of processes" />
-                        <Button x:Name="SortMemory" Grid.Column="3" Style="{StaticResource SortHeaderStyle}" Content="Memory" Tag="Memory"
-                                HorizontalAlignment="Right" Click="OnSortClick" ToolTip="Sort by private memory" />
+                        <Button x:Name="SortName" Style="{StaticResource SortHeaderStyle}" Tag="Name" HorizontalAlignment="Left" Click="OnSortClick" />
+                        <Button x:Name="SortPid" Grid.Column="1" Style="{StaticResource SortHeaderStyle}" Tag="Pid" HorizontalAlignment="Right" Click="OnSortClick" />
+                        <Button x:Name="SortCpu" Grid.Column="2" Style="{StaticResource SortHeaderStyle}" Tag="Cpu" HorizontalAlignment="Right" Click="OnSortClick" />
+                        <Button x:Name="SortMemory" Grid.Column="3" Style="{StaticResource SortHeaderStyle}" Tag="Memory" HorizontalAlignment="Right" Click="OnSortClick" />
+                        <Button x:Name="SortThreads" Grid.Column="4" Style="{StaticResource SortHeaderStyle}" Tag="Threads" HorizontalAlignment="Right" Click="OnSortClick" />
+                        <TextBlock Grid.Column="5" Text="Command" FontSize="12" FontWeight="SemiBold" Margin="20,4,0,4"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     </Grid>
                 </Border>
 
                 <ItemsControl x:Name="Rows">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Padding="20,10" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AppCardStrokeBrush}">
+                            <Border Style="{StaticResource ProcessRowStyle}" ContextMenuOpening="OnMenuOpening" ContextMenuClosing="OnMenuClosing">
+                                <Border.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="End task" Click="OnEndTask" />
+                                        <MenuItem Header="End process tree" Click="OnEndTree" />
+                                        <Separator />
+                                        <MenuItem Header="Open file location" Click="OnOpenLocation" IsEnabled="{Binding HasPath}" />
+                                        <MenuItem Header="Open working folder" Click="OnOpenFolder" IsEnabled="{Binding HasFolder}" />
+                                        <MenuItem Header="Search online" Click="OnSearchOnline" />
+                                        <Separator />
+                                        <MenuItem Header="Copy process name" Click="OnCopyName" />
+                                        <MenuItem Header="Copy PID" Click="OnCopyPid" />
+                                        <MenuItem Header="Copy command line" Click="OnCopyCommand" IsEnabled="{Binding HasCommand}" />
+                                    </ContextMenu>
+                                </Border.ContextMenu>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="262" />
+                                        <ColumnDefinition Width="300" />
+                                        <ColumnDefinition Width="70" />
+                                        <ColumnDefinition Width="70" />
                                         <ColumnDefinition Width="90" />
+                                        <ColumnDefinition Width="70" />
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="110" />
-                                        <ColumnDefinition Width="120" />
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Grid Width="22" Height="22" Margin="0,0,12,0">
-                                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="15" Text="&#xECAA;" Visibility="{Binding GlyphVisibility}"
+                                    <StackPanel Orientation="Horizontal" Margin="{Binding Indent}" VerticalAlignment="Center">
+                                        <Button Style="{StaticResource ChevronButtonStyle}" Content="{Binding Chevron}" Click="OnToggle"
+                                                Visibility="{Binding ChevronVisibility}" ToolTip="Show or hide child processes"
+                                                AutomationProperties.Name="Show or hide child processes" />
+                                        <Grid Width="20" Height="20" Margin="2,0,10,0">
+                                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="14" Text="&#xECAA;" Visibility="{Binding GlyphVisibility}"
                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                                            <Image Source="{Binding Icon}" Width="22" Height="22" />
+                                            <Image Source="{Binding Icon}" Width="20" Height="20" />
                                         </Grid>
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="210" />
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="170" />
+                                        <TextBlock Text="{Binding ChildText}" FontSize="12" Margin="6,0,0,0" VerticalAlignment="Center"
+                                                   Style="{StaticResource SecondaryTextStyle}" />
+                                        <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="11" Text="&#xE72E;" Margin="8,0,0,0"
+                                                   Foreground="#A78BFA" Visibility="{Binding ProtectedVisibility}"
+                                                   ToolTip="Protected: no mode can close this app." />
                                     </StackPanel>
-                                    <TextBlock Grid.Column="1" Text="{Binding CountText}" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
-                                    <ProgressBar Grid.Column="2" Height="6" Minimum="0" Maximum="100" Value="{Binding Share, Mode=OneWay}"
-                                                 Foreground="{Binding Color}" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="3" Text="{Binding MemoryText}" HorizontalAlignment="Right" FontWeight="SemiBold"
-                                               VerticalAlignment="Center" />
-                                    <Border Grid.Column="4" Style="{StaticResource ChipStyle}" HorizontalAlignment="Right"
-                                            Background="#337C5CFC" Visibility="{Binding ProtectedVisibility}"
-                                            ToolTip="Protected: no mode can close this app.">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="11" Text="&#xE72E;" Margin="0,0,6,0" />
-                                            <TextBlock Text="Protected" FontSize="12" FontWeight="SemiBold" />
-                                        </StackPanel>
-                                    </Border>
+                                    <TextBlock Grid.Column="1" Text="{Binding Pid}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               Style="{StaticResource SecondaryTextStyle}" />
+                                    <TextBlock Grid.Column="2" Text="{Binding CpuText}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               Foreground="{Binding CpuColor}" />
+                                    <TextBlock Grid.Column="3" Text="{Binding MemoryText}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               FontWeight="SemiBold" Foreground="{Binding MemoryColor}" />
+                                    <TextBlock Grid.Column="4" Text="{Binding Threads}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               Style="{StaticResource SecondaryTextStyle}" />
+                                    <TextBlock Grid.Column="5" Text="{Binding Command}" Margin="20,0,0,0" VerticalAlignment="Center" FontSize="12"
+                                               TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" ToolTip="{Binding Command}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                 </Grid>
                             </Border>
                         </DataTemplate>

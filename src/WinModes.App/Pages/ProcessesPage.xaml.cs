@@ -8,21 +8,35 @@ using WinModes.Core.Planning;
 
 namespace WinModes.App.Pages;
 
-/// <summary>Apps grouped by executable name, with search and sorting. Refreshes by itself. Read-only.</summary>
+/// <summary>
+/// Process tree with search, sorting and a right-click menu. A parent row shows the total of its
+/// children while collapsed. Refreshes by itself, except while a menu is open.
+/// </summary>
 public partial class ProcessesPage : Page
 {
-    private const int MaxRows = 60;
     private const double MbPerGb = 1024;
     private const double MediumMemoryMb = 300;
+    private const double BusyCpuPercent = 5;
+    private const double IndentPerLevel = 22;
     private const string Ascending = " ↑";
     private const string Descending = " ↓";
+    private const string ChevronCollapsed = "";
+    private const string ChevronExpanded = "";
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(3);
 
+    // Everything hangs under these shells and hosts; treating their children as roots gives a readable list.
+    private static readonly HashSet<string> ContainerProcesses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "explorer", "services", "svchost", "wininit", "winlogon", "System", "smss", "csrss", "sihost", "userinit",
+    };
+
     private readonly DispatcherTimer _timer = new() { Interval = RefreshInterval };
-    private IReadOnlyList<ProcessGroup> _groups = [];
+    private readonly HashSet<int> _expanded = [];
+    private IReadOnlyList<ProcessNode> _nodes = [];
     private string _sortColumn = "Memory";
     private bool _sortDescending = true;
     private bool _refreshing;
+    private bool _menuOpen;
 
     public ProcessesPage()
     {
@@ -38,7 +52,8 @@ public partial class ProcessesPage : Page
 
     private async Task RefreshAsync()
     {
-        if (_refreshing || !IsVisible)
+        // Rebuilding the rows would close an open menu under the pointer.
+        if (_refreshing || _menuOpen || !IsVisible)
         {
             return;
         }
@@ -46,16 +61,16 @@ public partial class ProcessesPage : Page
         _refreshing = true;
         try
         {
-            _groups = await Task.Run(() =>
+            _nodes = await Task.Run(() =>
             {
-                var list = SystemMonitor.GetProcessGroups();
+                var nodes = ProcessActions.Sample();
                 // Extract icons off the UI thread; the cache keeps later refreshes cheap.
-                foreach (var group in list)
+                foreach (var path in nodes.Select(node => node.ExecutablePath).Distinct())
                 {
-                    IconCache.Get(group.ExecutablePath);
+                    IconCache.Get(path);
                 }
 
-                return list;
+                return nodes;
             });
             ShowRows();
         }
@@ -84,6 +99,16 @@ public partial class ProcessesPage : Page
         ShowRows();
     }
 
+    private void OnToggle(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: Row row } && !_expanded.Remove(row.Pid))
+        {
+            _expanded.Add(row.Pid);
+        }
+
+        ShowRows();
+    }
+
     private void ShowRows()
     {
         // Filter events fire while the page is still being built.
@@ -93,53 +118,184 @@ public partial class ProcessesPage : Page
         }
 
         var culture = CultureInfo.CurrentCulture;
+        var byPid = _nodes.ToDictionary(node => node.Pid);
+        var children = ProcessSampler.BuildChildren(_nodes);
+        var totals = new Dictionary<int, Totals>();
+        var rows = new List<Row>();
         var search = SearchBox.Text.Trim();
-        var filtered = _groups
-            .Where(group => search.Length == 0 || group.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
-            .Where(group => ProtectedOnly.IsChecked != true || AppServices.Policy.IsProtectedProcess(group.Name));
 
-        var sorted = (_sortColumn, _sortDescending) switch
+        if (search.Length > 0 || ProtectedOnly.IsChecked == true)
         {
-            ("Name", false) => filtered.OrderBy(group => group.Name, StringComparer.CurrentCultureIgnoreCase),
-            ("Name", true) => filtered.OrderByDescending(group => group.Name, StringComparer.CurrentCultureIgnoreCase),
-            ("Count", false) => filtered.OrderBy(group => group.Count),
-            ("Count", true) => filtered.OrderByDescending(group => group.Count),
-            (_, false) => filtered.OrderBy(group => group.PrivateMemoryMb),
-            _ => filtered.OrderByDescending(group => group.PrivateMemoryMb),
-        };
+            // A filtered view is flat: a match may sit anywhere in the tree.
+            var matches = _nodes
+                .Where(node => search.Length == 0 || Matches(node, search, culture))
+                .Where(node => ProtectedOnly.IsChecked != true || AppServices.Policy.IsProtectedProcess(node.Name));
+            rows.AddRange(Sort(matches, node => new Totals(node.PrivateMemoryMb, node.CpuPercent, node.Threads, 0))
+                .Select(node => ToRow(node, level: 0, new Totals(node.PrivateMemoryMb, node.CpuPercent, node.Threads, 0), hasChildren: false, culture)));
+        }
+        else
+        {
+            var roots = _nodes.Where(node => node.Pid != 0
+                && (!ProcessSampler.HasLiveParent(node, byPid) || ContainerProcesses.Contains(byPid[node.ParentPid].Name)));
+            foreach (var root in Sort(roots, node => Subtree(node, children, totals)))
+            {
+                AddTree(root, level: 0, children, totals, rows, culture);
+            }
+        }
 
-        var largest = _groups.Count > 0 ? Math.Max(_groups.Max(group => group.PrivateMemoryMb), 1) : 1;
-        var visible = sorted.Take(MaxRows).Select(group => new Row(
-            group.Name,
-            group.Count.ToString(culture),
-            group.PrivateMemoryMb / largest * 100,
-            DashboardPage.FormatMemory(group.PrivateMemoryMb, culture),
-            MemoryColor(group.PrivateMemoryMb),
-            AppServices.Policy.IsProtectedProcess(group.Name) ? Visibility.Visible : Visibility.Collapsed,
-            IconCache.Get(group.ExecutablePath))).ToList();
-
-        Rows.ItemsSource = visible;
+        Rows.ItemsSource = rows;
         SortName.Content = "Name" + Arrow("Name");
-        SortCount.Content = "Instances" + Arrow("Count");
+        SortPid.Content = "PID" + Arrow("Pid");
+        SortCpu.Content = "CPU" + Arrow("Cpu");
         SortMemory.Content = "Memory" + Arrow("Memory");
+        SortThreads.Content = "Threads" + Arrow("Threads");
 
-        var totalGb = _groups.Sum(group => group.PrivateMemoryMb) / MbPerGb;
+        var totalGb = _nodes.Sum(node => node.PrivateMemoryMb) / MbPerGb;
         Summary.Text = string.Create(culture,
-            $"{_groups.Sum(group => group.Count)} processes in {_groups.Count} apps use {totalGb:0.0} GB of private memory. Showing {visible.Count}.");
+            $"{_nodes.Count} processes use {totalGb:0.0} GB of private memory. Showing {rows.Count}. Right-click a row for actions.");
     }
+
+    private void AddTree(ProcessNode node, int level, ILookup<int, ProcessNode> children, Dictionary<int, Totals> totals, List<Row> rows, CultureInfo culture)
+    {
+        // A container's children are listed as roots, so they are not repeated under it.
+        var kids = ContainerProcesses.Contains(node.Name) ? [] : children[node.Pid].ToList();
+        var isExpanded = _expanded.Contains(node.Pid);
+        var own = new Totals(node.PrivateMemoryMb, node.CpuPercent, node.Threads, kids.Count);
+        var shown = kids.Count > 0 && !isExpanded ? Subtree(node, children, totals) : own;
+        rows.Add(ToRow(node, level, shown, kids.Count > 0, culture));
+
+        if (isExpanded)
+        {
+            foreach (var child in Sort(kids, kid => Subtree(kid, children, totals)))
+            {
+                AddTree(child, level + 1, children, totals, rows, culture);
+            }
+        }
+    }
+
+    private static Totals Subtree(ProcessNode node, ILookup<int, ProcessNode> children, Dictionary<int, Totals> cache)
+    {
+        if (cache.TryGetValue(node.Pid, out var cached))
+        {
+            return cached;
+        }
+
+        var total = new Totals(node.PrivateMemoryMb, node.CpuPercent, node.Threads, 0);
+        // Guard against a cycle left by PID reuse.
+        cache[node.Pid] = total;
+        if (!ContainerProcesses.Contains(node.Name))
+        {
+            foreach (var child in children[node.Pid])
+            {
+                var sub = Subtree(child, children, cache);
+                total = new Totals(total.MemoryMb + sub.MemoryMb, total.Cpu + sub.Cpu, total.Threads + sub.Threads, total.Descendants + sub.Descendants + 1);
+            }
+        }
+
+        cache[node.Pid] = total;
+        return total;
+    }
+
+    private IEnumerable<ProcessNode> Sort(IEnumerable<ProcessNode> nodes, Func<ProcessNode, Totals> totals) => (_sortColumn, _sortDescending) switch
+    {
+        ("Name", false) => nodes.OrderBy(node => node.Name, StringComparer.CurrentCultureIgnoreCase),
+        ("Name", true) => nodes.OrderByDescending(node => node.Name, StringComparer.CurrentCultureIgnoreCase),
+        ("Pid", false) => nodes.OrderBy(node => node.Pid),
+        ("Pid", true) => nodes.OrderByDescending(node => node.Pid),
+        ("Cpu", false) => nodes.OrderBy(node => totals(node).Cpu),
+        ("Cpu", true) => nodes.OrderByDescending(node => totals(node).Cpu),
+        ("Threads", false) => nodes.OrderBy(node => totals(node).Threads),
+        ("Threads", true) => nodes.OrderByDescending(node => totals(node).Threads),
+        (_, false) => nodes.OrderBy(node => totals(node).MemoryMb),
+        _ => nodes.OrderByDescending(node => totals(node).MemoryMb),
+    };
+
+    private Row ToRow(ProcessNode node, int level, Totals shown, bool hasChildren, CultureInfo culture)
+    {
+        var isProtected = AppServices.Policy.IsProtectedProcess(node.Name);
+        var icon = IconCache.Get(node.ExecutablePath);
+        return new Row(
+            node.Pid,
+            node.Name,
+            new Thickness(level * IndentPerLevel + (hasChildren ? 0 : IndentPerLevel), 0, 0, 0),
+            _expanded.Contains(node.Pid) ? ChevronExpanded : ChevronCollapsed,
+            hasChildren ? Visibility.Visible : Visibility.Collapsed,
+            hasChildren && shown.Descendants > 0 && !_expanded.Contains(node.Pid) ? $"+{shown.Descendants}" : "",
+            string.Create(culture, $"{shown.Cpu:0.0} %"),
+            shown.Cpu >= BusyCpuPercent ? Palette.Power : Palette.Neutral,
+            DashboardPage.FormatMemory(shown.MemoryMb, culture),
+            shown.MemoryMb >= MbPerGb ? Palette.Stop : shown.MemoryMb >= MediumMemoryMb ? Palette.Power : Brushes.White,
+            shown.Threads.ToString(culture),
+            node.CommandLine ?? node.ExecutablePath ?? "",
+            icon,
+            icon is null ? Visibility.Visible : Visibility.Collapsed,
+            isProtected,
+            isProtected ? Visibility.Visible : Visibility.Collapsed,
+            node.ExecutablePath,
+            node.WorkingDirectory);
+    }
+
+    private static bool Matches(ProcessNode node, string search, CultureInfo culture) =>
+        node.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
+        || node.Pid.ToString(culture) == search
+        || node.CommandLine?.Contains(search, StringComparison.OrdinalIgnoreCase) == true;
 
     private string Arrow(string column) => column != _sortColumn ? "" : _sortDescending ? Descending : Ascending;
 
-    private static Brush MemoryColor(double megabytes) => megabytes switch
+    private void OnMenuOpening(object sender, ContextMenuEventArgs e) => _menuOpen = true;
+
+    private void OnMenuClosing(object sender, ContextMenuEventArgs e) => _menuOpen = false;
+
+    private static Row? RowOf(object sender) => (sender as FrameworkElement)?.DataContext as Row;
+
+    private async void OnEndTask(object sender, RoutedEventArgs e) => await EndAsync(RowOf(sender), wholeTree: false);
+
+    private async void OnEndTree(object sender, RoutedEventArgs e) => await EndAsync(RowOf(sender), wholeTree: true);
+
+    private async Task EndAsync(Row? row, bool wholeTree)
     {
-        >= MbPerGb => Palette.Stop,
-        >= MediumMemoryMb => Palette.Power,
-        _ => Palette.Container,
-    };
+        _menuOpen = false;
+        if (row is null)
+        {
+            return;
+        }
+
+        var problem = await ProcessActions.EndAsync(row.Pid, row.Name, wholeTree, row.IsProtected);
+        await RefreshAsync();
+        if (problem is not null)
+        {
+            Summary.Text = problem;
+        }
+    }
+
+    private void OnOpenLocation(object sender, RoutedEventArgs e) => ProcessActions.OpenLocation(RowOf(sender)?.Path);
+
+    private void OnOpenFolder(object sender, RoutedEventArgs e) => ProcessActions.OpenLocation(RowOf(sender)?.Folder);
+
+    private void OnSearchOnline(object sender, RoutedEventArgs e)
+    {
+        if (RowOf(sender) is { } row)
+        {
+            ProcessActions.SearchOnline(row.Name);
+        }
+    }
+
+    private void OnCopyName(object sender, RoutedEventArgs e) => ProcessActions.Copy(RowOf(sender)?.Name);
+
+    private void OnCopyPid(object sender, RoutedEventArgs e) =>
+        ProcessActions.Copy(RowOf(sender)?.Pid.ToString(CultureInfo.InvariantCulture));
+
+    private void OnCopyCommand(object sender, RoutedEventArgs e) => ProcessActions.Copy(RowOf(sender)?.Command);
+
+    private sealed record Totals(double MemoryMb, double Cpu, int Threads, int Descendants);
 
     private sealed record Row(
-        string Name, string CountText, double Share, string MemoryText, Brush Color, Visibility ProtectedVisibility, ImageSource? Icon)
+        int Pid, string Name, Thickness Indent, string Chevron, Visibility ChevronVisibility, string ChildText,
+        string CpuText, Brush CpuColor, string MemoryText, Brush MemoryColor, string Threads, string Command,
+        ImageSource? Icon, Visibility GlyphVisibility, bool IsProtected, Visibility ProtectedVisibility, string? Path, string? Folder)
     {
-        public Visibility GlyphVisibility => Icon is null ? Visibility.Visible : Visibility.Collapsed;
+        public bool HasPath => Path is not null;
+        public bool HasFolder => Folder is not null;
+        public bool HasCommand => Command.Length > 0;
     }
 }
