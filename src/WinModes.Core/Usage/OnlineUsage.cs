@@ -59,7 +59,7 @@ public static class OnlineUsage
         }
 
         if (oauth.TryGetProperty("expiresAt", out var expires) && expires.ValueKind == JsonValueKind.Number
-            && DateTimeOffset.FromUnixTimeMilliseconds(expires.GetInt64()) <= now)
+            && UsageNumbers.FromUnixMilliseconds(expires) is { } expiry && expiry <= now)
         {
             return null;
         }
@@ -131,29 +131,31 @@ public static class OnlineUsage
     private static LimitWindow? CodexWindow(JsonElement limit, string name)
     {
         if (!limit.TryGetProperty(name, out var window) || window.ValueKind != JsonValueKind.Object
-            || !window.TryGetProperty("used_percent", out var used) || used.ValueKind != JsonValueKind.Number)
+            || !window.TryGetProperty("used_percent", out var used) || used.ValueKind != JsonValueKind.Number
+            || UsageNumbers.Percent(used) is not { } usedPercent)
         {
             return null;
         }
 
         var minutes = window.TryGetProperty("limit_window_seconds", out var seconds) && seconds.ValueKind == JsonValueKind.Number
-            ? (int)(seconds.GetDouble() / SecondsPerMinute) : 0;
+            && seconds.TryGetDouble(out var windowSeconds) ? UsageNumbers.Minutes(windowSeconds / SecondsPerMinute) : 0;
         DateTimeOffset? resetsAt = window.TryGetProperty("reset_at", out var reset) && reset.ValueKind == JsonValueKind.Number
-            ? DateTimeOffset.FromUnixTimeSeconds((long)reset.GetDouble()) : null;
-        return new LimitWindow(used.GetDouble(), minutes, resetsAt);
+            && reset.TryGetDouble(out var unix) ? UsageNumbers.FromUnixSeconds(unix) : null;
+        return new LimitWindow(usedPercent, minutes, resetsAt);
     }
 
     private static LimitWindow? ClaudeWindow(JsonElement root, string name, int minutes)
     {
         if (!root.TryGetProperty(name, out var window) || window.ValueKind != JsonValueKind.Object
-            || !window.TryGetProperty("utilization", out var used) || used.ValueKind != JsonValueKind.Number)
+            || !window.TryGetProperty("utilization", out var used) || used.ValueKind != JsonValueKind.Number
+            || UsageNumbers.Percent(used) is not { } usedPercent)
         {
             return null;
         }
 
         DateTimeOffset? resetsAt = Text(window, "resets_at") is { } text
             && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed) ? parsed : null;
-        return new LimitWindow(used.GetDouble(), minutes, resetsAt);
+        return new LimitWindow(usedPercent, minutes, resetsAt);
     }
 
     private static string? Text(JsonElement element, string name) =>

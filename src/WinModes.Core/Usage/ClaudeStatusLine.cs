@@ -99,15 +99,15 @@ public static class ClaudeStatusLine
     private static LimitWindow? Window(JsonElement limits, string name, int minutes)
     {
         if (!limits.TryGetProperty(name, out var window) || window.ValueKind != JsonValueKind.Object
-            || !window.TryGetProperty("used_percentage", out var used) || used.ValueKind != JsonValueKind.Number)
+            || !window.TryGetProperty("used_percentage", out var used) || used.ValueKind != JsonValueKind.Number
+            || UsageNumbers.Percent(used) is not { } usedPercent)
         {
             return null;
         }
 
         DateTimeOffset? resetsAt = window.TryGetProperty("resets_at", out var reset) && reset.ValueKind == JsonValueKind.Number
-            ? DateTimeOffset.FromUnixTimeSeconds((long)reset.GetDouble())
-            : null;
-        return new LimitWindow(used.GetDouble(), minutes, resetsAt);
+            && reset.TryGetDouble(out var unix) ? UsageNumbers.FromUnixSeconds(unix) : null;
+        return new LimitWindow(usedPercent, minutes, resetsAt);
     }
 }
 

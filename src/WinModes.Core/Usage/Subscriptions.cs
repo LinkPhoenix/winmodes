@@ -226,18 +226,20 @@ public static partial class Subscriptions
     private static LimitWindow? Window(JsonElement limits, string name, DateTimeOffset? seenAt)
     {
         if (!limits.TryGetProperty(name, out var window) || window.ValueKind != JsonValueKind.Object
-            || !window.TryGetProperty("used_percent", out var used) || used.ValueKind != JsonValueKind.Number)
+            || !window.TryGetProperty("used_percent", out var used) || used.ValueKind != JsonValueKind.Number
+            || UsageNumbers.Percent(used) is not { } usedPercent)
         {
             return null;
         }
 
-        double? Number(string property) => window.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
+        double? Number(string property) => window.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.Number
+            && value.TryGetDouble(out var number) && double.IsFinite(number) ? number : null;
 
         // Newer logs give the reset as a Unix time, older ones as seconds counted from the record.
-        DateTimeOffset? resetsAt = Number("resets_at") is { } unix ? DateTimeOffset.FromUnixTimeSeconds((long)unix)
-            : Number("resets_in_seconds") is { } seconds && seenAt is { } seen ? seen.AddSeconds(seconds)
+        DateTimeOffset? resetsAt = Number("resets_at") is { } unix ? UsageNumbers.FromUnixSeconds(unix)
+            : Number("resets_in_seconds") is { } seconds && seenAt is { } seen ? UsageNumbers.AddSeconds(seen, seconds)
             : null;
-        return new LimitWindow(used.GetDouble(), (int)(Number("window_minutes") ?? 0), resetsAt);
+        return new LimitWindow(usedPercent, UsageNumbers.Minutes(Number("window_minutes") ?? 0), resetsAt);
     }
 
     /// <summary>The last limits written in a session log. Only the end of the file is read: logs grow to many megabytes.</summary>
