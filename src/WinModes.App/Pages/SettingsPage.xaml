@@ -145,6 +145,43 @@
             </StackPanel>
         </Border>
 
+        <TextBlock Text="SHORTCUTS AND ALERTS" Style="{StaticResource SectionTitleStyle}" />
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <StackPanel>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Global keyboard shortcuts" FontWeight="SemiBold" />
+                            <TextBlock Text="Ctrl+Alt+1, 2, 3 activate the modes in the order of their cards; Ctrl+Alt+0 deactivates. They work from any app."
+                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ui:ToggleSwitch x:Name="EnableHotkeys" Grid.Column="1" VerticalAlignment="Center"
+                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Global keyboard shortcuts" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Alert when AI tools use too much memory" FontWeight="SemiBold" />
+                            <TextBlock Text="Shows a notification when all AI tools together reach the limit."
+                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ComboBox x:Name="AiAlert" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                                  DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
+                                  AutomationProperties.Name="AI tools memory alert limit" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Border>
+
         <TextBlock Text="DATA" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <Border Style="{StaticResource RowStyle}" BorderThickness="0">

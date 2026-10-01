@@ -10,6 +10,8 @@ namespace WinModes.App.Pages;
 /// <summary>Preferences: startup, window behaviour and opt-in automation. Saved on every change.</summary>
 public partial class SettingsPage : Page
 {
+    private static readonly int[] AlertLimitsGb = [2, 4, 6, 8, 12, 16, 24];
+
     private readonly bool _loaded;
 
     public SettingsPage()
@@ -23,6 +25,12 @@ public partial class SettingsPage : Page
         ConfirmBeforeActivate.IsChecked = settings.ConfirmBeforeActivate;
         ShowAiMemoryInTray.IsChecked = settings.ShowAiMemoryInTray;
         ShowDesktopWidget.IsChecked = settings.ShowDesktopWidget;
+        EnableHotkeys.IsChecked = settings.EnableHotkeys;
+
+        var limits = new List<Limit> { new(0, "Off") };
+        limits.AddRange(AlertLimitsGb.Select(gb => new Limit(gb, $"{gb} GB")));
+        AiAlert.ItemsSource = limits;
+        AiAlert.SelectedItem = limits.FirstOrDefault(limit => limit.Gb == settings.AiMemoryAlertGb) ?? limits[0];
         JournalPath.Text = AppPaths.JournalDirectory;
 
         var choices = new List<Choice> { new(null, "None") };
@@ -54,6 +62,8 @@ public partial class SettingsPage : Page
             ConfirmBeforeActivate = ConfirmBeforeActivate.IsChecked == true,
             ShowAiMemoryInTray = ShowAiMemoryInTray.IsChecked == true,
             ShowDesktopWidget = ShowDesktopWidget.IsChecked == true,
+            EnableHotkeys = EnableHotkeys.IsChecked == true,
+            AiMemoryAlertGb = (AiAlert.SelectedItem as Limit)?.Gb ?? 0,
             AutoActivateMode = (AutoMode.SelectedItem as Choice)?.Mode,
         }).Save();
         (Application.Current as App)?.ApplyDisplaySettings();
@@ -74,4 +84,6 @@ public partial class SettingsPage : Page
     }
 
     private sealed record Choice(string? Mode, string Label);
+
+    private sealed record Limit(int Gb, string Label);
 }

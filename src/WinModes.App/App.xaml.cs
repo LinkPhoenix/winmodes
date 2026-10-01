@@ -19,6 +19,8 @@ public partial class App : Application, IDisposable
     private Services.TrayMeter? _trayMeter;
     private WidgetWindow? _widget;
     private bool _listening;
+    private Services.HotkeyService? _hotkeys;
+    private bool _alertRaised;
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
@@ -107,8 +109,10 @@ public partial class App : Application, IDisposable
             _trayMeter?.Reset();
         }
 
-        // Sample in the background only while one of the two features needs it.
-        var needed = settings.ShowAiMemoryInTray || settings.ShowDesktopWidget;
+        ApplyHotkeys(settings.EnableHotkeys);
+
+        // Sample in the background only while a feature needs it.
+        var needed = settings.ShowAiMemoryInTray || settings.ShowDesktopWidget || settings.AiMemoryAlertGb > 0;
         if (needed && !_listening)
         {
             _liveStats.Updated += OnStats;
@@ -121,14 +125,73 @@ public partial class App : Application, IDisposable
         }
     }
 
+    private void ApplyHotkeys(bool enabled)
+    {
+        const uint KeyZero = 0x30;
+
+        _hotkeys?.Clear();
+        if (!enabled)
+        {
+            return;
+        }
+
+        _hotkeys ??= new Services.HotkeyService();
+        var modes = ModeCatalog.Load();
+        // Ctrl+Alt+1..9 follow the order of the mode cards.
+        for (var i = 0; i < Math.Min(modes.Count, 9); i++)
+        {
+            var profile = modes[i].Profile;
+            _hotkeys.Register(KeyZero + (uint)(i + 1), async () =>
+            {
+                if (!profile.Mode.Equals(Services.ModeSwitcher.ActiveMode, StringComparison.OrdinalIgnoreCase))
+                {
+                    await SwitchFromTrayAsync(profile.Label, () => AppServices.Switcher.ActivateAsync(profile));
+                }
+            });
+        }
+
+        _hotkeys.Register(KeyZero, async () =>
+        {
+            if (Services.ModeSwitcher.ActiveMode is not null)
+            {
+                await SwitchFromTrayAsync("Deactivate", AppServices.Switcher.UndoAsync);
+            }
+        });
+    }
+
     private void OnStats(object? sender, Services.StatsReading reading)
     {
-        if (Services.AppSettings.Load().ShowAiMemoryInTray)
+        const double MbPerGb = 1024;
+        // Re-arm the alert only after usage falls clearly below the limit, so it does not repeat on every sample.
+        const double RearmRatio = 0.9;
+
+        var settings = Services.AppSettings.Load();
+        if (settings.ShowAiMemoryInTray)
         {
             _trayMeter?.Show(reading);
         }
 
         _widget?.Show(reading);
+
+        if (settings.AiMemoryAlertGb <= 0)
+        {
+            return;
+        }
+
+        var usedGb = reading.AiMemoryMb / MbPerGb;
+        if (usedGb >= settings.AiMemoryAlertGb && !_alertRaised)
+        {
+            _alertRaised = true;
+            var top = reading.AiTools.Count > 0 ? $" Largest: {reading.AiTools[0].Name}." : "";
+            _trayIcon?.ShowBalloonTip(6000, "WinModes - AI tools memory",
+                string.Create(System.Globalization.CultureInfo.CurrentCulture,
+                    $"AI tools use {usedGb:0.0} GB, above your {settings.AiMemoryAlertGb} GB limit.{top}"),
+                Forms.ToolTipIcon.Warning);
+        }
+        else if (usedGb < settings.AiMemoryAlertGb * RearmRatio)
+        {
+            _alertRaised = false;
+        }
     }
 
     private Forms.NotifyIcon CreateTrayIcon()
@@ -228,6 +291,7 @@ public partial class App : Application, IDisposable
 
     public void Dispose()
     {
+        _hotkeys?.Dispose();
         _trayMeter?.Dispose();
         _trayIcon?.Dispose();
         _singleInstance?.Dispose();

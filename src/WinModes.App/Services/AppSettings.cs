@@ -29,6 +29,12 @@ internal sealed record AppSettings
     /// <summary>Show the small always-on-top desktop widget.</summary>
     public bool ShowDesktopWidget { get; init; }
 
+    /// <summary>Ctrl+Alt+1, 2, 3 activate the modes in order; Ctrl+Alt+0 deactivates.</summary>
+    public bool EnableHotkeys { get; init; }
+
+    /// <summary>Notify when AI tools use at least this much memory, in GB; 0 turns the alert off.</summary>
+    public int AiMemoryAlertGb { get; init; }
+
     /// <summary>Last position of the desktop widget; null until the user moves it.</summary>
     public double? WidgetLeft { get; init; }
 
