@@ -2,9 +2,21 @@
 
 All notable changes to WinModes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/).
 
-To publish a release: add a section for the new version below, commit, then push a tag such as `v0.2.0`. The release workflow builds, tests, packages and publishes it with this section as the release notes.
+To publish a release, list the changes under **Unreleased**, then run `pwsh -NoProfile -File tools/release.ps1 -Bump minor` (or `-Version X.Y.Z`). The script runs the tests, moves **Unreleased** under the new version, commits, tags and pushes; the release workflow then builds and publishes the package with that section as the release notes.
 
 ## [Unreleased]
+
+### Added
+
+- Quick mode menu on the tray icon, and global shortcuts (Ctrl+Alt+1, 2, 3 to activate, Ctrl+Alt+0 to deactivate).
+- Alert when AI tools use more memory than a limit you choose.
+- Idle AI sessions are flagged, with a button to end them; MCP servers and their memory are shown per session.
+- Mode editor (services to stop, apps to close, power plan, WSL), and import, export, duplicate and delete for modes.
+- Memory limit for WSL and Docker Desktop in the settings.
+- Memory freed is measured and reported after a mode is activated.
+- Per-core load and network speed on the dashboard.
+- The desktop widget remembers its position.
+- `tools/release.ps1` to cut a release in one command.
 
 ## [0.2.0] - 2026-10-01
 

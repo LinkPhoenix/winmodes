@@ -90,6 +90,16 @@ The mode profiles are generated from a knowledge base of services and apps rated
 
 The selection rules are described in [`profiles/README.md`](profiles/README.md), and the knowledge base format in [`data/SCHEMA.md`](data/SCHEMA.md). Only entries confirmed by a fetched source can be stopped by a mode.
 
+## Releasing
+
+List the changes under **Unreleased** in `CHANGELOG.md`, then:
+
+```bash
+pwsh -NoProfile -File tools/release.ps1 -Bump minor
+```
+
+The script runs the tests, updates the version and the changelog, commits, tags and pushes. The release workflow then builds the self-contained package and publishes the GitHub release. Add `-DryRun` to preview without changing anything.
+
 ## Project layout
 
 | Path | Content |
