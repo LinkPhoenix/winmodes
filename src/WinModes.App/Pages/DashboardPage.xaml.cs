@@ -15,6 +15,7 @@ namespace WinModes.App.Pages;
 public partial class DashboardPage : Page
 {
     private const int TopProcessCount = 8;
+    private const int MaxAiToolColumns = 3;
     private const double MbPerGb = 1024;
     // CPU and memory are one kernel call each, so they are sampled every second for the charts.
     private static readonly TimeSpan FastInterval = TimeSpan.FromSeconds(1);
@@ -101,6 +102,7 @@ public partial class DashboardPage : Page
             Smooth.To(MemoryGauge, RingGauge.ValueProperty, memory.UsedPercent);
             MemoryValue.Text = string.Create(culture, $"{memory.UsedPercent:0} %");
             MemoryDetail.Text = string.Create(culture, $"{memory.UsedGb:0.0} / {memory.TotalGb:0.0} GB");
+            MemoryFree.Text = string.Create(culture, $"{memory.AvailableGb:0.0} GB available");
             Smooth.To(MemoryBar, SegmentBar.ValueProperty, memory.UsedPercent);
             MemoryChart.Push(memory.UsedPercent);
             MemoryChartValue.Text = string.Create(culture, $"{memory.UsedPercent:0.0} %");
@@ -220,6 +222,8 @@ public partial class DashboardPage : Page
     private void ShowAiTools(List<AiToolRow> rows, SystemSnapshot snapshot)
     {
         var culture = CultureInfo.CurrentCulture;
+        // The tiles share the row; the column count is read by the panel through Tag.
+        AiTools.Tag = Math.Clamp(rows.Count, 1, MaxAiToolColumns);
         AiTools.ItemsSource = rows;
         AiEmpty.Visibility = rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 

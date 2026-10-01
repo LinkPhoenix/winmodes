@@ -37,13 +37,14 @@
                            Style="{StaticResource SecondaryTextStyle}" />
                 <ItemsControl x:Name="AiTools" Margin="0,12,-10,-10">
                     <ItemsControl.ItemsPanel>
+                        <!-- Tiles share the whole width; the page sets the column count from the number of tools. -->
                         <ItemsPanelTemplate>
-                            <WrapPanel />
+                            <UniformGrid Columns="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Button Width="320" Margin="0,0,10,10" Padding="12,10" HorizontalContentAlignment="Stretch"
+                            <Button Margin="0,0,10,10" Padding="12,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
                                     Click="OnAiToolClick" AutomationProperties.Name="{Binding AccessibleName}"
                                     ToolTip="Open the AI tools page">
                                 <Grid>
@@ -79,13 +80,16 @@
             </StackPanel>
         </Border>
 
-        <!-- Vitals -->
+        <!-- Vitals: gauge on the left, figures on the right, so the charts below stay in view. -->
         <UniformGrid Rows="1" Margin="0,0,-12,12">
-            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
-                <StackPanel>
-                    <TextBlock Text="CPU" Style="{StaticResource CardCaptionStyle}" />
-                    <Grid Width="150" Height="150" Margin="0,12,0,4">
-                        <controls:RingGauge x:Name="CpuGauge" Thickness="9" Track="{DynamicResource ControlFillColorDefaultBrush}">
+            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0" Padding="18,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Width="100" Height="100">
+                        <controls:RingGauge x:Name="CpuGauge" Thickness="8" Track="{DynamicResource ControlFillColorDefaultBrush}">
                             <controls:RingGauge.Stroke>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                     <GradientStop Color="#7C5CFC" Offset="0" />
@@ -93,20 +97,24 @@
                                 </LinearGradientBrush>
                             </controls:RingGauge.Stroke>
                         </controls:RingGauge>
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock x:Name="CpuValue" Text="…" FontSize="30" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                            <TextBlock Text="in use" FontSize="12" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center" />
-                        </StackPanel>
+                        <TextBlock x:Name="CpuValue" Text="…" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Grid>
-                    <TextBlock x:Name="CpuDetail" FontSize="12" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center" />
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="18,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="CPU" Style="{StaticResource CardCaptionStyle}" />
+                        <TextBlock Text="in use" FontWeight="SemiBold" Margin="0,6,0,0" />
+                        <TextBlock x:Name="CpuDetail" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
             </Border>
 
-            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
-                <StackPanel>
-                    <TextBlock Text="MEMORY" Style="{StaticResource CardCaptionStyle}" />
-                    <Grid Width="150" Height="150" Margin="0,12,0,4">
-                        <controls:RingGauge x:Name="MemoryGauge" Thickness="9" Track="{DynamicResource ControlFillColorDefaultBrush}">
+            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0" Padding="18,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Width="100" Height="100">
+                        <controls:RingGauge x:Name="MemoryGauge" Thickness="8" Track="{DynamicResource ControlFillColorDefaultBrush}">
                             <controls:RingGauge.Stroke>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                     <GradientStop Color="#F97316" Offset="0" />
@@ -114,44 +122,38 @@
                                 </LinearGradientBrush>
                             </controls:RingGauge.Stroke>
                         </controls:RingGauge>
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock x:Name="MemoryValue" Text="…" FontSize="30" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                            <TextBlock Text="in use" FontSize="12" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center" />
-                        </StackPanel>
+                        <TextBlock x:Name="MemoryValue" Text="…" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Grid>
-                    <TextBlock x:Name="MemoryDetail" FontSize="12" Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center" />
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="18,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="MEMORY" Style="{StaticResource CardCaptionStyle}" />
+                        <TextBlock x:Name="MemoryDetail" FontWeight="SemiBold" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock x:Name="MemoryFree" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                    </StackPanel>
+                </Grid>
             </Border>
 
-            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
-                <StackPanel>
-                    <TextBlock Text="BACKGROUND" Style="{StaticResource CardCaptionStyle}" />
-                    <StackPanel Orientation="Horizontal" Margin="0,22,0,0">
-                        <Border Style="{StaticResource IconBadgeStyle}" Background="#33C084FC">
-                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center" Foreground="#C084FC" Text="&#xE71D;" />
+            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0" Padding="18,16">
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Style="{StaticResource IconBadgeStyle}" Width="28" Height="28" Background="#33C084FC">
+                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="14" HorizontalAlignment="Center" Foreground="#C084FC" Text="&#xE71D;" />
                         </Border>
-                        <StackPanel Margin="14,0,0,0">
-                            <TextBlock x:Name="ProcessValue" Text="…" FontSize="26" FontWeight="SemiBold" />
-                            <TextBlock Text="processes" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
+                        <TextBlock x:Name="ProcessValue" Text="…" FontSize="18" FontWeight="SemiBold" Margin="12,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Text="processes" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,22,0,0">
-                        <Border Style="{StaticResource IconBadgeStyle}" Background="#3334D399">
-                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center" Foreground="#34D399" Text="&#xE912;" />
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Border Style="{StaticResource IconBadgeStyle}" Width="28" Height="28" Background="#3334D399">
+                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="14" HorizontalAlignment="Center" Foreground="#34D399" Text="&#xE912;" />
                         </Border>
-                        <StackPanel Margin="14,0,0,0">
-                            <TextBlock x:Name="ServiceValue" Text="…" FontSize="26" FontWeight="SemiBold" />
-                            <TextBlock Text="services running" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
+                        <TextBlock x:Name="ServiceValue" Text="…" FontSize="18" FontWeight="SemiBold" Margin="12,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Text="services running" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,22,0,0">
-                        <Border Style="{StaticResource IconBadgeStyle}" Background="#3360A5FA">
-                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center" Foreground="#60A5FA" Text="&#xE774;" />
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Border Style="{StaticResource IconBadgeStyle}" Width="28" Height="28" Background="#3360A5FA">
+                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="14" HorizontalAlignment="Center" Foreground="#60A5FA" Text="&#xE774;" />
                         </Border>
-                        <StackPanel Margin="14,0,0,0">
-                            <TextBlock x:Name="NetworkValue" Text="…" FontSize="16" FontWeight="SemiBold" />
-                            <TextBlock Text="network, down and up" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
+                        <TextBlock x:Name="NetworkValue" Text="…" FontSize="14" FontWeight="SemiBold" Margin="12,0,0,0" VerticalAlignment="Center"
+                                   ToolTip="Network, down and up" />
                     </StackPanel>
                 </StackPanel>
             </Border>
