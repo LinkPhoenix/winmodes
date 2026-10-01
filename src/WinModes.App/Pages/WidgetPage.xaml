@@ -4,6 +4,7 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:controls="clr-namespace:WinModes.App.Controls"
       Title="Widget"
+      ScrollViewer.CanContentScroll="False"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Page.Resources>
         <Style x:Key="RowStyle" TargetType="Border">
@@ -20,13 +21,15 @@
         </Style>
     </Page.Resources>
 
-    <Grid Margin="36,24,36,36" MaxWidth="1100">
+    <!-- The page scrolls its options itself (the shell's scrolling is off) so the preview stays in view. -->
+    <Grid Margin="36,24,0,0" MaxWidth="1136">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,14,0">
+        <StackPanel Margin="0,0,0,36">
         <TextBlock Text="Widget" FontSize="28" FontWeight="SemiBold" />
         <TextBlock Text="A small panel on your desktop with live figures. Changes apply at once."
                    Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
@@ -141,7 +144,7 @@
             <StackPanel>
                 <Border Style="{StaticResource RowStyle}">
                     <Grid>
-                        <StackPanel>
+                        <StackPanel Margin="0,0,230,0">
                             <TextBlock Text="Move to a corner" FontWeight="SemiBold" />
                             <TextBlock Text="Otherwise drag the widget where you want; its position is remembered."
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
@@ -178,8 +181,9 @@
             </StackPanel>
         </Border>
         </StackPanel>
+        </ScrollViewer>
 
-        <StackPanel Grid.Column="1" Margin="28,56,0,0" VerticalAlignment="Top">
+        <StackPanel Grid.Column="1" Margin="14,56,36,0" VerticalAlignment="Top">
             <TextBlock Text="PREVIEW" Style="{StaticResource SectionTitleStyle}" />
             <Border Width="330" MinHeight="250" CornerRadius="10" Padding="20"
                     BorderBrush="{StaticResource AppCardStrokeBrush}" BorderThickness="1">

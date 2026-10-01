@@ -6,6 +6,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 - The page area starts right under the title bar, level with the menu.
+- The widget preview stays in view while the options scroll.
 
 ## [0.3.0] - 2026-10-01
 
