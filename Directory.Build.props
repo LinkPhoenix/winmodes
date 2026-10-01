@@ -6,6 +6,11 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <!-- Exact versions of every package, direct and transitive, are committed in packages.lock.json. CI restores in locked mode,
+         so a build cannot silently pick a newer package. The runtime identifier is declared so the lock
+         file also covers the self-contained publish of tools/package.ps1. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 </Project>
 

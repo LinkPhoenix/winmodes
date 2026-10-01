@@ -25,7 +25,8 @@ jobs:
 
       - name: Build and test
         run: |
-          dotnet build --nologo -c Release
+          dotnet restore --locked-mode
+          dotnet build --nologo -c Release --no-restore
           dotnet test --nologo -c Release --no-build
 
       - name: Install Inno Setup
