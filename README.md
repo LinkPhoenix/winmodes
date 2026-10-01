@@ -15,13 +15,19 @@ WinModes switches your PC between modes (Code, Work, Game) to free memory and cu
 - **Modes**: each mode stops the services it does not need, closes or launches apps, sets the power plan and starts or stops WSL and Docker Desktop.
 - **Preview before anything changes**: every mode shows exactly what it would change on your PC, compared with its current state.
 - **Undo**: the state of each service is recorded before it is touched, and "Deactivate" restores it.
-- **Dashboard**: CPU and memory gauges, 60-second history graphs, what each AI tool uses at a glance, top memory consumers.
+- **Dashboard**: CPU and memory gauges, 60-second history graphs for CPU, memory, GPU and disk, what each AI tool uses at a glance, top memory consumers.
 - **Processes page**: process tree with child processes, PID, CPU, memory, threads and command line; search, sort, and a right-click menu (end task, end process tree, open file location, copy).
 - **AI tools page**: every running session of Claude Code, Claude desktop, Codex, Cursor, VS Code and others, with the project folder it works in and all the processes it started.
 - **Services page**: search, filters, real app icons, and a lock on everything that is protected.
-- **Automation** (optional, off by default): rules such as "when `cs2.exe` runs, activate Game mode", undone when the program closes.
-- **Tray meter and desktop widget** (both optional): the notification-area icon can show the memory used by AI tools, and a small panel on the desktop shows CPU, memory, network and AI tools. The Widget page sets its content, size, opacity and position, with a live preview.
+- **Usage page** (optional, off by default): how much memory each AI tool used per project over the last day, week or month. Stored on your PC only.
+- **MCP servers in double**: the AI tools page shows the MCP servers that several sessions each started, and the memory they hold together.
+- **Idle sessions**: flagged after 30 minutes without CPU use; end them by hand, or let WinModes do it after a delay you choose (off by default).
+- **Automation** (optional, off by default): rules such as "when `cs2.exe` runs, activate Game mode", "on battery, activate Work mode" or "from 09:00 to 18:00, activate Code mode", undone when the rule no longer applies.
+- **Tray meter and desktop widget** (both optional): the notification-area icon can show the memory used by AI tools, and a small panel on the desktop shows CPU, memory, network and AI tools. The Widget page sets its content, size, opacity and position, with a live preview; the widget can be one compact line, show small graphs, and hide during full-screen apps.
 - **Privacy mode**: hides project names, folders, command-line details and your account name, for screen sharing and screenshots.
+- **Updates**: WinModes checks the GitHub releases at startup (can be turned off); an installed copy can download the new installer, check it against the release checksum and start it.
+- **Report**: export a snapshot of the PC (program names and totals only) to ask for help.
+- **Dark and light themes**.
 - **Welcome guide** on first run, and a **Settings** page: start with Windows, start minimized, keep running in the notification area, shortcuts, memory alert, WSL memory limit.
 
 | Modes | AI tools |
@@ -64,7 +70,7 @@ Known limitations:
 - **Portable and development builds are not hardened.** There, the elevated helper reads the protected list and the profiles from the app folder, which any program running as you could modify. The installer puts the protected list under Program Files, where changing it needs administrator rights; only the mode profiles stay editable, and the protected list is enforced whatever a profile says.
 - Automatic switching still shows the Windows permission prompt at each switch.
 - The profiles in `profiles/` were generated for one machine (an HP OMEN laptop). Generate your own, see below.
-- The interface is in English and dark only.
+- The interface is in English only.
 
 ## Download
 
