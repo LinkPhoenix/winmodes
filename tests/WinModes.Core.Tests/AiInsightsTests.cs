@@ -17,6 +17,9 @@ public sealed class AiInsightsTests
     [InlineData(@"npx -y context7-mcp@1.2.3 --stdio", "context7-mcp")]
     [InlineData(@"C:\tools\my-mcp-server.exe --port 1", "my-mcp-server")]
     [InlineData(@"cmd /c npx --mcp-debug @upstash/context7-mcp@latest^", "@upstash/context7-mcp")]
+    [InlineData(@"npx -y prisma@latest mcp", "prisma mcp")]
+    [InlineData(@"docker.exe mcp gateway run --profile codex", "docker mcp")]
+    [InlineData(@"node C:\Users\someone\AppData\npm-cache\node_modules\prisma\build\index.js mcp", "prisma mcp")]
     public void NameOf_KeepsThePackageAndDropsFolders(string commandLine, string expected)
     {
         var name = McpServers.NameOf(Node(1, "node", commandLine));
@@ -38,6 +41,57 @@ public sealed class AiInsightsTests
         var duplicate = Assert.Single(McpServers.FindDuplicates(sessions));
 
         Assert.Equal(new McpDuplicate("context7-mcp", 3, 3, 200), duplicate);
+    }
+
+    [Fact]
+    public void CodexConfig_NamesItsServersAndCountsAWrappedServerOnce()
+    {
+        var definitions = CodexMcpConfig.Parse(
+        [
+            "[mcp_servers]",
+            "[mcp_servers.context7]",
+            "command = \"npx\"",
+            "args = [\"-y\", \"@upstash/context7-mcp@latest\"]",
+            "[mcp_servers.context7.env]",
+            "command = \"not-a-command\"",
+            "[mcp_servers.remote]",
+            "url = \"https://example.test/mcp\"",
+            "[mcp_servers.node_repl]",
+            "args = []",
+            @"command = 'C:\Users\someone\AppData\Local\OpenAI\Codex\bin\node_repl.exe'",
+            "[projects.'d:\\somewhere']",
+            "command = \"ignored\"",
+        ]);
+        Assert.Equal(["context7", "node_repl"], definitions.Select(definition => definition.Name));
+
+        ProcessNode Child(int pid, int parent, string name, string commandLine) => new(pid, parent, name, 1, 100, 0, null, commandLine, null, null);
+        var session = Session(1,
+            Child(10, 1, "cmd", "cmd /c npx -y @upstash/context7-mcp@latest"),
+            Child(11, 10, "node", @"node C:\x\npx-cli.js -y @upstash/context7-mcp@latest"),
+            Child(12, 11, "node", @"node C:\x\node_modules\@upstash\context7-mcp\dist\index.js"),
+            Child(20, 1, "node_repl", @"C:\Users\someone\AppData\Local\OpenAI\Codex\bin\node_repl.exe"),
+            Child(30, 1, "conhost", "conhost.exe 0x4"),
+            // The tool's own processes mention MCP in switches and settings: they are not servers.
+            Child(40, 1, "claude", "claude.exe --type=renderer --enable-blink-features=WebMCP"),
+            Child(41, 1, "claude", "claude.exe stream-json app-server -c plugins.x.mcp_servers.y.enabled=true"),
+            Child(42, 1, "helper", "helper.exe --enable-features=DevToolsWebMCPSupport"));
+
+        McpServers.Configured = definitions;
+        try
+        {
+            var servers = McpServers.Servers(session);
+
+            Assert.Equal(["context7", "node_repl"], servers.Select(server => server.Name));
+            Assert.Equal(3, servers[0].Processes);
+            Assert.Equal(300, servers[0].MemoryMb);
+        }
+        finally
+        {
+            McpServers.Configured = [];
+        }
+
+        // Without the configuration the wrapped server is still one server, named after its package.
+        Assert.Equal("@upstash/context7-mcp", Assert.Single(McpServers.Servers(session)).Name);
     }
 
     [Fact]

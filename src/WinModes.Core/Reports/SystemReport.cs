@@ -61,7 +61,7 @@ public static class SystemReport
             foreach (var tool in data.AiSessions.GroupBy(session => session.Tool.Name).OrderByDescending(group => group.Sum(session => session.TotalMemoryMb)))
             {
                 var processes = tool.Sum(session => session.Descendants.Count + 1);
-                var servers = tool.Sum(session => session.Descendants.Count(McpServers.IsServer));
+                var servers = tool.Sum(session => McpServers.Servers(session).Count);
                 text.AppendLine(culture, $"| {tool.Key} | {tool.Count()} | {processes} | {servers} | {Gb(tool.Sum(session => session.TotalMemoryMb))} |");
             }
 

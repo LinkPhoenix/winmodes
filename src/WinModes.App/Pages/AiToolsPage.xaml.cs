@@ -52,6 +52,7 @@ public partial class AiToolsPage : Page
         {
             var sessions = await Task.Run(() =>
             {
+                McpConfig.Refresh();
                 var found = AiToolCatalog.FindSessions(ProcessActions.Sample());
                 AiActivityTracker.Observe(found);
                 // Extract icons off the UI thread; the cache keeps later refreshes cheap.
@@ -138,18 +139,16 @@ public partial class AiToolsPage : Page
             DashboardPage.FormatMemory(session.TotalMemoryMb, culture),
             _expanded.Contains(session.Root.Pid),
             idle >= IdleDisplayThreshold ? $"idle {(int)idle.TotalMinutes} min" : "",
-            [.. nodes.Select(node => ToProcess(node, culture))]);
+            [.. nodes.Select(node => ToProcess(node, culture, node != session.Root && McpServers.IsServer(session, node)))]);
     }
-
-    private static bool IsMcpServer(ProcessNode node) => McpServers.IsServer(node);
 
     private static string DescribeProcesses(AiSession session, CultureInfo culture)
     {
         var text = Pluralize(session.Descendants.Count + 1, "process", "processes");
-        var servers = session.Descendants.Where(IsMcpServer).ToList();
+        var servers = McpServers.Servers(session);
         return servers.Count == 0
             ? text
-            : $"{text}, {servers.Count} MCP ({DashboardPage.FormatMemory(servers.Sum(node => node.PrivateMemoryMb), culture)})";
+            : $"{text}, {servers.Count} MCP ({DashboardPage.FormatMemory(servers.Sum(server => server.MemoryMb), culture)})";
     }
 
     private static bool HasProjectFolder(AiSession session) => AiSessions.HasProjectFolder(session);
@@ -185,7 +184,7 @@ public partial class AiToolsPage : Page
         }
     }
 
-    private static ProcessRow ToProcess(ProcessNode node, CultureInfo culture)
+    private static ProcessRow ToProcess(ProcessNode node, CultureInfo culture, bool isMcpServer)
     {
         var icon = IconCache.Get(node.ExecutablePath);
         return new ProcessRow(
@@ -196,7 +195,7 @@ public partial class AiToolsPage : Page
             Privacy.CommandLine(node.CommandLine ?? node.ExecutablePath, node.Name),
             icon,
             icon is null ? Visibility.Visible : Visibility.Collapsed,
-            IsMcpServer(node) ? Visibility.Visible : Visibility.Collapsed);
+            isMcpServer ? Visibility.Visible : Visibility.Collapsed);
     }
 
     private static string Pluralize(int count, string singular, string? plural = null) =>
