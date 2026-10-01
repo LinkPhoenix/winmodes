@@ -13,7 +13,7 @@ WinModes switches your PC between modes (Code, Work, Game) to free memory and cu
 - **Modes**: each mode stops the services it does not need, closes or launches apps, sets the power plan and starts or stops WSL and Docker Desktop.
 - **Preview before anything changes**: every mode shows exactly what it would change on your PC, compared with its current state.
 - **Undo**: the state of each service is recorded before it is touched, and "Deactivate" restores it.
-- **Dashboard**: CPU and memory gauges, 60-second history graphs, top memory consumers.
+- **Dashboard**: CPU and memory gauges, 60-second history graphs, what each AI tool uses at a glance, top memory consumers.
 - **Processes page**: process tree with child processes, PID, CPU, memory, threads and command line; search, sort, and a right-click menu (end task, end process tree, open file location, copy).
 - **AI tools page**: every running session of Claude Code, Claude desktop, Codex, Cursor, VS Code and others, with the project folder it works in and all the processes it started.
 - **Services page**: search, filters, real app icons, and a lock on everything that is protected.

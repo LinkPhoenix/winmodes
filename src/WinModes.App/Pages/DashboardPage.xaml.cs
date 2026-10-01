@@ -113,8 +113,10 @@ public partial class DashboardPage : Page
     {
         try
         {
-            var (snapshot, rows) = await Task.Run(() =>
+            var (snapshot, rows, aiRows) = await Task.Run(() =>
             {
+                var sessions = AiToolCatalog.FindSessions(ProcessActions.Sample());
+                var aiList = BuildAiRows(sessions);
                 var groups = SystemMonitor.GetProcessGroups().Take(TopProcessCount).ToList();
                 var largest = groups.Count > 0 ? Math.Max(groups[0].PrivateMemoryMb, 1) : 1;
                 var culture = CultureInfo.CurrentCulture;
@@ -125,18 +127,67 @@ public partial class DashboardPage : Page
                     FormatMemory(group.PrivateMemoryMb, culture),
                     BarColors[index % BarColors.Length],
                     IconCache.Get(group.ExecutablePath))).ToList();
-                return (SystemSnapshot.Capture(), list);
+                return (SystemSnapshot.Capture(), list, aiList);
             });
 
             ProcessValue.Text = snapshot.ProcessCount.ToString(CultureInfo.CurrentCulture);
             ServiceValue.Text = snapshot.RunningServiceCount.ToString(CultureInfo.CurrentCulture);
             TopProcesses.ItemsSource = rows;
+            ShowAiTools(aiRows, snapshot);
         }
         catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
         {
             ProcessValue.Text = "?";
         }
     }
+
+    private static List<AiToolRow> BuildAiRows(IReadOnlyList<AiSession> sessions)
+    {
+        var culture = CultureInfo.CurrentCulture;
+        var tools = sessions.GroupBy(session => session.Tool)
+            .Select(group => (
+                Tool: group.Key,
+                Sessions: group.Count(),
+                Processes: group.Sum(session => session.Descendants.Count + 1),
+                MemoryMb: group.Sum(session => session.TotalMemoryMb),
+                Cpu: group.Sum(session => session.TotalCpuPercent),
+                Path: group.First().Root.ExecutablePath))
+            .OrderByDescending(tool => tool.MemoryMb)
+            .ToList();
+        var largest = tools.Count > 0 ? Math.Max(tools[0].MemoryMb, 1) : 1;
+
+        return [.. tools.Select((tool, index) =>
+        {
+            var detail = (tool.Sessions == 1 ? "1 session" : $"{tool.Sessions} sessions") + $", {tool.Processes} processes";
+            var memory = FormatMemory(tool.MemoryMb, culture);
+            return new AiToolRow(
+                tool.Tool.Name,
+                detail,
+                memory,
+                string.Create(culture, $"{tool.Cpu:0.0} % CPU"),
+                tool.MemoryMb / largest * 100,
+                tool.MemoryMb,
+                BarColors[index % BarColors.Length],
+                IconCache.Get(tool.Path),
+                $"{tool.Tool.Name}: {detail}, {memory}");
+        })];
+    }
+
+    private void ShowAiTools(List<AiToolRow> rows, SystemSnapshot snapshot)
+    {
+        var culture = CultureInfo.CurrentCulture;
+        AiTools.ItemsSource = rows;
+        AiEmpty.Visibility = rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        var totalMb = rows.Sum(row => row.MemoryMb);
+        var share = snapshot.TotalMemoryGb <= 0 ? 0 : totalMb / MbPerGb / snapshot.TotalMemoryGb * 100;
+        AiSummary.Text = rows.Count == 0
+            ? ""
+            : string.Create(culture, $"{FormatMemory(totalMb, culture)} in total, {share:0} % of this PC's memory");
+    }
+
+    private void OnAiToolClick(object sender, RoutedEventArgs e) =>
+        (Application.Current.MainWindow as MainWindow)?.NavigateTo(typeof(AiToolsPage));
 
     private async Task RefreshModesAsync()
     {
@@ -188,6 +239,12 @@ public partial class DashboardPage : Page
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Summary)));
             }
         }
+    }
+
+    private sealed record AiToolRow(
+        string Name, string Detail, string MemoryText, string CpuText, double Share, double MemoryMb, Brush Color, ImageSource? Icon, string AccessibleName)
+    {
+        public Visibility GlyphVisibility => Icon is null ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private sealed record ProcessRow(string Name, string CountText, double Share, string MemoryText, Brush Color, ImageSource? Icon)
