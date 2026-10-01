@@ -14,14 +14,24 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           # Full history: the changelog fallback lists the commits since the previous tag.
           fetch-depth: 0
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           global-json-file: global.json
+
+      - name: Check the tag
+        shell: pwsh
+        run: |
+          $tagVersion = '${{ github.ref_name }}'.TrimStart('v')
+          $projectVersion = ([xml](Get-Content -LiteralPath src/WinModes.App/WinModes.App.csproj -Raw)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          if ($tagVersion -ne $projectVersion) { throw "Tag $tagVersion does not match <Version> $projectVersion in WinModes.App.csproj." }
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor '${{ github.sha }}' origin/main
+          if ($LASTEXITCODE -ne 0) { throw 'The tagged commit is not on main.' }
 
       - name: Build and test
         run: |
