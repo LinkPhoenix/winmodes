@@ -18,6 +18,7 @@ internal static class UpdateInstaller
     private const string ReleaseApi = "https://api.github.com/repos/LinkPhoenix/winmodes/releases/tags/";
     private const string DownloadPrefix = "https://github.com/LinkPhoenix/winmodes/releases/download/";
     private const string InstallerSuffix = "-setup-win-x64.exe";
+    private const string PortableSuffix = "-portable-win-x64.zip";
     private const string ChecksumFile = "SHA256SUMS.txt";
     private const string UninstallerFile = "unins000.exe";
     private const int BufferSize = 81920;
@@ -27,7 +28,25 @@ internal static class UpdateInstaller
     public static bool IsInstalledBuild => File.Exists(Path.Combine(AppContext.BaseDirectory, UninstallerFile));
 
     /// <summary>Downloads and checks the installer. Returns its path, or throws <see cref="UpdateException"/>.</summary>
-    public static async Task<string> DownloadAsync(string tag, IProgress<double> progress, CancellationToken cancellation)
+    public static Task<string> DownloadAsync(string tag, IProgress<double> progress, CancellationToken cancellation) =>
+        DownloadAsync(tag, InstallerSuffix, Path.Combine(Path.GetTempPath(), "WinModes-update"), progress, cancellation);
+
+    /// <summary>
+    /// Downloads and checks the portable zip of a release into the user's Downloads folder, for a copy that was
+    /// not set up by the installer. Returns its path, or throws <see cref="UpdateException"/>.
+    /// </summary>
+    public static Task<string> DownloadPortableAsync(string tag, IProgress<double> progress, CancellationToken cancellation) =>
+        DownloadAsync(tag, PortableSuffix, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"), progress, cancellation);
+
+    /// <summary>Opens the folder of a downloaded file with the file selected.</summary>
+    public static void Reveal(string path)
+    {
+        var start = new ProcessStartInfo("explorer.exe") { UseShellExecute = false };
+        start.ArgumentList.Add($"/select,{path}");
+        using var process = Process.Start(start);
+    }
+
+    private static async Task<string> DownloadAsync(string tag, string suffix, string folder, IProgress<double> progress, CancellationToken cancellation)
     {
         if (!ReleaseVersion.TryParse(tag, out _))
         {
@@ -39,10 +58,9 @@ internal static class UpdateInstaller
 
         try
         {
-            var (installerName, installerUrl, checksumUrl) = await FindAssetsAsync(client, tag, cancellation);
+            var (installerName, installerUrl, checksumUrl) = await FindAssetsAsync(client, tag, suffix, cancellation);
             var expected = FindChecksum(await client.GetStringAsync(new Uri(checksumUrl), cancellation), installerName);
 
-            var folder = Path.Combine(Path.GetTempPath(), "WinModes-update");
             Directory.CreateDirectory(folder);
             var path = Path.Combine(folder, installerName);
 
@@ -50,7 +68,7 @@ internal static class UpdateInstaller
             if (!actual.Equals(expected, StringComparison.OrdinalIgnoreCase))
             {
                 File.Delete(path);
-                throw new UpdateException("The downloaded installer does not match the checksum of the release. It was deleted.");
+                throw new UpdateException("The downloaded file does not match the checksum of the release. It was deleted.");
             }
 
             return path;
@@ -68,7 +86,7 @@ internal static class UpdateInstaller
         using var process = Process.Start(new ProcessStartInfo(installerPath) { UseShellExecute = true });
     }
 
-    private static async Task<(string Name, string Url, string ChecksumUrl)> FindAssetsAsync(HttpClient client, string tag, CancellationToken cancellation)
+    private static async Task<(string Name, string Url, string ChecksumUrl)> FindAssetsAsync(HttpClient client, string tag, string suffix, CancellationToken cancellation)
     {
         using var document = JsonDocument.Parse(await client.GetStringAsync(new Uri(ReleaseApi + tag), cancellation));
         string? name = null;
@@ -84,7 +102,7 @@ internal static class UpdateInstaller
                 continue;
             }
 
-            if (assetName.EndsWith(InstallerSuffix, StringComparison.OrdinalIgnoreCase) && assetName == Path.GetFileName(assetName))
+            if (assetName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) && assetName == Path.GetFileName(assetName))
             {
                 (name, url) = (assetName, assetUrl);
             }
@@ -95,7 +113,7 @@ internal static class UpdateInstaller
         }
 
         return name is null || url is null || checksumUrl is null
-            ? throw new UpdateException("This release has no installer with a checksum. Open the release page instead.")
+            ? throw new UpdateException("This release has no such file with a checksum. Open the release page instead.")
             : (name, url, checksumUrl);
     }
 
@@ -111,7 +129,7 @@ internal static class UpdateInstaller
             }
         }
 
-        throw new UpdateException("The release does not list a checksum for its installer. Open the release page instead.");
+        throw new UpdateException("The release does not list a checksum for this file. Open the release page instead.");
     }
 
     private static async Task<string> DownloadFileAsync(HttpClient client, string url, string path, IProgress<double> progress, CancellationToken cancellation)

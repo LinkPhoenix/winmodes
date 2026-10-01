@@ -64,8 +64,35 @@ public partial class AboutPage : Page
         };
         _latestTag = status.IsNewer ? status.LatestTag : null;
         ReleasePageButton.Visibility = status.IsNewer ? Visibility.Visible : Visibility.Collapsed;
-        // A portable copy cannot be replaced by the installer: its user downloads the new zip from the release page.
-        InstallButton.Visibility = status.IsNewer && Services.UpdateInstaller.IsInstalledBuild ? Visibility.Visible : Visibility.Collapsed;
+        // A portable copy cannot be replaced by the installer: it gets the new zip in the Downloads folder instead.
+        InstallButton.Visibility = status.IsNewer ? Visibility.Visible : Visibility.Collapsed;
+        InstallButton.Content = Services.UpdateInstaller.IsInstalledBuild ? "Download and install" : "Download";
+    }
+
+    private async Task DownloadPortableAsync(string tag)
+    {
+        InstallButton.IsEnabled = false;
+        CheckButton.IsEnabled = false;
+        try
+        {
+            var progress = new Progress<double>(percent => UpdateText.Text = $"Downloading {tag}: {percent:0} %");
+            var zip = await Services.UpdateInstaller.DownloadPortableAsync(tag, progress, CancellationToken.None);
+            UpdateText.Text = $"{System.IO.Path.GetFileName(zip)} is in your Downloads folder, checked against the release checksum. Close WinModes and extract it over this copy.";
+            Services.UpdateInstaller.Reveal(zip);
+        }
+        catch (Services.UpdateException ex)
+        {
+            UpdateText.Text = ex.Message;
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // The file is downloaded; only the folder could not be opened.
+        }
+        finally
+        {
+            InstallButton.IsEnabled = true;
+            CheckButton.IsEnabled = true;
+        }
     }
 
     private string? _latestTag;
@@ -74,6 +101,12 @@ public partial class AboutPage : Page
     {
         if (_latestTag is not { } tag)
         {
+            return;
+        }
+
+        if (!Services.UpdateInstaller.IsInstalledBuild)
+        {
+            await DownloadPortableAsync(tag);
             return;
         }
 
