@@ -41,6 +41,23 @@ public sealed class AiInsightsTests
     }
 
     [Fact]
+    public void SystemReport_ListsTotalsWithoutFoldersOrCommandLines()
+    {
+        var root = new ProcessNode(1, 0, "claude", 1, 2048, 0, @"C:\Users\someone\claude.exe", "claude --secret-flag", @"C:\Users\someone\secret-project", null);
+        var session = new AiSession(AiToolCatalog.Tools[0], root, [Node(2, "node", @"node C:\Users\someone\x\context7-mcp\cli.js", 512)]);
+
+        var report = WinModes.Core.Reports.SystemReport.Build(new WinModes.Core.Reports.SystemReportData(
+            "0.4.0", new DateTime(2026, 10, 1, 9, 30, 0), "Windows 11", 16, new MemorySample(32, 12, 30, 80, 6), "code", 400, 140,
+            [new ProcessGroup("claude", 3, 4096, @"C:\Users\someone\claude.exe")], [session]));
+
+        Assert.Contains("| Claude Code | 1 | 2 | 1 | 2.5 GB |", report, StringComparison.Ordinal);
+        Assert.Contains("| claude | 3 | 4.0 GB |", report, StringComparison.Ordinal);
+        Assert.Contains("Active mode: code", report, StringComparison.Ordinal);
+        Assert.DoesNotContain("someone", report, StringComparison.Ordinal);
+        Assert.DoesNotContain("secret", report, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void UsageHistory_AveragesPeaksAndSumsTimePerProject()
     {
         var directory = Path.Combine(Path.GetTempPath(), "winmodes-tests", Guid.NewGuid().ToString("N"));

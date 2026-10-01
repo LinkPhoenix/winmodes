@@ -49,9 +49,31 @@
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button x:Name="CheckButton" Content="Check now" Icon="{ui:SymbolIcon ArrowSync24}" Click="OnCheckUpdates" />
-                    <ui:Button x:Name="DownloadButton" Content="Open release page" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Primary"
+                    <ui:Button x:Name="ReleasePageButton" Content="Release page" Icon="{ui:SymbolIcon Open24}"
                                Margin="8,0,0,0" Visibility="Collapsed" Click="OnOpenRelease" />
+                    <ui:Button x:Name="InstallButton" Content="Download and install" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Primary"
+                               Margin="8,0,0,0" Visibility="Collapsed" Click="OnInstallUpdate" />
                 </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource IconBadgeStyle}" Background="#3360A5FA">
+                    <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center" Foreground="#60A5FA" Text="&#xE9F9;" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Report for getting help" FontWeight="SemiBold" />
+                    <TextBlock x:Name="ReportText" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
+                               Text="Saves a snapshot of this PC (memory, AI tools, largest programs) as a text file. It contains program names and totals only: no folder, command line, project or account name." />
+                </StackPanel>
+                <ui:Button Grid.Column="2" Content="Export report" Icon="{ui:SymbolIcon DocumentArrowDown20}" VerticalAlignment="Center"
+                           Margin="12,0,0,0" Click="OnExportReport" />
             </Grid>
         </Border>
 

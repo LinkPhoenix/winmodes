@@ -15,6 +15,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Automation rules can also trigger on battery power or during a daily time range.
 - Deactivating a mode reports how long it was active and the memory it had freed.
 - GPU utilization and disk activity graphs on the dashboard.
+- Export a report of the PC state (names and totals only) from the About page, to ask for help.
+- Installed copies can download and start the installer of a new version from the About page; the download is checked against the checksum of the release.
 
 ## [0.3.1] - 2026-10-01
 
