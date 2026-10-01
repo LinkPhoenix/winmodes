@@ -171,19 +171,7 @@
                         <TextBlock Text="60 seconds" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         <TextBlock x:Name="CpuChartDetail" FontSize="12" HorizontalAlignment="Right" Style="{StaticResource SecondaryTextStyle}" />
                     </Grid>
-                    <ItemsControl x:Name="CoreBars" Margin="0,8,0,0" Height="26" ToolTip="Load of each logical processor">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Rows="1" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <ProgressBar Orientation="Vertical" Minimum="0" Maximum="100" Value="{Binding Mode=OneWay}"
-                                             Margin="2,0" Foreground="#7C5CFC" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <controls:CoreBars x:Name="CoreBars" Margin="0,8,0,0" Height="26" Accent="#7C5CFC" ToolTip="Load of each logical processor" />
                 </StackPanel>
             </Border>
             <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">

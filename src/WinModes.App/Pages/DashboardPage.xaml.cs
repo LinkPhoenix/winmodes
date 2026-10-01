@@ -86,7 +86,7 @@ public partial class DashboardPage : Page
             var memory = SystemMonitor.SampleMemory();
             var culture = CultureInfo.CurrentCulture;
 
-            CoreBars.ItemsSource = _monitor.SampleCoresPercent();
+            CoreBars.Show(_monitor.SampleCoresPercent());
             var (down, up) = _monitor.SampleNetwork();
             NetworkValue.Text = string.Create(culture, $"\u2193 {down:0.0}  \u2191 {up:0.0} Mb/s");
 
