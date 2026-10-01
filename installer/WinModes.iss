@@ -73,6 +73,8 @@ Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags
 ; Close the app, then undo the active mode so no service is left changed after the uninstall.
 Filename: "{sys}\taskkill.exe"; Parameters: "/IM {#AppExe} /F"; Flags: runhidden; RunOnceId: "CloseWinModes"
 Filename: "{app}\WinModes.Elevated.exe"; Parameters: "revert"; Flags: runhidden waituntilterminated; RunOnceId: "RevertActiveMode"
+; Then undo what the Optimize and Services pages changed machine-wide: service start types, policy values, scheduled tasks.
+Filename: "{app}\WinModes.Elevated.exe"; Parameters: "change :restore :untweak"; Flags: runhidden waituntilterminated; RunOnceId: "RestoreServices"
 
 [Registry]
 ; "Start with Windows" is written by the app; remove it with the app.

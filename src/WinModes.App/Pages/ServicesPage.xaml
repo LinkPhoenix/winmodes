@@ -6,7 +6,7 @@
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
         <TextBlock Text="Services" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock x:Name="Summary" Text="Reading services…" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,16" />
+        <TextBlock x:Name="Summary" Text="Reading services…" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,16" TextWrapping="Wrap" />
 
         <Grid Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
@@ -22,11 +22,34 @@
                       Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
         </Grid>
 
+        <Border x:Name="ResultCard" Style="{StaticResource CardBorderStyle}" Padding="16,12" Margin="0,0,0,12" Visibility="Collapsed">
+            <TextBlock x:Name="ResultText" TextWrapping="Wrap" />
+        </Border>
+
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <ItemsControl x:Name="Rows">
+            <ItemsControl x:Name="Rows" ContextMenuOpening="OnMenuOpening" ContextMenuClosing="OnMenuClosing">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Padding="20,10" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                        <!-- Transparent so a right-click anywhere on the row opens the menu. -->
+                        <Border Padding="20,10" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                Background="Transparent" ToolTip="{Binding Description}">
+                            <Border.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Protected: WinModes never changes this service" IsEnabled="False"
+                                              Visibility="{Binding ProtectedVisibility}" />
+                                    <MenuItem Header="Start" Tag="Start" Click="OnMenuAction" IsEnabled="{Binding CanStart}" />
+                                    <MenuItem Header="Stop" Tag="Stop" Click="OnMenuAction" IsEnabled="{Binding CanStop}" />
+                                    <Separator />
+                                    <MenuItem Header="Start type" IsEnabled="{Binding CanChange}">
+                                        <MenuItem Header="Automatic" Tag="Automatic" Click="OnMenuAction" IsChecked="{Binding IsAutomatic, Mode=OneWay}" />
+                                        <MenuItem Header="Manual (start when needed)" Tag="Manual" Click="OnMenuAction" IsChecked="{Binding IsManual, Mode=OneWay}" />
+                                        <MenuItem Header="Disabled" Tag="Disabled" Click="OnMenuAction" IsChecked="{Binding IsDisabled, Mode=OneWay}" />
+                                    </MenuItem>
+                                    <MenuItem Header="{Binding RestoreHeader}" Tag="Restore" Click="OnMenuAction" IsEnabled="{Binding CanRestore}" />
+                                    <Separator />
+                                    <MenuItem Header="Copy name" Click="OnCopyName" />
+                                </ContextMenu>
+                            </Border.ContextMenu>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="36" />

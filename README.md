@@ -18,7 +18,8 @@ WinModes switches your PC between modes (Code, Work, Game) to free memory and cu
 - **Dashboard**: CPU and memory gauges, 60-second history graphs for CPU, memory, GPU and disk, what each AI tool uses at a glance, top memory consumers.
 - **Processes page**: process tree with child processes, PID, CPU, memory, threads and command line; search, sort, and a right-click menu (end task, end process tree, open file location, copy).
 - **AI tools page**: every running session of Claude Code, Claude desktop, Codex, Cursor, VS Code and others, with the project folder it works in and all the processes it started.
-- **Services page**: search, filters, real app icons, and a lock on everything that is protected.
+- **Services page**: search, filters, real app icons, and a lock on everything that is protected; a right-click starts, stops or changes the start type of a service that is not protected.
+- **Optimize page**: 28 Windows settings by category (privacy and telemetry, ads and suggestions, search and AI, gaming, background, Explorer) and the services worth starting only when needed. Each row shows whether it is already applied on your PC and how many of 12 surveyed open-source optimizers ship the same setting. You choose what to apply; WinModes records the current value first and Undo puts it back. Settings that weaken security or updates are not in the catalog and are refused by the engine. Nothing is uninstalled or deleted.
 - **Usage page** (optional, off by default): how much memory each AI tool used per project over the last day, week or month. Stored on your PC only.
 - **MCP servers in double**: the AI tools page shows the MCP servers that several sessions each started, and the memory they hold together.
 - **Idle sessions**: flagged after 30 minutes without CPU use; end them by hand, or let WinModes do it after a delay you choose (off by default).
@@ -57,7 +58,7 @@ WinModes is built around a hard blocklist, [`data/protected.json`](data/protecte
 
 Other rules enforced by the engine:
 
-- Services are set to **Manual, never Disabled**.
+- A mode sets services to **Manual, never Disabled**. A service is disabled only when you choose it yourself on the Optimize or Services page.
 - A service still needed by another running service is skipped.
 - Undo only restores a value that WinModes itself set; if something else changed it since, it is left alone.
 - Apps are asked to close; they are never force-killed.

@@ -123,7 +123,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     }
 
     /// <summary>Returns null on success, or the reason the helper did not complete.</summary>
-    private static async Task<string?> RunHelperAsync(params string[] arguments)
+    internal static async Task<string?> RunHelperAsync(params string[] arguments)
     {
         var helperPath = Path.Combine(AppContext.BaseDirectory, HelperFileName);
         if (!File.Exists(helperPath))

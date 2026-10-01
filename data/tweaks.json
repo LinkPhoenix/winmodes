@@ -1,0 +1,864 @@
+[
+  {
+    "id": "telemetry-required-only",
+    "title": "Send required diagnostic data only",
+    "description": "Limits what Windows sends to Microsoft to the required level. Windows Pro and Home do not accept a lower level.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": "Settings then shows \"Some settings are managed by your organization\" on the diagnostics page.",
+    "tools": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+        "name": "AllowTelemetry",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "advertising-id",
+    "title": "Turn off the advertising ID",
+    "description": "Apps can no longer use a per-user identifier to personalise ads.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo",
+        "name": "Enabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "tailored-experiences",
+    "title": "Turn off tailored experiences",
+    "description": "Windows stops using diagnostic data to personalise tips, ads and recommendations.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "tiny11builder",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Privacy",
+        "name": "TailoredExperiencesWithDiagnosticDataEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "activity-history",
+    "title": "Turn off activity history",
+    "description": "Windows stops recording the apps and files you open and stops sending that history to Microsoft.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "ReviOS",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "EnableActivityFeed",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "PublishUserActivities",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "UploadUserActivities",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "feedback-prompts",
+    "title": "Stop feedback prompts",
+    "description": "Windows no longer asks for feedback.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Siuf\\Rules",
+        "name": "NumberOfSIUFInPeriod",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "task-ceip",
+    "title": "Disable the Customer Experience Improvement tasks",
+    "description": "Two scheduled tasks that collect and upload usage data.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "Winhance",
+      "privacy.sexy"
+    ],
+    "values": [],
+    "tasks": [
+      "\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator",
+      "\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip"
+    ]
+  },
+  {
+    "id": "task-appcompat",
+    "title": "Disable the compatibility appraiser tasks",
+    "description": "Scheduled tasks that scan installed programs for upgrade telemetry; the appraiser is known for CPU spikes.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "privacy.sexy",
+      "tiny11builder"
+    ],
+    "values": [],
+    "tasks": [
+      "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser",
+      "\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater"
+    ]
+  },
+  {
+    "id": "task-diskdiag",
+    "title": "Disable the disk diagnostic data collector",
+    "description": "Scheduled task that sends disk and system information to Microsoft.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "privacy.sexy"
+    ],
+    "values": [],
+    "tasks": [
+      "\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector"
+    ]
+  },
+  {
+    "id": "task-feedback",
+    "title": "Disable the feedback tasks",
+    "description": "Scheduled tasks of the Windows feedback client.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "ReviOS",
+      "W4RH4WK",
+      "Windows10Debloater",
+      "Winhance"
+    ],
+    "values": [],
+    "tasks": [
+      "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient",
+      "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload"
+    ]
+  },
+  {
+    "id": "consumer-features",
+    "title": "Stop promoted apps from being installed",
+    "description": "Windows no longer installs or pins suggested apps and games by itself.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Windows10Debloater",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+        "name": "DisableWindowsConsumerFeatures",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SilentInstalledAppsEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "start-suggestions",
+    "title": "Hide suggestions in Start and Settings",
+    "description": "Removes suggested apps in Start, tips about Windows and suggested content in Settings.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SystemPaneSuggestionsEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SoftLandingEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338388Enabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338389Enabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338393Enabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-353694Enabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-353696Enabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "Start_IrisRecommendations",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "lockscreen-tips",
+    "title": "Hide tips and ads on the lock screen",
+    "description": "The lock screen stops showing fun facts, tips and promotions.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "RotatingLockScreenOverlayEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338387Enabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "explorer-ads",
+    "title": "Hide OneDrive and Microsoft 365 ads in File Explorer",
+    "description": "File Explorer stops showing sync-provider notifications.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "ShowSyncProviderNotifications",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "bing-search",
+    "title": "Remove web results from Start search",
+    "description": "Start search only looks on this PC, which makes it faster and keeps what you type local.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": true,
+    "restart": "sign-out",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Windows10Debloater",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "DisableSearchBoxSuggestions",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "search-highlights",
+    "title": "Hide search highlights",
+    "description": "Removes the daily illustrations and suggestions from the search box.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+        "name": "IsDynamicSearchBoxEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "widgets",
+    "title": "Turn off Widgets",
+    "description": "Removes the Widgets board and its background processes, which hold memory even when the board is closed.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": true,
+    "restart": "sign-out",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Dsh",
+        "name": "AllowNewsAndInterests",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "recall",
+    "title": "Turn off Recall snapshots",
+    "description": "Windows does not save snapshots of the screen for Recall. Only matters on Copilot+ PCs.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+        "name": "DisableAIDataAnalysis",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "windows-copilot",
+    "title": "Turn off Windows Copilot",
+    "description": "Policy that hides the Windows Copilot side panel. It does not affect Claude, Codex or any other AI tool.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Microsoft has partly retired this policy: on recent builds Copilot is an app and is not affected.",
+    "tools": [
+      "Atlas",
+      "CrapFixer",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "tiny11builder"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Policies\\Microsoft\\Windows\\WindowsCopilot",
+        "name": "TurnOffWindowsCopilot",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "game-mode",
+    "title": "Keep Game Mode on",
+    "description": "Windows gives the running game priority and holds back updates and notifications while you play.",
+    "category": "Gaming",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Winhance",
+      "optimizer",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\GameBar",
+        "name": "AutoGameModeEnabled",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "game-dvr",
+    "title": "Turn off background game recording",
+    "description": "Stops the Xbox Game Bar from recording in the background, which costs CPU and GPU time in games.",
+    "category": "Gaming",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": "Do not apply it if you record clips with the Game Bar.",
+    "tools": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "System\\GameConfigStore",
+        "name": "GameDVR_Enabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+        "name": "AppCaptureEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "mouse-acceleration",
+    "title": "Turn off mouse acceleration",
+    "description": "Disables \"Enhance pointer precision\" so the pointer moves the same distance whatever the speed of the hand.",
+    "category": "Gaming",
+    "risk": "low",
+    "recommended": false,
+    "restart": "sign-out",
+    "warning": "A matter of taste: the pointer feels different on the desktop too.",
+    "tools": [
+      "Atlas",
+      "ReviOS",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Control Panel\\Mouse",
+        "name": "MouseSpeed",
+        "kind": "Text",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Control Panel\\Mouse",
+        "name": "MouseThreshold1",
+        "kind": "Text",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Control Panel\\Mouse",
+        "name": "MouseThreshold2",
+        "kind": "Text",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "edge-background",
+    "title": "Stop Edge from running in the background",
+    "description": "Edge no longer preloads at sign-in and no longer keeps running after its last window is closed. Edge and WebView2 keep working.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": "Edge then shows \"Managed by your organization\" in its settings.",
+    "tools": [
+      "CrapFixer",
+      "privacy.sexy"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "StartupBoostEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "BackgroundModeEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "delivery-optimization",
+    "title": "Do not upload updates to other PCs",
+    "description": "Windows Update stops sharing downloaded updates with other computers. Updates still install normally.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "privacy.sexy",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization",
+        "name": "DODownloadMode",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "fast-startup",
+    "title": "Turn off Fast Startup",
+    "description": "Shut down then really shuts down. This avoids stale driver state and helps with WSL and Docker networking problems after a boot.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Starting the PC after a shutdown takes a few seconds longer.",
+    "tools": [
+      "Atlas",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power",
+        "name": "HiberbootEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "transparency",
+    "title": "Turn off transparency effects",
+    "description": "Windows draws the taskbar and menus without the translucent effect. A small saving on the GPU.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Cosmetic: Windows looks flatter.",
+    "tools": [
+      "CrapFixer",
+      "ReviOS",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+        "name": "EnableTransparency",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "file-extensions",
+    "title": "Show file extensions",
+    "description": "File Explorer shows .exe, .ps1, .txt and other extensions, which makes disguised files easier to spot.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": true,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "ReviOS",
+      "Sophia",
+      "W4RH4WK",
+      "Win11Debloat",
+      "Winhance",
+      "optimizer",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "HideFileExt",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "taskbar-end-task",
+    "title": "Add \"End task\" to the taskbar menu",
+    "description": "A right-click on a taskbar button offers to end the app without opening Task Manager.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "CrapFixer",
+      "ReviOS",
+      "Sophia",
+      "Win11Debloat",
+      "Winhance",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings",
+        "name": "TaskbarEndTask",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "long-paths",
+    "title": "Allow paths longer than 260 characters",
+    "description": "Programs that support it can use long paths, which avoids errors in deep node_modules folders.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Atlas",
+      "Sophia",
+      "Winhance",
+      "optimizer",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SYSTEM\\CurrentControlSet\\Control\\FileSystem",
+        "name": "LongPathsEnabled",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": []
+  }
+]

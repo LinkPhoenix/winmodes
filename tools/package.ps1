@@ -36,12 +36,15 @@ if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed.' }
 # The app and the elevated helper look for these next to the executable.
 New-Item -ItemType Directory -Force -Path (Join-Path $appDir 'data') | Out-Null
 Copy-Item -LiteralPath (Join-Path $Root 'data/protected.json') -Destination (Join-Path $appDir 'data')
+# Knowledge base and tweak catalog read by the Optimize page (the helper reads the catalog too).
+Copy-Item -LiteralPath (Join-Path $Root 'data/tweaks.json') -Destination (Join-Path $appDir 'data')
+Copy-Item -LiteralPath (Join-Path $Root 'data/db') -Destination (Join-Path $appDir 'data/db') -Recurse
 Copy-Item -LiteralPath (Join-Path $Root 'profiles') -Destination (Join-Path $appDir 'profiles') -Recurse
 foreach ($document in 'LICENSE.md', 'README.md', 'CHANGELOG.md') {
     Copy-Item -LiteralPath (Join-Path $Root $document) -Destination $appDir
 }
 
-foreach ($required in 'WinModes.exe', 'WinModes.Elevated.exe', 'data/protected.json', 'profiles/code.json') {
+foreach ($required in 'WinModes.exe', 'WinModes.Elevated.exe', 'data/protected.json', 'data/tweaks.json', 'data/db/windows-services.json', 'profiles/code.json') {
     if (-not (Test-Path -LiteralPath (Join-Path $appDir $required))) { throw "The package is missing $required." }
 }
 
