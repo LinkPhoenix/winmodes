@@ -134,9 +134,9 @@ public partial class App : Application, IDisposable
     private Forms.NotifyIcon CreateTrayIcon()
     {
         var menu = new Forms.ContextMenuStrip();
-        menu.Items.Add("Open WinModes", null, (_, _) => ShowWindow());
-        menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("Quit", null, (_, _) => Shutdown());
+        // Rebuilt each time it opens, so the active mode is always up to date.
+        menu.Opening += (_, _) => FillTrayMenu(menu);
+        FillTrayMenu(menu);
 
         var icon = new Forms.NotifyIcon
         {
@@ -153,6 +153,50 @@ public partial class App : Application, IDisposable
             }
         };
         return icon;
+    }
+
+    private void FillTrayMenu(Forms.ContextMenuStrip menu)
+    {
+        menu.Items.Clear();
+        menu.Items.Add("Open WinModes", null, (_, _) => ShowWindow());
+        menu.Items.Add(new Forms.ToolStripSeparator());
+
+        var active = Services.ModeSwitcher.ActiveMode;
+        foreach (var entry in ModeCatalog.Load())
+        {
+            var profile = entry.Profile;
+            var isActive = profile.Mode.Equals(active, StringComparison.OrdinalIgnoreCase);
+            var item = new Forms.ToolStripMenuItem(isActive ? $"{profile.Label} mode (active)" : $"Activate {profile.Label} mode")
+            {
+                Checked = isActive,
+                Enabled = !isActive,
+            };
+            item.Click += async (_, _) => await SwitchFromTrayAsync(profile.Label, () => AppServices.Switcher.ActivateAsync(profile));
+            menu.Items.Add(item);
+        }
+
+        var undo = new Forms.ToolStripMenuItem("Deactivate current mode") { Enabled = active is not null };
+        undo.Click += async (_, _) => await SwitchFromTrayAsync("Deactivate", AppServices.Switcher.UndoAsync);
+        menu.Items.Add(undo);
+
+        menu.Items.Add(new Forms.ToolStripSeparator());
+        menu.Items.Add("Quit", null, (_, _) => Shutdown());
+    }
+
+    /// <summary>Runs a switch started outside the main window and reports the outcome in a notification.</summary>
+    internal async Task SwitchFromTrayAsync(string title, Func<Task<Services.SwitchReport>> action)
+    {
+        try
+        {
+            var report = await action();
+            _trayIcon?.ShowBalloonTip(4000, $"WinModes - {title}",
+                report.Succeeded ? string.Join("\n", report.Lines.Take(3)) : report.Lines[0],
+                report.Succeeded ? Forms.ToolTipIcon.Info : Forms.ToolTipIcon.Warning);
+        }
+        catch (ProfileException ex)
+        {
+            _trayIcon?.ShowBalloonTip(4000, "WinModes", ex.Message, Forms.ToolTipIcon.Warning);
+        }
     }
 
     private static System.Drawing.Icon LoadAppIcon() =>
