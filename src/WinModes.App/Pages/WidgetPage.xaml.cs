@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using WinModes.App.Services;
+using WinModes.Core;
 using WinModes.Core.Usage;
 
 namespace WinModes.App.Pages;
@@ -10,6 +11,13 @@ public partial class WidgetPage : Page
 {
     private static readonly Option[] RefreshChoices = [new(1, Loc.T("1 second")), new(3, Loc.T("3 seconds")), new(5, Loc.T("5 seconds"))];
     private static readonly Option[] ScaleChoices = [new(80, Loc.T("Small")), new(100, Loc.T("Medium")), new(125, Loc.T("Large")), new(150, Loc.T("Extra large"))];
+    private static readonly Option[] PlaceChoices =
+    [
+        new((int)WidgetPlacement.Desktop, Loc.T("On the desktop")),
+        new((int)WidgetPlacement.Taskbar, Loc.T("On the taskbar")),
+        new((int)WidgetPlacement.Both, Loc.T("On both")),
+    ];
+    private static readonly Option[] SideChoices = [new((int)TaskbarSide.Auto, Loc.T("Automatic")), new((int)TaskbarSide.Left, Loc.T("Left")), new((int)TaskbarSide.Right, Loc.T("Right"))];
     private static readonly Option[] MaxToolChoices = [new(2, "2"), new(4, "4"), new(6, "6"), new(10, "10")];
 
     private readonly bool _loaded;
@@ -47,6 +55,9 @@ public partial class WidgetPage : Page
         Select(Refresh, RefreshChoices, widget.RefreshSeconds);
         Select(Scale, ScaleChoices, widget.ScalePercent);
         Select(MaxTools, MaxToolChoices, widget.MaxTools);
+        Select(Place, PlaceChoices, (int)widget.Placement);
+        Select(Side, SideChoices, (int)widget.TaskbarSide);
+        ShowPlaceOptions(widget.Placement);
 
         // Setting the initial values raises the change events; only user changes are saved.
         _loaded = true;
@@ -160,8 +171,26 @@ public partial class WidgetPage : Page
         Preview.Apply(widget, scaled: false);
         Preview.Opacity = Math.Clamp(widget.OpacityPercent, 40, 100) / 100d;
         var size = ScaleChoices.FirstOrDefault(choice => choice.Value == widget.ScalePercent)?.Label ?? Loc.T("Medium");
-        PreviewNote.Text = Loc.T(settings.ShowDesktopWidget ? "The widget is on your desktop." : "The widget is hidden.") + " "
-            + Loc.F("Size on the desktop: {0}.", size);
+        var where = widget.Placement switch
+        {
+            WidgetPlacement.Taskbar => Loc.T("The widget is on your taskbar."),
+            WidgetPlacement.Both => Loc.T("The widget is on your desktop and on your taskbar."),
+            _ => Loc.T("The widget is on your desktop."),
+        };
+        PreviewNote.Text = (settings.ShowDesktopWidget ? where : Loc.T("The widget is hidden.")) + " "
+            + (widget.Placement == WidgetPlacement.Taskbar ? Loc.T("The preview shows the desktop version.") : Loc.F("Size on the desktop: {0}.", size));
+    }
+
+    /// <summary>The side applies to the taskbar; size, position and the always-on-top choice to the desktop.</summary>
+    private void ShowPlaceOptions(WidgetPlacement placement)
+    {
+        var onTaskbar = placement != WidgetPlacement.Desktop;
+        var desktop = placement == WidgetPlacement.Taskbar ? Visibility.Collapsed : Visibility.Visible;
+        SideRow.Visibility = onTaskbar ? Visibility.Visible : Visibility.Collapsed;
+        AlwaysOnTopRow.Visibility = desktop;
+        CompactRow.Visibility = desktop;
+        ScaleRow.Visibility = desktop;
+        PositionSection.Visibility = desktop;
     }
 
     private static void Select(ComboBox box, Option[] choices, int value)
@@ -197,6 +226,8 @@ public partial class WidgetPage : Page
             ShowDesktopWidget = Enabled.IsChecked == true,
             Widget = current.Widget with
             {
+                Placement = (WidgetPlacement)((Place.SelectedItem as Option)?.Value ?? (int)WidgetPlacement.Desktop),
+                TaskbarSide = (TaskbarSide)((Side.SelectedItem as Option)?.Value ?? (int)TaskbarSide.Auto),
                 AlwaysOnTop = AlwaysOnTop.IsChecked == true,
                 OpacityPercent = (int)OpacitySlider.Value,
                 ScalePercent = (Scale.SelectedItem as Option)?.Value ?? 100,
@@ -224,6 +255,7 @@ public partial class WidgetPage : Page
             },
         };
         updated.Save();
+        ShowPlaceOptions(updated.Widget.Placement);
         ShowPreview(updated);
         (Application.Current as App)?.ApplyDisplaySettings();
     }

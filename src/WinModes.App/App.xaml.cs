@@ -13,6 +13,7 @@ public partial class App : Application, IDisposable
     private const string SingleInstanceMutexName = @"Local\WinModes.App";
     private const string OnboardingArgument = "--onboarding";
     private const string LanguageArgument = "--language";
+    private TaskbarWidgetWindow? _taskbarWidget;
 
     private Services.ErrorGuard? _errorGuard;
     private Mutex? _singleInstance;
@@ -160,7 +161,35 @@ public partial class App : Application, IDisposable
     {
         var settings = Services.AppSettings.Load();
 
-        if (settings.ShowDesktopWidget && _widget is null)
+        // The user picks the desktop, the taskbar or both; each one is created and closed on its own.
+        var onTaskbar = settings.ShowDesktopWidget && settings.Widget.Placement != Services.WidgetPlacement.Desktop;
+        var floating = settings.ShowDesktopWidget && settings.Widget.Placement != Services.WidgetPlacement.Taskbar;
+
+        if (onTaskbar && _taskbarWidget is null)
+        {
+            _taskbarWidget = new TaskbarWidgetWindow();
+            _taskbarWidget.OpenAppRequested += (_, _) => ShowWindow();
+            _taskbarWidget.OpenSettingsRequested += (_, _) =>
+            {
+                ShowWindow();
+                _window?.NavigateTo(typeof(Pages.WidgetPage));
+            };
+            _taskbarWidget.HideRequested += (_, _) =>
+            {
+                (Services.AppSettings.Load() with { ShowDesktopWidget = false }).Save();
+                ApplyDisplaySettings();
+            };
+            _taskbarWidget.Show();
+        }
+        else if (!onTaskbar && _taskbarWidget is not null)
+        {
+            _taskbarWidget.Close();
+            _taskbarWidget = null;
+        }
+
+        _taskbarWidget?.Apply(settings.Widget);
+
+        if (floating && _widget is null)
         {
             _widget = new WidgetWindow();
             _widget.OpenAppRequested += (_, _) => ShowWindow();
@@ -181,7 +210,7 @@ public partial class App : Application, IDisposable
             };
             _widget.Show();
         }
-        else if (!settings.ShowDesktopWidget && _widget is not null)
+        else if (!floating && _widget is not null)
         {
             _widget.Close();
             _widget = null;
@@ -271,6 +300,8 @@ public partial class App : Application, IDisposable
         {
             _trayMeter?.Show(reading);
         }
+
+        _taskbarWidget?.Show(reading);
 
         if (_widget is not null)
         {
@@ -504,6 +535,7 @@ public partial class App : Application, IDisposable
     public void Dispose()
     {
         _hotkeys?.Dispose();
+        _taskbarWidget?.Close();
         _trayMeter?.Dispose();
         _trayIcon?.Dispose();
         _singleInstance?.Dispose();

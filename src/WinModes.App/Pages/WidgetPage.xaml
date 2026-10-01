@@ -19,7 +19,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,14,0">
             <StackPanel Margin="0,0,0,36">
                 <TextBlock Text="{l:T 'Widget'}" FontSize="28" FontWeight="SemiBold" />
-                <TextBlock Text="{l:T 'A small panel on your desktop with live figures. Changes apply at once.'}"
+                <TextBlock Text="{l:T 'A small panel with live figures, on your desktop or on the taskbar. Changes apply at once.'}"
                            Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
 
                 <controls:SettingSection Header="{l:T 'GENERAL'}" Icon="Settings24" Accent="{x:Static app:Palette.BrandBrush}">
@@ -28,7 +28,17 @@
                                              Title="{l:T 'Show the widget'}" Description="{l:T 'You can also hide it from its right-click menu.'}">
                             <ui:ToggleSwitch x:Name="Enabled" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show the widget'}" />
                         </controls:SettingRow>
-                        <controls:SettingRow Icon="Pin24" Accent="{x:Static app:Palette.Container}"
+                        <controls:SettingRow Icon="Desktop24" Accent="{x:Static app:Palette.Apps}" Title="{l:T 'Where it appears'}"
+                                             Description="{l:T 'On the desktop it floats where you drop it. On the taskbar it sits in the free room next to the app icons and shows less when there is little room.'}">
+                            <ComboBox x:Name="Place" MinWidth="170" DisplayMemberPath="Label"
+                                      SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Where it appears'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow x:Name="SideRow" Icon="AlignLeft24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Side of the taskbar'}"
+                                             Description="{l:T 'Automatic picks the side with the most room, wherever the app icons are. If your choice has no room, the other side is used.'}">
+                            <ComboBox x:Name="Side" MinWidth="170" DisplayMemberPath="Label"
+                                      SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Side of the taskbar'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow x:Name="AlwaysOnTopRow" Icon="Pin24" Accent="{x:Static app:Palette.Container}"
                                              Title="{l:T 'Always on top'}" Description="{l:T 'Keep the widget above every other window.'}">
                             <ui:ToggleSwitch x:Name="AlwaysOnTop" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Always on top'}" />
                         </controls:SettingRow>
@@ -53,11 +63,11 @@
                                 <TextBlock x:Name="OpacityText" Width="48" TextAlignment="Right" VerticalAlignment="Center" />
                             </StackPanel>
                         </controls:SettingRow>
-                        <controls:SettingRow Icon="ArrowMinimize24" Accent="{x:Static app:Palette.Power}"
+                        <controls:SettingRow x:Name="CompactRow" Icon="ArrowMinimize24" Accent="{x:Static app:Palette.Power}"
                                              Title="{l:T 'Compact'}" Description="{l:T 'One line with CPU, memory and the AI total.'}">
                             <ui:ToggleSwitch x:Name="Compact" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Compact'}" />
                         </controls:SettingRow>
-                        <controls:SettingRow Icon="ResizeLarge24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Size'}">
+                        <controls:SettingRow x:Name="ScaleRow" Icon="ResizeLarge24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Size'}">
                             <ComboBox x:Name="Scale" MinWidth="170" DisplayMemberPath="Label"
                                       SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Size'}" />
                         </controls:SettingRow>
@@ -159,7 +169,7 @@
                     </StackPanel>
                 </controls:SettingSection>
 
-                <controls:SettingSection Header="{l:T 'POSITION AND MOUSE'}" Icon="CursorHover24" Accent="{x:Static app:Palette.Apps}">
+                <controls:SettingSection x:Name="PositionSection" Header="{l:T 'POSITION AND MOUSE'}" Icon="CursorHover24" Accent="{x:Static app:Palette.Apps}">
                     <StackPanel>
                         <controls:SettingRow Icon="PositionToFront24" Accent="{x:Static app:Palette.BrandBrush}" Title="{l:T 'Move to a corner'}"
                                              Description="{l:T 'Otherwise drag the widget where you want; its position is remembered.'}">

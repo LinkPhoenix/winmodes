@@ -159,10 +159,21 @@ internal sealed record AutoSwitchSettings
     public IReadOnlyList<WinModes.Core.Automation.AutoSwitchRule> Rules { get; init; } = [];
 }
 
+/// <summary>Where the widget is shown.</summary>
+internal enum WidgetPlacement { Desktop, Taskbar, Both }
+
 /// <summary>Options of the desktop widget, edited on the Widget page.</summary>
 internal sealed record WidgetSettings
 {
     public bool AlwaysOnTop { get; init; } = true;
+
+    /// <summary>Where the widget is shown: floating on the desktop, in the room left on the taskbar by the app icons, or both.</summary>
+    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+    public WidgetPlacement Placement { get; init; }
+
+    /// <summary>Which free part of the taskbar the widget prefers; automatic picks the one with the most room.</summary>
+    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+    public WinModes.Core.TaskbarSide TaskbarSide { get; init; }
 
     /// <summary>40 to 100.</summary>
     public int OpacityPercent { get; init; } = 95;

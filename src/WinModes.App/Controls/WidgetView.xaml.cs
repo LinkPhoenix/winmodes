@@ -93,12 +93,7 @@ public partial class WidgetView : UserControl
             return;
         }
 
-        // The icon comes from the tool's own program, seen while it runs and remembered afterwards.
-        // Claude Code comes last so its icon wins over the desktop app's when both run.
-        foreach (var tool in reading.AiTools.Where(tool => tool.ExecutablePath is not null).OrderBy(tool => tool.Name == "Claude Code"))
-        {
-            PlanIconPaths[tool.Name.Split(' ')[0]] = tool.ExecutablePath!;
-        }
+        ToolIcons.Remember(reading.AiTools);
 
         var now = DateTimeOffset.Now;
         var statuses = SubscriptionMonitor.Get(_settings.ClaudeOnline, _settings.CodexOnline, _settings.ShowClaudePlan, _settings.ShowCodexPlan);
@@ -106,7 +101,7 @@ public partial class WidgetView : UserControl
         {
             var status = _settings.ShowResetCredits ? known : known with { ResetCredits = null };
             var (value, detail, remaining) = WinModes.Core.Usage.Subscriptions.Describe(status, now, culture);
-            var icon = PlanIconPaths.TryGetValue(status.Tool, out var path) ? IconCache.Get(path) : null;
+            var icon = ToolIcons.For(status.Tool);
             var shortValue = remaining is { } left ? string.Create(culture, $"{left:0} %") : value.Length > 0 ? value : "–";
             // The second limit gets its own bar unless it has started over since the figure was recorded.
             var second = remaining is not null && status.Secondary is { } secondary && !secondary.HasReset(now) ? secondary : null;
@@ -128,9 +123,6 @@ public partial class WidgetView : UserControl
             PlanEmpty.Visibility = Visible(statuses.Count == 0 && SubscriptionMonitor.HasRead);
         }
     }
-
-    /// <summary>First word of the tool name ("Claude", "Codex") to the program its icon is taken from.</summary>
-    private static readonly Dictionary<string, string> PlanIconPaths = new(StringComparer.OrdinalIgnoreCase);
 
     private sealed record PlanRow(
         string Tool, string Plan, string Value, string Detail, double Remaining, Visibility BarVisibility, ImageSource? Icon, string Short, string Resets)
