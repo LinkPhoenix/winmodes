@@ -123,12 +123,24 @@ public partial class AiToolsPage : Page
             hasFolder ? $"{folder}  -  PID {session.Root.Pid}, {started}" : $"PID {session.Root.Pid}, {started}",
             hasFolder ? FolderGlyph : AppGlyph,
             hasFolder ? folder : null,
-            Pluralize(session.Descendants.Count + 1, "process", "processes"),
+            DescribeProcesses(session, culture),
             string.Create(culture, $"{session.TotalCpuPercent:0.0} %"),
             DashboardPage.FormatMemory(session.TotalMemoryMb, culture),
             _expanded.Contains(session.Root.Pid),
             idle >= IdleDisplayThreshold ? $"idle {(int)idle.TotalMinutes} min" : "",
             [.. nodes.Select(node => ToProcess(node, culture))]);
+    }
+
+    private static bool IsMcpServer(ProcessNode node) =>
+        node.CommandLine?.Contains("mcp", StringComparison.OrdinalIgnoreCase) == true;
+
+    private static string DescribeProcesses(AiSession session, CultureInfo culture)
+    {
+        var text = Pluralize(session.Descendants.Count + 1, "process", "processes");
+        var servers = session.Descendants.Where(IsMcpServer).ToList();
+        return servers.Count == 0
+            ? text
+            : $"{text}, {servers.Count} MCP ({DashboardPage.FormatMemory(servers.Sum(node => node.PrivateMemoryMb), culture)})";
     }
 
     private static bool HasProjectFolder(AiSession session)
@@ -198,7 +210,8 @@ public partial class AiToolsPage : Page
             DashboardPage.FormatMemory(node.PrivateMemoryMb, culture),
             node.CommandLine ?? node.ExecutablePath ?? "",
             icon,
-            icon is null ? Visibility.Visible : Visibility.Collapsed);
+            icon is null ? Visibility.Visible : Visibility.Collapsed,
+            IsMcpServer(node) ? Visibility.Visible : Visibility.Collapsed);
     }
 
     private static string Pluralize(int count, string singular, string? plural = null) =>
@@ -260,5 +273,5 @@ public partial class AiToolsPage : Page
     }
 
     private sealed record ProcessRow(
-        string Name, int Pid, string CpuText, string MemoryText, string Command, ImageSource? Icon, Visibility GlyphVisibility);
+        string Name, int Pid, string CpuText, string MemoryText, string Command, ImageSource? Icon, Visibility GlyphVisibility, Visibility McpVisibility);
 }

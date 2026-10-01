@@ -68,7 +68,7 @@
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="50" />
                                                     <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="110" />
+                                                    <ColumnDefinition Width="230" />
                                                     <ColumnDefinition Width="80" />
                                                     <ColumnDefinition Width="100" />
                                                 </Grid.ColumnDefinitions>
@@ -114,7 +114,11 @@
                                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                                                     <Image Source="{Binding Icon}" Width="18" Height="18" />
                                                                 </Grid>
-                                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="180" />
+                                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" MaxWidth="130" />
+                                                                <Border Style="{StaticResource ChipStyle}" Margin="8,0,0,0" Padding="6,0" Background="#3360A5FA"
+                                                                        Visibility="{Binding McpVisibility}" ToolTip="Model Context Protocol server started by this session">
+                                                                    <TextBlock Text="MCP" FontSize="10" FontWeight="SemiBold" />
+                                                                </Border>
                                                             </StackPanel>
                                                             <TextBlock Grid.Column="1" Text="{Binding Pid}" HorizontalAlignment="Right" VerticalAlignment="Center"
                                                                        Style="{StaticResource SecondaryTextStyle}" />
