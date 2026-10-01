@@ -71,7 +71,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     {
         var lines = new List<string>();
         var previous = ReadUserState();
-        var usedBeforeGb = SystemMonitor.SampleMemory().UsedGb;
+        var usedBeforeGb = await SampleUsedGbAsync();
 
         var helper = await RunHelperAsync("apply", profile.Mode);
         if (helper is not null)
@@ -96,7 +96,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
 
         // Stopped services and closed apps release their memory over a few seconds.
         await Task.Delay(MemorySettleDelay);
-        var usedAfterGb = SystemMonitor.SampleMemory().UsedGb;
+        var usedAfterGb = await SampleUsedGbAsync();
         var freedGb = usedBeforeGb - usedAfterGb;
         var outcome = freedGb >= MinFreedGbToReport ? Loc.F("{0:0.0} GB freed", freedGb) : Loc.T("no measurable change");
         lines.Insert(0, Loc.F("Memory in use: {0:0.0} GB before, {1:0.0} GB after ({2}).", usedBeforeGb, usedAfterGb, outcome));
@@ -221,7 +221,8 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
                 continue;
             }
 
-            var processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(app.Process));
+            // Listing processes and reading their windows is slow enough to freeze the interface if done on its thread.
+            var processes = await Task.Run(() => Process.GetProcessesByName(Path.GetFileNameWithoutExtension(app.Process)));
             try
             {
                 if (processes.Length == 0)
@@ -229,10 +230,13 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
                     continue;
                 }
 
-                foreach (var process in processes.Where(process => process.MainWindowHandle != IntPtr.Zero))
+                await Task.Run(() =>
                 {
-                    process.CloseMainWindow();
-                }
+                    foreach (var process in processes.Where(process => process.MainWindowHandle != IntPtr.Zero))
+                    {
+                        process.CloseMainWindow();
+                    }
+                });
 
                 using var timeout = new CancellationTokenSource(AppCloseTimeout);
                 try
@@ -287,6 +291,8 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         return lines;
     }
 
+    private static Task<double> SampleUsedGbAsync() => Task.Run(() => SystemMonitor.SampleMemory().UsedGb);
+
     private static async Task<List<string>> ApplyWslAsync(WslSettings wsl)
     {
         var lines = new List<string>();
@@ -294,19 +300,19 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
 
         if (!wsl.Running)
         {
-            if (probe.IsProcessRunning("Docker Desktop.exe"))
+            if (await Task.Run(() => probe.IsProcessRunning("Docker Desktop.exe")))
             {
                 var docker = await RunAsync("docker.exe", "desktop stop");
                 lines.Add(Loc.T(docker.ExitCode == 0 ? "Docker Desktop stopped." : "Docker Desktop could not be stopped from the command line."));
             }
 
-            if (probe.IsWslRunning())
+            if (await Task.Run(probe.IsWslRunning))
             {
                 var result = await RunAsync("wsl.exe", "--shutdown");
                 lines.Add(Loc.T(result.ExitCode == 0 ? "WSL shut down." : "WSL could not be shut down."));
             }
         }
-        else if (wsl.Docker == "start" && !probe.IsProcessRunning("Docker Desktop.exe"))
+        else if (wsl.Docker == "start" && !await Task.Run(() => probe.IsProcessRunning("Docker Desktop.exe")))
         {
             var docker = await RunAsync("docker.exe", "desktop start");
             lines.Add(Loc.T(docker.ExitCode == 0 ? "Docker Desktop started." : "Docker Desktop could not be started from the command line."));

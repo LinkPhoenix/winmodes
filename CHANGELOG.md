@@ -19,6 +19,10 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - App: an unexpected error in a page, the tray menu or a hotkey no longer closes WinModes; it is written to `errors.log` in `%LocalAppData%\WinModes` and a notification is shown.
 - Modes: asking for a mode switch while another is still running (page, tray menu, hotkey or automation) is refused with a message instead of stacking administrator prompts.
 
+### Changed
+
+- Modes: listing and closing the apps of a mode, and measuring memory, no longer run on the interface thread, so the window stays responsive during a switch.
+
 ## [0.8.0] - 2026-10-01
 
 ### Added
