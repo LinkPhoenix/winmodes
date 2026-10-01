@@ -11,6 +11,11 @@
          file also covers the self-contained publish of tools/package.ps1. -->
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <!-- A known vulnerability in any package, direct or transitive, is a restore error (warnings are errors here).
+         Being offline only means the advisory list could not be read, so that one stays a warning. -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1900</WarningsNotAsErrors>
   </PropertyGroup>
 </Project>
 
