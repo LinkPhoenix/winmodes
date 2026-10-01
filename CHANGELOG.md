@@ -8,6 +8,10 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+### Fixed
+
+- Modes: a switch interrupted by a crash or a failed restore stays listed as active and is retried on the next undo, instead of being forgotten with services left changed.
+
 ## [0.8.0] - 2026-10-01
 
 ### Added

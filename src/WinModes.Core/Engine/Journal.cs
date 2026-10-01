@@ -18,6 +18,13 @@ public sealed class JournalEntry
     public bool BeforeRunning { get; init; }
     public EntryOutcome Outcome { get; set; }
     public string? Detail { get; set; }
+
+    /// <summary>
+    /// A stop that is still Pending may already have changed the start type (a crash between the write and the
+    /// save), so it must be revertible; the revert only touches a service whose start type is still Manual.
+    /// </summary>
+    [JsonIgnore]
+    public bool NeedsRevert => Outcome == EntryOutcome.Done || (Outcome == EntryOutcome.Pending && Kind == EntryKind.StopService);
 }
 
 /// <summary>One mode switch: what was changed and whether it has been undone.</summary>
@@ -32,6 +39,9 @@ public sealed class JournalSession
 
     [JsonIgnore]
     public int DoneCount => Entries.Count(entry => entry.Outcome == EntryOutcome.Done);
+
+    [JsonIgnore]
+    public int RevertibleCount => Entries.Count(entry => entry.NeedsRevert);
 }
 
 /// <summary>
@@ -86,7 +96,7 @@ public sealed class JournalStore(string directory)
 
     /// <summary>The most recent session that changed something and has not been undone.</summary>
     public JournalSession? FindActive() =>
-        LoadAll().FirstOrDefault(session => !session.Reverted && session.DoneCount > 0);
+        LoadAll().FirstOrDefault(session => !session.Reverted && session.RevertibleCount > 0);
 
     private string PathOf(string id) => Path.Combine(Directory, id + ".json");
 }

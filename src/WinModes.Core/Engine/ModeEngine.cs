@@ -50,13 +50,14 @@ public sealed class ModeEngine(IServiceControl services, ModePlanner planner, Pr
     {
         ArgumentNullException.ThrowIfNull(session);
 
-        foreach (var entry in Enumerable.Reverse(session.Entries).Where(entry => entry.Outcome == EntryOutcome.Done))
+        foreach (var entry in Enumerable.Reverse(session.Entries).Where(entry => entry.NeedsRevert))
         {
             RevertEntry(entry);
             journal.Save(session);
         }
 
-        session.Reverted = true;
+        // An entry that could not be restored stays revertible, so the session stays active and a later revert retries it.
+        session.Reverted = session.RevertibleCount == 0;
         journal.Save(session);
         return session;
     }

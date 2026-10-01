@@ -95,8 +95,55 @@ public sealed class ModeEngineTests : IDisposable
         Assert.Null(_journal.FindActive());
     }
 
+    [Fact]
+    public void Revert_RestoresAStopThatWasInterruptedBeforeItWasMarkedDone()
+    {
+        _services.Add("Scanner", ServiceStartMode.Automatic, running: true);
+        var session = new JournalSession { Id = "crashed", Mode = "test", StartedUtc = DateTimeOffset.UtcNow };
+        session.Entries.Add(new JournalEntry
+        {
+            Target = "Scanner",
+            Kind = EntryKind.StopService,
+            BeforeStartMode = ServiceStartMode.Automatic,
+            BeforeRunning = true,
+            Outcome = EntryOutcome.Pending,
+        });
+        _journal.Save(session);
+        // The helper died after the start type changed but before the service was stopped or the entry saved.
+        _services.SetStartMode("Scanner", ServiceStartMode.Manual, delayedAutoStart: false);
+
+        Assert.Equal("crashed", _journal.FindActive()?.Id);
+
+        _engine.Revert(session);
+
+        Assert.Equal(ServiceStartMode.Automatic, _services.GetState("Scanner")!.StartMode);
+        Assert.True(session.Reverted);
+        Assert.Null(_journal.FindActive());
+    }
+
+    [Fact]
+    public void Revert_KeepsTheSessionActiveWhenAnEntryCannotBeRestored()
+    {
+        _services.Add("Scanner", ServiceStartMode.Automatic, running: true);
+        var session = _engine.Apply(Stopping("Scanner"));
+        _services.FailSetStartMode = true;
+
+        _engine.Revert(session);
+
+        Assert.False(session.Reverted);
+        Assert.Equal(session.Id, _journal.FindActive()?.Id);
+
+        _services.FailSetStartMode = false;
+        _engine.Revert(session);
+
+        Assert.True(session.Reverted);
+        Assert.Equal(ServiceStartMode.Automatic, _services.GetState("Scanner")!.StartMode);
+    }
+
     private sealed class FakeServices : IServiceControl, ISystemProbe
     {
+        public bool FailSetStartMode { get; set; }
+
         private readonly Dictionary<string, (ServiceStartMode Mode, bool Running, bool Delayed)> _state = new(StringComparer.OrdinalIgnoreCase);
 
         public Dictionary<string, string[]> Dependents { get; } = new(StringComparer.OrdinalIgnoreCase);
@@ -112,8 +159,15 @@ public sealed class ModeEngineTests : IDisposable
         public bool IsDelayedAutoStart(string name) => _state[name].Delayed;
         public IReadOnlyList<string> GetRunningDependents(string name) => Dependents.GetValueOrDefault(name, []);
 
-        public void SetStartMode(string name, ServiceStartMode mode, bool delayedAutoStart) =>
+        public void SetStartMode(string name, ServiceStartMode mode, bool delayedAutoStart)
+        {
+            if (FailSetStartMode)
+            {
+                throw new InvalidOperationException("Simulated failure.");
+            }
+
             _state[name] = (mode, _state[name].Running, delayedAutoStart);
+        }
 
         public void StopService(string name) => _state[name] = (_state[name].Mode, false, _state[name].Delayed);
         public void StartService(string name) => _state[name] = (_state[name].Mode, true, _state[name].Delayed);
