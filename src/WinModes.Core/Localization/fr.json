@@ -1,6 +1,7 @@
 {
   ", resets in {0}": ", réinitialisation dans {0}",
   ".NET 10 and WPF (Microsoft, MIT licence). WPF-UI 4.3 by lepo.co (MIT licence). Icons: Segoe Fluent Icons, shipped with Windows 11.": ".NET 10 et WPF (Microsoft, licence MIT). WPF-UI 4.3 par lepo.co (licence MIT). Icônes : Segoe Fluent Icons, fournies avec Windows 11.",
+  "WinModes hit an unexpected error and kept running. The details are in errors.log in %LocalAppData%\\WinModes.": "WinModes a rencontré une erreur inattendue et continue de fonctionner. Les détails sont dans errors.log, dans %LocalAppData%\\WinModes.",
   "{0:0.0} GB available": "{0:0.0} GB disponibles",
   "{0:0.0} GB freed": "{0:0.0} GB libérés",
   "{0:0} % left": "{0:0} % restants",

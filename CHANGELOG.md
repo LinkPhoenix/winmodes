@@ -16,6 +16,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Usage and widget: a plan or status-line answer holding an impossible date or number no longer stops the reading; the value is shown as unknown.
 - Settings, History and Claude status line: files are saved in one step, so a crash or power loss can no longer leave a half-written settings, usage history or Claude Code settings file.
 - Claude status line: installing or removing it keeps the first backup of your Claude Code settings instead of replacing it, and no longer rewrites accents or symbols elsewhere in that file.
+- App: an unexpected error in a page, the tray menu or a hotkey no longer closes WinModes; it is written to `errors.log` in `%LocalAppData%\WinModes` and a notification is shown.
 
 ## [0.8.0] - 2026-10-01
 

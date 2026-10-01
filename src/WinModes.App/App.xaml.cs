@@ -14,6 +14,7 @@ public partial class App : Application, IDisposable
     private const string OnboardingArgument = "--onboarding";
     private const string LanguageArgument = "--language";
 
+    private Services.ErrorGuard? _errorGuard;
     private Mutex? _singleInstance;
     private Forms.NotifyIcon? _trayIcon;
     private MainWindow? _window;
@@ -34,6 +35,10 @@ public partial class App : Application, IDisposable
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
+        _errorGuard = Services.ErrorGuard.Register(this, new ErrorLog(ErrorLog.DefaultPath), () =>
+            _trayIcon?.ShowBalloonTip(5000, "WinModes",
+                Loc.T("WinModes hit an unexpected error and kept running. The details are in errors.log in %LocalAppData%\\WinModes."), Forms.ToolTipIcon.Warning));
+
         _singleInstance = new Mutex(initiallyOwned: true, SingleInstanceMutexName, out var isFirstInstance);
         if (!isFirstInstance)
         {
