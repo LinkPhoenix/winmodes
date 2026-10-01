@@ -17,7 +17,7 @@
 
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
         <TextBlock Text="Automation" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock Text="Let WinModes activate a mode by itself when a program starts. Off until you turn it on."
+        <TextBlock Text="Let WinModes activate a mode by itself when a program starts, on battery, or at set hours. Off until you turn it on."
                    Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
 
         <TextBlock Text="AUTOMATIC SWITCHING" Style="{StaticResource SectionTitleStyle}" />
@@ -28,7 +28,7 @@
                         <StackPanel Margin="0,0,80,0">
                             <TextBlock Text="Switch modes automatically" FontWeight="SemiBold" />
                             <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}"
-                                       Text="WinModes checks every few seconds for the programs listed below. Windows still asks for permission at each switch that changes services." />
+                                       Text="WinModes checks every few seconds whether a rule below applies. Windows still asks for permission at each switch that changes services." />
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="Enabled" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
                                          AutomationProperties.Name="Switch modes automatically" />
@@ -37,12 +37,12 @@
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">
                     <Grid>
                         <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="Return to normal when the program closes" FontWeight="SemiBold" />
+                            <TextBlock Text="Return to normal when the rule no longer applies" FontWeight="SemiBold" />
                             <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}"
                                        Text="Only a mode activated automatically is undone. A mode you chose yourself is never changed." />
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="RevertWhenClosed" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
-                                         AutomationProperties.Name="Return to normal when the program closes" />
+                                         AutomationProperties.Name="Return to normal when the rule no longer applies" />
                     </Grid>
                 </Border>
             </StackPanel>
@@ -87,11 +87,18 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="When" VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <ComboBox x:Name="Trigger" MinWidth="190" Margin="0,0,12,0" DisplayMemberPath="Label"
+                                  SelectionChanged="OnTriggerChanged" AutomationProperties.Name="Trigger" />
                         <ComboBox x:Name="ProcessName" Grid.Column="1" IsEditable="True" DropDownOpened="OnProcessListOpened"
                                   ToolTip="Program name, for example cs2.exe. Open the list to pick a running program."
                                   AutomationProperties.Name="Program name" />
-                        <TextBlock Grid.Column="2" Text="runs, activate" VerticalAlignment="Center" Margin="12,0" />
+                        <StackPanel x:Name="TimeRange" Grid.Column="1" Orientation="Horizontal" Visibility="Collapsed">
+                            <TextBlock Text="from" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <ui:TextBox x:Name="TimeFrom" Width="90" PlaceholderText="09:00" AutomationProperties.Name="Start time" />
+                            <TextBlock Text="to" VerticalAlignment="Center" Margin="10,0,8,0" />
+                            <ui:TextBox x:Name="TimeTo" Width="90" PlaceholderText="18:00" AutomationProperties.Name="End time" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="activate" VerticalAlignment="Center" Margin="12,0" />
                         <ComboBox x:Name="Mode" Grid.Column="3" MinWidth="150" DisplayMemberPath="Label" AutomationProperties.Name="Mode to activate" />
                         <ui:Button Grid.Column="4" Content="Add rule" Appearance="Primary" Icon="{ui:SymbolIcon Add24}" Margin="12,0,0,0" Click="OnAdd" />
                     </Grid>
@@ -101,6 +108,6 @@
         <TextBlock x:Name="Status" FontSize="12" Margin="4,10,0,0" Style="{StaticResource SecondaryTextStyle}" />
 
         <TextBlock Margin="4,16,0,0" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
-                   Text="Rules are checked from top to bottom: the first one whose program runs wins. A program is acted on once each time it starts, so undoing a mode by hand is respected. The protected list applies to automatic switches exactly as to manual ones." />
+                   Text="Rules are checked from top to bottom: the first one that applies wins. A rule acts once each time it starts to apply, so undoing a mode by hand is respected. The protected list applies to automatic switches exactly as to manual ones." />
     </StackPanel>
 </Page>

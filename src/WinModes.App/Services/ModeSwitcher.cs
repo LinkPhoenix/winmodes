@@ -76,6 +76,8 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         var culture = System.Globalization.CultureInfo.CurrentCulture;
         var outcome = freedGb >= MinFreedGbToReport ? string.Create(culture, $"{freedGb:0.0} GB freed") : "no measurable change";
         lines.Insert(0, string.Create(culture, $"Memory in use: {usedBeforeGb:0.0} GB before, {usedAfterGb:0.0} GB after ({outcome})."));
+        // Kept for the summary shown when the mode is deactivated.
+        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Math.Max(freedGb, 0)));
         return new SwitchReport(true, lines);
     }
 
@@ -102,8 +104,22 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         }
 
         lines.Add("Apps that were closed, WSL and Docker are not restarted automatically.");
+        if (state is not null)
+        {
+            lines.Insert(0, DescribeSession(state));
+        }
+
         DeleteUserState();
         return new SwitchReport(true, lines);
+    }
+
+    private static string DescribeSession(UserState state)
+    {
+        var culture = System.Globalization.CultureInfo.CurrentCulture;
+        var active = DateTimeOffset.UtcNow - state.SwitchedUtc;
+        var duration = active.TotalHours >= 1 ? $"{(int)active.TotalHours} h {active.Minutes:00}" : $"{Math.Max((int)active.TotalMinutes, 1)} min";
+        var freed = state.FreedGb >= MinFreedGbToReport ? string.Create(culture, $" It had freed {state.FreedGb:0.0} GB when activated.") : "";
+        return $"{culture.TextInfo.ToTitleCase(state.Mode)} mode was active for {duration}.{freed}";
     }
 
     /// <summary>Returns null on success, or the reason the helper did not complete.</summary>
@@ -323,5 +339,5 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     [GeneratedRegex("[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}")]
     private static partial Regex GuidPattern();
 
-    private sealed record UserState(string Mode, string? PreviousPowerScheme, DateTimeOffset SwitchedUtc);
+    private sealed record UserState(string Mode, string? PreviousPowerScheme, DateTimeOffset SwitchedUtc, double FreedGb = 0);
 }

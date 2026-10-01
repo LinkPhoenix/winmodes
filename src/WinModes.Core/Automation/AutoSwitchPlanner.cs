@@ -34,12 +34,17 @@ public sealed class AutoSwitchPlanner
     {
         ArgumentNullException.ThrowIfNull(process);
         var name = process.Trim().Trim('"');
+        if (AutoSwitchConditions.IsCondition(name))
+        {
+            return name;
+        }
+
         name = name[(name.LastIndexOfAny(['\\', '/']) + 1)..];
         return name.EndsWith(ExecutableExtension, StringComparison.OrdinalIgnoreCase) ? name[..^ExecutableExtension.Length] : name;
     }
 
     /// <param name="rules">In priority order: the first rule whose program runs wins.</param>
-    /// <param name="running">Normalized names of the running processes.</param>
+    /// <param name="running">Normalized names of the running processes, plus the conditions that hold (see <see cref="AutoSwitchConditions"/>).</param>
     /// <param name="activeMode">Mode active right now, or null.</param>
     /// <param name="revertWhenClosed">Undo a mode this planner activated once its program has exited.</param>
     public AutoSwitchDecision Evaluate(IReadOnlyList<AutoSwitchRule> rules, IReadOnlySet<string> running, string? activeMode, bool revertWhenClosed)

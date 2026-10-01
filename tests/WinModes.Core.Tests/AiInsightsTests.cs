@@ -16,6 +16,7 @@ public sealed class AiInsightsTests
     [InlineData(@"node C:\Users\someone\node_modules\@playwright\mcp\cli.js", "@playwright/mcp")]
     [InlineData(@"npx -y context7-mcp@1.2.3 --stdio", "context7-mcp")]
     [InlineData(@"C:\tools\my-mcp-server.exe --port 1", "my-mcp-server")]
+    [InlineData(@"cmd /c npx --mcp-debug @upstash/context7-mcp@latest^", "@upstash/context7-mcp")]
     public void NameOf_KeepsThePackageAndDropsFolders(string commandLine, string expected)
     {
         var name = McpServers.NameOf(Node(1, "node", commandLine));

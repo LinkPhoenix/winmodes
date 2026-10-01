@@ -6,7 +6,7 @@ using WinModes.Core.Profiles;
 namespace WinModes.App.Services;
 
 /// <summary>
-/// Opt-in automatic switching: watches for the programs named in the user's rules and
+/// Opt-in automatic switching: watches for the programs, power source and time ranges named in the user's rules and
 /// activates the matching mode. Off by default; it does nothing until the user turns it on.
 /// </summary>
 internal sealed class AutoSwitcher
@@ -72,14 +72,16 @@ internal sealed class AutoSwitcher
             }
 
             var running = await Task.Run(RunningProcessNames);
+            var onBattery = System.Windows.Forms.SystemInformation.PowerStatus.PowerLineStatus == System.Windows.Forms.PowerLineStatus.Offline;
+            running.UnionWith(AutoSwitchConditions.ActiveKeys(settings.Rules, onBattery, TimeOnly.FromDateTime(DateTime.Now)));
             var decision = _planner.Evaluate(settings.Rules, running, ModeSwitcher.ActiveMode, settings.RevertWhenClosed);
             switch (decision.Kind)
             {
                 case AutoSwitchKind.Activate:
-                    await _switch($"{decision.Process} started", () => AppServices.Switcher.ActivateAsync(AppServices.Store.Load(decision.Mode!)));
+                    await _switch(AutoSwitchConditions.IsCondition(decision.Process!) ? AutoSwitchConditions.Describe(decision.Process!) : $"{decision.Process} started", () => AppServices.Switcher.ActivateAsync(AppServices.Store.Load(decision.Mode!)));
                     break;
                 case AutoSwitchKind.Revert:
-                    await _switch($"{decision.Process} closed", AppServices.Switcher.UndoAsync);
+                    await _switch(AutoSwitchConditions.IsCondition(decision.Process!) ? $"No longer: {AutoSwitchConditions.Describe(decision.Process!)}" : $"{decision.Process} closed", AppServices.Switcher.UndoAsync);
                     break;
             }
         }

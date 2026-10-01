@@ -12,6 +12,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - AI tools page lists the MCP servers running in several sessions and the memory they hold.
 - Optional alert when a single AI tool passes a memory limit.
 - Optional automatic end of project sessions idle for 30 minutes to 4 hours. Off by default.
+- Automation rules can also trigger on battery power or during a daily time range.
+- Deactivating a mode reports how long it was active and the memory it had freed.
 
 ## [0.3.1] - 2026-10-01
 
