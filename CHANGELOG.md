@@ -23,6 +23,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 - Modes: listing and closing the apps of a mode, and measuring memory, no longer run on the interface thread, so the window stays responsive during a switch.
 - Settings: preferences are read from disk once instead of at every refresh of the tray, widget and pages.
+- Dashboard and widget: the live graphs redraw at most 30 times a second instead of 60, which lowers the CPU use of the app.
 
 ## [0.8.0] - 2026-10-01
 

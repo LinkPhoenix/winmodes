@@ -7,7 +7,7 @@ namespace WinModes.App.Controls;
 /// <summary>
 /// Real-time line chart on a fixed 0-100 scale: square grid, gradient fill, and a glow made of wider
 /// translucent strokes (no bitmap effect). Between two samples the curve scrolls on every frame,
-/// so it moves continuously instead of jumping once per sample.
+/// so it moves continuously instead of jumping once per sample (at most 30 images a second).
 /// </summary>
 public sealed class HistoryChart : FrameworkElement
 {
@@ -17,8 +17,12 @@ public sealed class HistoryChart : FrameworkElement
     private const double GridCell = 18;
     private const double CornerRadius = 4;
 
+    // The scroll is slow (one grid cell takes seconds), so 30 images a second look the same as 60 for half the work.
+    private static readonly TimeSpan FrameInterval = TimeSpan.FromMilliseconds(33);
+
     private readonly double[] _samples = new double[Capacity];
     private readonly Stopwatch _sinceLastSample = new();
+    private readonly Stopwatch _sinceLastFrame = Stopwatch.StartNew();
     private int _count;
     private int _next;
     private bool _isRendering;
@@ -91,7 +95,16 @@ public sealed class HistoryChart : FrameworkElement
         }
     }
 
-    private void OnFrame(object? sender, EventArgs e) => InvalidateVisual();
+    private void OnFrame(object? sender, EventArgs e)
+    {
+        if (_sinceLastFrame.Elapsed < FrameInterval)
+        {
+            return;
+        }
+
+        _sinceLastFrame.Restart();
+        InvalidateVisual();
+    }
 
     protected override void OnRender(DrawingContext drawingContext)
     {
