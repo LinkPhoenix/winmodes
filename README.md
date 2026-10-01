@@ -6,7 +6,9 @@ WinModes switches your PC between modes (Code, Work, Game) to free memory and cu
 
 ![Dashboard](images/dashboard.png)
 
-> **Status: early version (0.1.0).** It works on the author's machine and is covered by automated tests, but it has not been tested on many PCs. Read [Safety](#safety) before activating a mode.
+> **Status: early version.** It works on the author's machine and is covered by automated tests, but it has not been tested on many PCs. Read [Safety](#safety) before activating a mode.
+>
+> The screenshots are taken in privacy mode: project names, folders and command lines are hidden.
 
 ## What it does
 
@@ -17,12 +19,26 @@ WinModes switches your PC between modes (Code, Work, Game) to free memory and cu
 - **Processes page**: process tree with child processes, PID, CPU, memory, threads and command line; search, sort, and a right-click menu (end task, end process tree, open file location, copy).
 - **AI tools page**: every running session of Claude Code, Claude desktop, Codex, Cursor, VS Code and others, with the project folder it works in and all the processes it started.
 - **Services page**: search, filters, real app icons, and a lock on everything that is protected.
-- **Tray meter and desktop widget** (both optional): the notification-area icon can show the memory used by AI tools, and a small always-on-top panel shows CPU, memory and AI tools.
-- **Settings**: start with Windows, start minimized, keep running in the notification area, activate a mode at startup.
+- **Automation** (optional, off by default): rules such as "when `cs2.exe` runs, activate Game mode", undone when the program closes.
+- **Tray meter and desktop widget** (both optional): the notification-area icon can show the memory used by AI tools, and a small panel on the desktop shows CPU, memory, network and AI tools. The Widget page sets its content, size, opacity and position, with a live preview.
+- **Privacy mode**: hides project names, folders, command-line details and your account name, for screen sharing and screenshots.
+- **Welcome guide** on first run, and a **Settings** page: start with Windows, start minimized, keep running in the notification area, shortcuts, memory alert, WSL memory limit.
 
-| Modes | Processes | Settings |
-|---|---|---|
-| ![Modes](images/modes.png) | ![Processes](images/processes.png) | ![Settings](images/settings.png) |
+| Modes | AI tools |
+|---|---|
+| ![Modes](images/modes.png) | ![AI tools](images/ai-tools.png) |
+
+| Processes | Services |
+|---|---|
+| ![Processes](images/processes.png) | ![Services](images/services.png) |
+
+| Automation | Widget |
+|---|---|
+| ![Automation](images/automation.png) | ![Widget](images/widget.png) |
+
+| Welcome guide | Settings |
+|---|---|
+| ![Welcome guide](images/welcome.png) | ![Settings](images/settings.png) |
 
 ## Safety
 
@@ -44,13 +60,23 @@ Other rules enforced by the engine:
 Known limitations:
 
 - **Work and Game modes shut down WSL and Docker Desktop.** Running containers and WSL sessions end. Undo does not restart them, and it does not reopen closed apps.
-- **No installer yet.** When run from a build folder, the elevated helper reads the profiles from that folder, which any program running as you could modify. Do not treat a development build as hardened.
+- **The packages are not code-signed yet.** Windows SmartScreen warns on first launch ("Windows protected your PC"); choose *More info*, then *Run anyway*, or build from source.
+- **Portable and development builds are not hardened.** There, the elevated helper reads the protected list and the profiles from the app folder, which any program running as you could modify. The installer puts the protected list under Program Files, where changing it needs administrator rights; only the mode profiles stay editable, and the protected list is enforced whatever a profile says.
+- Automatic switching still shows the Windows permission prompt at each switch.
 - The profiles in `profiles/` were generated for one machine (an HP OMEN laptop). Generate your own, see below.
 - The interface is in English and dark only.
 
 ## Download
 
-Get the latest `WinModes-vX.Y.Z-win-x64.zip` from the [Releases page](https://github.com/LinkPhoenix/winmodes/releases), extract it and run `WinModes.exe`. No installation or .NET runtime is needed. See the [changelog](CHANGELOG.md).
+From the [Releases page](https://github.com/LinkPhoenix/winmodes/releases):
+
+| File | Use |
+|---|---|
+| `WinModes-vX.Y.Z-setup-win-x64.exe` | Installer. Installs into Program Files, adds a Start menu entry and an uninstaller. Uninstalling first undoes the active mode. |
+| `WinModes-vX.Y.Z-portable-win-x64.zip` | Portable. Extract anywhere and run `WinModes.exe`; nothing is installed. |
+| `SHA256SUMS.txt` | Checksums of both files. |
+
+Neither needs the .NET runtime. See the [changelog](CHANGELOG.md).
 
 ## Requirements
 
@@ -98,7 +124,13 @@ List the changes under **Unreleased** in `CHANGELOG.md`, then:
 pwsh -NoProfile -File tools/release.ps1 -Bump minor
 ```
 
-The script runs the tests, updates the version and the changelog, commits, tags and pushes. The release workflow then builds the self-contained package and publishes the GitHub release. Add `-DryRun` to preview without changing anything.
+The script runs the tests, updates the version and the changelog, commits, tags and pushes. The release workflow then builds the installer and the portable zip and publishes the GitHub release. Add `-DryRun` to preview without changing anything.
+
+To build the packages locally (the installer needs [Inno Setup](https://jrsoftware.org/isinfo.php) 6 or 7):
+
+```bash
+pwsh -NoProfile -File tools/package.ps1 -Version 0.3.0
+```
 
 ## Project layout
 
@@ -111,6 +143,7 @@ The script runs the tests, updates the version and the changelog, commits, tags 
 | `tests/` | xUnit tests; the engine is tested against fake services |
 | `data/` | Knowledge base and protection blocklist |
 | `profiles/` | Generated mode profiles and the hand-edited `modes.manual.json` |
+| `installer/` | Inno Setup script |
 | `research/` | Study of other optimizers and UI research |
 
 ## Support
