@@ -1,6 +1,6 @@
 name: Release
 
-# Push a tag such as v0.2.0 to build, test, package and publish a GitHub release.
+# Push a tag such as v0.3.0 to build, test, package (installer and portable zip) and publish a GitHub release.
 on:
   push:
     tags: ["v*.*.*"]
@@ -28,18 +28,13 @@ jobs:
           dotnet build --nologo -c Release
           dotnet test --nologo -c Release --no-build
 
-      - name: Publish
+      - name: Install Inno Setup
         shell: pwsh
-        run: |
-          $version = '${{ github.ref_name }}'.TrimStart('v')
-          $out = "publish/WinModes"
-          dotnet publish src/WinModes.App -c Release -r win-x64 --self-contained true -o $out --nologo -p:Version=$version
-          # The app and the elevated helper look for these next to the executable.
-          New-Item -ItemType Directory -Force "$out/data" | Out-Null
-          Copy-Item data/protected.json "$out/data/"
-          Copy-Item profiles "$out/profiles" -Recurse
-          Copy-Item LICENSE.md, README.md, CHANGELOG.md $out
-          Compress-Archive -Path $out -DestinationPath "WinModes-${{ github.ref_name }}-win-x64.zip"
+        run: choco install innosetup --yes --no-progress
+
+      - name: Package (portable zip and installer)
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/package.ps1 -Version '${{ github.ref_name }}'.TrimStart('v') -RequireInstaller
 
       - name: Release notes
         shell: pwsh
@@ -47,4 +42,6 @@ jobs:
 
       - name: Create GitHub release
         shell: pwsh
-        run: gh release create '${{ github.ref_name }}' "WinModes-${{ github.ref_name }}-win-x64.zip" --title "WinModes ${{ github.ref_name }}" --notes-file release-notes.md
+        run: |
+          $assets = Get-ChildItem artifacts -File | ForEach-Object FullName
+          gh release create '${{ github.ref_name }}' @assets --title "WinModes ${{ github.ref_name }}" --notes-file release-notes.md
