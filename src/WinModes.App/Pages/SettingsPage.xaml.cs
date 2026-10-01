@@ -11,6 +11,7 @@ namespace WinModes.App.Pages;
 public partial class SettingsPage : Page
 {
     private static readonly int[] AlertLimitsGb = [2, 4, 6, 8, 12, 16, 24];
+    private static readonly int[] WslLimitsGb = [4, 6, 8, 12, 16];
 
     private readonly bool _loaded;
 
@@ -37,6 +38,12 @@ public partial class SettingsPage : Page
         choices.AddRange(ModeCatalog.Load().Select(entry => new Choice(entry.Profile.Mode, entry.Profile.Label)));
         AutoMode.ItemsSource = choices;
         AutoMode.SelectedItem = choices.FirstOrDefault(choice => choice.Mode == settings.AutoActivateMode) ?? choices[0];
+
+        var currentWsl = File.Exists(WslConfig.DefaultPath) ? WslConfig.ReadMemoryGb(File.ReadAllText(WslConfig.DefaultPath)) : null;
+        var wslChoices = new List<Limit> { new(0, "No limit set") };
+        wslChoices.AddRange(WslLimitsGb.Union(currentWsl is { } gb ? [gb] : []).Order().Select(value => new Limit(value, $"{value} GB")));
+        WslMemory.ItemsSource = wslChoices;
+        WslMemory.SelectedItem = wslChoices.FirstOrDefault(choice => choice.Gb == (currentWsl ?? 0)) ?? wslChoices[0];
 
         // Setting the initial values raises the change events; only user changes are saved.
         _loaded = true;
@@ -67,6 +74,39 @@ public partial class SettingsPage : Page
             AutoActivateMode = (AutoMode.SelectedItem as Choice)?.Mode,
         }).Save();
         (Application.Current as App)?.ApplyDisplaySettings();
+    }
+
+    private void OnWslMemoryChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loaded || WslMemory.SelectedItem is not Limit limit)
+        {
+            return;
+        }
+
+        try
+        {
+            var path = WslConfig.DefaultPath;
+            var content = File.Exists(path) ? File.ReadAllText(path) : "";
+            var updated = WslConfig.WithMemoryGb(content, limit.Gb == 0 ? null : limit.Gb);
+            if (updated == content)
+            {
+                return;
+            }
+
+            // Keep the file as it was before WinModes first touched it.
+            var backup = path + ".winmodes.bak";
+            if (File.Exists(path) && !File.Exists(backup))
+            {
+                File.Copy(path, backup);
+            }
+
+            File.WriteAllText(path, updated);
+            WslNote.Text = "Saved. It applies the next time WSL starts (after 'wsl --shutdown' or a restart of Docker Desktop).";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            WslNote.Text = $"The .wslconfig file could not be written: {ex.Message}";
+        }
     }
 
     private void OnOpenJournal(object sender, RoutedEventArgs e)

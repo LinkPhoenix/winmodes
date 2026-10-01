@@ -182,6 +182,26 @@
             </StackPanel>
         </Border>
 
+        <TextBlock Text="WSL AND DOCKER" Style="{StaticResource SectionTitleStyle}" />
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Memory limit for WSL and Docker Desktop" FontWeight="SemiBold" />
+                        <TextBlock x:Name="WslNote" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
+                                   Text="Sets 'memory' in your .wslconfig. It applies the next time WSL starts; a backup of the file is kept beside it." />
+                    </StackPanel>
+                    <ComboBox x:Name="WslMemory" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                              DisplayMemberPath="Label" SelectionChanged="OnWslMemoryChanged"
+                              AutomationProperties.Name="Memory limit for WSL and Docker Desktop" />
+                </Grid>
+            </Border>
+        </Border>
+
         <TextBlock Text="DATA" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <Border Style="{StaticResource RowStyle}" BorderThickness="0">
