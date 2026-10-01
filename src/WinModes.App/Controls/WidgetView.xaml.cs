@@ -42,7 +42,7 @@ public partial class WidgetView : UserControl
         CpuChart.SampleInterval = interval;
         MemoryChart.SampleInterval = interval;
 
-        ModeText.Visibility = Visible(settings.ShowMode);
+        ModeChip.Visibility = Visible(settings.ShowMode);
         CpuRow.Visibility = Visible(settings.ShowCpu);
         MemoryRow.Visibility = Visible(settings.ShowMemory);
         NetworkRow.Visibility = Visible(settings.ShowNetwork);
@@ -50,6 +50,9 @@ public partial class WidgetView : UserControl
         AiTools.Visibility = Visible(settings.ShowToolDetail);
         // No line above the AI block when it is the only thing shown.
         AiSeparator.Visibility = Visible(settings.ShowCpu || settings.ShowMemory || settings.ShowNetwork);
+        // The compact dot depends on the option that may just have changed.
+        _modeShown = false;
+        ShowMode(ModeSwitcher.ActiveMode);
     }
 
     internal void Show(StatsReading reading)
@@ -75,9 +78,39 @@ public partial class WidgetView : UserControl
                 string.Create(culture, $"{tool.MemoryMb / MbPerGb:0.0} GB"),
                 IconCache.Get(tool.ExecutablePath))).ToList();
 
-        var mode = ModeSwitcher.ActiveMode;
-        ModeText.Text = mode is null ? "No mode" : $"{culture.TextInfo.ToTitleCase(mode)} mode";
+        ShowMode(ModeSwitcher.ActiveMode);
     }
+
+    /// <summary>Colours the mode label, the border and the compact dot with the colour of the active mode.</summary>
+    internal void ShowMode(string? mode)
+    {
+        if (mode == _shownMode && _modeShown)
+        {
+            return;
+        }
+
+        (_shownMode, _modeShown) = (mode, true);
+        ModeText.Text = mode is null ? "No mode" : $"{CultureInfo.CurrentCulture.TextInfo.ToTitleCase(mode)} mode";
+        if (mode is null)
+        {
+            ModeChip.Background = Brushes.Transparent;
+            ModeText.ClearValue(TextBlock.ForegroundProperty);
+            Root.SetResourceReference(Border.BorderBrushProperty, "AppCardStrokeBrush");
+            CompactModeDot.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        var accent = Palette.ModeGradient(mode);
+        ModeChip.Background = accent;
+        ModeText.Foreground = Brushes.White;
+        Root.BorderBrush = accent;
+        CompactModeDot.Fill = accent;
+        CompactModeDot.ToolTip = ModeText.Text;
+        CompactModeDot.Visibility = Visible(_settings.ShowMode);
+    }
+
+    private string? _shownMode;
+    private bool _modeShown;
 
     private sealed record ToolRow(string Name, string Memory, ImageSource? Icon)
     {

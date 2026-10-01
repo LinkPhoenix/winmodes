@@ -8,6 +8,7 @@
         <Grid>
         <!-- Compact mode: one line. -->
         <StackPanel x:Name="CompactPanel" Orientation="Horizontal" Visibility="Collapsed">
+            <Ellipse x:Name="CompactModeDot" Width="9" Height="9" Margin="0,0,10,0" VerticalAlignment="Center" Visibility="Collapsed" />
             <TextBlock Text="CPU" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
             <TextBlock x:Name="CompactCpu" Text="…" FontWeight="SemiBold" Margin="6,0,14,0" Foreground="#A78BFA" />
             <TextBlock Text="RAM" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
@@ -19,7 +20,10 @@
         <StackPanel x:Name="FullPanel">
             <Grid>
                 <TextBlock Text="WINMODES" Style="{StaticResource CardCaptionStyle}" />
-                <TextBlock x:Name="ModeText" Text="No mode" FontSize="12" HorizontalAlignment="Right" Style="{StaticResource SecondaryTextStyle}" />
+                <!-- Filled with the colour of the active mode, so the mode is recognised at a glance. -->
+                <Border x:Name="ModeChip" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="9" Padding="9,2" Margin="0,-3,0,-3">
+                    <TextBlock x:Name="ModeText" Text="No mode" FontSize="12" FontWeight="SemiBold" Style="{StaticResource SecondaryTextStyle}" />
+                </Border>
             </Grid>
 
             <Grid x:Name="CpuRow" Margin="0,12,0,0">
