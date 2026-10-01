@@ -13,6 +13,7 @@ internal static class Palette
 
     public static readonly Color Brand = Color.FromRgb(0x7C, 0x5C, 0xFC);
 
+    public static readonly Brush BrandBrush = Freeze(new SolidColorBrush(Brand));
     public static readonly Brush Stop = Solid(0xF8, 0x71, 0x71);
     public static readonly Brush Start = Solid(0x34, 0xD3, 0x99);
     public static readonly Brush Power = Solid(0xFB, 0xBF, 0x24);

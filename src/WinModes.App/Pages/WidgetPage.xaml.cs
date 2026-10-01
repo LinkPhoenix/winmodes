@@ -100,6 +100,8 @@ public partial class WidgetPage : Page
     }
 
     private const string StatusLineFileName = "WinModes.StatusLine.exe";
+    private static string RecordClaudeText => Loc.T("Claude Code gives the usage of your plan only to its status line. This adds a WinModes status line to Claude Code's settings (a backup is kept); it records the 5-hour and weekly usage for the widget and shows them in Claude Code. Updated while a Claude Code session is open.");
+
     private static string OtherStatusLineText => Loc.T("Claude Code already has a status line of its own, so WinModes leaves it alone. To record the usage, remove it from Claude Code's settings first.");
 
     private void ShowClaudeUsage()
@@ -107,10 +109,7 @@ public partial class WidgetPage : Page
         var state = ClaudeStatusLineSetup.Read(ClaudeStatusLineSetup.DefaultSettingsPath);
         ClaudeUsage.IsChecked = state == ClaudeStatusLineSetup.State.Ours;
         ClaudeUsage.IsEnabled = state != ClaudeStatusLineSetup.State.Other;
-        if (state == ClaudeStatusLineSetup.State.Other)
-        {
-            ClaudeUsageDetail.Text = OtherStatusLineText;
-        }
+        ClaudeUsageRow.Description = state == ClaudeStatusLineSetup.State.Other ? OtherStatusLineText : RecordClaudeText;
     }
 
     private void OnClaudeUsageClicked(object sender, RoutedEventArgs e)
@@ -133,7 +132,7 @@ public partial class WidgetPage : Page
         }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
         {
-            ClaudeUsageDetail.Text = Loc.T("Claude Code's settings could not be changed.");
+            ClaudeUsageRow.Description = Loc.T("Claude Code's settings could not be changed.");
         }
 
         // Show what the settings really say, whatever was clicked.

@@ -3,24 +3,11 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:app="clr-namespace:WinModes.App"
       xmlns:controls="clr-namespace:WinModes.App.Controls"
       Title="{l:T 'Widget'}"
       ScrollViewer.CanContentScroll="False"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-    <Page.Resources>
-        <Style x:Key="RowStyle" TargetType="Border">
-            <Setter Property="Padding" Value="20,14" />
-            <Setter Property="BorderThickness" Value="0,0,0,1" />
-            <Setter Property="BorderBrush" Value="{StaticResource AppCardStrokeBrush}" />
-        </Style>
-        <Style x:Key="SectionTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource CardCaptionStyle}">
-            <Setter Property="Margin" Value="4,20,0,8" />
-        </Style>
-        <Style x:Key="RowTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
-    </Page.Resources>
 
     <!-- The page scrolls its options itself (the shell's scrolling is off) so the preview stays in view. -->
     <Grid Margin="36,24,0,0" MaxWidth="1136">
@@ -30,288 +17,157 @@
         </Grid.ColumnDefinitions>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,14,0">
-        <StackPanel Margin="0,0,0,36">
-        <TextBlock Text="{l:T 'Widget'}" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock Text="{l:T 'A small panel on your desktop with live figures. Changes apply at once.'}"
-                   Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
+            <StackPanel Margin="0,0,0,36">
+                <TextBlock Text="{l:T 'Widget'}" FontSize="28" FontWeight="SemiBold" />
+                <TextBlock Text="{l:T 'A small panel on your desktop with live figures. Changes apply at once.'}"
+                           Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
 
-        <TextBlock Text="{l:T 'GENERAL'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <StackPanel>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel>
-                            <TextBlock Text="{l:T 'Show the widget'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'You can also hide it from its right-click menu.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="Enabled" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
-                                         AutomationProperties.Name="{l:T 'Show the widget'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel>
-                            <TextBlock Text="{l:T 'Always on top'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Keep the widget above every other window.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="AlwaysOnTop" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
-                                         AutomationProperties.Name="{l:T 'Always on top'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,70,0">
-                            <TextBlock Text="{l:T 'Hide during full-screen apps'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'The widget disappears while a game, a video or a presentation fills the screen.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="HideOnFullScreen" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
-                                         AutomationProperties.Name="{l:T 'Hide during full-screen apps'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <Grid>
-                        <TextBlock Text="{l:T 'Refresh every'}" Style="{StaticResource RowTitleStyle}" />
-                        <ComboBox x:Name="Refresh" HorizontalAlignment="Right" MinWidth="170" DisplayMemberPath="Label"
-                                  SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Refresh interval'}" />
-                    </Grid>
-                </Border>
-            </StackPanel>
-        </Border>
-
-        <TextBlock Text="{l:T 'APPEARANCE'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <StackPanel>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <TextBlock Text="{l:T 'Opacity'}" Style="{StaticResource RowTitleStyle}" />
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Slider x:Name="OpacitySlider" Width="160" Minimum="40" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
-                                    VerticalAlignment="Center" ValueChanged="OnOpacityChanged" AutomationProperties.Name="{l:T 'Opacity'}" />
-                            <TextBlock x:Name="OpacityText" Width="48" TextAlignment="Right" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,70,0">
-                            <TextBlock Text="{l:T 'Compact'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'One line with CPU, memory and the AI total.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="Compact" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
-                                         AutomationProperties.Name="{l:T 'Compact'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <Grid>
-                        <TextBlock Text="{l:T 'Size'}" Style="{StaticResource RowTitleStyle}" />
-                        <ComboBox x:Name="Scale" HorizontalAlignment="Right" MinWidth="170" DisplayMemberPath="Label"
-                                  SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Size'}" />
-                    </Grid>
-                </Border>
-            </StackPanel>
-        </Border>
-
-        <TextBlock Text="{l:T 'CONTENT'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <StackPanel>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <TextBlock Text="CPU" Style="{StaticResource RowTitleStyle}" />
-                        <ui:ToggleSwitch x:Name="ShowCpu" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show CPU'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <TextBlock Text="{l:T 'Memory'}" Style="{StaticResource RowTitleStyle}" />
-                        <ui:ToggleSwitch x:Name="ShowMemory" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show memory'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,70,0">
-                            <TextBlock Text="{l:T 'History graphs'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Small CPU and memory graphs under the bars.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="ShowGraph" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
-                                         AutomationProperties.Name="{l:T 'History graphs'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <TextBlock Text="{l:T 'Network speed'}" Style="{StaticResource RowTitleStyle}" />
-                        <ui:ToggleSwitch x:Name="ShowNetwork" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show network speed'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <TextBlock Text="{l:T 'Active mode'}" Style="{StaticResource RowTitleStyle}" />
-                        <ui:ToggleSwitch x:Name="ShowMode" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show active mode'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <TextBlock Text="{l:T 'AI tools total'}" Style="{StaticResource RowTitleStyle}" />
-                        <ui:ToggleSwitch x:Name="ShowAiTools" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show AI tools total'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <TextBlock Text="{l:T 'Detail per AI tool'}" Style="{StaticResource RowTitleStyle}" />
-                        <ui:ToggleSwitch x:Name="ShowToolDetail" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show detail per AI tool'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <Grid>
-                        <TextBlock Text="{l:T 'AI tools listed'}" Style="{StaticResource RowTitleStyle}" />
-                        <ComboBox x:Name="MaxTools" HorizontalAlignment="Right" MinWidth="170" DisplayMemberPath="Label"
-                                  SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Number of AI tools listed'}" />
-                    </Grid>
-                </Border>
-            </StackPanel>
-        </Border>
-
-        <TextBlock Text="{l:T 'PLAN USAGE'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <StackPanel>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="{l:T 'Show plan usage'}" FontWeight="SemiBold" />
-                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
-                                       Text="{l:T 'Your plan, the usage left and when the limit resets. Read from files on this PC: nothing is asked online and no sign-in file is opened. Codex figures date from its last session; Claude needs one of the two options at the bottom.'}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="ShowSubscriptions" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show plan usage'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <TextBlock Text="{l:T 'Claude'}" Style="{StaticResource RowTitleStyle}" />
-                        <ui:ToggleSwitch x:Name="ShowClaudePlan" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show Claude usage'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <TextBlock Text="{l:T 'Codex'}" Style="{StaticResource RowTitleStyle}" />
-                        <ui:ToggleSwitch x:Name="ShowCodexPlan" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show Codex usage'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="{l:T 'Limit resets in reserve'}" FontWeight="SemiBold" />
-                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
-                                       Text="{l:T 'How many resets of the usage limit your account holds, shown as ↻ and a number in the compact layout. Only Codex gives it, and only with the online reading.'}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="ShowResetCredits" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show limit resets in reserve'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="{l:T 'Warn when a plan runs low'}" FontWeight="SemiBold" />
-                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
-                                       Text="{l:T 'A notification, once, when a plan has less than 10 % of its limit left, with the time of the reset.'}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="PlanAlert" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when a plan runs low'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="{l:T 'Read the usage online'}" FontWeight="SemiBold" />
-                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
-                                       Text="{l:T 'Every 5 minutes, ask Anthropic and OpenAI for the live figures and the limit resets you have in reserve, using the sign-in Claude Code and Codex already keep on this PC. The sign-in is sent only to its own provider and is never stored or shown by WinModes. These addresses are the ones the two tools use themselves, not a public API: they may stop working.'}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="ReadUsageOnline" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Read the usage online'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="{l:T 'Record Claude usage'}" FontWeight="SemiBold" />
-                            <TextBlock x:Name="ClaudeUsageDetail" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
-                                       Text="{l:T 'Claude Code gives the usage of your plan only to its status line. This adds a WinModes status line to Claude Code\'s settings (a backup is kept); it records the 5-hour and weekly usage for the widget and shows them in Claude Code. Updated while a Claude Code session is open.'}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="ClaudeUsage" HorizontalAlignment="Right" Click="OnClaudeUsageClicked" AutomationProperties.Name="{l:T 'Record Claude usage'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
+                <controls:SettingSection Header="{l:T 'GENERAL'}" Icon="Settings24" Accent="{x:Static app:Palette.BrandBrush}">
                     <StackPanel>
-                        <Grid>
-                            <StackPanel Margin="0,0,120,0">
-                                <TextBlock Text="{l:T 'Check Claude Code'}" FontWeight="SemiBold" />
-                                <TextBlock Text="{l:T 'Shows, one by one, what is missing for the Claude usage to appear.'}" FontSize="12"
-                                           Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
-                            </StackPanel>
-                            <ui:Button x:Name="CheckClaudeButton" Content="{l:T 'Check'}" HorizontalAlignment="Right" Click="OnCheckClaude"
-                                       AutomationProperties.Name="{l:T 'Check Claude Code'}" />
-                        </Grid>
-                        <controls:CheckResults x:Name="ClaudeCheck" Margin="0,14,0,0" />
+                        <controls:SettingRow Icon="WindowApps24" Accent="{x:Static app:Palette.BrandBrush}"
+                                             Title="{l:T 'Show the widget'}" Description="{l:T 'You can also hide it from its right-click menu.'}">
+                            <ui:ToggleSwitch x:Name="Enabled" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show the widget'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Pin24" Accent="{x:Static app:Palette.Container}"
+                                             Title="{l:T 'Always on top'}" Description="{l:T 'Keep the widget above every other window.'}">
+                            <ui:ToggleSwitch x:Name="AlwaysOnTop" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Always on top'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="FullScreenMaximize24" Accent="{x:Static app:Palette.Apps}"
+                                             Title="{l:T 'Hide during full-screen apps'}"
+                                             Description="{l:T 'The widget disappears while a game, a video or a presentation fills the screen.'}">
+                            <ui:ToggleSwitch x:Name="HideOnFullScreen" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Hide during full-screen apps'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="ArrowSync24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Refresh every'}">
+                            <ComboBox x:Name="Refresh" MinWidth="170" DisplayMemberPath="Label"
+                                      SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Refresh interval'}" />
+                        </controls:SettingRow>
                     </StackPanel>
-                </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <StackPanel>
-                        <Grid>
-                            <StackPanel Margin="0,0,120,0">
-                                <TextBlock Text="{l:T 'Check Codex'}" FontWeight="SemiBold" />
-                                <TextBlock Text="{l:T 'Shows, one by one, what is missing for the Codex usage to appear.'}" FontSize="12"
-                                           Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
-                            </StackPanel>
-                            <ui:Button x:Name="CheckCodexButton" Content="{l:T 'Check'}" HorizontalAlignment="Right" Click="OnCheckCodex"
-                                       AutomationProperties.Name="{l:T 'Check Codex'}" />
-                        </Grid>
-                        <controls:CheckResults x:Name="CodexCheck" Margin="0,14,0,0" />
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-        </Border>
+                </controls:SettingSection>
 
-        <TextBlock Text="{l:T 'POSITION AND MOUSE'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <StackPanel>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,230,0">
-                            <TextBlock Text="{l:T 'Move to a corner'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Otherwise drag the widget where you want; its position is remembered.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <WrapPanel HorizontalAlignment="Right" MaxWidth="210">
-                            <ui:Button Content="{l:T 'Top left'}" Tag="TopLeft" Margin="0,0,6,6" Click="OnCorner" />
-                            <ui:Button Content="{l:T 'Top right'}" Tag="TopRight" Margin="0,0,6,6" Click="OnCorner" />
-                            <ui:Button Content="{l:T 'Bottom left'}" Tag="BottomLeft" Margin="0,0,6,6" Click="OnCorner" />
-                            <ui:Button Content="{l:T 'Bottom right'}" Tag="BottomRight" Margin="0,0,6,6" Click="OnCorner" />
-                        </WrapPanel>
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel>
-                            <TextBlock Text="{l:T 'Lock position'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'The widget cannot be dragged by mistake.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="LockPosition" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
-                                         AutomationProperties.Name="{l:T 'Lock position'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <Grid>
-                        <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="{l:T 'Click-through'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Clicks pass through the widget to the window underneath. Its right-click menu is then unavailable: come back here to change it.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="ClickThrough" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
-                                         AutomationProperties.Name="{l:T 'Click-through'}" />
-                    </Grid>
-                </Border>
+                <controls:SettingSection Header="{l:T 'APPEARANCE'}" Icon="PaintBrush24" Accent="{x:Static app:Palette.Apps}">
+                    <StackPanel>
+                        <controls:SettingRow Icon="Drop24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Opacity'}">
+                            <StackPanel Orientation="Horizontal">
+                                <Slider x:Name="OpacitySlider" Width="160" Minimum="40" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
+                                        VerticalAlignment="Center" ValueChanged="OnOpacityChanged" AutomationProperties.Name="{l:T 'Opacity'}" />
+                                <TextBlock x:Name="OpacityText" Width="48" TextAlignment="Right" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="ArrowMinimize24" Accent="{x:Static app:Palette.Power}"
+                                             Title="{l:T 'Compact'}" Description="{l:T 'One line with CPU, memory and the AI total.'}">
+                            <ui:ToggleSwitch x:Name="Compact" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Compact'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="ResizeLarge24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Size'}">
+                            <ComboBox x:Name="Scale" MinWidth="170" DisplayMemberPath="Label"
+                                      SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Size'}" />
+                        </controls:SettingRow>
+                    </StackPanel>
+                </controls:SettingSection>
+
+                <controls:SettingSection Header="{l:T 'CONTENT'}" Icon="DataBarVertical24" Accent="{x:Static app:Palette.Container}">
+                    <StackPanel>
+                        <controls:SettingRow Icon="DeveloperBoard24" Accent="{x:Static app:Palette.BrandBrush}" Title="CPU">
+                            <ui:ToggleSwitch x:Name="ShowCpu" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show CPU'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Memory16" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Memory'}">
+                            <ui:ToggleSwitch x:Name="ShowMemory" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show memory'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="DataLine24" Accent="{x:Static app:Palette.Apps}"
+                                             Title="{l:T 'History graphs'}" Description="{l:T 'Small CPU and memory graphs under the bars.'}">
+                            <ui:ToggleSwitch x:Name="ShowGraph" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'History graphs'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Wifi124" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Network speed'}">
+                            <ui:ToggleSwitch x:Name="ShowNetwork" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show network speed'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Flash24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Active mode'}">
+                            <ui:ToggleSwitch x:Name="ShowMode" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show active mode'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Bot24" Accent="{x:Static app:Palette.Apps}" Title="{l:T 'AI tools total'}">
+                            <ui:ToggleSwitch x:Name="ShowAiTools" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show AI tools total'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="List24" Accent="{x:Static app:Palette.Neutral}" Title="{l:T 'Detail per AI tool'}">
+                            <ui:ToggleSwitch x:Name="ShowToolDetail" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show detail per AI tool'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="NumberSymbol24" Accent="{x:Static app:Palette.Neutral}" Title="{l:T 'AI tools listed'}">
+                            <ComboBox x:Name="MaxTools" MinWidth="170" DisplayMemberPath="Label"
+                                      SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Number of AI tools listed'}" />
+                        </controls:SettingRow>
+                    </StackPanel>
+                </controls:SettingSection>
+
+                <controls:SettingSection Header="{l:T 'PLAN USAGE'}" Icon="Gauge24" Accent="{x:Static app:Palette.Start}">
+                    <StackPanel>
+                        <controls:SettingRow Icon="Gauge24" Accent="{x:Static app:Palette.BrandBrush}" Title="{l:T 'Show plan usage'}"
+                                             Description="{l:T 'Your plan, the usage left and when the limit resets. Read from files on this PC: nothing is asked online and no sign-in file is opened. Codex figures date from its last session; Claude needs one of the two options at the bottom.'}">
+                            <ui:ToggleSwitch x:Name="ShowSubscriptions" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show plan usage'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Sparkle24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Claude'}">
+                            <ui:ToggleSwitch x:Name="ShowClaudePlan" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show Claude usage'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Code24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Codex'}">
+                            <ui:ToggleSwitch x:Name="ShowCodexPlan" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show Codex usage'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="ArrowCounterclockwise24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Limit resets in reserve'}"
+                                             Description="{l:T 'How many resets of the usage limit your account holds, shown as ↻ and a number in the compact layout. Only Codex gives it, and only with the online reading.'}">
+                            <ui:ToggleSwitch x:Name="ShowResetCredits" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show limit resets in reserve'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Alert24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Warn when a plan runs low'}"
+                                             Description="{l:T 'A notification, once, when a plan has less than 10 % of its limit left, with the time of the reset.'}">
+                            <ui:ToggleSwitch x:Name="PlanAlert" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when a plan runs low'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="CloudArrowDown24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Read the usage online'}"
+                                             Description="{l:T 'Every 5 minutes, ask Anthropic and OpenAI for the live figures and the limit resets you have in reserve, using the sign-in Claude Code and Codex already keep on this PC. The sign-in is sent only to its own provider and is never stored or shown by WinModes. These addresses are the ones the two tools use themselves, not a public API: they may stop working.'}">
+                            <ui:ToggleSwitch x:Name="ReadUsageOnline" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Read the usage online'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow x:Name="ClaudeUsageRow" Icon="Record24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Record Claude usage'}">
+                            <ui:ToggleSwitch x:Name="ClaudeUsage" Click="OnClaudeUsageClicked" AutomationProperties.Name="{l:T 'Record Claude usage'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Stethoscope24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Check Claude Code'}"
+                                             Description="{l:T 'Shows, one by one, what is missing for the Claude usage to appear.'}">
+                            <controls:SettingRow.Footer>
+                                <controls:CheckResults x:Name="ClaudeCheck" />
+                            </controls:SettingRow.Footer>
+                            <ui:Button x:Name="CheckClaudeButton" Content="{l:T 'Check'}" Click="OnCheckClaude" AutomationProperties.Name="{l:T 'Check Claude Code'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="Stethoscope24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Check Codex'}"
+                                             Description="{l:T 'Shows, one by one, what is missing for the Codex usage to appear.'}">
+                            <controls:SettingRow.Footer>
+                                <controls:CheckResults x:Name="CodexCheck" />
+                            </controls:SettingRow.Footer>
+                            <ui:Button x:Name="CheckCodexButton" Content="{l:T 'Check'}" Click="OnCheckCodex" AutomationProperties.Name="{l:T 'Check Codex'}" />
+                        </controls:SettingRow>
+                    </StackPanel>
+                </controls:SettingSection>
+
+                <controls:SettingSection Header="{l:T 'POSITION AND MOUSE'}" Icon="CursorHover24" Accent="{x:Static app:Palette.Apps}">
+                    <StackPanel>
+                        <controls:SettingRow Icon="PositionToFront24" Accent="{x:Static app:Palette.BrandBrush}" Title="{l:T 'Move to a corner'}"
+                                             Description="{l:T 'Otherwise drag the widget where you want; its position is remembered.'}">
+                            <WrapPanel MaxWidth="210">
+                                <ui:Button Content="{l:T 'Top left'}" Tag="TopLeft" Margin="0,0,6,6" Click="OnCorner" />
+                                <ui:Button Content="{l:T 'Top right'}" Tag="TopRight" Margin="0,0,6,6" Click="OnCorner" />
+                                <ui:Button Content="{l:T 'Bottom left'}" Tag="BottomLeft" Margin="0,0,6,6" Click="OnCorner" />
+                                <ui:Button Content="{l:T 'Bottom right'}" Tag="BottomRight" Margin="0,0,6,6" Click="OnCorner" />
+                            </WrapPanel>
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="LockClosed24" Accent="{x:Static app:Palette.Power}"
+                                             Title="{l:T 'Lock position'}" Description="{l:T 'The widget cannot be dragged by mistake.'}">
+                            <ui:ToggleSwitch x:Name="LockPosition" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Lock position'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="CursorClick24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Click-through'}"
+                                             Description="{l:T 'Clicks pass through the widget to the window underneath. Its right-click menu is then unavailable: come back here to change it.'}">
+                            <ui:ToggleSwitch x:Name="ClickThrough" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Click-through'}" />
+                        </controls:SettingRow>
+                    </StackPanel>
+                </controls:SettingSection>
             </StackPanel>
-        </Border>
-        </StackPanel>
         </ScrollViewer>
 
         <StackPanel Grid.Column="1" Margin="14,56,36,0" VerticalAlignment="Top">
-            <TextBlock Text="{l:T 'PREVIEW'}" Style="{StaticResource SectionTitleStyle}" />
+            <StackPanel Orientation="Horizontal" Margin="4,20,0,10">
+                <ui:SymbolIcon Symbol="Eye24" FontSize="16" Foreground="{x:Static app:Palette.BrandBrush}" VerticalAlignment="Center" />
+                <TextBlock Text="{l:T 'PREVIEW'}" Style="{StaticResource CardCaptionStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
             <Border Width="330" MinHeight="250" CornerRadius="10" Padding="20"
                     BorderBrush="{StaticResource AppCardStrokeBrush}" BorderThickness="1">
                 <Border.Background>
