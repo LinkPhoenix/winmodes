@@ -13,6 +13,7 @@ public partial class MainWindow : FluentWindow
         ["modes"] = typeof(ModesPage),
         ["processes"] = typeof(ProcessesPage),
         ["ai"] = typeof(AiToolsPage),
+        ["usage"] = typeof(UsagePage),
         ["services"] = typeof(ServicesPage),
         ["automation"] = typeof(AutomationPage),
         ["widget"] = typeof(WidgetPage),

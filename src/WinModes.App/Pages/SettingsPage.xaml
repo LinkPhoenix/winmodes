@@ -167,7 +167,7 @@
                                          Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="Global keyboard shortcuts" />
                     </Grid>
                 </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                <Border Style="{StaticResource RowStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -181,6 +181,38 @@
                         <ComboBox x:Name="AiAlert" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
                                   DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
                                   AutomationProperties.Name="AI tools memory alert limit" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock Text="Alert when one AI tool uses too much memory" FontWeight="SemiBold" />
+                            <TextBlock Text="Shows a notification when a single tool, all its sessions together, reaches the limit."
+                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ComboBox x:Name="AiToolAlert" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                                  DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
+                                  AutomationProperties.Name="Alert when one AI tool uses too much memory" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock Text="End idle AI sessions automatically" FontWeight="SemiBold" />
+                            <TextBlock Text="Off by default. Closes a project session, and everything it started, after it used no CPU for this long. Unsaved work in it is lost. Desktop apps are never closed."
+                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ComboBox x:Name="AutoEndIdle" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                                  DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
+                                  AutomationProperties.Name="End idle AI sessions automatically" />
                     </Grid>
                 </Border>
             </StackPanel>

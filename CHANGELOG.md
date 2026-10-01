@@ -8,6 +8,10 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - AI tool icons in the desktop widget.
 - Update check against the GitHub releases: once at startup (can be turned off) and on demand from the About page. Nothing is downloaded automatically.
 - Widget: compact one-line layout, optional CPU and memory graphs, hiding during full-screen apps, and a click on the AI block opens the AI tools page.
+- Usage page: opt-in history of the memory each AI tool used per project (today, 7 or 30 days), kept on this PC for 30 days.
+- AI tools page lists the MCP servers running in several sessions and the memory they hold.
+- Optional alert when a single AI tool passes a memory limit.
+- Optional automatic end of project sessions idle for 30 minutes to 4 hours. Off by default.
 
 ## [0.3.1] - 2026-10-01
 

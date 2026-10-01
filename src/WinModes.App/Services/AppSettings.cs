@@ -44,6 +44,15 @@ internal sealed record AppSettings
     /// <summary>Hide project names, folders, command lines and the account name.</summary>
     public bool PrivacyMode { get; init; }
 
+    /// <summary>Notify when a single AI tool uses at least this much memory, in GB; 0 turns the alert off.</summary>
+    public int AiToolAlertGb { get; init; }
+
+    /// <summary>End project sessions idle for this many minutes; 0 (the default) never ends anything.</summary>
+    public int AutoEndIdleMinutes { get; init; }
+
+    /// <summary>Keep daily totals of what each AI tool used per project. Off by default.</summary>
+    public bool RecordUsageHistory { get; init; }
+
     /// <summary>Last position of the desktop widget; null until the user moves it.</summary>
     public double? WidgetLeft { get; init; }
 

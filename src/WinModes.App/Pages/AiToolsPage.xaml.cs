@@ -95,6 +95,16 @@ public partial class AiToolsPage : Page
 
         Tools.ItemsSource = tools;
 
+        var duplicates = McpServers.FindDuplicates(sessions);
+        DuplicateCard.Visibility = duplicates.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        Duplicates.ItemsSource = duplicates.Select(duplicate => new DuplicateRow(
+            duplicate.Name,
+            $"in {duplicate.Sessions} sessions, {Pluralize(duplicate.Processes, "process", "processes")}",
+            DashboardPage.FormatMemory(duplicate.MemoryMb, culture))).ToList();
+        DuplicateSummary.Text = duplicates.Count == 0
+            ? ""
+            : $"{DashboardPage.FormatMemory(duplicates.Sum(duplicate => duplicate.MemoryMb), culture)} in total. Each session starts its own copy of the MCP servers it is configured with; closing sessions you no longer use frees them.";
+
         // Only project sessions are offered for cleanup; desktop apps are left to the user.
         _idleSessions = [.. sessions.Where(session => HasProjectFolder(session) && AiActivityTracker.IdleFor(session) >= IdleThreshold)];
         EndIdleButton.IsEnabled = _idleSessions.Count > 0;
@@ -131,8 +141,7 @@ public partial class AiToolsPage : Page
             [.. nodes.Select(node => ToProcess(node, culture))]);
     }
 
-    private static bool IsMcpServer(ProcessNode node) =>
-        node.CommandLine?.Contains("mcp", StringComparison.OrdinalIgnoreCase) == true;
+    private static bool IsMcpServer(ProcessNode node) => McpServers.IsServer(node);
 
     private static string DescribeProcesses(AiSession session, CultureInfo culture)
     {
@@ -143,19 +152,7 @@ public partial class AiToolsPage : Page
             : $"{text}, {servers.Count} MCP ({DashboardPage.FormatMemory(servers.Sum(node => node.PrivateMemoryMb), culture)})";
     }
 
-    private static bool HasProjectFolder(AiSession session)
-    {
-        var folder = session.Root.WorkingDirectory;
-        if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
-        {
-            return false;
-        }
-
-        // A desktop app runs from its own install folder or from System32: that is not a project folder.
-        var isInstallFolder = session.Root.ExecutablePath is { } executable && executable.StartsWith(folder, StringComparison.OrdinalIgnoreCase);
-        var isSystemFolder = folder.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.Windows), StringComparison.OrdinalIgnoreCase);
-        return !isInstallFolder && !isSystemFolder;
-    }
+    private static bool HasProjectFolder(AiSession session) => AiSessions.HasProjectFolder(session);
 
     private async void OnEndIdle(object sender, RoutedEventArgs e)
     {
@@ -179,19 +176,7 @@ public partial class AiToolsPage : Page
             return;
         }
 
-        var failed = 0;
-        foreach (var session in idle)
-        {
-            try
-            {
-                using var process = System.Diagnostics.Process.GetProcessById(session.Root.Pid);
-                process.Kill(entireProcessTree: true);
-            }
-            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception or AggregateException)
-            {
-                failed++;
-            }
-        }
+        var failed = idle.Count(session => !AiSessions.End(session));
 
         await RefreshAsync();
         if (failed > 0)
@@ -216,6 +201,8 @@ public partial class AiToolsPage : Page
 
     private static string Pluralize(int count, string singular, string? plural = null) =>
         count == 1 ? $"1 {singular}" : $"{count} {plural ?? singular + "s"}";
+
+    private sealed record DuplicateRow(string Name, string Detail, string Memory);
 
     private static SessionRow? RowOf(object sender) => (sender as FrameworkElement)?.DataContext as SessionRow;
 

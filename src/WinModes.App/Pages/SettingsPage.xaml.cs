@@ -11,6 +11,7 @@ namespace WinModes.App.Pages;
 public partial class SettingsPage : Page
 {
     private static readonly int[] AlertLimitsGb = [2, 4, 6, 8, 12, 16, 24];
+    private static readonly int[] IdleMinutes = [30, 60, 120, 240];
     private static readonly int[] WslLimitsGb = [4, 6, 8, 12, 16];
 
     private readonly bool _loaded;
@@ -31,6 +32,12 @@ public partial class SettingsPage : Page
         limits.AddRange(AlertLimitsGb.Select(gb => new Limit(gb, $"{gb} GB")));
         AiAlert.ItemsSource = limits;
         AiAlert.SelectedItem = limits.FirstOrDefault(limit => limit.Gb == settings.AiMemoryAlertGb) ?? limits[0];
+        AiToolAlert.ItemsSource = limits;
+        AiToolAlert.SelectedItem = limits.FirstOrDefault(limit => limit.Gb == settings.AiToolAlertGb) ?? limits[0];
+        var idleChoices = new List<Limit> { new(0, "Never") };
+        idleChoices.AddRange(IdleMinutes.Select(minutes => new Limit(minutes, minutes < 60 ? $"After {minutes} minutes" : $"After {minutes / 60} h")));
+        AutoEndIdle.ItemsSource = idleChoices;
+        AutoEndIdle.SelectedItem = idleChoices.FirstOrDefault(choice => choice.Gb == settings.AutoEndIdleMinutes) ?? idleChoices[0];
         JournalPath.Text = Privacy.Path(AppPaths.JournalDirectory);
         PrivacyMode.IsChecked = settings.PrivacyMode;
 
@@ -71,6 +78,8 @@ public partial class SettingsPage : Page
             EnableHotkeys = EnableHotkeys.IsChecked == true,
             PrivacyMode = PrivacyMode.IsChecked == true,
             AiMemoryAlertGb = (AiAlert.SelectedItem as Limit)?.Gb ?? 0,
+            AiToolAlertGb = (AiToolAlert.SelectedItem as Limit)?.Gb ?? 0,
+            AutoEndIdleMinutes = (AutoEndIdle.SelectedItem as Limit)?.Gb ?? 0,
             AutoActivateMode = (AutoMode.SelectedItem as Choice)?.Mode,
         }).Save();
         Privacy.Set(PrivacyMode.IsChecked == true);

@@ -29,6 +29,29 @@
             </StackPanel>
         </Border>
 
+        <Border x:Name="DuplicateCard" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,20" Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock Text="MCP SERVERS RUNNING IN SEVERAL SESSIONS" Style="{StaticResource CardCaptionStyle}" />
+                <TextBlock x:Name="DuplicateSummary" FontSize="12" Margin="0,4,0,6" Style="{StaticResource SecondaryTextStyle}" />
+                <ItemsControl x:Name="Duplicates">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="90" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding Detail}" Style="{StaticResource SecondaryTextStyle}" />
+                                <TextBlock Grid.Column="2" Text="{Binding Memory}" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
         <ItemsControl x:Name="Tools">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>

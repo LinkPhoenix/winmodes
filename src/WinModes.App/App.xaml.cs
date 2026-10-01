@@ -27,6 +27,9 @@ public partial class App : Application, IDisposable
     private Services.HotkeyService? _hotkeys;
     private bool _alertRaised;
     private Services.AutoSwitcher? _autoSwitcher;
+    private static readonly TimeSpan UsageFlushInterval = TimeSpan.FromMinutes(1);
+    private readonly HashSet<string> _toolAlertsRaised = new(StringComparer.OrdinalIgnoreCase);
+    private DateTime _lastUsageFlush = DateTime.Now;
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
@@ -161,7 +164,12 @@ public partial class App : Application, IDisposable
         _autoSwitcher.Apply(settings.AutoSwitch);
 
         // Sample in the background only while a feature needs it.
-        var needed = settings.ShowAiMemoryInTray || settings.ShowDesktopWidget || settings.AiMemoryAlertGb > 0;
+        var needed = settings.ShowAiMemoryInTray || settings.ShowDesktopWidget || settings.AiMemoryAlertGb > 0
+            || settings.AiToolAlertGb > 0 || settings.AutoEndIdleMinutes > 0 || settings.RecordUsageHistory;
+        if (!settings.RecordUsageHistory)
+        {
+            AppServices.Usage.Flush();
+        }
         if (needed && !_listening)
         {
             _liveStats.Updated += OnStats;
@@ -236,6 +244,10 @@ public partial class App : Application, IDisposable
             _widget.Visibility = hide ? Visibility.Hidden : Visibility.Visible;
         }
 
+        CheckToolAlerts(reading, settings.AiToolAlertGb);
+        EndIdleSessions(reading, settings.AutoEndIdleMinutes);
+        RecordUsage(reading, settings.RecordUsageHistory);
+
         if (settings.AiMemoryAlertGb <= 0)
         {
             return;
@@ -254,6 +266,76 @@ public partial class App : Application, IDisposable
         else if (usedGb < settings.AiMemoryAlertGb * RearmRatio)
         {
             _alertRaised = false;
+        }
+    }
+
+    private void CheckToolAlerts(Services.StatsReading reading, int limitGb)
+    {
+        const double MbPerGb = 1024;
+        const double RearmRatio = 0.9;
+
+        if (limitGb <= 0)
+        {
+            _toolAlertsRaised.Clear();
+            return;
+        }
+
+        foreach (var tool in reading.AiTools)
+        {
+            var usedGb = tool.MemoryMb / MbPerGb;
+            if (usedGb >= limitGb && _toolAlertsRaised.Add(tool.Name))
+            {
+                _trayIcon?.ShowBalloonTip(6000, $"WinModes - {tool.Name}",
+                    string.Create(System.Globalization.CultureInfo.CurrentCulture,
+                        $"{tool.Name} uses {usedGb:0.0} GB, above your {limitGb} GB limit per tool."),
+                    Forms.ToolTipIcon.Warning);
+            }
+            else if (usedGb < limitGb * RearmRatio)
+            {
+                _toolAlertsRaised.Remove(tool.Name);
+            }
+        }
+    }
+
+    /// <summary>Opt-in: ends project sessions that used no CPU for the chosen time. Desktop apps are never ended.</summary>
+    private void EndIdleSessions(Services.StatsReading reading, int idleMinutes)
+    {
+        if (idleMinutes <= 0)
+        {
+            return;
+        }
+
+        var limit = TimeSpan.FromMinutes(idleMinutes);
+        foreach (var session in reading.Sessions)
+        {
+            if (!Services.AiSessions.HasProjectFolder(session) || Services.AiActivityTracker.IdleFor(session) < limit)
+            {
+                continue;
+            }
+
+            var project = Services.Privacy.Project(Services.AiSessions.ProjectName(session));
+            if (Services.AiSessions.End(session))
+            {
+                _trayIcon?.ShowBalloonTip(5000, "WinModes - idle session ended",
+                    $"{session.Tool.Name} in {project} used no CPU for {idleMinutes} minutes and was closed.", Forms.ToolTipIcon.Info);
+            }
+        }
+    }
+
+    private void RecordUsage(Services.StatsReading reading, bool enabled)
+    {
+        if (!enabled)
+        {
+            return;
+        }
+
+        var now = DateTime.Now;
+        AppServices.Usage.Record(now, reading.Sessions.Select(session => new WinModes.Core.Usage.UsageSample(
+            session.Tool.Name, Services.AiSessions.ProjectName(session), session.TotalMemoryMb)));
+        if (now - _lastUsageFlush >= UsageFlushInterval)
+        {
+            _lastUsageFlush = now;
+            _ = Task.Run(AppServices.Usage.Flush);
         }
     }
 
@@ -343,6 +425,7 @@ public partial class App : Application, IDisposable
 
     private void OnExit(object sender, ExitEventArgs e)
     {
+        AppServices.Usage.Flush();
         if (_trayIcon is not null)
         {
             // Hide first so Windows does not leave a ghost icon behind.

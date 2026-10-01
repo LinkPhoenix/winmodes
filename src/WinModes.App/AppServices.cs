@@ -28,6 +28,10 @@ internal static class AppServices
 
     public static string ProfilesDirectory { get; private set; } = "";
 
+    /// <summary>Opt-in usage history, stored per user.</summary>
+    public static WinModes.Core.Usage.UsageHistory Usage { get; } = new(System.IO.Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinModes", "usage"));
+
     public static void Initialize(ProfileStore store, ModePlanner planner, ProtectionPolicy policy, string profilesDirectory)
     {
         _store = store;

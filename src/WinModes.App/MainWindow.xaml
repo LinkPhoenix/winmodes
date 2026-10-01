@@ -52,6 +52,8 @@
                                        TargetPageType="{x:Type pages:ProcessesPage}" />
                 <ui:NavigationViewItem Content="AI tools" Icon="{ui:SymbolIcon Bot24}"
                                        TargetPageType="{x:Type pages:AiToolsPage}" />
+                <ui:NavigationViewItem Content="Usage" Icon="{ui:SymbolIcon DataHistogram24}"
+                                       TargetPageType="{x:Type pages:UsagePage}" />
                 <ui:NavigationViewItem Content="Services" Icon="{ui:SymbolIcon Server24}"
                                        TargetPageType="{x:Type pages:ServicesPage}" />
                 <ui:NavigationViewItemSeparator />

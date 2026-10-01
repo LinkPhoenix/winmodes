@@ -5,7 +5,8 @@ using WinModes.Core.Planning;
 namespace WinModes.App.Services;
 
 /// <summary>One reading shared by the tray meter and the desktop widget.</summary>
-internal sealed record StatsReading(double CpuPercent, MemorySample Memory, IReadOnlyList<AiToolUsage> AiTools, double DownMbps, double UpMbps)
+internal sealed record StatsReading(
+    double CpuPercent, MemorySample Memory, IReadOnlyList<AiToolUsage> AiTools, double DownMbps, double UpMbps, IReadOnlyList<AiSession> Sessions)
 {
     public double AiMemoryMb => AiTools.Sum(tool => tool.MemoryMb);
 }
@@ -75,7 +76,7 @@ internal sealed class LiveStats
                     .OrderByDescending(tool => tool.MemoryMb)
                     .ToList();
                 var (down, up) = _monitor.SampleNetwork();
-                return new StatsReading(_monitor.SampleCpuPercent(), SystemMonitor.SampleMemory(), tools, down, up);
+                return new StatsReading(_monitor.SampleCpuPercent(), SystemMonitor.SampleMemory(), tools, down, up, sessions);
             });
             _updated?.Invoke(this, reading);
         }
