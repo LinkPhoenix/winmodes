@@ -18,6 +18,14 @@ if (HelperArguments.Parse(args) is not { } command)
     return ExitUsage;
 }
 
+// One helper at a time, whether it was started by a prompt or by the silent task. A mode switch can take
+// a while (services wait for their stop), so a second helper waits for it rather than failing at once.
+using var oneAtATime = HelperLock.TryAcquire(TimeSpan.FromSeconds(90));
+if (oneAtATime is null)
+{
+    return ExitFailed;
+}
+
 try
 {
     if (command.Kind is HelperCommandKind.TaskInstall or HelperCommandKind.TaskRemove)

@@ -28,6 +28,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 ### Security
 
 - The administrator helper now refuses any command, service name, tweak id or mode name that is not in the expected form, including through the silent switch.
+- Modes: the administrator helper runs one command at a time, so a switch started from the prompt and one started by the silent task can no longer overlap.
 
 ## [0.8.0] - 2026-10-01
 
