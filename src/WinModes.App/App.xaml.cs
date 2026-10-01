@@ -15,6 +15,10 @@ public partial class App : Application, IDisposable
     private Mutex? _singleInstance;
     private Forms.NotifyIcon? _trayIcon;
     private MainWindow? _window;
+    private readonly Services.LiveStats _liveStats = new();
+    private Services.TrayMeter? _trayMeter;
+    private WidgetWindow? _widget;
+    private bool _listening;
 
     private void OnStartup(object sender, StartupEventArgs e)
     {
@@ -45,6 +49,8 @@ public partial class App : Application, IDisposable
         var pageIndex = Array.IndexOf(e.Args, "--page");
         _window = new MainWindow(pageIndex >= 0 && pageIndex + 1 < e.Args.Length ? e.Args[pageIndex + 1] : null);
         _trayIcon = CreateTrayIcon();
+        _trayMeter = new Services.TrayMeter(_trayIcon, _trayIcon.Icon!);
+        ApplyDisplaySettings();
         StartSession(e.Args);
     }
 
@@ -72,6 +78,57 @@ public partial class App : Application, IDisposable
         {
             _trayIcon?.ShowBalloonTip(4000, "WinModes", ex.Message, Forms.ToolTipIcon.Warning);
         }
+    }
+
+    /// <summary>Turns the tray meter and the desktop widget on or off to match the settings.</summary>
+    internal void ApplyDisplaySettings()
+    {
+        var settings = Services.AppSettings.Load();
+
+        if (settings.ShowDesktopWidget && _widget is null)
+        {
+            _widget = new WidgetWindow();
+            _widget.OpenAppRequested += (_, _) => ShowWindow();
+            _widget.HideRequested += (_, _) =>
+            {
+                (Services.AppSettings.Load() with { ShowDesktopWidget = false }).Save();
+                ApplyDisplaySettings();
+            };
+            _widget.Show();
+        }
+        else if (!settings.ShowDesktopWidget && _widget is not null)
+        {
+            _widget.Close();
+            _widget = null;
+        }
+
+        if (!settings.ShowAiMemoryInTray)
+        {
+            _trayMeter?.Reset();
+        }
+
+        // Sample in the background only while one of the two features needs it.
+        var needed = settings.ShowAiMemoryInTray || settings.ShowDesktopWidget;
+        if (needed && !_listening)
+        {
+            _liveStats.Updated += OnStats;
+            _listening = true;
+        }
+        else if (!needed && _listening)
+        {
+            _liveStats.Updated -= OnStats;
+            _listening = false;
+        }
+    }
+
+    private void OnStats(object? sender, Services.StatsReading reading)
+    {
+        if (Services.AppSettings.Load().ShowAiMemoryInTray)
+        {
+            _trayMeter?.Show(reading);
+        }
+
+        _widget?.Show(reading);
     }
 
     private Forms.NotifyIcon CreateTrayIcon()
@@ -127,6 +184,7 @@ public partial class App : Application, IDisposable
 
     public void Dispose()
     {
+        _trayMeter?.Dispose();
         _trayIcon?.Dispose();
         _singleInstance?.Dispose();
         GC.SuppressFinalize(this);

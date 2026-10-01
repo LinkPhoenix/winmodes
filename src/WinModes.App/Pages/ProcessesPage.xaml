@@ -89,7 +89,7 @@
                 <ItemsControl x:Name="Rows">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource ProcessRowStyle}" ContextMenuOpening="OnMenuOpening" ContextMenuClosing="OnMenuClosing">
+                            <Border Style="{StaticResource ProcessRowStyle}" DataContext="{Binding Data}" ContextMenuOpening="OnMenuOpening" ContextMenuClosing="OnMenuClosing">
                                 <Border.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="End task" Click="OnEndTask" />

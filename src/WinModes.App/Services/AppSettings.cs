@@ -23,6 +23,12 @@ internal sealed record AppSettings
     /// <summary>Ask before activating a mode.</summary>
     public bool ConfirmBeforeActivate { get; init; } = true;
 
+    /// <summary>Draw the memory used by AI tools on the notification-area icon.</summary>
+    public bool ShowAiMemoryInTray { get; init; }
+
+    /// <summary>Show the small always-on-top desktop widget.</summary>
+    public bool ShowDesktopWidget { get; init; }
+
     /// <summary>Mode activated when the app starts; null means none.</summary>
     public string? AutoActivateMode { get; init; }
 

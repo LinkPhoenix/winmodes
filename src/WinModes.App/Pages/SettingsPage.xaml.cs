@@ -21,6 +21,8 @@ public partial class SettingsPage : Page
         StartMinimized.IsChecked = settings.StartMinimized;
         CloseToTray.IsChecked = settings.CloseToTray;
         ConfirmBeforeActivate.IsChecked = settings.ConfirmBeforeActivate;
+        ShowAiMemoryInTray.IsChecked = settings.ShowAiMemoryInTray;
+        ShowDesktopWidget.IsChecked = settings.ShowDesktopWidget;
         JournalPath.Text = AppPaths.JournalDirectory;
 
         var choices = new List<Choice> { new(null, "None") };
@@ -50,8 +52,11 @@ public partial class SettingsPage : Page
             StartMinimized = minimized,
             CloseToTray = CloseToTray.IsChecked == true,
             ConfirmBeforeActivate = ConfirmBeforeActivate.IsChecked == true,
+            ShowAiMemoryInTray = ShowAiMemoryInTray.IsChecked == true,
+            ShowDesktopWidget = ShowDesktopWidget.IsChecked == true,
             AutoActivateMode = (AutoMode.SelectedItem as Choice)?.Mode,
         }.Save();
+        (Application.Current as App)?.ApplyDisplaySettings();
     }
 
     private void OnOpenJournal(object sender, RoutedEventArgs e)

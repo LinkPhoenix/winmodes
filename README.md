@@ -17,6 +17,7 @@ WinModes switches your PC between modes (Code, Work, Game) to free memory and cu
 - **Processes page**: process tree with child processes, PID, CPU, memory, threads and command line; search, sort, and a right-click menu (end task, end process tree, open file location, copy).
 - **AI tools page**: every running session of Claude Code, Claude desktop, Codex, Cursor, VS Code and others, with the project folder it works in and all the processes it started.
 - **Services page**: search, filters, real app icons, and a lock on everything that is protected.
+- **Tray meter and desktop widget** (both optional): the notification-area icon can show the memory used by AI tools, and a small always-on-top panel shows CPU, memory and AI tools.
 - **Settings**: start with Windows, start minimized, keep running in the notification area, activate a mode at startup.
 
 | Modes | Processes | Settings |
@@ -47,10 +48,14 @@ Known limitations:
 - The profiles in `profiles/` were generated for one machine (an HP OMEN laptop). Generate your own, see below.
 - The interface is in English and dark only.
 
+## Download
+
+Get the latest `WinModes-vX.Y.Z-win-x64.zip` from the [Releases page](https://github.com/LinkPhoenix/winmodes/releases), extract it and run `WinModes.exe`. No installation or .NET runtime is needed. See the [changelog](CHANGELOG.md).
+
 ## Requirements
 
 - Windows 11 (x64)
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) to build
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0), only to build from source
 - PowerShell 7 for the scripts in `tools/`
 
 ## Build and run
@@ -97,6 +102,10 @@ The selection rules are described in [`profiles/README.md`](profiles/README.md),
 | `data/` | Knowledge base and protection blocklist |
 | `profiles/` | Generated mode profiles and the hand-edited `modes.manual.json` |
 | `research/` | Study of other optimizers and UI research |
+
+## Support
+
+WinModes is free for noncommercial use. If it helps you, you can [buy me a coffee](https://buymeacoffee.com/vckh76t96fh).
 
 ## Credits
 

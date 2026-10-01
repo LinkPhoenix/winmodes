@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -32,6 +34,7 @@ public partial class ProcessesPage : Page
 
     private readonly DispatcherTimer _timer = new() { Interval = RefreshInterval };
     private readonly HashSet<int> _expanded = [];
+    private readonly ObservableCollection<RowHolder> _rows = [];
     private IReadOnlyList<ProcessNode> _nodes = [];
     private string _sortColumn = "Memory";
     private bool _sortDescending = true;
@@ -41,6 +44,7 @@ public partial class ProcessesPage : Page
     public ProcessesPage()
     {
         InitializeComponent();
+        Rows.ItemsSource = _rows;
         _timer.Tick += async (_, _) => await RefreshAsync();
         Loaded += async (_, _) =>
         {
@@ -143,7 +147,7 @@ public partial class ProcessesPage : Page
             }
         }
 
-        Rows.ItemsSource = rows;
+        Reconcile(rows);
         SortName.Content = "Name" + Arrow("Name");
         SortPid.Content = "PID" + Arrow("Pid");
         SortCpu.Content = "CPU" + Arrow("Cpu");
@@ -153,6 +157,48 @@ public partial class ProcessesPage : Page
         var totalGb = _nodes.Sum(node => node.PrivateMemoryMb) / MbPerGb;
         Summary.Text = string.Create(culture,
             $"{_nodes.Count} processes use {totalGb:0.0} GB of private memory. Showing {rows.Count}. Right-click a row for actions.");
+    }
+
+    /// <summary>
+    /// Updates the displayed rows in place. Replacing the whole list would rebuild every row's visuals
+    /// on each refresh, which is what made the page stutter.
+    /// </summary>
+    private void Reconcile(List<Row> rows)
+    {
+        for (var i = 0; i < rows.Count; i++)
+        {
+            var row = rows[i];
+            if (i < _rows.Count && _rows[i].Pid == row.Pid)
+            {
+                _rows[i].Data = row;
+                continue;
+            }
+
+            var existing = -1;
+            for (var j = i + 1; j < _rows.Count; j++)
+            {
+                if (_rows[j].Pid == row.Pid)
+                {
+                    existing = j;
+                    break;
+                }
+            }
+
+            if (existing >= 0)
+            {
+                _rows.Move(existing, i);
+                _rows[i].Data = row;
+            }
+            else
+            {
+                _rows.Insert(i, new RowHolder(row));
+            }
+        }
+
+        while (_rows.Count > rows.Count)
+        {
+            _rows.RemoveAt(_rows.Count - 1);
+        }
     }
 
     private void AddTree(ProcessNode node, int level, ILookup<int, ProcessNode> children, Dictionary<int, Totals> totals, List<Row> rows, CultureInfo culture)
@@ -286,6 +332,29 @@ public partial class ProcessesPage : Page
         ProcessActions.Copy(RowOf(sender)?.Pid.ToString(CultureInfo.InvariantCulture));
 
     private void OnCopyCommand(object sender, RoutedEventArgs e) => ProcessActions.Copy(RowOf(sender)?.Command);
+
+    /// <summary>Stable item for one process; swapping <see cref="Data"/> refreshes the row without recreating it.</summary>
+    private sealed class RowHolder(Row data) : INotifyPropertyChanged
+    {
+        private Row _data = data;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public int Pid => _data.Pid;
+
+        public Row Data
+        {
+            get => _data;
+            set
+            {
+                if (_data != value)
+                {
+                    _data = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Data)));
+                }
+            }
+        }
+    }
 
     private sealed record Totals(double MemoryMb, double Cpu, int Threads, int Descendants);
 
