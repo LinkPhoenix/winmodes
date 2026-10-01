@@ -61,6 +61,15 @@ if (-not $notes) {
 $date = Get-Date -Format 'yyyy-MM-dd'
 $newChangelog = $changelog.Remove($unreleased.Index, $unreleased.Length).Insert(
     $unreleased.Index, "## [Unreleased]`n`n## [$Version] - $date`n`n$notes`n`n")
+# Keep the comparison links at the bottom of the changelog in step with the new tag.
+$repository = 'https://github.com/LinkPhoenix/winmodes'
+$link = [regex]::Match($newChangelog, '(?m)^\[Unreleased\]: .*$')
+if ($link.Success) {
+    $previousTag = [regex]::Match($link.Value, 'compare/(v[\d.]+)\.\.\.HEAD').Groups[1].Value
+    $versionLink = $previousTag ? "$repository/compare/$previousTag...$tag" : "$repository/releases/tag/$tag"
+    $newChangelog = $newChangelog.Remove($link.Index, $link.Length).Insert(
+        $link.Index, "[Unreleased]: $repository/compare/$tag...HEAD`n[$Version]: $versionLink")
+}
 $newProject = $project.Replace($current.Value, "<Version>$Version</Version>")
 
 "Release $tag (current version $($current.Groups[1].Value).$($current.Groups[2].Value).$($current.Groups[3].Value))"
