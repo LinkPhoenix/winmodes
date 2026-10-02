@@ -1574,12 +1574,12 @@
     "usefulness": "useful",
     "why": "Diagnostic Policy Service; network troubleshooting and problem detection. RAM impact not measured (shared svchost or unknown).",
     "modes": {
-      "code": 2,
-      "work": 2,
-      "game": 2
+      "code": 3,
+      "work": 3,
+      "game": 3
     },
     "recommendedStartMode": "Keep",
-    "risk": "medium",
+    "risk": "never-touch",
     "dependsOn": [],
     "sources": [
       "https://learn.microsoft.com/en-us/windows-server/security/windows-services/security-guidelines-for-disabling-system-services-in-windows-server"
@@ -1928,7 +1928,7 @@
       "game": 3
     },
     "recommendedStartMode": "Keep",
-    "risk": "medium",
+    "risk": "never-touch",
     "dependsOn": [],
     "sources": [
       "https://learn.microsoft.com/en-us/windows-server/security/windows-services/security-guidelines-for-disabling-system-services-in-windows-server"
@@ -2320,12 +2320,12 @@
     "usefulness": "useful",
     "why": "IP Helper (IPv6 transition, portproxy). netsh portproxy rules often used with WSL depend on it. RAM impact not measured (shared svchost or unknown).",
     "modes": {
-      "code": 2,
-      "work": 2,
-      "game": 2
+      "code": 3,
+      "work": 3,
+      "game": 3
     },
     "recommendedStartMode": "Keep",
-    "risk": "high",
+    "risk": "never-touch",
     "dependsOn": [
       "RpcSS",
       "WinHttpAutoProxySvc",
@@ -5126,7 +5126,7 @@
       "game": 3
     },
     "recommendedStartMode": "Keep",
-    "risk": "high",
+    "risk": "never-touch",
     "dependsOn": [],
     "sources": [
       "https://learn.microsoft.com/en-us/windows-server/security/windows-services/security-guidelines-for-disabling-system-services-in-windows-server"
@@ -7050,5 +7050,380 @@
       "local: sc qc/qdescription + Win32_Service (DisplayName=Xbox Live Networking Service; StartMode=Manual) + VersionInfo of XboxNetApiSvc.dll (CompanyName=Microsoft Corporation; FileDescription=Xbox Live Networking Service)"
     ],
     "verified": "2026-10-01-local"
+  },
+  {
+    "id": "MMCSS",
+    "kind": "service",
+    "displayName": "MMCSS",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "Multimedia Class Scheduler; GTweak offers it as Disabled (ServicesTweaks.cs:601). Breaks low-latency audio and game scheduling. Not in the Microsoft IoT table either.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Multimedia Class Scheduler; GTweak offers it as Disabled (ServicesTweaks.cs:601). Breaks low-latency audio and game scheduling. Not in the Microsoft IoT table either.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "TabletInputService",
+    "kind": "service",
+    "displayName": "TabletInputService",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "Touch keyboard, handwriting, emoji panel (Win+.) and IME candidate window; Winhance recommends Disabled and renames TextInputHost.exe. Manual by default; keep.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Touch keyboard, handwriting, emoji panel (Win+.) and IME candidate window; Winhance recommends Disabled and renames TextInputHost.exe. Manual by default; keep.",
+    "modes": {
+      "code": 2,
+      "work": 2,
+      "game": 2
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "medium",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "edgeupdate",
+    "kind": "service",
+    "displayName": "edgeupdate",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "Edge Update. Already in protected.json but missing from the services DB; 8 projects disable it. Keep it so Edge and WebView2 keep updating.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Edge Update. Already in protected.json but missing from the services DB; 8 projects disable it. Keep it so Edge and WebView2 keep updating.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "edgeupdatem",
+    "kind": "service",
+    "displayName": "edgeupdatem",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "Edge Update (machine). Same as edgeupdate.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Edge Update (machine). Same as edgeupdate.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "MicrosoftEdgeElevationService",
+    "kind": "service",
+    "displayName": "MicrosoftEdgeElevationService",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "Edge elevation service used by Edge installer/updater; winutil legacy, optimizerDuck and sparkle set it Manual, Batlez disables Edge services.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Edge elevation service used by Edge installer/updater; winutil legacy, optimizerDuck and sparkle set it Manual, Batlez disables Edge services.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "WSLService",
+    "kind": "service",
+    "displayName": "WSLService",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "WSL2 service; named in protected.json but absent in the DB (no project touches it, but WindowsMize disables its dependencies).",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "WSL2 service; named in protected.json but absent in the DB (no project touches it, but WindowsMize disables its dependencies).",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "LxssManager",
+    "kind": "service",
+    "displayName": "LxssManager",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "WSL1/legacy LxssManager. Absent in the DB and in all 25 projects; add as never-touch for safety.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "WSL1/legacy LxssManager. Absent in the DB and in all 25 projects; add as never-touch for safety.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "vmms",
+    "kind": "service",
+    "displayName": "vmms",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "Hyper-V Virtual Machine Management; in protected.json wsl.services but absent from the DB.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Hyper-V Virtual Machine Management; in protected.json wsl.services but absent from the DB.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "diagnosticshub.standardcollector.service",
+    "kind": "service",
+    "displayName": "diagnosticshub.standardcollector.service",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "8 projects disable it, KB has no entry. Manual by default; VS and WPR/PerfView profilers use it, so keep Manual on a dev PC.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "8 projects disable it, KB has no entry. Manual by default; VS and WPR/PerfView profilers use it, so keep Manual on a dev PC.",
+    "modes": {
+      "code": 1,
+      "work": 1,
+      "game": 1
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "Sense",
+    "kind": "service",
+    "displayName": "Sense",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "Defender for Endpoint sensor; 4 projects touch it; protected category (Defender).",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Defender for Endpoint sensor; 4 projects touch it; protected category (Defender).",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "WdNisSvc",
+    "kind": "service",
+    "displayName": "WdNisSvc",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "Defender network inspection; in privacy.sexy, WindowsMize, awesome-windows11 Defender-off lists; protected.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "Defender network inspection; in privacy.sexy, WindowsMize, awesome-windows11 Defender-off lists; protected.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "SgrmBroker",
+    "kind": "service",
+    "displayName": "SgrmBroker",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "System Guard Runtime Monitor Broker (VBS attestation); privacy.sexy and WindowsMize can disable it; VBS must stay.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "essential",
+    "why": "System Guard Runtime Monitor Broker (VBS attestation); privacy.sexy and WindowsMize can disable it; VBS must stay.",
+    "modes": {
+      "code": 3,
+      "work": 3,
+      "game": 3
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "never-touch",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "WMPNetworkSvc",
+    "kind": "service",
+    "displayName": "WMPNetworkSvc",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "8 projects touch it; Manual default, absent on recent builds.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "8 projects touch it; Manual default, absent on recent builds.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "MixedRealityOpenXRSvc",
+    "kind": "service",
+    "displayName": "MixedRealityOpenXRSvc",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "Windows Mixed Reality OpenXR runtime; keep Manual if a VR headset is used. SharedRealitySvc, spectrum, VacSvc, perceptionsimulation belong to the same family (5 projects).",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "Windows Mixed Reality OpenXR runtime; keep Manual if a VR headset is used. SharedRealitySvc, spectrum, VacSvc, perceptionsimulation belong to the same family (5 projects).",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
+  },
+  {
+    "id": "AJRouter",
+    "kind": "service",
+    "displayName": "AJRouter",
+    "vendor": "Microsoft",
+    "category": "other",
+    "description": "AllJoyn; 4 projects disable it; Manual default.",
+    "presentOnMachine": false,
+    "currentStartMode": "Manual",
+    "ramImpact": "none",
+    "usefulness": "situational",
+    "why": "AllJoyn; 4 projects disable it; Manual default.",
+    "modes": {
+      "code": 0,
+      "work": 0,
+      "game": 0
+    },
+    "recommendedStartMode": "Keep",
+    "risk": "low",
+    "dependsOn": [],
+    "sources": [
+      "research/oss-optimizers/round3/services-tasks-startup.json"
+    ],
+    "verified": "2026-10-02-local"
   }
 ]

@@ -24,6 +24,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Changed
 
+- Services: the service knowledge base now also knows MMCSS, the Edge update services, the WSL and Hyper-V services, the Defender sensors and a few others that optimizers tend to disable, and marks them never to touch; Diagnostic Policy, IP Helper, Font Cache and Themes are now never to touch too, since other tools break Windows by switching them off. No mode stopped any of them.
 - Optimize and modes: after writing a setting, WinModes reads it back. A setting that Windows refuses without an error (a policy, or the protection of default apps) is now reported as not applied instead of shown as applied, and nothing is recorded for it.
 - Automation: a mode started automatically now stays on while any program or tool that triggers it is still open, and ends one minute after the last one closes, so going from Claude Code to Codex (or running both) no longer makes the PC go back and forth. A mode starts only after its trigger has held for 10 seconds, so a program that opens and closes at once changes nothing.
 - Automation: automatic switching never replaces or undoes a mode you chose yourself. A mode it started is remembered, so it is still undone after WinModes was restarted.
