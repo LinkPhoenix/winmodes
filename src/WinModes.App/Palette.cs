@@ -70,6 +70,17 @@ internal static class Palette
         _ => Gradient(Color.FromRgb(0x64, 0x74, 0x8B), Color.FromRgb(0x94, 0xA3, 0xB8)),
     };
 
+    /// <summary>One colour for a mode (where its gradient starts), for outlines and tints that a gradient cannot give.</summary>
+    public static Brush ModeColor(string mode) => mode.ToUpperInvariant() switch
+    {
+        "CODE" => BrandBrush,
+        "WORK" => Solid(0x14, 0xB8, 0xA6),
+        "GAME" => Solid(0xF9, 0x73, 0x16),
+        "FOCUS" => Solid(0x38, 0xBD, 0xF8),
+        "ECO" => Solid(0x84, 0xCC, 0x16),
+        _ => Neutral,
+    };
+
     public static Brush Tint(Brush brush)
     {
         var color = ((SolidColorBrush)brush).Color;

@@ -1,0 +1,98 @@
+<ui:FluentWindow x:Class="WinModes.App.ProgramPickerWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:l="clr-namespace:WinModes.App.Localization"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="{l:T 'Pick running programs'}" Width="620" Height="660" MinWidth="480" MinHeight="420"
+                 ExtendsContentIntoTitleBar="True" WindowBackdropType="None"
+                 Background="{StaticResource AppBackgroundBrush}"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Title="{l:T 'Pick running programs'}" ShowMinimize="False" ShowMaximize="False" />
+
+        <StackPanel Grid.Row="1" Margin="24,8,24,12">
+            <TextBlock Text="{l:T 'Programs that are open now. Tick the ones that should start the mode.'}" Style="{StaticResource SecondaryTextStyle}"
+                       TextWrapping="Wrap" Margin="0,0,0,10" />
+            <ui:TextBox x:Name="SearchBox" PlaceholderText="{l:T 'Search programs'}" Icon="{ui:SymbolIcon Search24}"
+                        TextChanged="OnFilterChanged" AutomationProperties.Name="{l:T 'Search programs'}" />
+            <CheckBox x:Name="ShowBackground" Content="{l:T 'Also show programs without a window'}" Margin="0,10,0,0"
+                      Checked="OnFilterToggled" Unchecked="OnFilterToggled" />
+        </StackPanel>
+
+        <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}" Padding="0" Margin="24,0">
+            <Grid>
+                <TextBlock x:Name="LoadingText" Text="{l:T 'Reading the programs that are open…'}" Margin="20,16" Style="{StaticResource SecondaryTextStyle}" />
+                <TextBlock x:Name="EmptyText" Text="{l:T 'Nothing matches.'}" Margin="20,16" Style="{StaticResource SecondaryTextStyle}" Visibility="Collapsed" />
+                <ListBox x:Name="List" SelectionMode="Multiple" BorderThickness="0" Background="Transparent" SelectionChanged="OnSelectionChanged"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="Frame" Padding="16,8" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AppCardStrokeBrush}"
+                                                Background="Transparent">
+                                            <ContentPresenter />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Frame" Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Frame" Property="Background" Value="#337C5CFC" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <CheckBox IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" MinWidth="0"
+                                          Margin="0,0,12,0" VerticalAlignment="Center" IsHitTestVisible="False" Focusable="False" />
+                                <Grid Grid.Column="1" Width="28" Height="28" Margin="0,0,12,0" VerticalAlignment="Center">
+                                    <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="16" Text="&#xE7F4;" Visibility="{Binding GlyphVisibility}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <Image Source="{Binding Icon}" Width="26" Height="26" RenderOptions.BitmapScalingMode="HighQuality" />
+                                </Grid>
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                    <TextBlock FontWeight="SemiBold" TextTrimming="CharacterEllipsis">
+                                        <Run Text="{Binding Title, Mode=OneWay}" />
+                                        <Run Text="{Binding Subtitle, Mode=OneWay}" FontSize="12" FontWeight="Normal"
+                                             Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Detail}" FontSize="11" TextTrimming="CharacterEllipsis" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="3" Margin="24,12,24,16">
+            <TextBlock x:Name="CountText" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <ui:Button Content="{l:T 'Cancel'}" Click="OnCancel" />
+                <ui:Button x:Name="AddButton" Content="{l:T 'Add selected'}" Appearance="Primary" Icon="{ui:SymbolIcon Add24}" Margin="8,0,0,0"
+                           IsEnabled="False" Click="OnAdd" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

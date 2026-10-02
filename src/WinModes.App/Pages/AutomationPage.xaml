@@ -3,6 +3,8 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
       Title="{l:T 'Automation'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Page.Resources>
@@ -12,7 +14,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource AppCardStrokeBrush}" />
         </Style>
         <Style x:Key="SectionTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource CardCaptionStyle}">
-            <Setter Property="Margin" Value="4,20,0,8" />
+            <Setter Property="Margin" Value="4,22,0,6" />
         </Style>
     </Page.Resources>
 
@@ -21,109 +23,189 @@
         <TextBlock Text="{l:T 'Let WinModes activate a mode by itself when a program starts, on battery, or at set hours. Off until you turn it on.'}"
                    Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
 
-        <TextBlock Text="{l:T 'AUTOMATIC SWITCHING'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+        <controls:SettingSection Header="{l:T 'AUTOMATIC SWITCHING'}" Icon="ArrowSync24" Accent="{x:Static app:Palette.BrandBrush}">
             <StackPanel>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="{l:T 'Switch modes automatically'}" FontWeight="SemiBold" />
-                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
-                                       Text="{l:T 'WinModes checks every few seconds whether a rule below applies. Windows asks for permission at each switch unless the option below is on.'}" />
-                            <TextBlock x:Name="StateText" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="Enabled" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
-                                         AutomationProperties.Name="{l:T 'Switch modes automatically'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="{l:T 'Switch without the Windows permission prompt'}" FontWeight="SemiBold" />
-                            <TextBlock x:Name="SilentDetail" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
-                                       Text="{l:T 'Windows asks once, now, to register a scheduled task; after that every mode switch, automatic or by hand, happens with no prompt. The task can only activate or undo a mode.'}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="Silent" HorizontalAlignment="Right" Click="OnSilentClicked"
-                                         AutomationProperties.Name="{l:T 'Switch without the Windows permission prompt'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <StackPanel Margin="0,0,80,0">
-                            <TextBlock Text="{l:T 'Return to normal when the rule no longer applies'}" FontWeight="SemiBold" />
-                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}"
-                                       Text="{l:T 'Only a mode activated automatically is undone. A mode you chose yourself is never changed.'}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="RevertWhenClosed" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
-                                         AutomationProperties.Name="{l:T 'Return to normal when the rule no longer applies'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <Grid>
-                        <StackPanel Margin="0,0,200,0">
-                            <TextBlock Text="{l:T 'Wait before returning to normal'}" FontWeight="SemiBold" />
-                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
-                                       Text="{l:T 'When the last program or tool that started a mode closes, the mode stays this long. Going from one tool to another, or having several open, never makes the PC go back and forth.'}" />
-                        </StackPanel>
-                        <ComboBox x:Name="Grace" HorizontalAlignment="Right" MinWidth="150" DisplayMemberPath="Label" SelectionChanged="OnGraceChanged"
-                                  AutomationProperties.Name="{l:T 'Wait before returning to normal'}" />
-                    </Grid>
-                </Border>
+                <controls:SettingRow Icon="Flash24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Switch modes automatically'}"
+                                     Description="{l:T 'WinModes checks every few seconds whether a program below is running. Windows asks for permission at each switch unless the option below is on.'}">
+                    <ui:ToggleSwitch x:Name="Enabled" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Switch modes automatically'}" />
+                    <controls:SettingRow.Footer>
+                        <TextBlock x:Name="StateText" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" Margin="50,6,0,0" />
+                    </controls:SettingRow.Footer>
+                </controls:SettingRow>
+                <controls:SettingRow x:Name="SilentRow" Icon="LockOpen24" Accent="{x:Static app:Palette.Container}"
+                                     Title="{l:T 'Switch without the Windows permission prompt'}"
+                                     Description="{l:T 'Windows asks once, now, to register a scheduled task; after that every mode switch, automatic or by hand, happens with no prompt. The task can only activate or undo a mode.'}">
+                    <ui:ToggleSwitch x:Name="Silent" Click="OnSilentClicked" AutomationProperties.Name="{l:T 'Switch without the Windows permission prompt'}" />
+                </controls:SettingRow>
+                <controls:SettingRow Icon="ArrowUndo24" Accent="{x:Static app:Palette.Apps}" Title="{l:T 'Return to normal when the rule no longer applies'}"
+                                     Description="{l:T 'Only a mode activated automatically is undone. A mode you chose yourself is never changed.'}">
+                    <ui:ToggleSwitch x:Name="RevertWhenClosed" Checked="OnChanged" Unchecked="OnChanged"
+                                     AutomationProperties.Name="{l:T 'Return to normal when the rule no longer applies'}" />
+                </controls:SettingRow>
+                <controls:SettingRow Icon="Timer24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Wait before returning to normal'}"
+                                     Description="{l:T 'When the last program or tool that started a mode closes, the mode stays this long. Going from one tool to another, or having several open, never makes the PC go back and forth.'}">
+                    <ComboBox x:Name="Grace" MinWidth="150" DisplayMemberPath="Label" SelectionChanged="OnGraceChanged"
+                              AutomationProperties.Name="{l:T 'Wait before returning to normal'}" />
+                </controls:SettingRow>
             </StackPanel>
-        </Border>
+        </controls:SettingSection>
 
-        <TextBlock Text="{l:T 'CODING TOOLS'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+        <TextBlock Text="{l:T 'PROGRAMS THAT START A MODE'}" Style="{StaticResource SectionTitleStyle}" />
+        <TextBlock Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" Margin="4,0,0,12"
+                   Text="{l:T 'Choose, for each mode, the programs that start it. When one of them runs, WinModes activates the mode; when the last one has closed, the mode ends after the wait set above. A game outranks the other programs.'}" />
+        <ItemsControl x:Name="ModeBar">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Style="{StaticResource CategoryChipStyle}" Click="OnModeClick" AutomationProperties.Name="{Binding Title}" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0" Margin="0,4,0,0">
             <StackPanel>
+                <!-- What this mode is, and what starts it. -->
                 <Border Style="{StaticResource RowStyle}">
                     <Grid>
-                        <StackPanel Margin="0,0,200,0">
-                            <TextBlock Text="{l:T 'Start a mode while a coding tool is open'}" FontWeight="SemiBold" />
-                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
-                                       Text="{l:T 'Opening any tool switched on below starts this mode, and it ends once the last one has been closed for the wait set above. Claude Code is told apart from the Claude chat app.'}" />
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="ModeTile" Style="{StaticResource IconBadgeStyle}" Width="44" Height="44" CornerRadius="12">
+                            <TextBlock x:Name="ModeGlyph" Style="{StaticResource GlyphTextStyle}" FontSize="20" HorizontalAlignment="Center" Foreground="White" />
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="ModeTitle" FontSize="16" FontWeight="SemiBold" />
+                            <TextBlock x:Name="ModeDetail" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
-                        <ComboBox x:Name="ToolMode" HorizontalAlignment="Right" MinWidth="150" DisplayMemberPath="Label" SelectionChanged="OnToolModeChanged"
-                                  AutomationProperties.Name="{l:T 'Mode started by the coding tools'}" />
                     </Grid>
                 </Border>
-                <ItemsControl x:Name="Tools">
+
+                <!-- The coding tools start one mode (Code unless chosen otherwise): they are listed with that mode. -->
+                <StackPanel x:Name="ToolsBlock">
+                    <Border Style="{StaticResource RowStyle}">
+                        <Grid>
+                            <StackPanel Margin="0,0,200,0">
+                                <TextBlock Text="{l:T 'Start a mode while a coding tool is open'}" FontWeight="SemiBold" />
+                                <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                                           Text="{l:T 'Opening any tool switched on below starts this mode, and it ends once the last one has been closed for the wait set above. Claude Code is told apart from the Claude chat app.'}" />
+                            </StackPanel>
+                            <ComboBox x:Name="ToolMode" HorizontalAlignment="Right" MinWidth="150" DisplayMemberPath="Label" SelectionChanged="OnToolModeChanged"
+                                      AutomationProperties.Name="{l:T 'Mode started by the coding tools'}" />
+                        </Grid>
+                    </Border>
+                    <ItemsControl x:Name="Tools">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource RowStyle}" Padding="20,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="32" Height="32" CornerRadius="8" Background="{Binding Tint}">
+                                            <Grid>
+                                                <Image Source="{Binding Icon}" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="15" HorizontalAlignment="Center" Text="&#xE943;"
+                                                           Visibility="{Binding GlyphVisibility}" Foreground="{Binding Color}" />
+                                            </Grid>
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding Name}" />
+                                        <Border Grid.Column="2" Style="{StaticResource ChipStyle}" Margin="0,0,16,0" VerticalAlignment="Center"
+                                                Visibility="{Binding RunningVisibility}" Background="{Binding Tint}">
+                                            <TextBlock Text="{l:T 'Open now'}" FontSize="12" FontWeight="SemiBold" />
+                                        </Border>
+                                        <ui:ToggleSwitch Grid.Column="3" IsChecked="{Binding IsOn, Mode=OneWay}" Click="OnToolToggled"
+                                                         AutomationProperties.Name="{Binding Name}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- The programs added for this mode. -->
+                <ItemsControl x:Name="Programs">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource RowStyle}" Padding="20,10">
+                            <Border Style="{StaticResource RowStyle}" Padding="20,10" Opacity="{Binding Emphasis}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <Border Width="32" Height="32" CornerRadius="8" Background="{Binding Tint}">
                                         <Grid>
-                                            <Image Source="{Binding Icon}" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="15" HorizontalAlignment="Center" Text="&#xE943;"
+                                            <Image Source="{Binding Icon}" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="15" HorizontalAlignment="Center" Text="{Binding Glyph}"
                                                        Visibility="{Binding GlyphVisibility}" Foreground="{Binding Color}" />
                                         </Grid>
                                     </Border>
-                                    <TextBlock Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding Name}" />
+                                    <StackPanel Grid.Column="1" Margin="14,0,12,0" VerticalAlignment="Center">
+                                        <TextBlock FontWeight="SemiBold" TextTrimming="CharacterEllipsis">
+                                            <Run Text="{Binding Title, Mode=OneWay}" />
+                                            <Run Text="{Binding Subtitle, Mode=OneWay}" FontSize="12" FontWeight="Normal"
+                                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding Detail}" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip="{Binding Detail}"
+                                                   Style="{StaticResource SecondaryTextStyle}" />
+                                    </StackPanel>
                                     <Border Grid.Column="2" Style="{StaticResource ChipStyle}" Margin="0,0,16,0" VerticalAlignment="Center"
                                             Visibility="{Binding RunningVisibility}" Background="{Binding Tint}">
                                         <TextBlock Text="{l:T 'Open now'}" FontSize="12" FontWeight="SemiBold" />
                                     </Border>
-                                    <ui:ToggleSwitch Grid.Column="3" IsChecked="{Binding IsOn, Mode=OneWay}" Click="OnToolToggled"
-                                                     AutomationProperties.Name="{Binding Name}" />
+                                    <ui:ToggleSwitch Grid.Column="3" IsChecked="{Binding IsOn, Mode=OneWay}" Click="OnProgramToggled"
+                                                     AutomationProperties.Name="{Binding Title}" />
+                                    <ui:Button Grid.Column="4" Icon="{ui:SymbolIcon Delete24}" Appearance="Transparent" Margin="8,0,0,0" Click="OnProgramRemove"
+                                               ToolTip="{l:T 'Remove from the list'}" AutomationProperties.Name="{l:T 'Remove from the list'}" />
                                 </Grid>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+                <TextBlock x:Name="ProgramsEmpty" Margin="20,16" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}" />
+
+                <!-- Add a program: type its name, pick it among the open ones, or find its file. -->
+                <Border Padding="20,14">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:TextBox x:Name="NewProgram" PlaceholderText="{l:T 'Program name, for example cs2'}" KeyDown="OnNewProgramKeyDown"
+                                    AutomationProperties.Name="{l:T 'Program name'}" />
+                        <ui:Button Grid.Column="1" Content="{l:T 'Add'}" Appearance="Primary" Icon="{ui:SymbolIcon Add24}" Margin="10,0,0,0" Click="OnAddTyped" />
+                        <ui:Button Grid.Column="2" Content="{l:T 'Open programs…'}" Icon="{ui:SymbolIcon WindowApps24}" Margin="8,0,0,0" Click="OnPickRunning" />
+                        <ui:Button Grid.Column="3" Content="{l:T 'Browse…'}" Icon="{ui:SymbolIcon FolderOpen24}" Margin="8,0,0,0" Click="OnBrowse" />
+                    </Grid>
+                </Border>
             </StackPanel>
         </Border>
+        <TextBlock x:Name="Status" FontSize="12" TextWrapping="Wrap" Margin="4,10,0,0" Style="{StaticResource SecondaryTextStyle}" />
 
-        <TextBlock Text="{l:T 'RULES'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+        <ui:CardExpander Margin="0,22,0,0" ContentPadding="0">
+            <ui:CardExpander.Header>
+                <StackPanel>
+                    <TextBlock Text="{l:T 'Battery and hours'}" FontWeight="SemiBold" />
+                    <TextBlock FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"
+                               Text="{l:T 'Start a mode when the PC runs on battery, or during set hours, whatever is open.'}" />
+                </StackPanel>
+            </ui:CardExpander.Header>
             <StackPanel>
                 <TextBlock x:Name="EmptyState" Margin="20,16" Style="{StaticResource SecondaryTextStyle}"
-                           Text="{l:T 'No other rule yet. Add one below, for example your game launcher with Game mode.'}" />
+                           Text="{l:T 'No rule on battery or hours yet.'}" />
                 <ItemsControl x:Name="Rules">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -160,9 +242,6 @@
                         </Grid.ColumnDefinitions>
                         <ComboBox x:Name="Trigger" MinWidth="190" Margin="0,0,12,0" DisplayMemberPath="Label"
                                   SelectionChanged="OnTriggerChanged" AutomationProperties.Name="{l:T 'Trigger'}" />
-                        <ComboBox x:Name="ProcessName" Grid.Column="1" IsEditable="True" DropDownOpened="OnProcessListOpened"
-                                  ToolTip="{l:T 'Program name, for example cs2.exe. Open the list to pick a running program.'}"
-                                  AutomationProperties.Name="{l:T 'Program name'}" />
                         <StackPanel x:Name="TimeRange" Grid.Column="1" Orientation="Horizontal" Visibility="Collapsed">
                             <TextBlock Text="{l:T 'from'}" VerticalAlignment="Center" Margin="0,0,8,0" />
                             <ui:TextBox x:Name="TimeFrom" Width="90" PlaceholderText="09:00" AutomationProperties.Name="{l:T 'Start time'}" />
@@ -175,10 +254,9 @@
                     </Grid>
                 </Border>
             </StackPanel>
-        </Border>
-        <TextBlock x:Name="Status" FontSize="12" Margin="4,10,0,0" Style="{StaticResource SecondaryTextStyle}" />
+        </ui:CardExpander>
 
-        <TextBlock Margin="4,16,0,0" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
-                   Text="{l:T 'Rules are checked from top to bottom: the first one that applies wins. A rule acts once each time it starts to apply, so undoing a mode by hand is respected. The protected list applies to automatic switches exactly as to manual ones.'}" />
+        <TextBlock Margin="4,16,0,0" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"
+                   Text="{l:T 'A program acts once each time it starts, so undoing a mode by hand is respected. The protected list applies to automatic switches exactly as to manual ones.'}" />
     </StackPanel>
 </Page>

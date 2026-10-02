@@ -67,7 +67,7 @@ internal sealed class AutoSwitcher
 
     public void Apply(AutoSwitchSettings settings)
     {
-        var enabled = settings.Enabled && settings.Rules.Count > 0;
+        var enabled = settings.Enabled && settings.HasActiveRules;
         if (enabled && !_timer.IsEnabled)
         {
             // A fresh planner: programs already open when the feature is turned on are acted on once.

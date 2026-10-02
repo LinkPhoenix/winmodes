@@ -74,6 +74,7 @@ public static class AutoSwitchConditions
     {
         ArgumentNullException.ThrowIfNull(rules);
         return rules
+            .Where(rule => rule.Enabled)
             .Select(rule => rule.Process)
             .Where(key => (key == Battery && onBattery) || IsScheduleActive(key, now)
                 || (TryParseTool(key, out var toolId) && runningToolIds?.Contains(toolId) == true))
@@ -84,7 +85,7 @@ public static class AutoSwitchConditions
     public static bool NeedsTools(IEnumerable<AutoSwitchRule> rules)
     {
         ArgumentNullException.ThrowIfNull(rules);
-        return rules.Any(rule => TryParseTool(rule.Process, out _));
+        return rules.Any(rule => rule.Enabled && TryParseTool(rule.Process, out _));
     }
 
     /// <summary>Plain-language trigger, e.g. "On battery" or "cs2 is running".</summary>

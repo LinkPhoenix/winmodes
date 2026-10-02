@@ -1,7 +1,12 @@
 namespace WinModes.Core.Automation;
 
 /// <summary>"When this program runs, activate that mode."</summary>
-public sealed record AutoSwitchRule(string Process, string Mode);
+/// <param name="Process">The program, or a condition (see <see cref="AutoSwitchConditions"/>).</param>
+/// <param name="Mode">The mode to activate.</param>
+/// <param name="Enabled">A rule that is off is kept in the list but never acts. Settings saved before it existed have no value, which means on.</param>
+/// <param name="Path">Where the program was found, kept only to show its icon; matching uses the name.</param>
+/// <param name="Label">The name to show for the program, when it is not the process name.</param>
+public sealed record AutoSwitchRule(string Process, string Mode, bool Enabled = true, string? Path = null, string? Label = null);
 
 public enum AutoSwitchKind
 {
@@ -140,6 +145,7 @@ public sealed class AutoSwitchPlanner(AutoSwitchTiming? timing = null)
 
         _handled.RemoveWhere(name => !running.Contains(name));
         var matches = rules
+            .Where(rule => rule.Enabled)
             .Select(rule => (Name: Normalize(rule.Process), rule.Mode))
             .Where(match => match.Name.Length > 0 && running.Contains(match.Name))
             .ToList();

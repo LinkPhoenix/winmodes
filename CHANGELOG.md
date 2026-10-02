@@ -31,6 +31,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Modes: a switch above the mode cards turns automatic switching on or off, and says what it is doing ("Code mode is on: Claude Code is running", or the time left before it ends). A mode started automatically is labelled "ACTIVE (AUTO)", and the tray menu has the same switch. The page now shows a switch made by the tray, a hotkey or automatic switching at once instead of at its next refresh.
 - Automation: a "Coding tools" section starts a mode (Code by default) while Claude Code, Codex, Cursor, T3 Code, OpenCode, Windsurf or VS Code is open, and ends it after the last one closes. Each tool is a switch; "Open now" shows which ones are running. Claude Code is told apart from the Claude chat app, so chatting does not start Code mode. Turning automatic switching on for the first time switches on the usual coding tools.
 - Automation: a "Wait before returning to normal" setting (30 seconds to 10 minutes, one minute by default) and a line that says what automatic switching is doing now, with a countdown.
+- Automation: each mode (Code, Work, Game, Focus, Eco) has its own list of the programs that start it. Add a program by typing its name, by picking it among the programs that are open (with its icon), or by browsing to its file; switch one off without losing it, and see which ones are open now. This is how a game starts Game mode, or Outlook or Teams start Work mode.
 
 ### Changed
 
@@ -43,6 +44,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Optimize: the page opens in about a third of the time and switching category is instant (it used to take up to two seconds on "All"): only the settings in view are drawn, the state of the PC is read in parallel and once at startup, and the page keeps what it showed when you come back, refreshing it in the background without moving the list or closing what you had opened.
 
 - Debloat: the page shows its list in about half the time (the two PowerShell readings of the apps now run side by side, and the logos are found in parallel and remembered), shows what it knew at once when you come back, and the list is read once more shortly after WinModes starts. Nothing you ticked is lost when you leave the page and return.
+- Automation: the page is laid out like the others, with the coding tools listed under the mode they start and the rules on battery or hours in a section of their own. A game outranks every other program, so a game opened next to Claude Code gets Game mode, and a program that only says "I am working" never hides another trigger.
 
 ### Fixed
 

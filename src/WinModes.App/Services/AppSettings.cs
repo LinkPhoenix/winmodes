@@ -197,6 +197,10 @@ internal sealed record AutoSwitchSettings
     public const int DefaultGraceSeconds = 60;
 
     public IReadOnlyList<WinModes.Core.Automation.AutoSwitchRule> Rules { get; init; } = [];
+
+    /// <summary>True when at least one rule can act (a rule switched off stays in the list but does nothing).</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool HasActiveRules => Rules.Any(rule => rule.Enabled);
 }
 
 /// <summary>Where the widget is shown.</summary>

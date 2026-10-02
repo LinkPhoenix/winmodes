@@ -358,4 +358,94 @@ public sealed class AutoSwitchPlannerTests
         Assert.False(AutoSwitchConditions.NeedsTools([new("cs2", "game")]));
         Assert.All(AutoSwitchConditions.DefaultCodingToolIds, tool => Assert.Contains(tool, AutoSwitchConditions.CodingToolIds));
     }
+
+    [Fact]
+    public void Evaluate_IgnoresARuleThatIsOff_AndFallsBackToTheNextOne()
+    {
+        AutoSwitchRule[] rules = [new("cs2", "game", Enabled: false), new("Code", "code")];
+        var planner = new AutoSwitchPlanner(Timing);
+
+        planner.Evaluate(rules, Running("cs2", "Code"), null, false, true, At(0));
+        var decision = planner.Evaluate(rules, Running("cs2", "Code"), null, false, true, At(10));
+
+        Assert.Equal(new AutoSwitchDecision(AutoSwitchKind.Activate, "code", "Code"), decision);
+    }
+
+    [Fact]
+    public void Evaluate_DoesNothingWhenTheOnlyRuleThatMatchesIsOff()
+    {
+        AutoSwitchRule[] rules = [new("cs2", "game", Enabled: false)];
+        var planner = new AutoSwitchPlanner(Timing);
+
+        planner.Evaluate(rules, Running("cs2"), null, false, true, At(0));
+
+        Assert.Equal(AutoSwitchKind.None, planner.Evaluate(rules, Running("cs2"), null, false, true, At(60)).Kind);
+        Assert.Equal(AutoSwitchState.Idle, planner.Status.State);
+    }
+
+    [Fact]
+    public void Conditions_IgnoreRulesThatAreOff()
+    {
+        AutoSwitchRule[] rules = [new(AutoSwitchConditions.Battery, "eco", Enabled: false), new(AutoSwitchConditions.Tool("codex"), "code", Enabled: false)];
+
+        Assert.Empty(AutoSwitchConditions.ActiveKeys(rules, true, new TimeOnly(12, 0), new HashSet<string> { "codex" }));
+        Assert.False(AutoSwitchConditions.NeedsTools(rules));
+    }
+
+    [Fact]
+    public void Rule_ReadsASettingsFileWrittenBeforeRulesCouldBeSwitchedOff()
+    {
+        var rule = System.Text.Json.JsonSerializer.Deserialize<AutoSwitchRule>("""{"Process":"cs2","Mode":"game"}""");
+
+        Assert.Equal(new AutoSwitchRule("cs2", "game"), rule);
+        Assert.True(rule!.Enabled);
+        Assert.Null(rule.Path);
+        Assert.Null(rule.Label);
+    }
+
+    [Fact]
+    public void Rule_KeepsWhatItWasGivenThroughAFileRoundTrip()
+    {
+        var rule = new AutoSwitchRule("cs2", "game", Enabled: false, Path: @"C:\Games\cs2.exe", Label: "Counter-Strike 2");
+
+        var back = System.Text.Json.JsonSerializer.Deserialize<AutoSwitchRule>(System.Text.Json.JsonSerializer.Serialize(rule));
+
+        Assert.Equal(rule, back);
+    }
+
+    [Fact]
+    public void Prioritize_PutsGamesFirstAndWorkLast_AndKeepsTheRestInPlace()
+    {
+        AutoSwitchRule[] rules =
+        [
+            new(AutoSwitchConditions.Tool("claude-code"), "code"),
+            new("Outlook", "work"),
+            new(AutoSwitchConditions.Battery, "eco"),
+            new("cs2", "game"),
+            new("Code", "code"),
+            new(AutoSwitchConditions.Schedule(new TimeOnly(9, 0), new TimeOnly(18, 0)), "work"),
+            new("Teams", "work"),
+            new("eldenring", "GAME"),
+        ];
+
+        var ordered = AutoSwitchRules.Prioritize(rules).Select(rule => rule.Process).ToList();
+
+        Assert.Equal(
+            ["cs2", "eldenring", "@tool claude-code", "@battery", "Code", "@time 09:00-18:00", "Outlook", "Teams"],
+            ordered);
+    }
+
+    [Fact]
+    public void Prioritize_LetsAGameOpenedNextToACodingToolTakeOver()
+    {
+        AutoSwitchRule[] added = [new(AutoSwitchConditions.Tool("claude-code"), "code"), new("cs2", "game")];
+        var rules = AutoSwitchRules.Prioritize(added);
+        var planner = new AutoSwitchPlanner(Timing);
+        var running = Running("@tool claude-code", "cs2");
+
+        planner.Evaluate(rules, running, "code", true, true, At(0));
+        var decision = planner.Evaluate(rules, running, "code", true, true, At(10));
+
+        Assert.Equal(new AutoSwitchDecision(AutoSwitchKind.Activate, "game", "cs2"), decision);
+    }
 }

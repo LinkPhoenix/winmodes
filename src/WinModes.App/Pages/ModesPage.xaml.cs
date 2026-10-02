@@ -87,11 +87,11 @@ public partial class ModesPage : Page
     {
         var settings = Services.AppSettings.Load().AutoSwitch;
         AutoToggle.IsChecked = settings.Enabled;
-        AutoPauseButton.Visibility = settings.Enabled && settings.Rules.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        AutoPauseButton.Visibility = settings.Enabled && settings.HasActiveRules ? Visibility.Visible : Visibility.Collapsed;
         AutoPauseButton.Content = Loc.T(AutoSwitcher.Current?.IsPaused == true ? "Resume" : "Pause for 1 hour");
         AutoStatus.Text = !settings.Enabled
             ? Loc.T("Off. Turned on, Code mode starts by itself when Claude Code, Codex or another coding tool opens, and ends a little after the last one closes.")
-            : settings.Rules.Count == 0
+            : !settings.HasActiveRules
                 ? Loc.T("No rule yet. Open Set up to choose the tools and programs that start a mode.")
                 : AutoSwitchText.Describe(AutoSwitcher.Status, _activeMode, DateTimeOffset.Now);
 
