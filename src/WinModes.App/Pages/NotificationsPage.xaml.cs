@@ -1,12 +1,15 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using WinModes.App.Services;
+using WinModes.Core.Notifications;
 
 namespace WinModes.App.Pages;
 
 /// <summary>Every notification WinModes can show, each one switched on or off here. Saved on every change.</summary>
 public partial class NotificationsPage : Page
 {
+    private const int TimeStepMinutes = 30;
     private static readonly int[] LowPercentChoices = [5, 10, 20, 30];
     private static readonly int[] MemoryLimitsGb = [2, 4, 6, 8, 12, 16, 24];
 
@@ -29,6 +32,15 @@ public partial class NotificationsPage : Page
         var share = LowPercentChoices.Select(percent => new Option(percent, Loc.F("Under {0} %", percent))).ToList();
         LowPercent.ItemsSource = share;
         LowPercent.SelectedItem = share.FirstOrDefault(option => option.Value == notifications.LowPercent) ?? share[1];
+
+        QuietOn.IsChecked = notifications.QuietHoursOn;
+        // Every half hour of the day, in the format of the user's region.
+        var times = Enumerable.Range(0, QuietHours.MinutesPerDay / TimeStepMinutes)
+            .Select(step => new Option(step * TimeStepMinutes, new DateTime(1, 1, 1).AddMinutes(step * TimeStepMinutes).ToString("t", CultureInfo.CurrentCulture))).ToList();
+        QuietFrom.ItemsSource = times;
+        QuietTo.ItemsSource = times;
+        QuietFrom.SelectedItem = times.FirstOrDefault(option => option.Value == notifications.QuietFrom) ?? times[0];
+        QuietTo.SelectedItem = times.FirstOrDefault(option => option.Value == notifications.QuietTo) ?? times[0];
 
         var limits = new List<Option> { new(0, Loc.T("Off")) };
         limits.AddRange(MemoryLimitsGb.Select(gb => new Option(gb, $"{gb} GB")));
@@ -60,6 +72,7 @@ public partial class NotificationsPage : Page
     private void ShowAvailability(AppSettings settings)
     {
         Options.IsEnabled = settings.Notifications.Enabled;
+        QuietTimesRow.IsEnabled = settings.Notifications.QuietHoursOn;
         PlanNoteRow.Visibility = settings.Widget.ShowSubscriptions ? Visibility.Collapsed : Visibility.Visible;
         ClaudeSection.Visibility = settings.Widget.ShowClaudePlan || !settings.Widget.ShowSubscriptions ? Visibility.Visible : Visibility.Collapsed;
         CodexSection.Visibility = settings.Widget.ShowCodexPlan || !settings.Widget.ShowSubscriptions ? Visibility.Visible : Visibility.Collapsed;
@@ -107,6 +120,9 @@ public partial class NotificationsPage : Page
                 SignInExpired = SignInExpired.IsChecked == true,
                 ModeChanges = ModeChanges.IsChecked == true,
                 IdleSessionEnded = IdleEnded.IsChecked == true,
+                QuietHoursOn = QuietOn.IsChecked == true,
+                QuietFrom = (QuietFrom.SelectedItem as Option)?.Value ?? current.Notifications.QuietFrom,
+                QuietTo = (QuietTo.SelectedItem as Option)?.Value ?? current.Notifications.QuietTo,
             },
         };
         updated.Save();

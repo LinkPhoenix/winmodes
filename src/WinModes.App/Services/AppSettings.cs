@@ -205,6 +205,18 @@ internal sealed record NotificationSettings
 
     public bool IdleSessionEnded { get; init; } = true;
 
+    /// <summary>Hold back the optional notifications between <see cref="QuietFrom"/> and <see cref="QuietTo"/>. Off by default.</summary>
+    public bool QuietHoursOn { get; init; }
+
+    /// <summary>Start of the quiet hours, in minutes since midnight.</summary>
+    public int QuietFrom { get; init; } = 22 * 60;
+
+    /// <summary>End of the quiet hours, in minutes since midnight.</summary>
+    public int QuietTo { get; init; } = 7 * 60;
+
+    /// <summary>Whether it is quiet now. The plan watcher then waits instead of announcing: the notice comes when the quiet ends.</summary>
+    public bool IsQuietNow() => QuietHoursOn && WinModes.Core.Notifications.QuietHours.IsQuiet(QuietFrom, QuietTo, TimeOnly.FromDateTime(DateTime.Now));
+
     public ToolNotices For(string tool) => tool == "Claude" ? Claude : Codex;
 
     /// <summary>What the plan notices have to send for a tool, the widget's older alert choice standing in for "running low" until chosen.</summary>

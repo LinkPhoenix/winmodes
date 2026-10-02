@@ -27,6 +27,23 @@
         </controls:SettingSection>
 
         <StackPanel x:Name="Options">
+            <controls:SettingSection Header="{l:T 'QUIET HOURS'}" Icon="WeatherMoon24" Accent="{x:Static app:Palette.Apps}">
+                <StackPanel>
+                    <controls:SettingRow Icon="WeatherMoon24" Accent="{x:Static app:Palette.Apps}" Title="{l:T 'Hold back notifications'}"
+                                         Description="{l:T 'Between these times nothing is shown except errors and the result of a mode switch you start. Limits are judged again when the quiet hours end, so none is missed.'}">
+                        <ui:ToggleSwitch x:Name="QuietOn" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Hold back notifications'}" />
+                    </controls:SettingRow>
+                    <controls:SettingRow x:Name="QuietTimesRow" Icon="Clock24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Quiet from'}"
+                                         Description="{l:T 'The start and the end of the quiet hours; the end can be the next morning.'}">
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox x:Name="QuietFrom" MinWidth="100" DisplayMemberPath="Label" SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Quiet from'}" />
+                            <TextBlock Text="{l:T 'to'}" VerticalAlignment="Center" Margin="10,0" Style="{StaticResource SecondaryTextStyle}" />
+                            <ComboBox x:Name="QuietTo" MinWidth="100" DisplayMemberPath="Label" SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Quiet until'}" />
+                        </StackPanel>
+                    </controls:SettingRow>
+                </StackPanel>
+            </controls:SettingSection>
+
             <controls:SettingSection Header="{l:T 'PLAN LIMITS'}" Icon="Gauge24" Accent="{x:Static app:Palette.Start}">
                 <StackPanel>
                     <controls:SettingRow x:Name="PlanNoteRow" Icon="Info24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Plan usage is off'}"

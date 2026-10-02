@@ -62,6 +62,8 @@ internal sealed class Notifier
     {
         NoticeKind.Problem or NoticeKind.Test => true,
         _ when !settings.Enabled => false,
+        // The answer to something the user just did is not held back; everything else waits for the end of the quiet hours.
+        not NoticeKind.Mode when settings.IsQuietNow() => false,
         NoticeKind.Update => settings.UpdateAvailable,
         NoticeKind.SignIn => settings.SignInExpired,
         NoticeKind.Mode => settings.ModeChanges,

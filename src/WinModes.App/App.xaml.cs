@@ -351,11 +351,11 @@ public partial class App : Application, IDisposable
         var usedGb = reading.AiMemoryMb / MbPerGb;
         if (usedGb >= settings.AiMemoryAlertGb && !_alertRaised)
         {
-            _alertRaised = true;
             var top = reading.AiTools.Count > 0 ? " " + Loc.F("Largest: {0}.", reading.AiTools[0].Name) : "";
-            _notifier?.Show(Services.NoticeKind.Memory, Loc.T("WinModes - AI tools memory"),
+            // Raised only once shown: held back by the quiet hours, it is shown when they end if the memory is still above.
+            _alertRaised = _notifier?.Show(Services.NoticeKind.Memory, Loc.T("WinModes - AI tools memory"),
                 Loc.F("AI tools use {0:0.0} GB, above your {1} GB limit.", usedGb, settings.AiMemoryAlertGb) + top,
-                Forms.ToolTipIcon.Warning);
+                Forms.ToolTipIcon.Warning) == true;
         }
         else if (usedGb < settings.AiMemoryAlertGb * RearmRatio)
         {
@@ -391,7 +391,8 @@ public partial class App : Application, IDisposable
         var settings = Services.AppSettings.Load();
         var widget = settings.Widget;
         var statuses = Services.SubscriptionMonitor.Get(widget.ClaudeOnline, widget.CodexOnline, widget.ShowClaudePlan, widget.ShowCodexPlan);
-        if (!Services.SubscriptionMonitor.HasRead || _notifier is null)
+        // During the quiet hours nothing is decided: the limits are judged again when they end, so no notice is lost.
+        if (!Services.SubscriptionMonitor.HasRead || _notifier is null || settings.Notifications.IsQuietNow())
         {
             return;
         }
@@ -422,11 +423,14 @@ public partial class App : Application, IDisposable
         foreach (var tool in reading.AiTools)
         {
             var usedGb = tool.MemoryMb / MbPerGb;
-            if (usedGb >= limitGb && _toolAlertsRaised.Add(tool.Name))
+            if (usedGb >= limitGb && !_toolAlertsRaised.Contains(tool.Name))
             {
-                _notifier?.Show(Services.NoticeKind.Memory, $"WinModes - {tool.Name}",
+                if (_notifier?.Show(Services.NoticeKind.Memory, $"WinModes - {tool.Name}",
                     Loc.F("{0} uses {1:0.0} GB, above your {2} GB limit per tool.", tool.Name, usedGb, limitGb),
-                    Forms.ToolTipIcon.Warning);
+                    Forms.ToolTipIcon.Warning) == true)
+                {
+                    _toolAlertsRaised.Add(tool.Name);
+                }
             }
             else if (usedGb < limitGb * RearmRatio)
             {

@@ -270,6 +270,20 @@ public sealed class PlanNoticesTests : IDisposable
         Assert.Equal([PlanNoticeKind.Reached, PlanNoticeKind.Low], notices.Select(notice => notice.Kind));
     }
 
+    [Theory]
+    [InlineData(22, 0, 7, 0, 23, 30, true)] // late evening
+    [InlineData(22, 0, 7, 0, 3, 0, true)] // night, after midnight
+    [InlineData(22, 0, 7, 0, 6, 59, true)]
+    [InlineData(22, 0, 7, 0, 7, 0, false)] // the end is not included
+    [InlineData(22, 0, 7, 0, 12, 0, false)]
+    [InlineData(22, 0, 7, 0, 22, 0, true)] // the start is included
+    [InlineData(13, 0, 14, 30, 13, 45, true)] // a span inside the day
+    [InlineData(13, 0, 14, 30, 14, 30, false)]
+    [InlineData(13, 0, 14, 30, 2, 0, false)]
+    [InlineData(8, 0, 8, 0, 8, 0, false)] // an empty span is never quiet
+    public void QuietHours_CrossMidnightAndExcludeTheirEnd(int fromHour, int fromMinute, int toHour, int toMinute, int hour, int minute, bool expected) =>
+        Assert.Equal(expected, QuietHours.IsQuiet(fromHour * 60 + fromMinute, toHour * 60 + toMinute, new TimeOnly(hour, minute)));
+
     [Fact]
     public void Texts_SayWhichLimitAndWhenItResets()
     {
