@@ -120,7 +120,7 @@ Neither needs the .NET runtime. See the [changelog](CHANGELOG.md).
 
 New features are tested first in a **beta**, published as a *pre-release* named `vX.Y.Z-beta.YYYYMMDD` (with `.2`, `.3`… when several come out the same day) with the same files as a stable release. A beta wears a **Beta** tag next to its version in the title bar and on the About page.
 
-- You choose the **update channel** in Settings. On *Stable* (the default of a stable copy) WinModes only offers the latest stable release. On *Beta* (the default of a beta copy) it also offers the newer betas, and the stable version of the same number when it comes out. Going back to Stable never downgrades: a beta waits for the next stable version.
+- You choose the **update channel** on the About page, in the Updates section. On *Stable* (the default of a stable copy) WinModes only offers the latest stable release. On *Beta* (the default of a beta copy) it also offers the newer betas, and the stable version of the same number when it comes out. Going back to Stable never downgrades: a beta waits for the next stable version.
 - A beta installs over a stable copy and the other way round (same installer identity), and it keeps your settings and journals.
 - Betas come from the `beta` branch, stable releases from `main`. Please report what you find in the [issues](https://github.com/LinkPhoenix/winmodes/issues).
 

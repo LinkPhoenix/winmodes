@@ -34,7 +34,7 @@
                     </StackPanel>
                     <TextBlock x:Name="BetaNote" Visibility="Collapsed" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"
                                Style="{StaticResource SecondaryTextStyle}"
-                               Text="{l:T 'This is a beta build for testing: it may still contain mistakes. You choose in Settings whether updates come from the beta or the stable channel.'}" />
+                               Text="{l:T 'This is a beta build for testing: it may still contain mistakes. You choose below, under Updates, whether updates come from the beta or the stable channel.'}" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -55,6 +55,12 @@
                                Text="{l:T 'WinModes can ask GitHub whether a newer release exists. Nothing is downloaded or installed by itself.'}" />
                     <CheckBox x:Name="CheckAtStartup" Content="{l:T 'Check once when WinModes starts'}" Margin="0,6,0,0"
                               Checked="OnCheckAtStartupChanged" Unchecked="OnCheckAtStartupChanged" />
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <TextBlock Text="{l:T 'Update channel'}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <ComboBox x:Name="UpdateChannelChoice" MinWidth="150" DisplayMemberPath="Label"
+                                  SelectionChanged="OnUpdateChannelChanged" AutomationProperties.Name="{l:T 'Update channel'}" />
+                    </StackPanel>
+                    <TextBlock x:Name="UpdateChannelNote" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Style="{StaticResource SecondaryTextStyle}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button x:Name="CheckButton" Content="{l:T 'Check now'}" Icon="{ui:SymbolIcon ArrowSync24}" Click="OnCheckUpdates" />

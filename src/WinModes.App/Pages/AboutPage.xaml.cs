@@ -19,7 +19,11 @@ public partial class AboutPage : Page
         VersionText.Text = Loc.F("Version {0}", AppInfo.FullVersion);
         BetaBadges.Show(BetaBadge, BetaBadgeText);
         BetaNote.Visibility = AppInfo.IsBeta ? Visibility.Visible : Visibility.Collapsed;
-        CheckAtStartup.IsChecked = Services.AppSettings.Load().CheckForUpdates;
+        var settings = Services.AppSettings.Load();
+        CheckAtStartup.IsChecked = settings.CheckForUpdates;
+        UpdateChannelChoice.ItemsSource = ChannelChoices;
+        UpdateChannelChoice.SelectedItem = ChannelChoices.First(choice => choice.Channel == (settings.FollowsBetas ? Services.AppSettings.BetaChannel : Services.AppSettings.StableChannel));
+        ShowChannelNote(settings.FollowsBetas);
         _loaded = true;
         if (Services.UpdateChecker.Last is { } last)
         {
@@ -48,6 +52,25 @@ public partial class AboutPage : Page
         }
     }
 
+    /// <summary>Saves the channel on its own: the other settings are written from a whole page, which would turn "not chosen yet" into a choice.</summary>
+    private void OnUpdateChannelChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loaded || UpdateChannelChoice.SelectedItem is not ChannelChoice { Channel: var channel })
+        {
+            return;
+        }
+
+        (Services.AppSettings.Load() with { UpdateChannel = channel }).Save();
+        ShowChannelNote(channel == Services.AppSettings.BetaChannel);
+
+        // The answer shown above belongs to the previous channel: ask again.
+        OnCheckUpdates(sender, e);
+    }
+
+    private void ShowChannelNote(bool betas) => UpdateChannelNote.Text = betas
+        ? Loc.T("Test versions come first, and the stable version when it is out. They may still contain mistakes.")
+        : Loc.T("Only finished versions. Choose Beta to try new features early.");
+
     private async void OnCheckUpdates(object sender, RoutedEventArgs e)
     {
         CheckButton.IsEnabled = false;
@@ -55,6 +78,14 @@ public partial class AboutPage : Page
         ShowUpdate(await Services.UpdateChecker.CheckAsync());
         CheckButton.IsEnabled = true;
     }
+
+    private sealed record ChannelChoice(string Channel, string Label);
+
+    private static IReadOnlyList<ChannelChoice> ChannelChoices { get; } =
+    [
+        new(Services.AppSettings.StableChannel, Loc.T("Stable")),
+        new(Services.AppSettings.BetaChannel, Loc.T("Beta")),
+    ];
 
     private void ShowUpdate(Services.UpdateStatus status)
     {

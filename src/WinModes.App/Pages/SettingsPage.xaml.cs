@@ -33,9 +33,6 @@ public partial class SettingsPage : Page
         Theme.SelectedItem = ThemeChoices.FirstOrDefault(choice => choice.Mode == settings.Theme) ?? ThemeChoices[0];
         LanguageChoice.ItemsSource = Loc.Languages;
         LanguageChoice.SelectedItem = Loc.Languages.FirstOrDefault(language => language.Code == settings.Language) ?? Loc.Languages[0];
-        UpdateChannelChoice.ItemsSource = ChannelChoices;
-        UpdateChannelChoice.SelectedItem = ChannelChoices.First(choice => choice.Mode == (settings.FollowsBetas ? AppSettings.BetaChannel : AppSettings.StableChannel));
-        ShowChannelNote(settings.FollowsBetas);
         var idleChoices = new List<Limit> { new(0, Loc.T("Never")) };
         idleChoices.AddRange(IdleMinutes.Select(minutes => new Limit(minutes, minutes < 60 ? Loc.F("After {0} minutes", minutes) : Loc.F("After {0} h", minutes / 60))));
         AutoEndIdle.ItemsSource = idleChoices;
@@ -78,25 +75,6 @@ public partial class SettingsPage : Page
     private void OnChanged(object sender, RoutedEventArgs e) => Save();
 
     private void OnAutoModeChanged(object sender, SelectionChangedEventArgs e) => Save();
-
-    /// <summary>Saves the channel on its own: the others are written from the whole page, which would turn "not chosen yet" into a choice.</summary>
-    private async void OnUpdateChannelChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (!_loaded || UpdateChannelChoice.SelectedItem is not Choice { Mode: { } channel })
-        {
-            return;
-        }
-
-        (AppSettings.Load() with { UpdateChannel = channel }).Save();
-        ShowChannelNote(channel == AppSettings.BetaChannel);
-
-        // The About page shows the answer of the last check: ask again for the channel just chosen.
-        await UpdateChecker.CheckAsync();
-    }
-
-    private void ShowChannelNote(bool betas) => UpdateChannelNote.Text = betas
-        ? Loc.T("Test versions come first, and the stable version when it is out. They may still contain mistakes.")
-        : Loc.T("Only finished versions. Choose Beta to try new features early.");
 
     private void Save()
     {
@@ -173,12 +151,6 @@ public partial class SettingsPage : Page
     }
 
     private sealed record Choice(string? Mode, string Label);
-
-    private static IReadOnlyList<Choice> ChannelChoices { get; } =
-    [
-        new(AppSettings.StableChannel, Loc.T("Stable")),
-        new(AppSettings.BetaChannel, Loc.T("Beta")),
-    ];
 
     private sealed record Limit(int Gb, string Label);
 }

@@ -10,7 +10,7 @@ internal sealed record UpdateStatus(bool IsNewer, string? LatestTag, string? Err
 
 /// <summary>
 /// Asks GitHub for the latest published release and compares it with this build. On the beta channel (the choice of the
-/// Settings page, or a beta build that has not chosen) it also looks at the beta releases; on the stable channel it never hears about them.
+/// About page, or a beta build that has not chosen) it also looks at the beta releases; on the stable channel it never hears about them.
 /// It only reads one public address and never downloads or runs anything: the user opens the release page.
 /// </summary>
 internal static class UpdateChecker
