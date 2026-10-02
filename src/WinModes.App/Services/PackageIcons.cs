@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO;
 using System.Xml.Linq;
 using WinModes.Core.Apps;
@@ -21,8 +22,13 @@ internal static class PackageIcons
 
     private static readonly string[] LogoAttributes = ["Square44x44Logo", "Square30x30Logo", "Square71x71Logo", "Square150x150Logo", "Logo"];
 
+    // Reading a manifest and listing a folder for every package is what made the logos slow: the answer for a package folder does not change.
+    private static readonly ConcurrentDictionary<string, string?> Found = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>The path of the best logo file of the package, or null when there is none to read.</summary>
-    public static string? FindLogo(string installLocation)
+    public static string? FindLogo(string installLocation) => Found.GetOrAdd(installLocation, Look);
+
+    private static string? Look(string installLocation)
     {
         try
         {

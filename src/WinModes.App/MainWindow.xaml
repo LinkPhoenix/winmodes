@@ -65,7 +65,7 @@
                 <ui:NavigationViewItem Content="{l:T 'Startup'}" Icon="{ui:SymbolIcon Rocket24}"
                                        TargetPageType="{x:Type pages:StartupPage}" />
                 <ui:NavigationViewItem Content="{l:T 'Debloat'}" Icon="{ui:SymbolIcon Broom24}"
-                                       TargetPageType="{x:Type pages:DebloatPage}" />
+                                       TargetPageType="{x:Type pages:DebloatPage}" NavigationCacheMode="Required" />
                 <ui:NavigationViewItemSeparator />
                 <ui:NavigationViewItem Content="{l:T 'Automation'}" Icon="{ui:SymbolIcon ArrowSync24}"
                                        TargetPageType="{x:Type pages:AutomationPage}" />

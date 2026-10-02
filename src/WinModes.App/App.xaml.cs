@@ -150,6 +150,20 @@ public partial class App : Application, IDisposable
             }
         });
 
+        // The same for the apps of the PC (the Debloat page): two PowerShell commands, so a little later, when nothing else is loading.
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(60));
+            try
+            {
+                await Services.DebloatSnapshot.TakeAsync();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+            {
+                // Nothing is kept: the page reads it when it is opened.
+            }
+        });
+
         var autoMode = Services.AppSettings.Load().AutoActivateMode;
         if (autoMode is null || Services.ModeSwitcher.ActiveMode is not null)
         {

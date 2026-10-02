@@ -47,17 +47,64 @@ public partial class DebloatPage : Page
         Loaded += async (_, _) => await ReloadAsync();
     }
 
+
     private static (string Glyph, Brush Color) LookUp(string category) =>
         Categories.FirstOrDefault(item => item.Category.Equals(category, StringComparison.OrdinalIgnoreCase)) is { Glyph: not null } found
             ? (found.Glyph, found.Color)
             : ("", Palette.Neutral);
 
-    private async Task ReloadAsync()
+    /// <summary>The reading the list on screen was built from.</summary>
+    private DebloatSnapshot? _shown;
+
+    /// <summary>False while <see cref="_oneDrive"/> is a reading kept from an earlier visit, which may be out of date.</summary>
+    private bool _oneDriveFresh;
+
+    /// <summary>
+    /// Shows the apps of this PC. The page is kept between visits, so the last reading is shown at once and a new one replaces it only if
+    /// something changed. Ticks the user has made and not acted on are their work: they are left alone unless <paramref name="force"/> says the list was just changed.
+    /// </summary>
+    private async Task ReloadAsync(bool force = false)
     {
-        Headline.Text = Loc.T("Reading the apps of this PC…");
-        SubHeadline.Text = "";
-        var installed = await AppxService.ListAsync();
-        var startNames = await AppxService.StartAppNamesAsync();
+        if (!force && _rows.Any(row => row.HasSelection))
+        {
+            return;
+        }
+
+        if (_shown is null)
+        {
+            Headline.Text = Loc.T("Reading the apps of this PC…");
+            SubHeadline.Text = "";
+            if (DebloatSnapshot.Last is { } cached)
+            {
+                Show(cached);
+            }
+
+            if (OneDriveService.Last is { } cachedDrive)
+            {
+                _oneDrive = cachedDrive;
+                ShowOneDrive();
+            }
+        }
+
+        var snapshot = await DebloatSnapshot.TakeAsync();
+        if (force || ((_shown is null || !snapshot.SameAs(_shown)) && !_rows.Any(row => row.HasSelection)))
+        {
+            Show(snapshot);
+        }
+
+        // Counting the files that exist only online can take seconds: it comes after the list, which does not wait for it.
+        _oneDriveFresh = false;
+        _oneDrive = await OneDriveService.InspectAsync();
+        _oneDriveFresh = true;
+        ShowOneDrive();
+    }
+
+    private void Show(DebloatSnapshot snapshot)
+    {
+        _shown = snapshot;
+        var installed = snapshot.Installed;
+        var startNames = snapshot.StartNames;
+        var open = _rows.Where(row => row.IsExpanded).Select(row => row.Entry.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var byEntry = installed
             .Select(package => (Package: package, Entry: AppxService.Catalog.Find(package)))
             .Where(pair => pair.Entry is not null)
@@ -81,6 +128,10 @@ public partial class DebloatPage : Page
                 new AppEntry { Id = $"other:{group.Key}", Title = startNames[group.Key], Packages = [group.First().Name], Category = OthersCategory },
                 [.. group], UpdateRemoveButton, isOther: true, isProtected: group.Any(AppGuard.IsProtected)))
             .OrderBy(row => row.Title, StringComparer.CurrentCultureIgnoreCase)];
+        foreach (var row in _rows.Concat(_others).Where(row => open.Contains(row.Entry.Id)))
+        {
+            row.IsExpanded = true;
+        }
 
         var present = _rows.Count(row => row.IsInstalled);
         var safe = _rows.Count(row => row is { IsInstalled: true, Entry.Tier: AppTier.Safe });
@@ -92,8 +143,6 @@ public partial class DebloatPage : Page
         ShowRows();
         ShowRemoved();
         _ = LoadIconsAsync([.. _rows, .. _others]);
-        _oneDrive = await OneDriveService.InspectAsync();
-        ShowOneDrive();
     }
 
     /// <summary>
@@ -103,7 +152,9 @@ public partial class DebloatPage : Page
     private static async Task LoadIconsAsync(IReadOnlyList<AppRow> rows)
     {
         var logos = await Task.Run(() => rows
-            .SelectMany(row => row.Packages.Select(package => (Row: row, Package: package, Path: PackageIcons.FindLogo(package.Package.InstallLocation))))
+            .SelectMany(row => row.Packages.Select(package => (Row: row, Package: package)))
+            .AsParallel()
+            .Select(item => (item.Row, item.Package, Path: PackageIcons.FindLogo(item.Package.Package.InstallLocation)))
             .Where(item => item.Path is not null)
             .ToList());
         await IconCache.PreloadAsync(logos.Select(item => item.Path));
@@ -160,8 +211,18 @@ public partial class DebloatPage : Page
 
     private async void OnOneDriveRemove(object sender, RoutedEventArgs e)
     {
-        if (_busy || _oneDrive is not { CanUninstall: true } state)
+        var current = _oneDrive;
+        if (_busy || current is not { CanUninstall: true })
         {
+            return;
+        }
+
+        // A reading kept from an earlier visit may be out of date, and the warning below depends on it.
+        var state = _oneDriveFresh ? current : await OneDriveService.InspectAsync();
+        if (!state.CanUninstall)
+        {
+            _oneDrive = state;
+            ShowOneDrive();
             return;
         }
 
@@ -395,7 +456,7 @@ public partial class DebloatPage : Page
         ResultCard.Visibility = Visibility.Visible;
         ResultText.Text = (done > 0 ? Loc.N(done, "1 package removed.", "{0} packages removed.") : Loc.T("Nothing was removed."))
             + (failures.Count > 0 ? "\n" + string.Join("\n", failures) : "");
-        await ReloadAsync();
+        await ReloadAsync(force: true);
     }
 
     private async void OnRestoreClick(object sender, RoutedEventArgs e)
@@ -411,7 +472,7 @@ public partial class DebloatPage : Page
         var reason = await AppxService.RestoreAsync(row.App);
         _busy = false;
         ResultText.Text = reason ?? Loc.F("{0} is back.", row.Title);
-        await ReloadAsync();
+        await ReloadAsync(force: true);
     }
 
     private void OnToggleDetails(object sender, RoutedEventArgs e)

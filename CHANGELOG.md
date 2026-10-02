@@ -42,6 +42,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Processes and Services: the pages open about four times faster and no longer freeze for more than a second at each refresh (Services rebuilt its whole list every five seconds). Only the rows in view are drawn, the column titles stay in place while the list scrolls, and the icons appear a moment after the list.
 - Optimize: the page opens in about a third of the time and switching category is instant (it used to take up to two seconds on "All"): only the settings in view are drawn, the state of the PC is read in parallel and once at startup, and the page keeps what it showed when you come back, refreshing it in the background without moving the list or closing what you had opened.
 
+- Debloat: the page shows its list in about half the time (the two PowerShell readings of the apps now run side by side, and the logos are found in parallel and remembered), shows what it knew at once when you come back, and the list is read once more shortly after WinModes starts. Nothing you ticked is lost when you leave the page and return.
+
 ### Fixed
 
 - Optimize and Debloat: the names of the categories in the bar at the top were black on the dark theme and hard to read; they now follow the theme.
