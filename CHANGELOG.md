@@ -20,6 +20,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Fixed
 
+- Widget: on the taskbar it no longer disappears for a moment when the Start menu opens or closes; it keeps its place while Windows hides the taskbar icons from the readout, and ignores buttons of other windows that appear there for an instant.
 - Modes: a switch interrupted by a crash or a failed restore stays listed as active and is retried on the next undo, instead of being forgotten with services left changed.
 - Services and Optimize: a damaged record of original settings is set aside as a `.corrupt-` file instead of being overwritten, so the values to restore are not lost.
 - Automation: when several rules match, a lower-priority program no longer replaces the mode of a higher-priority program that is still running; it takes over when that program exits.

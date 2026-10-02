@@ -31,10 +31,12 @@ internal static class TaskbarDock
     private static readonly IntPtr Topmost = new(-1);
 
     /// <summary>
-    /// The primary taskbar when it lies along the top or bottom edge; null otherwise (not supported yet) or when its icons
-    /// cannot be read. Takes some tens of milliseconds: call it from a worker thread.
+    /// The primary taskbar when it lies along the top or bottom edge; null otherwise (not supported yet). Takes some tens of
+    /// milliseconds: call it from a worker thread. While the Start menu or a flyout is open, UI Automation sees no button at
+    /// all: the icons did not go anywhere, so the last known place of the same taskbar (<paramref name="previous"/>) is kept,
+    /// and null is returned only when there is nothing to keep.
     /// </summary>
-    public static TaskbarArea? Find()
+    public static TaskbarArea? Find(TaskbarArea? previous = null)
     {
         var taskbar = FindWindow(TaskbarClass, null);
         if (taskbar == IntPtr.Zero || !GetWindowRect(taskbar, out var bar) || bar.Right - bar.Left <= bar.Bottom - bar.Top)
@@ -44,8 +46,13 @@ internal static class TaskbarDock
 
         var tray = FindWindowEx(taskbar, IntPtr.Zero, TrayClass, null);
         var trayLeft = tray != IntPtr.Zero && GetWindowRect(tray, out var trayRect) ? trayRect.Left : bar.Right;
-        return ContentExtent(taskbar, trayLeft) is var (contentLeft, contentRight)
-            ? new TaskbarArea(taskbar, bar.Left, bar.Top, bar.Right, bar.Bottom, trayLeft, contentLeft, contentRight)
+        if (ContentExtent(taskbar, bar, trayLeft) is var (contentLeft, contentRight))
+        {
+            return new TaskbarArea(taskbar, bar.Left, bar.Top, bar.Right, bar.Bottom, trayLeft, contentLeft, contentRight);
+        }
+
+        return previous is { } last && last.Taskbar == taskbar
+            ? last with { Left = bar.Left, Top = bar.Top, Right = bar.Right, Bottom = bar.Bottom, TrayLeft = trayLeft }
             : null;
     }
 
@@ -80,9 +87,14 @@ internal static class TaskbarDock
 
     public static void StopWatching() => Automation.RemoveAllEventHandlers();
 
-    /// <summary>Left and right edge of the start button, the pinned and running apps, and the Windows 11 widgets button.</summary>
-    private static (int Left, int Right)? ContentExtent(IntPtr taskbar, int trayLeft)
+    /// <summary>
+    /// Left and right edge of the start button, the pinned and running apps, and the Windows 11 widgets button. Only what lies
+    /// in the band of the taskbar counts: while the Start menu opens or closes, UI Automation briefly lists buttons of other
+    /// windows under the taskbar, and those would give an extent that fits no icon.
+    /// </summary>
+    private static (int Left, int Right)? ContentExtent(IntPtr taskbar, NativeRect bar, int trayLeft)
     {
+        const int Tolerance = 2;
         try
         {
             var buttons = AutomationElement.FromHandle(taskbar).FindAll(TreeScope.Descendants,
@@ -92,7 +104,8 @@ internal static class TaskbarDock
             {
                 var info = button.Current;
                 var bounds = info.BoundingRectangle;
-                if (info.IsOffscreen || bounds.IsEmpty || bounds.Left >= trayLeft || info.ClassName.StartsWith(SystemTrayClassPrefix, StringComparison.Ordinal))
+                if (info.IsOffscreen || bounds.IsEmpty || bounds.Left >= trayLeft || info.ClassName.StartsWith(SystemTrayClassPrefix, StringComparison.Ordinal)
+                    || bounds.Top < bar.Top - Tolerance || bounds.Bottom > bar.Bottom + Tolerance || bounds.Left < bar.Left - Tolerance || bounds.Right > trayLeft + Tolerance)
                 {
                     continue;
                 }

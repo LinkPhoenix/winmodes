@@ -349,7 +349,7 @@ internal sealed class TaskbarWidgetWindow : Window
 
     private TaskbarArea? ReadTaskbar()
     {
-        var area = TaskbarDock.Find();
+        var area = TaskbarDock.Find(_area);
         // A new taskbar (Explorer restarted) has to be watched again; never with a zero handle, which would watch everything.
         if (area is { } found && found.Taskbar != _watched)
         {
