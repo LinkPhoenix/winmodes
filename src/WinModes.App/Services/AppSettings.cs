@@ -175,8 +175,13 @@ internal sealed record AutoSwitchSettings
 {
     public bool Enabled { get; init; }
 
-    /// <summary>Undo an automatically activated mode once its program has exited.</summary>
+    /// <summary>Undo an automatically activated mode once nothing triggers it any more.</summary>
     public bool RevertWhenClosed { get; init; } = true;
+
+    /// <summary>How long a mode stays on after its last trigger is gone, so switching from one tool to another changes nothing.</summary>
+    public int GraceSeconds { get; init; } = DefaultGraceSeconds;
+
+    public const int DefaultGraceSeconds = 60;
 
     public IReadOnlyList<WinModes.Core.Automation.AutoSwitchRule> Rules { get; init; } = [];
 }

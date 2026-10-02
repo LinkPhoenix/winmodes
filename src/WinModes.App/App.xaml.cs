@@ -555,8 +555,8 @@ public partial class App : Application, IDisposable
         menu.Items.Add(Loc.T("Quit"), null, (_, _) => Shutdown());
     }
 
-    /// <summary>Runs a switch started outside the main window and reports the outcome in a notification.</summary>
-    internal async Task SwitchFromTrayAsync(string title, Func<Task<Services.SwitchReport>> action)
+    /// <summary>Runs a switch started outside the main window and reports the outcome in a notification. Returns whether it worked.</summary>
+    internal async Task<bool> SwitchFromTrayAsync(string title, Func<Task<Services.SwitchReport>> action)
     {
         try
         {
@@ -564,10 +564,12 @@ public partial class App : Application, IDisposable
             _notifier?.Show(report.Succeeded ? Services.NoticeKind.Mode : Services.NoticeKind.Problem, $"WinModes - {title}",
                 report.Succeeded ? string.Join("\n", report.Lines.Take(3)) : report.Lines[0],
                 report.Succeeded ? Forms.ToolTipIcon.Info : Forms.ToolTipIcon.Warning, durationMs: 4000);
+            return report.Succeeded;
         }
         catch (ProfileException ex)
         {
             _notifier?.Show(Services.NoticeKind.Problem, "WinModes", ex.Message, Forms.ToolTipIcon.Warning, durationMs: 4000);
+            return false;
         }
     }
 

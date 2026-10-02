@@ -21,6 +21,7 @@ internal sealed record SwitchReport(bool Succeeded, IReadOnlyList<string> Lines)
 internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
 {
     private const string HelperFileName = "WinModes.Elevated.exe";
+    private const string AutomaticSource = "auto";
     private const int UacCancelledError = 1223;
     private static readonly TimeSpan AppCloseTimeout = TimeSpan.FromSeconds(6);
     private static readonly TimeSpan CommandTimeout = TimeSpan.FromSeconds(45);
@@ -56,7 +57,14 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     /// <summary>Name of the active mode, or null when Windows is in its normal state.</summary>
     public static string? ActiveMode => ReadUserState()?.Mode;
 
-    public Task<SwitchReport> ActivateAsync(ModeProfile profile) => RunExclusiveAsync(() => ActivateCoreAsync(profile));
+    /// <summary>True when the active mode was started by automatic switching, which then also ends it; a mode chosen by hand is never ended by it.</summary>
+    public static bool ActiveModeIsAutomatic => ReadUserState()?.Source == AutomaticSource;
+
+    /// <summary>Raised, from any thread, when a switch has just finished (done or not), so open pages show the new state at once.</summary>
+    public static event Action? Changed;
+
+    /// <param name="automatic">The switch is made by automatic switching, which remembers it so it can undo it later.</param>
+    public Task<SwitchReport> ActivateAsync(ModeProfile profile, bool automatic = false) => RunExclusiveAsync(() => ActivateCoreAsync(profile, automatic));
 
     public Task<SwitchReport> UndoAsync() => RunExclusiveAsync(UndoCoreAsync);
 
@@ -64,10 +72,15 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     private async Task<SwitchReport> RunExclusiveAsync(Func<Task<SwitchReport>> operation)
     {
         var (ran, report) = await _switchGate.TryRunAsync(operation);
+        if (ran)
+        {
+            Changed?.Invoke();
+        }
+
         return ran ? report! : new SwitchReport(false, [Loc.T("Another mode switch is already running. Wait for it to finish.")]);
     }
 
-    private async Task<SwitchReport> ActivateCoreAsync(ModeProfile profile)
+    private async Task<SwitchReport> ActivateCoreAsync(ModeProfile profile, bool automatic)
     {
         var lines = new List<string>();
         var previous = ReadUserState();
@@ -92,7 +105,8 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         lines.AddRange(LaunchApps(profile.Apps.Launch));
         lines.AddRange(await ApplyWslAsync(profile.Wsl));
 
-        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow));
+        var source = automatic ? AutomaticSource : null;
+        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Source: source));
 
         // Stopped services and closed apps release their memory over a few seconds.
         await Task.Delay(MemorySettleDelay);
@@ -101,7 +115,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         var outcome = freedGb >= MinFreedGbToReport ? Loc.F("{0:0.0} GB freed", freedGb) : Loc.T("no measurable change");
         lines.Insert(0, Loc.F("Memory in use: {0:0.0} GB before, {1:0.0} GB after ({2}).", usedBeforeGb, usedAfterGb, outcome));
         // Kept for the summary shown when the mode is deactivated.
-        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Math.Max(freedGb, 0)));
+        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Math.Max(freedGb, 0), source));
         return new SwitchReport(true, lines);
     }
 
@@ -376,5 +390,5 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     [GeneratedRegex("[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}")]
     private static partial Regex GuidPattern();
 
-    private sealed record UserState(string Mode, string? PreviousPowerScheme, DateTimeOffset SwitchedUtc, double FreedGb = 0);
+    private sealed record UserState(string Mode, string? PreviousPowerScheme, DateTimeOffset SwitchedUtc, double FreedGb = 0, string? Source = null);
 }
