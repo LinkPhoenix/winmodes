@@ -8,6 +8,13 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-10-02
+
+### Fixed
+
+- Taskbar widget: the card of the AI tools memory now stays open when you rest the mouse on it, instead of being closed by each refresh of the widget.
+- Widget page: privacy mode now hides the e-mail address of the WinModes account of Claude Code and Codex.
+
 ## [0.9.0] - 2026-10-02
 
 ### Added
@@ -198,7 +205,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Protection: blocklist for security, WSL, Docker, winget, the Microsoft Store, Edge and developer tools.
 - Pages: Dashboard, Services, History, Protection and About.
 
-[Unreleased]: https://github.com/LinkPhoenix/winmodes/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/LinkPhoenix/winmodes/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/LinkPhoenix/winmodes/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.6.0...v0.7.0

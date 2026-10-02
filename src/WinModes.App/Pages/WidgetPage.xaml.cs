@@ -125,7 +125,7 @@ public partial class WidgetPage : Page
         button.IsEnabled = true;
         row.Description = !signedIn
             ? Loc.F("Not signed in. Sign in so WinModes reads your {0} usage reliably, with a session of its own.", provider.DisplayName)
-            : AccountSession.Email(provider) is { Length: > 0 } email
+            : !Privacy.Enabled && AccountSession.Email(provider) is { Length: > 0 } email
                 ? Loc.F("Signed in as {0}. The usage is read online with this session.", email)
                 : Loc.T("Signed in. The usage is read online with this session.");
     }
