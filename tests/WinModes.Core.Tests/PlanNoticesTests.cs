@@ -226,6 +226,50 @@ public sealed class PlanNoticesTests : IDisposable
         Assert.Empty(NoticeLedger.Load(Path.Combine(_folder, "missing.json")).Windows);
     }
 
+    private static SubscriptionStatus CodexBoth(double used, double weeklyUsed, DateTimeOffset fiveHourEnd, DateTimeOffset weekEnd) =>
+        new("Codex", "Pro", new LimitWindow(used, FiveHours, fiveHourEnd), new LimitWindow(weeklyUsed, Week, weekEnd), Now);
+
+    [Fact]
+    public void TwoWindowsUsedUpTogether_AreOneNotice_ThatTellsBoth()
+    {
+        var ledger = new NoticeLedger();
+
+        var notices = Run(ledger, CodexBoth(100, 100, Now.AddHours(2), Now.AddDays(2)), Now);
+
+        var notice = Assert.Single(notices);
+        Assert.Equal(PlanNoticeKind.Reached, notice.Kind);
+        Assert.Equal(Week, Assert.Single(notice.Also!).WindowMinutes);
+        var message = notice.Message(Now, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.Contains("The 5 h limit is used up. It resets in 2 h 0 min", message, StringComparison.Ordinal);
+        Assert.Contains("The weekly limit is used up. It resets in 2 d 0 h", message, StringComparison.Ordinal);
+        // Both are marked: neither comes back at the next read.
+        Assert.Empty(Run(ledger, CodexBoth(100, 100, Now.AddHours(2), Now.AddDays(2)), Now.AddMinutes(1)));
+    }
+
+    [Fact]
+    public void TwoWindowsThatResetTogether_AreOneNotice()
+    {
+        var ledger = new NoticeLedger();
+        var end = Now.AddHours(1);
+        Run(ledger, CodexBoth(100, 100, end, end), Now);
+
+        var notices = Run(ledger, CodexBoth(0, 0, end.AddHours(5), end.AddDays(7)), end.AddMinutes(1));
+
+        var notice = Assert.Single(notices);
+        Assert.Equal(PlanNoticeKind.Reset, notice.Kind);
+        Assert.Single(notice.Also!);
+    }
+
+    [Fact]
+    public void NoticesOfDifferentKinds_AreNotMerged()
+    {
+        var ledger = new NoticeLedger();
+
+        var notices = Run(ledger, CodexBoth(100, 95, Now.AddHours(2), Now.AddDays(2)), Now);
+
+        Assert.Equal([PlanNoticeKind.Reached, PlanNoticeKind.Low], notices.Select(notice => notice.Kind));
+    }
+
     [Fact]
     public void Texts_SayWhichLimitAndWhenItResets()
     {

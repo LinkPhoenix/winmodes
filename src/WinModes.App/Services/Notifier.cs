@@ -38,6 +38,8 @@ internal enum NoticeKind
 internal sealed class Notifier
 {
     private const int DefaultDurationMs = 6000;
+    private const int MaxTitle = 63;
+    private const int MaxText = 255;
 
     private readonly Forms.NotifyIcon _icon;
     private readonly Dispatcher _dispatcher;
@@ -91,6 +93,9 @@ internal sealed class Notifier
     {
         // The balloon of the tray icon is one at a time: the latest one decides what a click does.
         _onClick = onClick;
-        _icon.ShowBalloonTip(durationMs, title, text, icon);
+        _icon.ShowBalloonTip(durationMs, Shorten(title, MaxTitle), Shorten(text, MaxText), icon);
     }
+
+    /// <summary>Windows cuts the title of a balloon at 63 characters and its text at 255: cut it here, with an ellipsis, instead.</summary>
+    internal static string Shorten(string text, int limit) => text.Length <= limit ? text : text[..(limit - 1)] + "…";
 }

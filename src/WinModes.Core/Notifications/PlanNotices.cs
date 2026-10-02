@@ -25,7 +25,8 @@ public sealed record PlanNoticeChoice(bool Low, bool Reached, bool Reset, bool C
 /// <summary>One thing to tell the user about a plan.</summary>
 /// <param name="Window">The window concerned; null for a credit notice.</param>
 /// <param name="Credits">Resets in reserve, for a credit notice.</param>
-public sealed record PlanNotice(PlanNoticeKind Kind, string Tool, LimitWindow? Window, int Credits = 0)
+/// <param name="Also">Other windows of the same tool that reached the same state at the same time: one notice tells them all.</param>
+public sealed record PlanNotice(PlanNoticeKind Kind, string Tool, LimitWindow? Window, int Credits = 0, IReadOnlyList<LimitWindow>? Also = null)
 {
     public string Title => Kind switch
     {
@@ -39,6 +40,14 @@ public sealed record PlanNotice(PlanNoticeKind Kind, string Tool, LimitWindow? W
     {
         ArgumentNullException.ThrowIfNull(culture);
 
+        // One sentence per window, in the order they were found (the short window first).
+        return Also is { Count: > 0 }
+            ? string.Join(" ", new[] { Window! }.Concat(Also).Select(window => (this with { Window = window, Also = null }).Message(now, culture)))
+            : SingleMessage(now, culture);
+    }
+
+    private string SingleMessage(DateTimeOffset now, CultureInfo culture)
+    {
         var window = Window;
         var name = window?.WindowName ?? "";
         var resets = window?.ResetsAt is { } at && at > now ? (Subscriptions.Span(at - now), Subscriptions.LocalTime(at, now, culture)) : default((string, string)?);
@@ -89,7 +98,30 @@ public static class PlanNoticeEngine
             CheckCredits(ledger, status, choice, notices);
         }
 
-        return notices;
+        return Merge(notices);
+    }
+
+    /// <summary>
+    /// A tool whose two windows reach the same state in the same read (both used up, both reset) gets one notice, not two. The
+    /// reset of the short window and of the weekly one often come together on the week's first day.
+    /// </summary>
+    private static List<PlanNotice> Merge(List<PlanNotice> notices)
+    {
+        var merged = new List<PlanNotice>();
+        foreach (var notice in notices)
+        {
+            var same = notice.Window is null ? -1 : merged.FindIndex(known => known.Kind == notice.Kind && known.Tool == notice.Tool && known.Window is not null);
+            if (same < 0)
+            {
+                merged.Add(notice);
+            }
+            else
+            {
+                merged[same] = merged[same] with { Also = [.. merged[same].Also ?? [], notice.Window!] };
+            }
+        }
+
+        return merged;
     }
 
     private static void CheckWindow(NoticeLedger ledger, string tool, LimitWindow window, PlanNoticeChoice choice, double lowPercent, DateTimeOffset now, List<PlanNotice> notices)
