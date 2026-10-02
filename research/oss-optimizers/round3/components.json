@@ -1,0 +1,1537 @@
+{
+ "theme": "components",
+ "repos": [
+  "ChrisTitusTech/winutil",
+  "Raphire/Win11Debloat",
+  "farag2/Sophia-Script-for-Windows",
+  "undergroundwires/privacy.sexy",
+  "builtbybel/CrapFixer",
+  "zoicware/RemoveWindowsAI",
+  "memstechtips/Winhance",
+  "Sycnex/Windows10Debloater",
+  "itsfatduck/optimizerDuck",
+  "rayenghanmi/RyTuneX",
+  "Sophia-Community/SophiApp",
+  "zoicware/ZOICWARE",
+  "agadiffe/WindowsMize",
+  "Batlez/Batlez-Tweaks",
+  "Greedeks/GTweak",
+  "awesome-windows11/windows11",
+  "emylfy/Winrift",
+  "louzkk/Ghost-Optimizer",
+  "microsoft/WindowsDeveloperConfig",
+  "equk/windows"
+ ],
+ "components": [
+  {
+   "id": "onedrive",
+   "title": "OneDrive (consumer + business sync client)",
+   "verdict": "offer-with-safeguards",
+   "how": [
+    {
+     "project": "undergroundwires/privacy.sexy",
+     "method": "Official uninstaller: \"%SYSTEMROOT%\\System32\\OneDriveSetup.exe\" /uninstall (SysWOW64 fallback for Windows 10 only; Windows 11 is always System32). Revert is OneDriveSetup.exe /silent.",
+     "evidence": "src/application/collections/windows.yaml:35582-35618",
+     "caveat": "Leaves residual files; revert only works while System32\\OneDriveSetup.exe still exists. Its docs claim 'you will not lose data, it is stored in the cloud', which ignores files not yet uploaded."
+    },
+    {
+     "project": "undergroundwires/privacy.sexy",
+     "method": "Guard before deleting %USERPROFILE%\\OneDrive*: loops over HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders, expands env vars, and ABORTS if any shell folder path matches %USERPROFILE%\\OneDrive*; also refuses to delete any file or non-empty directory.",
+     "evidence": "src/application/collections/windows.yaml:35620-35745 (beforeIteration / duringIteration)",
+     "caveat": "Only clone that checks known-folder redirection. Pattern is %USERPROFILE%\\OneDrive* so a OneDrive root on another drive or a custom DefaultRootDir is not detected."
+    },
+    {
+     "project": "farag2/Sophia-Script-for-Windows",
+     "method": "Uninstall string from Get-Package -Name \"Microsoft OneDrive\" (covers per-user and per-machine installs); refuses when HKCU\\Software\\Microsoft\\OneDrive\\Accounts\\Personal or \\Business1 has UserEmail; Stop-Process OneDrive,OneDriveSetup,FileCoAuth; run uninstall string -Wait; delete %OneDrive% only if empty (else open it in Explorer); stop Explorer; regsvr32 /u /s FileSyncShell64.dll; delete the install folder; clear HKCU\\Environment OneDrive and OneDriveConsumer; Unregister-ScheduledTask *OneDrive*; delete %LOCALAPPDATA%\\OneDrive, %LOCALAPPDATA%\\Microsoft\\OneDrive, ...\\OneAuth, Start Menu OneDrive.lnk, %ProgramData%\\Microsoft OneDrive, %ProgramFiles%\\Microsoft OneDrive, %SystemDrive%\\OneDriveTemp, HKCU:\\Software\\Microsoft\\OneDrive.",
+     "evidence": "src/Sophia_Script_for_Windows_11/Module/Sophia.psm1:3865-3957",
+     "caveat": "Writes HKLM Winlogon AutoRestartShell=0 then 1 around the Explorer kill (3915, 3926): if the script dies in between, Explorer no longer auto-restarts. Does not look at redirected known folders. Unregister-ScheduledTask -TaskName *OneDrive* is a wildcard."
+    },
+    {
+     "project": "farag2/Sophia-Script-for-Windows",
+     "method": "Install: OneDriveSetup.exe from System32 (current user) or /allusers (Program Files, machine-wide); if the file is gone, resolve https://g.live.com/1rewlive5skydrive/OneDriveProductionV2 -> amd64binary.url and run that; then remove HKCU User Shell Folders {B7BEDE81-DF94-4682-A7D8-57A52620B86F} and re-enable tasks \"OneDrive* Update*\". Both install and uninstall first remove HKLM policy DisableFileSyncNGSC.",
+     "evidence": "Sophia.psm1:3858-3859, 3962-4040",
+     "caveat": "Download URL is a Microsoft redirector, not pinned."
+    },
+    {
+     "project": "Sophia-Community/SophiApp",
+     "method": "C# port of the Sophia logic (IOneDriveService). Uninstall: kill OneDrive/OneDriveSetup/FileCoAuth, run uninstall string, delete %OneDrive% only if user-file count is 0, AutoRestartShell toggle, UnregisterFileSyncShell, DeleteResources. UI accessor throws 'log out from OneDrive account' / 'user data folder does not exist' instead of running.",
+     "evidence": "src/SophiApp/Services/OneDriveService.cs:80-119; src/SophiApp/Customizations/Accessors.cs:658-690",
+     "caveat": "UserIsLogged() is wrong: it returns !(IsNullOrWhiteSpace(personal) || IsNullOrWhiteSpace(business)), i.e. true only when BOTH accounts are signed in (OneDriveService.cs:129). Port with OR semantics."
+    },
+    {
+     "project": "memstechtips/Winhance",
+     "method": "Script: Get-AppxPackage -AllUsers *OneDriveSync* | Remove-AppxPackage -AllUsers; read UninstallString from HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OneDriveSetup.exe first, else HKU\\<SID>\\...\\Uninstall\\OneDriveSetup.exe (user install); run it hidden -Wait; delete HKLM/HKU Software\\Microsoft\\OneDrive (and WOW6432Node), %LOCALAPPDATA%\\Microsoft\\OneDrive, Start Menu .lnk, C:\\Windows\\System32\\OneDriveSetup.exe, SysWOW64\\OneDriveSetup.exe, C:\\Program Files\\Microsoft OneDrive, C:\\ProgramData\\Microsoft OneDrive (takeown + MoveFileEx delay-until-reboot), all *OneDrive* scheduled tasks; load C:\\Users\\Default\\NTUSER.DAT and delete Run\\OneDriveSetup + set Software\\Microsoft\\OneDrive EnableTHDFFeatures=0.",
+     "evidence": "src/Winhance.Core/Features/SoftwareApps/Models/OneDriveRemovalScript.cs:170-175, 180-263, 293-331, 373-407, 438-456",
+     "caveat": "Header promises user data in %USERPROFILE%\\OneDrive is preserved (line 19) but no known-folder or sign-in check exists. Deleting System32\\OneDriveSetup.exe (line 374) removes the offline reinstall path that privacy.sexy and Sophia rely on. Script is also registered as a scheduled task (BloatRemovalService.cs:226-262)."
+    },
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "icacls $Env:OneDrive /deny \"*S-1-5-32-544:(D,DC)\" (protect user files from the uninstaller); System32\\OneDriveSetup.exe /uninstall -Wait; Stop-Process FileCoAuth,Explorer; delete %LOCALAPPDATA%\\Microsoft\\OneDrive and %ProgramData%\\Microsoft OneDrive; icacls $Env:OneDrive /grant ...; delete %OneDrive% if empty and clear user env var OneDrive; Set-Service OneSyncSvc Disabled. Undo = winget install Microsoft.Onedrive --source winget + OneSyncSvc Automatic.",
+     "evidence": "config/tweaks.json:642-684",
+     "caveat": "icacls /grant does not remove the earlier deny ACE (winutil itself uses /remove:d for Razer at tweaks.json:999 and 1032), so the Administrators deny on the OneDrive folder likely stays. OneSyncSvc is the Sync Host service for Mail/Calendar/People, not OneDrive; disabling it is collateral. Item lives in the 'Advanced Tweaks - CAUTION' category."
+    },
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "Treats OneDrive as an app with RemovalMethod WinGet: winget uninstall --accept-source-agreements --disable-interactivity --id Microsoft.OneDrive. Tier 'optional', not selected by default.",
+     "evidence": "Config/Apps.json:725-731; Scripts/AppRemoval/Remove-SelectedApps.ps1:55-62, 157",
+     "caveat": "Needs a working winget (script warns if winget missing or < 1.4, Win11Debloat.ps1:331-347). No known-folder or sign-in check."
+    },
+    {
+     "project": "agadiffe/WindowsMize",
+     "method": "Stop-Process *OneDrive*, then run the uninstall string of the 'Microsoft OneDrive' entry (Get-ApplicationInfo). Script comment tells the user to copy/back up synced files, turn off folder syncing to get files back on the local drive, and disconnect the account first.",
+     "evidence": "src/modules/applications/management/public/remove/Remove-MicrosoftOneDrive.ps1:17-24; scripts/apps_management/debloat.ps1:67-71",
+     "caveat": "Manual precondition only; nothing is verified by code."
+    },
+    {
+     "project": "zoicware/ZOICWARE",
+     "method": "Runs OneDriveSetup.exe /uninstall from System32, SysWOW64 and Office\\root\\Integration\\Addons; if $env:OneDrive is set it rewrites ~25 HKCU User Shell Folders values to %USERPROFILE%\\... with raw reg add and then Get-ChildItem $OneDrive | Move-Item -Destination $env:USERPROFILE -Force.",
+     "evidence": "src/zFunctions.psm1:236-300",
+     "caveat": "Dangerous pattern to avoid: Move-Item -Force merges into existing folders and overwrites same-named files; raw registry writes do not create folders or notify the shell (Sophia uses SHSetKnownFolderPath instead: Module/Private/Set-UserShellFolder.ps1)."
+    },
+    {
+     "project": "builtbybel/CrapFixer",
+     "method": "taskkill OneDrive.exe and explorer.exe, run System32/SysWOW64 OneDriveSetup.exe /uninstall, delete leftovers, set Wow6432Node policy DisableFileSyncNGSC=1, set CLSID {018D5C66-4533-4307-9B53-224DE2ED1FE6} System.IsPinnedToNameSpaceTree=0, then takeown + delete every %WinDir%\\WinSxS\\*onedrive* folder.",
+     "evidence": "plugins/Uninstall OneDrive.ps1:13-62",
+     "caveat": "Deleting WinSxS content is unsupported and can corrupt component servicing; the policy is written under Wow6432Node\\Policies which the 64-bit client likely never reads (unverified)."
+    }
+   ],
+   "preflightChecks": [
+    "Read HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders (Desktop, Personal, My Pictures, My Music, My Video, {374DE290-123F-4565-9164-39C4925E467B} Downloads, {B7BEDE81-DF94-4682-A7D8-57A52620B86F} screenshots) and expand %vars%. If ANY value points inside a OneDrive root, BLOCK the uninstall and offer 'move folders back first' (privacy.sexy windows.yaml:35620-35745 does exactly this check).",
+    "Enumerate all OneDrive roots, not just %USERPROFILE%\\OneDrive: env OneDrive / OneDriveConsumer / OneDriveCommercial (HKCU\\Environment), HKCU\\Software\\Microsoft\\OneDrive\\Accounts\\{Personal,Business1..n} (UserFolder, UserEmail) and folders named OneDrive* / 'OneDrive - <tenant>'. Compare each shell-folder path against ALL roots (privacy.sexy only matches %USERPROFILE%\\OneDrive*).",
+    "Signed-in test: UserEmail under Accounts\\Personal OR Accounts\\Business1 (Sophia.psm1:3876-3878). Use OR; SophiApp's AND-style port is a bug (OneDriveService.cs:129). If signed in, require explicit confirmation that the user has verified sync is complete, or tell the user to unlink the account first (WindowsMize debloat.ps1:67-71).",
+    "Cloud-only and unsynced files: NO clone checks this (privacy.sexy and Sophia only test 'folder empty'). General Windows knowledge, verify before relying: walk the roots without hydrating and count entries with FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS (0x00400000), FILE_ATTRIBUTE_RECALL_ON_OPEN (0x00040000) or FILE_ATTRIBUTE_OFFLINE; those exist only online after removal. For 'pending sync', OneDrive exposes no stable local API: show a hard warning and ask the user to confirm the tray icon says 'Up to date' before continuing.",
+    "Install scope: per-user = %LOCALAPPDATA%\\Microsoft\\OneDrive\\OneDrive.exe with uninstall key under HKCU (or HKU\\<SID>); per-machine = %ProgramFiles%\\Microsoft OneDrive with HKLM uninstall key and the task 'OneDrive Per-Machine Standalone Update' (Winhance OneDriveRemovalScript.cs:180-250; privacy.sexy windows.yaml:35954-36040). Per-machine removal needs the elevated helper and affects every user of the PC.",
+    "Processes holding files: OneDrive.exe, OneDriveSetup.exe, FileCoAuth.exe; Explorer holds FileSyncShell64.dll (shell extension), which is why Sophia restarts Explorer before deleting the install folder (Sophia.psm1:3913-3935).",
+    "Capture for the journal BEFORE acting: uninstall string + display version, HKCU Run 'OneDrive' and StartupApproved\\Run 'OneDrive' values, scheduled tasks 'OneDrive Reporting Task-<SID>', 'OneDrive Standalone Update Task-<SID>', 'OneDrive Startup Task-<SID>', CLSID {018D5C66-4533-4307-9B53-224DE2ED1FE6} System.IsPinnedToNameSpaceTree (HKCU Software\\Classes, + Wow6432Node), HKCU\\Environment OneDrive*, HKLM policy DisableFileSyncNGSC if present, default-user Run 'OneDriveSetup'.",
+    "Other consumers: Documents\\My Games or project folders redirected into OneDrive (game saves, repos), Office AutoSave targets, backup jobs referencing %OneDrive%. General knowledge, not in clones."
+   ],
+   "safeProcedure": [
+    "1. Read-only detection and preview (no changes). Show roots, sign-in state, redirected known folders, cloud-only count, install scope.",
+    "2. HARD STOP if a known folder is redirected into a OneDrive root. Offer a separate guided action 'move Desktop/Documents/Pictures back' implemented like Sophia Set-UserShellFolder (SHSetKnownFolderPath for the folder GUID and its library GUID, recreate desktop.ini, do NOT move files silently) after the user has copied/verified files; never use Move-Item -Force into the profile (ZOICWARE).",
+    "3. If signed in or cloud-only files exist: require typed confirmation; recommend unlinking in the OneDrive client first (this converts the cloud copy into a normal folder the user can keep).",
+    "4. Stage 1 (reversible, unelevated): disable Run 'OneDrive' through StartupApproved\\Run (03 00 00 00 + FILETIME, WindowsMize Set-OneDriveRunAtStartup.ps1), disable the three OneDrive scheduled tasks, hide the nav-pane CLSID (System.IsPinnedToNameSpaceTree=0), ShowSyncProviderNotifications=0. Offer to stop here: this is the 'tame' mode.",
+    "5. Stage 2 (uninstall): stop OneDrive.exe/FileCoAuth.exe/OneDriveSetup.exe, run the recorded uninstall string with Wait (per-user unelevated, per-machine via helper). Do not delete System32\\OneDriveSetup.exe, SysWOW64 copy, WinSxS or HKLM\\SOFTWARE\\Microsoft\\OneDrive.",
+    "6. Restart Explorer once (normal stop and let the shell restart; do NOT toggle HKLM AutoRestartShell as Sophia does) so FileSyncShell64.dll unloads; verify the DLL is no longer loaded before deleting the install folder; delete only paths recorded in the journal and only if empty of user data.",
+    "7. Remove the %OneDrive% env vars and nav-pane entry only if no OneDrive* root remains; never delete a non-empty OneDrive folder (Sophia.psm1:3903-3911, privacy.sexy duringIteration).",
+    "8. Optional hardening: HKLM policy DisableFileSyncNGSC=1. Mark it in the journal because it must be removed before any reinstall (Sophia removes it at the top of both branches, Sophia.psm1:3858-3859).",
+    "9. Journal every value/file touched with its previous state; record the uninstall string and version so the restore can pick the same installer scope."
+   ],
+   "restore": [
+    "Delete policy HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\OneDrive DisableFileSyncNGSC (and DisableFileSync) if WinModes set it (Sophia.psm1:3858).",
+    "Per-user: run %SystemRoot%\\System32\\OneDriveSetup.exe (/silent for unattended, privacy.sexy windows.yaml:35611). Per-machine: OneDriveSetup.exe /allusers (Sophia.psm1:3981).",
+    "If System32\\OneDriveSetup.exe is gone (Winhance deletes it): winget install Microsoft.OneDrive --source winget (winutil tweaks.json:678; Winhance WinGetPackageId) or download https://g.live.com/1rewlive5skydrive/OneDriveProductionV2 (Sophia.psm1:3995-4000). This is the only restore path that needs network + winget.",
+    "Re-enable scheduled tasks 'OneDrive* Update*' and the Run/StartupApproved values from the journal (Sophia.psm1:4040); set nav-pane CLSID back to 1; HKCU\\Environment OneDrive vars are recreated by the client on first sign-in.",
+    "User signs in again; folder backup (known-folder move) must be re-enabled by the user in the client."
+   ],
+   "breaksIfRemoved": [
+    "Known-folder backup/redirection (Desktop, Documents, Pictures) becomes dangling if folders were redirected: Desktop/Documents may point to a path that no longer syncs or no longer exists (privacy.sexy windows.yaml:35634-35650).",
+    "Files On-Demand placeholders (cloud-only files) can no longer be opened; unsynced local edits are lost if the folder is deleted.",
+    "Office AutoSave / 'Save to OneDrive' / share links, Photos OneDrive integration, Windows Backup settings page (general knowledge).",
+    "Explorer nav-pane entry and shell overlays disappear (intended); a leftover shell extension can keep Explorer from unloading the DLL."
+   ],
+   "dependents": [
+    "Any app or script using %OneDrive%, %OneDriveConsumer% or %OneDriveCommercial%.",
+    "Games that save to Documents\\My Games when Documents is redirected into OneDrive; dev repos stored under Desktop/Documents.",
+    "Microsoft 365 apps (AutoSave), Teams file sharing, SharePoint library sync (Business1 account)."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\OneDrive",
+     "name": "DisableFileSyncNGSC",
+     "value": "1 (DWORD)",
+     "default": "absent (not configured)",
+     "effect": "Prevents OneDrive from syncing and from starting; hides it from the nav pane and file picker; blocks Store apps from using the OneDrive WinRT API. Restore = delete the value.",
+     "evidence": "privacy.sexy windows.yaml:35837-35872; RyTuneX Helpers/OptimizeSystemHelper.cs:1621-1629"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\OneDrive",
+     "name": "DisableFileSync",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "Legacy Windows 8 equivalent, set together with the above by privacy.sexy.",
+     "evidence": "privacy.sexy windows.yaml:35864-35870"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\OneDrive",
+     "name": "PreventNetworkTrafficPreUserSignIn",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "OneDrive generates no network traffic until a user signs in.",
+     "evidence": "RyTuneX Helpers/PolicyHelper.cs:2283-2291"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\OneDrive",
+     "name": "DisablePersonalSync",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "Blocks personal (MSA) accounts, keeps work/school sync possible.",
+     "evidence": "RyTuneX Helpers/PolicyHelper.cs:2294-2301"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run",
+     "name": "OneDrive",
+     "value": "03 00 00 00 + 8-byte FILETIME (REG_BINARY)",
+     "default": "02 00 00 00 + 8 zero bytes (enabled)",
+     "effect": "Disables OneDrive autostart so Task Manager > Startup shows it as Disabled and it can be re-enabled.",
+     "evidence": "WindowsMize src/modules/applications/settings/private/MicrosoftOneDrive/Set-OneDriveRunAtStartup.ps1"
+    },
+    {
+     "path": "HKCU\\Software\\Classes\\CLSID\\{018D5C66-4533-4307-9B53-224DE2ED1FE6}  (and ...\\Classes\\Wow6432Node\\CLSID\\{same})",
+     "name": "System.IsPinnedToNameSpaceTree",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Hides the OneDrive node in the Explorer navigation pane.",
+     "evidence": "Raphire/Win11Debloat Regfiles/Hide_Onedrive_Folder.reg:4-5; privacy.sexy windows.yaml:35924-35953"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "ShowSyncProviderNotifications",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Hides OneDrive/sync-provider promotion banners in Explorer.",
+     "evidence": "Sophia.psm1:1523-1553; Win11Debloat Regfiles/Disable_Windows_Suggestions.reg"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\OneDrive",
+     "name": "TimerGrowthToast",
+     "value": "QWORD = Unix seconds of 2099-01-01",
+     "default": "absent",
+     "effect": "Suppresses the 'back up your folders' toast.",
+     "evidence": "WindowsMize Set-OneDriveBackupNotifToast.ps1"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Backup\\{FDD39AD0-238F-46AF-ADB4-6C85480369C7} (Documents), {B4BFCC3A-DB2C-424C-B029-7FE99A87C641} (Desktop), {33E28130-4E1E-4676-835A-98395C3BC3BB} (Pictures), {4BD8D571-6D19-48D3-BE97-422220080E43} (Music), {18989B1D-99B5-455B-841C-AB7C74E4DDFC} (Videos)",
+     "name": "TurnOffReminder=1 (DWORD), VisitedTimestamps=-2 (SZ)",
+     "value": "see name",
+     "default": "key absent",
+     "effect": "Silences the Explorer 'protect your folders with OneDrive' tip.",
+     "evidence": "WindowsMize Set-OneDriveBackupNotifExplorer.ps1"
+    },
+    {
+     "path": "Default user hive HKU\\<default>\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+     "name": "OneDriveSetup",
+     "value": "delete",
+     "default": "%SystemRoot%\\System32\\OneDriveSetup.exe /thfirstsetup",
+     "effect": "New user profiles no longer auto-install OneDrive. Needs reg load of C:\\Users\\Default\\NTUSER.DAT.",
+     "evidence": "WindowsMize Set-OneDriveNewUserAutoInstall.ps1; Winhance OneDriveRemovalScript.cs:438-456"
+    },
+    {
+     "path": "Scheduled tasks \\ (root)",
+     "name": "OneDrive Reporting Task-<SID>, OneDrive Standalone Update Task-<SID>, OneDrive Startup Task-<SID>, OneDrive Per-Machine Standalone Update",
+     "value": "Disabled",
+     "default": "Enabled (Ready)",
+     "effect": "Stops OneDrive self-update/reporting without uninstalling. Tasks keep existing after uninstall.",
+     "evidence": "WindowsMize src/modules/scheduled_tasks/private/tasks_list/MicrosoftOneDrive.ps1; privacy.sexy windows.yaml:35954-36040"
+    }
+   ]
+  },
+  {
+   "id": "edge",
+   "title": "Microsoft Edge (browser, Edge Update, Chromium Edge)",
+   "verdict": "policy-only",
+   "how": [
+    {
+     "project": "undergroundwires/privacy.sexy",
+     "method": "Set HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdateDev AllowUninstall=1 (DWORD); create a placeholder file %SYSTEMROOT%\\SystemApps\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\MicrosoftEdge.exe (the Edge installer checks for legacy Edge before allowing uninstall); run every \"<ProgramFiles*>\\Microsoft\\Edge\\Application\\*\\Installer\\setup.exe\" --uninstall --system-level --verbose-logging --force-uninstall (exit 0 or 19 = success). Revert downloads c2rsetup.officeapps.live.com/c2r/downloadEdge.aspx and runs /install /silent.",
+     "evidence": "src/application/collections/windows.yaml:36080-36160",
+     "caveat": "Edge only: the glob matches Microsoft\\Edge\\Application, not Microsoft\\EdgeWebView. Not in any recommended preset. Docs state this relies on undocumented behaviour."
+    },
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "Same placeholder trick, then setup.exe --uninstall --system-level --force-uninstall --delete-profile. Undo: winget install Microsoft.Edge --source winget.",
+     "evidence": "config/tweaks.json:587-611",
+     "caveat": "--delete-profile deletes the user's Edge profile (bookmarks, passwords, sessions). The MicrosoftEdge.exe placeholder is never deleted afterwards. Category 'Advanced Tweaks - CAUTION'."
+    },
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "First tries winget uninstall (Microsoft.Edge / XPFFTQ037JWMHS). Only if that fails and the user confirms (\"NOT RECOMMENDED!\") it runs ForceRemoveEdge: EdgeUpdateDev AllowUninstall (REG_SZ empty, 32-bit view), creates the SystemApps stub, runs the HKLM Uninstall\\Microsoft Edge UninstallString + --force-uninstall, then deletes shortcuts, the stub and Edge autostart values.",
+     "evidence": "Scripts/AppRemoval/Invoke-ForceRemoveEdge.ps1:17-92; Scripts/AppRemoval/Remove-SelectedApps.ps1:74-108, 319-343; Config/Apps.json:685-691",
+     "caveat": "Catalogue marks it 'unsafe': 'Removing this app also removes the only browser from Windows Sandbox and could affect other apps'. Cleaner than the others because it deletes its own stub."
+    },
+    {
+     "project": "memstechtips/Winhance",
+     "method": "Removes Chromium Edge via the HKLM\\WOW6432Node Uninstall strings (+ --force-uninstall --silent, or msiexec /quiet for MSI), then EdgeUpdate via MicrosoftEdgeUpdate.exe /unregsvc and /uninstall, but first exports HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate\\ClientState and re-imports it afterwards. Header states \"EdgeWebView2 is NOT removed\" and the folder cleanup explicitly excludes *EdgeWebView*. Installs an ie_to_edge_stub redirect (IFEO filter) so microsoft-edge: links open the default browser, and registers a startup scheduled task EdgeRemoval that re-runs the removal.",
+     "evidence": "src/Winhance.Core/Features/SoftwareApps/Models/EdgeRemovalScript.cs:11-24, 337-445, 619-625, 299-303, 636-643; src/Winhance.Infrastructure/Features/SoftwareApps/Services/BloatRemovalService.cs:222-262; WindowsAppDefinitions.cs:595-604",
+     "caveat": "Marked HasInstabilityWarning. Best WebView2 hygiene of all clones, but still unregisters EdgeUpdate (WebView2 then stops auto-updating, privacy.sexy windows.yaml:9578-9600), deletes every Edge* / *Temp* folder under Program Files (x86)\\Microsoft, and wipes all scheduled tasks matching *Edge*."
+    },
+    {
+     "project": "agadiffe/WindowsMize",
+     "method": "Remove-ApplicationPackage Microsoft.MicrosoftEdge.Stable, then the same AllowUninstall (EdgeUpdateDev, SZ empty) + SystemApps stub + '<UninstallString> --force-uninstall' (credits ave9858 gist).",
+     "evidence": "src/modules/applications/management/public/remove/Remove-MicrosoftEdge.ps1:12-49",
+     "caveat": "Stub left in place."
+    },
+    {
+     "project": "zoicware/ZOICWARE",
+     "method": "EdgeRemove.ps1: temporarily sets HKU\\.DEFAULT\\Control Panel\\International\\Geo Nation=244/Name=US, runs the uninstall string through a copy of cmd.exe renamed dllhost.exe, clears NoRemove/NoModify/NoRepair on the Uninstall keys, then deletes Microsoft\\EdgeUpdate under EVERY HKCU/HKLM SOFTWARE hive (incl. WOW6432Node) and unregisters MicrosoftEdgeUpdate* tasks. Optional -Webview switch also runs MicrosoftEdgeUpdate.exe /unregsvc + /uninstall and deletes the EdgeWebView uninstall keys.",
+     "evidence": "src/EdgeRemove.ps1:20-36, 42-48, 60-80, 96-113, 206-222",
+     "caveat": "Line 207 runs even without -Webview and removes HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate, the key Winhance backs up 'or else webview won't work' (Winhance EdgeRemovalScript.cs:402). Treat as a WebView2-breaking method."
+    },
+    {
+     "project": "awesome-windows11/windows11",
+     "method": "archive/remove_edge.bat runs EdgeWebView\\...\\setup.exe --uninstall --force-uninstall --msedgewebview --system-level, then Edge and EdgeCore setup.exe --msedge; sets DoNotUpdateToEdgeWithChromium=1.",
+     "evidence": "archive/remove_edge.bat:1-6",
+     "caveat": "Explicitly removes the WebView2 runtime together with Edge. README (line 393-416) instead recommends only blocking profile creation."
+    },
+    {
+     "project": "Batlez/Batlez-Tweaks",
+     "method": "Offers a separate yes/no 'Remove WebView2 Runtime?' with its own removal routine (see component webview2).",
+     "evidence": "Batlez-Tweaks.bat:22258-22270, 22988-23029",
+     "caveat": "Shows how easily Edge cleanup scripts also take WebView2 out."
+    }
+   ],
+   "preflightChecks": [
+    "WinModes should NEVER uninstall Edge (hard blocklist). If a user insists, the only acceptable path is a documented, journaled, Edge-only removal that leaves HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate (Clients + ClientState), Program Files (x86)\\Microsoft\\EdgeUpdate and Microsoft\\EdgeWebView untouched. Not recommended.",
+    "Check for dependents before tame-mode changes: default browser/HTTP(S)/PDF handlers (UserChoice ProgIds MSEdgeHTM / MSEdgePDF), Windows Sandbox in use, installed Edge PWAs, enterprise/Intune policies already present (policies show 'managed by your organization', privacy.sexy windows.yaml:9316 and 9650).",
+    "Detect the WebView2 runtime separately (HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate\\Clients\\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5} pv value) and show it as 'not part of Edge'."
+   ],
+   "safeProcedure": [
+    "1. Offer policy-based taming only (see settingsInstead): disable ads/recommendations/shopping/rewards/AI sidebar, stop desktop shortcut creation, optionally block Edge auto-launch/startup.",
+    "2. Do not touch EdgeUpdate services/tasks beyond Manual: disabling edgeupdate/edgeupdatem or blocking MicrosoftEdgeUpdate.exe also stops WebView2 updates (privacy.sexy windows.yaml:9464-9600).",
+    "3. Do not set EdgeUpdate Install{...}=0 or InstallDefault=0 (it would block reinstalling Edge and, with the WebView2 GUID, WebView2).",
+    "4. Never write Image File Execution Options entries for msedge.exe (Winhance removes legacy msedge.exe IFEO 'to prevent Edge reinstall issues', EdgeRemovalScript.cs:302-303).",
+    "5. Journal each policy value with its previous state; reverting = delete the policy value."
+   ],
+   "restore": [
+    "Policies: delete the values WinModes created under HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge and ...\\EdgeUpdate.",
+    "If a user ran another tool that removed Edge: winget install Microsoft.Edge --source winget (winutil UndoScript, tweaks.json:608), or Winhance MsStoreId XPFFTQ037JWMHS, or privacy.sexy revert (download c2rsetup.officeapps.live.com ... /install /silent, windows.yaml:36138-36150). Sophia re-installs Edge when removed by 'harmful tweakers' because WebView2 is required (CHANGELOG.md:858).",
+    "Delete the leftover placeholder %SystemRoot%\\SystemApps\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\MicrosoftEdge.exe if it exists (Win11Debloat removes it, Invoke-ForceRemoveEdge.ps1:56)."
+   ],
+   "breaksIfRemoved": [
+    "Windows Sandbox loses its only browser (Win11Debloat Config/Apps.json:685-691).",
+    "microsoft-edge: protocol links used by Search, Widgets, Copilot, Settings (Winhance had to install a redirect stub, EdgeRemovalScript.cs:299-303, 636-643).",
+    "Default handlers for .htm/.html/.pdf/.svg/.webp/mailto/http(s) remain registered to MSEdgeHTM/MSEdgePDF until cleaned (privacy.sexy windows.yaml:36162-36260).",
+    "Third-party apps and Windows features built on WebView2 if the removal also hits EdgeUpdate/EdgeWebView (optimizerDuck lists Edge as 'tied to WebView2-based apps and Windows features', Common/Helpers/Shared.cs:172-174; equk windows_10/README.md:113).",
+    "Edge returns after Windows Update / EdgeUpdate runs; tools respond with startup tasks (Winhance) or DoNotUpdateToEdgeWithChromium (privacy.sexy windows.yaml:9825-9840). privacy.sexy issue #309 'Edge still alive after removal' is cited at windows.yaml:9456."
+   ],
+   "dependents": [
+    "Windows Sandbox, Widgets/Search/Copilot links, PWAs, WebView2-based apps (via the shared EdgeUpdate registration), Teams/Outlook (new) web components."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "ShowRecommendationsEnabled",
+     "value": "0 (DWORD)",
+     "default": "absent",
+     "effect": "Hides Edge recommendations/promotions.",
+     "evidence": "winutil config/tweaks.json:302-428; Win11Debloat Regfiles/Disable_Edge_Ads_And_Suggestions.reg:11"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "HideFirstRunExperience",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "Skips first-run wizard. NOTE direction: winutil writes 1; Win11Debloat's reg file writes 0 (Disable_Edge_Ads_And_Suggestions.reg:13) which would SHOW the experience: do not copy that line.",
+     "evidence": "winutil config/tweaks.json:326-331"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "EdgeShoppingAssistantEnabled / EdgeCollectionsEnabled / ShowMicrosoftRewards / WebWidgetAllowed / WalletDonationEnabled / UserFeedbackAllowed / AlternateErrorPagesEnabled",
+     "value": "0 (DWORD each)",
+     "default": "absent",
+     "effect": "Turns off shopping assistant, Collections, Rewards, Edge bar widget, wallet donation, feedback prompt, Bing error-page suggestions.",
+     "evidence": "winutil config/tweaks.json:340-428"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "PersonalizationReportingEnabled / DiagnosticData / MicrosoftEdgeInsiderPromotionEnabled / DefaultBrowserSettingEnabled / DefaultBrowserSettingsCampaignEnabled",
+     "value": "0 (DWORD each)",
+     "default": "absent",
+     "effect": "Telemetry/personalisation and default-browser nagging off. Policies make Edge show 'Your browser is managed by your organization'.",
+     "evidence": "winutil config/tweaks.json; Win11Debloat Disable_Edge_Ads_And_Suggestions.reg:14-15"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "HubsSidebarEnabled, CopilotPageContext, CopilotCDPPageContext, EdgeEntraCopilotPageContext, EdgeHistoryAISearchEnabled, ComposeInlineEnabled, NewTabPageBingChatEnabled, CopilotNewTabPageEnabled, AIGenThemesEnabled",
+     "value": "0 (DWORD each)",
+     "default": "absent",
+     "effect": "Disables the Copilot sidebar and Edge AI features.",
+     "evidence": "Win11Debloat Regfiles/Disable_Edge_AI_Features.reg:4-11; RemoveWindowsAI RemoveWindowsAi.ps1:946-965"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "GenAILocalFoundationalModelSettings",
+     "value": "1 (DWORD) = do NOT download the local model",
+     "default": "absent (0 = allow)",
+     "effect": "Stops Edge downloading its on-device AI model. Direction is inverted compared with the other AI policies.",
+     "evidence": "Win11Debloat Disable_Edge_AI_Features.reg:10; RemoveWindowsAi.ps1:956"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\EdgeUpdate",
+     "name": "CreateDesktopShortcutDefault",
+     "value": "0 (DWORD)",
+     "default": "absent",
+     "effect": "No desktop shortcut after Edge updates (per-channel variant CreateDesktopShortcut{56EB18F8-B008-4CBD-B6D2-8C97FE7E9062}=0 in Sophia).",
+     "evidence": "winutil config/tweaks.json:309; Sophia.psm1:7099-7197"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Microsoft\\EdgeUpdate",
+     "name": "DoNotUpdateToEdgeWithChromium",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "Legacy: stops Windows Update pushing Chromium Edge to Windows 10 1803-1909; irrelevant on Windows 11.",
+     "evidence": "privacy.sexy windows.yaml:9825-9840"
+    }
+   ]
+  },
+  {
+   "id": "webview2",
+   "title": "Microsoft Edge WebView2 Runtime (evergreen) and Windows' own WebView2 users",
+   "verdict": "never",
+   "how": [
+    {
+     "project": "undergroundwires/privacy.sexy",
+     "method": "Blocks automatic installation with HKLM\\SOFTWARE\\Policies\\Microsoft\\EdgeUpdate Install{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}=0 and states WebView2 shares the Edge Update mechanism; separate item blocks/soft-deletes MicrosoftEdgeUpdate.exe which \"is also responsible for updating Edge WebView2\".",
+     "evidence": "windows.yaml:9430-9440, 9578-9600, 9791-9917",
+     "caveat": "Pure policy/file blocks, but they freeze WebView2 at its current version (security risk) and a blocked Install policy can make app installers that bootstrap WebView2 fail."
+    },
+    {
+     "project": "Batlez/Batlez-Tweaks",
+     "method": "Optional \"Remove WebView2 Runtime?\": NoRemove=0 on the Microsoft EdgeWebView Uninstall keys, EdgeWebView\\Application\\*\\Installer\\setup.exe --uninstall --msedgewebview --system-level --verbose-logging --force-uninstall, policies Install/Update{F3017226-...}=0, delete Clients\\{F3017226-...}, takeown + rmdir Program Files (x86)\\Microsoft\\EdgeWebView and %LOCALAPPDATA%\\Microsoft\\EdgeWebView, and (when Edge is gone) EdgeUpdate. Prompt text: \"WebView2 is required for many UWP/Win32 apps ... Removing it may break apps (e.g., Teams, Edge-based apps)\".",
+     "evidence": "Batlez-Tweaks.bat:22258-22270, 22988-23040",
+     "caveat": "Also taskkills SearchHost.exe (Start/Search host) before deleting, which shows Windows Search uses it."
+    },
+    {
+     "project": "awesome-windows11/windows11",
+     "method": "remove_edge.bat uninstalls EdgeWebView with --msedgewebview before Edge.",
+     "evidence": "archive/remove_edge.bat:3",
+     "caveat": "Removes WebView2 together with Edge."
+    },
+    {
+     "project": "zoicware/ZOICWARE",
+     "method": "-Webview option runs MicrosoftEdgeUpdate.exe /unregsvc + /uninstall and deletes the Microsoft EdgeWebView uninstall keys; also removes appx Win32WebViewHost.",
+     "evidence": "src/EdgeRemove.ps1:8, 96-113; src/zFunctions.psm1:2710-2715 (checkbox 'Edge WebView')",
+     "caveat": "Opt-in checkbox, but the EdgeUpdate registry wipe at :207 happens regardless."
+    },
+    {
+     "project": "memstechtips/Winhance",
+     "method": "Never removes it: script header 'EdgeWebView2 is NOT removed', cleanup filter excludes *EdgeWebView*, EdgeUpdate ClientState is exported before and imported after EdgeUpdate removal, and WebView2 is offered as an installable app (winget Microsoft.EdgeWebView2Runtime, choco webview2-runtime).",
+     "evidence": "EdgeRemovalScript.cs:20, 402-440, 619-625; ExternalAppDefinitions.Browsers.cs:21-29",
+     "caveat": "Reference behaviour for WinModes."
+    },
+    {
+     "project": "farag2/Sophia-Script-for-Windows",
+     "method": "Check phase reinstalls Edge if a 'harmful tweaker' removed it, because WebView2 is a mandatory Windows component.",
+     "evidence": "CHANGELOG.md:858",
+     "caveat": ""
+    }
+   ],
+   "preflightChecks": [
+    "Detect, never modify: HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate\\Clients\\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5} (pv = version), folder %ProgramFiles(x86)%\\Microsoft\\EdgeWebView\\Application\\<ver>\\msedgewebview2.exe, uninstall key 'Microsoft EdgeWebView'.",
+    "Any action that touches HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate, Program Files (x86)\\Microsoft\\EdgeUpdate, EdgeUpdate scheduled tasks (MicrosoftEdgeUpdateTaskMachineCore/UA) or services edgeupdate/edgeupdatem must be blocked or at least require 'this also affects WebView2'."
+   ],
+   "safeProcedure": [
+    "No removal. If the runtime is missing, offer repair: winget install Microsoft.EdgeWebView2Runtime (Winhance ExternalAppDefinitions.Browsers.cs:27) or the Evergreen bootstrapper.",
+    "Memory tuning WITHOUT removal: killing msedgewebview2.exe is pointless (Batlez admits embedded apps respawn it, Batlez-Tweaks.bat:7927); the only supported-ish lever is the undocumented Start/Search feature override (see settingsInstead), labelled experimental."
+   ],
+   "restore": [
+    "winget install Microsoft.EdgeWebView2Runtime; or run the Evergreen Bootstrapper; remove policies EdgeUpdate Install{F3017226-...} / Update{F3017226-...} if set (Batlez sets both to 0, Batlez-Tweaks.bat:23006-23007); re-import EdgeUpdate ClientState if a backup exists (Winhance pattern)."
+   ],
+   "breaksIfRemoved": [
+    "Windows Start menu / Search results pane: SearchHost.exe spawns msedgewebview2.exe (WindowsMize Set-StartMenuWebview2Version.ps1:5-7; Winhance GamingAndPerformanceOptimizations.cs:257-259).",
+    "Widgets and Copilot ('Embedded web rendering engine for Windows widgets, Copilot, and third-party web apps', Batlez-Tweaks.bat:7926).",
+    "New Teams and other Microsoft apps with web UI (Batlez-Tweaks.bat:22261-22262), M365 Copilot/Office Hub (Microsoft.MicrosoftOfficeHub_8wekyb3d8bbwe\\WebViewHostStartupId, RemoveWindowsAi.ps1:869, 1112), MicrosoftWindows.Client.CBS 'AppActions' host list incl. msedgewebview2 (WindowsMize Set-UwpAppSetting.ps1:59-62), new Outlook (Olk\\EBWebView cache path, Batlez-Tweaks.bat:30954).",
+    "Third-party desktop apps that embed WebView2 (installers, launchers, many GUI tools including several optimizers, e.g. charlie754 NOTICE.md:26-80 'finds the installed Edge WebView2 runtime'). Sophia: 'WebView2 Runtime is a mandatory Windows component' (CHANGELOG.md:858)."
+   ],
+   "dependents": [
+    "SearchHost (Start/Search), Widgets, Copilot, new Teams, new Outlook, Microsoft 365 Copilot app, Phone Link UI (general knowledge), plus any third-party app using the evergreen runtime."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\FeatureManagement\\Overrides\\8\\1694661260",
+     "name": "EnabledState=1, EnabledStateOptions=0",
+     "value": "1 / 0 (DWORD)",
+     "default": "key absent (WebView2 Start menu enabled)",
+     "effect": "Undocumented: reverts the Start/Search host to the non-WebView2 version (saves ~75 MB idle, WindowsMize measured 175 MB vs 100 MB). Feature IDs differ between tools (Winhance uses 37926450 for 'WebView2 in Windows Search'), so this may be stale on other builds.",
+     "evidence": "WindowsMize Set-StartMenuWebview2Version.ps1:5-7, 34-58; Winhance GamingAndPerformanceOptimizations.cs:257-272"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\EdgeUpdate",
+     "name": "Update{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+     "value": "0 = updates disabled (NOT recommended)",
+     "default": "absent",
+     "effect": "Freezes the WebView2 runtime; listed only so WinModes can detect and warn.",
+     "evidence": "Batlez-Tweaks.bat:23007"
+    }
+   ]
+  },
+  {
+   "id": "copilot",
+   "title": "Windows Copilot / Copilot app / Microsoft 365 Copilot (Office Hub) / Copilot+ AI packages",
+   "verdict": "offer-with-safeguards",
+   "how": [
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "Policy file: HKCU+HKLM Software\\Policies\\Microsoft\\Windows\\WindowsCopilot TurnOffWindowsCopilot=1 and HKCU Explorer\\Advanced ShowCopilotButton=0. Separate app removal: Copilot is Config/Apps.json id XP9CXNGPPJ97XX, removed with winget uninstall; Microsoft.Windows.AIHub is a 'safe' Appx.",
+     "evidence": "Regfiles/Disable_Copilot.reg:4-13; Config/Apps.json:94-100 and Microsoft.Windows.AIHub entry",
+     "caveat": "WindowsMize notes TurnOffWindowsCopilot targets the old shell Copilot, not the new Copilot app (scripts/apps_management/debloat.ps1:49)."
+    },
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "WPFTweaksWindowsAI: EndOfLife registry entry for MicrosoftWindows.Client.CoreAI, Get-AppxPackage -AllUsers \"*Copilot*\" | Remove-AppxPackage -AllUsers, winget uninstall --name Copilot, remove Microsoft.MicrosoftOfficeHub, Set-Service WSAIFabricSvc Disabled, Disable-WindowsOptionalFeature Recall, SettingsPageVisibility hide:aicomponents, WindowsNotepad DisableAIFeatures=1.",
+     "evidence": "config/tweaks.json:887-929",
+     "caveat": "'*Copilot*' wildcard with -AllUsers removes anything whose name contains Copilot (including Microsoft 365 Copilot variants). Category 'Advanced Tweaks - CAUTION'."
+    },
+    {
+     "project": "zoicware/RemoveWindowsAI",
+     "method": "Reference for completeness: policies (WindowsAI + WindowsCopilot), then runs as TrustedInstaller to remove non-removable AppX via AppxAllUserStore EndOfLife and Deprovisioned registry keys, dism set-nonremovableapppolicy, CBS package visibility hacks, forced file deletion, Recall payload removal, and a custom update package to block reinstall. Package list: MicrosoftWindows.Client.AIX/CoPilot/CoreAI, Microsoft.Windows.Ai.Copilot.Provider, Microsoft.Copilot, Microsoft.MicrosoftOfficeHub, Microsoft.Edge.GameAssist, Microsoft.Office.ActionsServer, aimgr, Microsoft.WritingAssistant, Clipchamp, Microsoft.Ink.Handwriting*, Microsoft.AIFabric.CBS*, WindowsWorkload.* ...",
+     "evidence": "RemoveWindowsAi.ps1:2351-2405 (list), Documentation.md (Code Review section)",
+     "caveat": "Do NOT adopt the exploit techniques. Sophia treats the leftovers of this script as a broken OS and refuses to run (Module/Private/InitialActions.ps1:295-296). The script itself comments that Microsoft.AIFabric.CBS 'is a dependency with explorer' (line 2371) and removes Ink.Handwriting* (pen/handwriting) and Clipchamp."
+    },
+    {
+     "project": "undergroundwires/privacy.sexy",
+     "method": "Policy set only: WindowsCopilot TurnOffWindowsCopilot (HKLM+HKCU), BingChat IsUserEligible=0, AutoOpenCopilotLargeScreens=0, ShowCopilotButton=0.",
+     "evidence": "windows.yaml:38398-38540 ('Remove Windows Copilot')",
+     "caveat": ""
+    },
+    {
+     "project": "memstechtips/Winhance",
+     "method": "Catalogue marks MicrosoftWindows.Client.AIX, MicrosoftWindows.Client.CoPilot, Microsoft.Edge.GameAssist, Office.ActionsServer, aimgr, WritingAssistant, WindowsWorkload.* as CanBeReinstalled=false; Microsoft.Copilot + Microsoft.Windows.Ai.Copilot.Provider are reinstallable.",
+     "evidence": "WindowsAppDefinitions.cs:485-520",
+     "caveat": "Useful tiering: only Microsoft.Copilot (and the M365/Office hub) are safe to offer."
+    },
+    {
+     "project": "agadiffe/WindowsMize",
+     "method": "Removes MicrosoftCopilot group = Microsoft.Copilot, Microsoft.Windows.Ai.Copilot.Provider, Microsoft.Windows.Copilot, MicrosoftWindows.Client.CoPilot through Remove-ApplicationPackage, after setting policies.",
+     "evidence": "src/modules/applications/management/private/PreinstalledAppsList.ps1:36-41; scripts/apps_management/debloat.ps1:39-53, 95",
+     "caveat": ""
+    }
+   ],
+   "preflightChecks": [
+    "List installed Copilot-related packages and their NonRemovable flag (Get-AppxPackage .NonRemovable; Sycnex GUI.ps1:133 uses it) and never queue NonRemovable ones.",
+    "Windows build gate: TurnOffWindowsCopilot is ignored by the new Copilot app; policy names differ per build (WindowsAI vs WindowsCopilot).",
+    "If the user relies on Microsoft 365 Copilot / Office hub launcher, keep Microsoft.MicrosoftOfficeHub.",
+    "Check winget presence only if restore-by-id is promised (Copilot id XP9CXNGPPJ97XX)."
+   ],
+   "safeProcedure": [
+    "1. Apply policies and hide the taskbar button first (reversible registry only).",
+    "2. Offer current-user removal of Microsoft.Copilot only (PackageManager.RemovePackageAsync, no AllUsers, no deprovision). Record PackageFullName, family name, InstallLocation and the Store id XP9CXNGPPJ97XX.",
+    "3. Show MicrosoftWindows.Client.* AI packages as read-only 'system component, controlled by policy' rows.",
+    "4. Never write AppxAllUserStore EndOfLife/Deprovisioned keys, never run dism set-nonremovableapppolicy, never touch CBS Visibility/Owners."
+   ],
+   "restore": [
+    "Register from the recorded InstallLocation (Add-AppxPackage -Register AppxManifest.xml -DisableDevelopmentMode) or Add-AppxPackage -RegisterByFamilyName -MainPackage <family> (privacy.sexy windows.yaml:39925-39993); else winget install --id XP9CXNGPPJ97XX / Store.",
+    "Policies: delete the values (RemoveWindowsAI's own revert writes the opposite value instead of deleting, RemoveWindowsAi.ps1:895, which leaves the policy configured)."
+   ],
+   "breaksIfRemoved": [
+    "Copilot key/Win+C behaviour, Copilot entry in Search, Click to Do text actions that route to Copilot.",
+    "Removing MicrosoftWindows.Client.AIX/CoreAI/AIFabric packages can hit shell components (RemoveWindowsAi.ps1:2371 comment) and Windows Update re-staging problems; Sophia refuses to run afterwards."
+   ],
+   "dependents": [
+    "Edge sidebar Copilot (policy-controlled separately), Microsoft 365 apps (Office Hub), Click to Do, Windows Search AI features."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKCU\\Software\\Policies\\Microsoft\\Windows\\WindowsCopilot (and HKLM\\SOFTWARE\\Policies\\...)",
+     "name": "TurnOffWindowsCopilot",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "Turns off Windows Copilot (old shell integration).",
+     "evidence": "Win11Debloat Regfiles/Disable_Copilot.reg:8-13"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "ShowCopilotButton",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Hides the taskbar Copilot button. Value lives in a UCPD-protected area on recent builds (see trap 'UCPD').",
+     "evidence": "Win11Debloat Disable_Copilot.reg:4-5; RemoveWindowsAi.ps1:938"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\Shell\\Copilot\\BingChat",
+     "name": "IsUserEligible",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Marks the user ineligible for Bing Chat in Copilot.",
+     "evidence": "privacy.sexy windows.yaml:38398-38540; RemoveWindowsAi.ps1:933"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings",
+     "name": "AutoOpenCopilotLargeScreens",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Copilot does not auto-open on large screens.",
+     "evidence": "privacy.sexy windows.yaml (Disable Copilot auto-launch on start)"
+    },
+    {
+     "path": "HKCU\\SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer",
+     "name": "DisableSearchBoxSuggestions",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "Removes Bing/Copilot suggestions from the search box.",
+     "evidence": "RemoveWindowsAi.ps1:945; Win11Debloat Disable_Bing_Cortana_In_Search.reg"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "DisableSettingsAgent, DisableAgentConnectors, DisableAgentWorkspaces, DisableRemoteAgentConnectors",
+     "value": "1 (DWORD each)",
+     "default": "absent",
+     "effect": "Newer agent features (Insider builds); harmless if unknown.",
+     "evidence": "RemoveWindowsAi.ps1:880-889"
+    }
+   ]
+  },
+  {
+   "id": "recall",
+   "title": "Windows Recall, Click to Do, AI data analysis",
+   "verdict": "policy-only",
+   "how": [
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "Policies in Software\\Policies\\Microsoft\\Windows\\WindowsAI: DisableAIDataAnalysis=1 (HKCU+HKLM), AllowRecallEnablement=0 (HKLM), TurnOffSavingSnapshots=1 (HKLM); DisableClickToDo=1 (HKCU+HKLM); service WSAIFabricSvc Start=3 (Manual).",
+     "evidence": "Regfiles/Disable_AI_Recall.reg:3-13; Regfiles/Disable_Click_to_Do.reg:3-7; Regfiles/Disable_AI_Service_Auto_Start.reg:3-4",
+     "caveat": ""
+    },
+    {
+     "project": "agadiffe/WindowsMize",
+     "method": "Set-Recall -GPO Disabled -> HKLM Software\\Policies\\Microsoft\\Windows\\WindowsAI AllowRecallEnablement=0 (not configured = delete).",
+     "evidence": "src/modules/applications/management/public/config/Set-Recall.ps1:30-45",
+     "caveat": ""
+    },
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "Disable-WindowsOptionalFeature -FeatureName Recall -Online -NoRestart and Set-Service WSAIFabricSvc Disabled.",
+     "evidence": "config/tweaks.json:923-924",
+     "caveat": "WSAIFabricSvc Disabled differs from Win11Debloat's Manual; prefer Manual (WinModes rule: services Manual, never Disabled)."
+    },
+    {
+     "project": "zoicware/RemoveWindowsAI",
+     "method": "Disable-WindowsOptionalFeature -Online -FeatureName Recall -Remove (state becomes DisabledWithPayloadRemoved), plus aggressive deletion of Recall scheduled tasks as SYSTEM.",
+     "evidence": "RemoveWindowsAi.ps1:2588-2612; Documentation.md (Recall Optional Feature, Remove Recall Scheduled Task)",
+     "caveat": "-Remove makes re-enabling require the feature payload (Enable-WindowsOptionalFeature ... -All, commented at :2588); do not use -Remove."
+    },
+    {
+     "project": "undergroundwires/privacy.sexy",
+     "method": "Writes DisableAIDataAnalysis under HKLM\\...\\Windows\\WindowsCopilot instead of ...\\WindowsAI.",
+     "evidence": "windows.yaml:2780, 2795-2799",
+     "caveat": "Wrong key compared with Win11Debloat, RemoveWindowsAI and WindowsMize, which all use WindowsAI. Do not copy."
+    }
+   ],
+   "preflightChecks": [
+    "Detect optional feature state: Get-WindowsOptionalFeature -Online -FeatureName Recall (absent on non-Copilot+ builds).",
+    "Detect existing Recall snapshots; policy does not delete them (ask user before any deletion, not in scope)."
+   ],
+   "safeProcedure": [
+    "Write the WindowsAI policies; optionally Disable-WindowsOptionalFeature Recall WITHOUT -Remove; set WSAIFabricSvc to Manual; journal old values."
+   ],
+   "restore": [
+    "Delete the policy values (do not write 1/0 pairs), Enable-WindowsOptionalFeature -FeatureName Recall if WinModes disabled it, set WSAIFabricSvc back to the recorded start type."
+   ],
+   "breaksIfRemoved": [
+    "Recall, Click to Do and semantic-search AI features. Nothing else."
+   ],
+   "dependents": [
+    "Copilot+ PC features only."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "AllowRecallEnablement",
+     "value": "0 (DWORD)",
+     "default": "absent",
+     "effect": "Recall cannot be enabled.",
+     "evidence": "Win11Debloat Disable_AI_Recall.reg:9-10; WindowsMize Set-Recall.ps1"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI (and HKCU)",
+     "name": "DisableAIDataAnalysis",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "Stops saving snapshots / AI data analysis.",
+     "evidence": "Win11Debloat Disable_AI_Recall.reg:3-7"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "TurnOffSavingSnapshots",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "Snapshot saving off.",
+     "evidence": "Win11Debloat Disable_AI_Recall.reg:12-13"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI (and HKCU)",
+     "name": "DisableClickToDo",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "Disables Click to Do.",
+     "evidence": "Win11Debloat Disable_Click_to_Do.reg"
+    },
+    {
+     "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\WSAIFabricSvc",
+     "name": "Start",
+     "value": "3 (Manual)",
+     "default": "recorded value",
+     "effect": "Prevents the AI fabric service from auto-starting.",
+     "evidence": "Win11Debloat Disable_AI_Service_Auto_Start.reg"
+    }
+   ]
+  },
+  {
+   "id": "widgets",
+   "title": "Widgets / Windows Web Experience Pack (MicrosoftWindows.Client.WebExperience) / News feed",
+   "verdict": "policy-only",
+   "how": [
+    {
+     "project": "agadiffe/WindowsMize",
+     "method": "GPO Allow widgets = off: HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh AllowNewsAndInterests=0. Comment: not needed if widgets uninstalled, set anyway because 'it might happen' that widgets reinstall.",
+     "evidence": "src/modules/applications/management/public/config/Set-Widgets.ps1:5-6, 35-46",
+     "caveat": ""
+    },
+    {
+     "project": "farag2/Sophia-Script-for-Windows",
+     "method": "TaskbarWidgets -Hide writes HKCU Explorer\\Advanced TaskbarDa=0, but must do it through a renamed copy of powershell.exe (powershell_temp.exe in System32\\WindowsPowerShell\\v1.0) because the UCPD driver blocks the write from normal executables; function is skipped when MicrosoftWindows.Client.WebExperience is not installed; also clears the Dsh policy and PolicyManager NewsAndInterests value first.",
+     "evidence": "Sophia.psm1:1913-1952",
+     "caveat": "Copying powershell.exe into System32 is a hack; a C# app should detect UCPD blocking and fall back to the policy."
+    },
+    {
+     "project": "undergroundwires/privacy.sexy",
+     "method": "TaskbarDa=0, plus removal of appx MicrosoftWindows.Client.WebExperience ('breaks Widgets', 'not known to break other OS functionality if you do not wish to use Widgets').",
+     "evidence": "windows.yaml:38273-38355",
+     "caveat": ""
+    },
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "DisableWidgets = stop Widget processes, then remove packages Microsoft.StartExperiencesApp, MicrosoftWindows.Client.WebExperience, Microsoft.WidgetsPlatformRuntime (Appx path, AllUsers/CurrentUser/target-user per run mode).",
+     "evidence": "Scripts/Features/Invoke-Changes.ps1:76-84; Config/Features.json:1045-1058; Config/Apps.json:774, 910 (descriptions)",
+     "caveat": "Catalogue text: WebExperience 'Helps deliver and update certain features, like Widgets, through the Microsoft Store'; StartExperiencesApp 'powers Windows Widgets My Feed'; WidgetsPlatformRuntime 'Runtime required for Windows Widgets'."
+    },
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "WPFTweaksWidget: Stop-Process *Widget*, remove Microsoft.WidgetsPlatformRuntime and MicrosoftWindows.Client.WebExperience with -AllUsers, restart Explorer.",
+     "evidence": "config/tweaks.json:61-80",
+     "caveat": "Essential preset item; -AllUsers removal."
+    },
+    {
+     "project": "itsfatduck/optimizerDuck",
+     "method": "Lists StartExperiencesApp, WebExperience, WidgetsPlatformRuntime, BingSearch under CautionApps 'Widgets & Search integration'.",
+     "evidence": "optimizerDuck/Common/Helpers/Shared.cs:188-192",
+     "caveat": ""
+    }
+   ],
+   "preflightChecks": [
+    "Detect the three packages; detect Windows build; check whether UCPD is blocking HKCU Explorer\\Advanced writes (write then read back).",
+    "Widgets also appear on the lock screen (Win11Debloat Features.json:1046) - the policy covers both."
+   ],
+   "safeProcedure": [
+    "1. Write the Dsh policy (HKLM, elevated) and TaskbarDa=0 (HKCU; verify read-back).",
+    "2. Offer optional current-user removal of Microsoft.WidgetsPlatformRuntime and MicrosoftWindows.Client.WebExperience / Microsoft.StartExperiencesApp, tiered 'optional'; record family names; no deprovision."
+   ],
+   "restore": [
+    "Delete the Dsh policy value, TaskbarDa=1, register packages from recorded InstallLocation / RegisterByFamilyName, or Store: Windows Web Experience Pack product 9MSSGKG348SP (privacy.sexy windows.yaml:38337)."
+   ],
+   "breaksIfRemoved": [
+    "Widgets board and lock-screen widgets. Possibly other features delivered through the Web Experience Pack (Win11Debloat description)."
+   ],
+   "dependents": [
+    "Widgets, Windows Spotlight lock-screen extras (unverified), Sophia TaskbarWidgets function (needs WebExperience)."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Dsh",
+     "name": "AllowNewsAndInterests",
+     "value": "0 (DWORD)",
+     "default": "absent",
+     "effect": "Widgets / news feed not allowed (taskbar button and lock screen).",
+     "evidence": "WindowsMize Set-Widgets.ps1:35-46; Sophia.psm1:1931-1933"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "TaskbarDa",
+     "value": "0 (DWORD)",
+     "default": "1 (value usually absent on clean 22H2+)",
+     "effect": "Hides the Widgets button. UCPD can block normal writers.",
+     "evidence": "privacy.sexy windows.yaml:38290-38310; Sophia.psm1:1935-1946"
+    }
+   ]
+  },
+  {
+   "id": "teams",
+   "title": "Microsoft Teams (personal 'Chat' on the taskbar, MSTeams package, classic Teams, Teams Meeting add-in)",
+   "verdict": "offer-with-safeguards",
+   "how": [
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "MicrosoftTeams (old personal) and MSTeams (new) are 'safe' Appx; Chat icon: HKCU Explorer\\Advanced TaskbarMn=0 (Win11) / Policies\\Explorer HideSCAMeetNow=1 (Win10).",
+     "evidence": "Config/Apps.json (MicrosoftTeams, MSTeams); Regfiles/Disable_Chat_Taskbar.reg:4-9",
+     "caveat": ""
+    },
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "WPFAppxMSTeams then Get-Package -Name \"Microsoft Teams*\" | Uninstall-Package -Force to remove the Teams Meeting add-in for Office; policy HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Chat ChatIcon=3 (ISO build script).",
+     "evidence": "functions/public/Invoke-WPFAppxRemoval.ps1:51-54; functions/private/Invoke-WinUtilISOScript.ps1:559; config/tweaks.json:787 (TaskbarMn)",
+     "caveat": "Wildcard 'Microsoft Teams*' also matches Teams Machine-Wide Installer/classic Teams."
+    },
+    {
+     "project": "zoicware/ZOICWARE",
+     "method": "Classic Teams: kill *teams*, run %LOCALAPPDATA%\\Microsoft\\Teams\\Update.exe -uninstall and machine-wide uninstall strings (credit asheroto/UninstallTeams).",
+     "evidence": "src/zFunctions.psm1:322-345",
+     "caveat": ""
+    },
+    {
+     "project": "memstechtips/Winhance",
+     "method": "Catalogue entry 'Microsoft Teams' (MSTeams, Store XP8BT8DW290MPQ, CanBeReinstalled=true).",
+     "evidence": "WindowsAppDefinitions.cs:182-189",
+     "caveat": ""
+    }
+   ],
+   "preflightChecks": [
+    "Is the user signed in to a work/school Teams tenant? (New Teams MSTeams is also the work client.)",
+    "Is the Outlook Teams Meeting add-in in use?",
+    "Teams uses WebView2: do not touch WebView2 while cleaning."
+   ],
+   "safeProcedure": [
+    "Hide Chat button (TaskbarMn=0, policy ChatIcon=3), disable Teams autostart via StartupApproved; offer current-user removal of MSTeams/MicrosoftTeams with Store id for restore; leave add-in unless exact name matched."
+   ],
+   "restore": [
+    "Register package from InstallLocation / RegisterByFamilyName; or winget install --id XP8BT8DW290MPQ (msstore source) / Store."
+   ],
+   "breaksIfRemoved": [
+    "Teams meetings join links (browser fallback exists), Outlook Teams add-in, Chat/Meet-now taskbar entry."
+   ],
+   "dependents": [
+    "Work/school users; Outlook add-in; Office link handlers (msteams: protocol)."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "TaskbarMn",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Hides the Chat/Teams icon (Win11).",
+     "evidence": "Win11Debloat Disable_Chat_Taskbar.reg:5; winutil config/tweaks.json:787"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Chat",
+     "name": "ChatIcon",
+     "value": "3 (DWORD)",
+     "default": "absent",
+     "effect": "Chat icon hidden by policy for all users.",
+     "evidence": "winutil Invoke-WinUtilISOScript.ps1:559"
+    }
+   ]
+  },
+  {
+   "id": "office-hub",
+   "title": "Microsoft 365 Copilot app / Office Hub (Microsoft.MicrosoftOfficeHub)",
+   "verdict": "offer-with-safeguards",
+   "how": [
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "'safe' Appx tier: Microsoft.MicrosoftOfficeHub 'Hub to access Microsoft Office apps and documents (Precursor to Microsoft 365 app)'.",
+     "evidence": "Config/Apps.json (Microsoft.MicrosoftOfficeHub entry)",
+     "caveat": ""
+    },
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "appx.json WPFAppxMicrosoft_MicrosoftOfficeHub 'launcher and dashboard for cloud-based Microsoft 365 apps'; also removed by the Windows AI tweak.",
+     "evidence": "config/appx.json; config/tweaks.json:917",
+     "caveat": ""
+    },
+    {
+     "project": "zoicware/RemoveWindowsAI",
+     "method": "Treated as AI component; deletes WebViewHostStartupId and Copilot startup task entries for Microsoft.MicrosoftOfficeHub_8wekyb3d8bbwe.",
+     "evidence": "RemoveWindowsAi.ps1:869, 1112, 2354",
+     "caveat": "Registry keys under SystemAppData are per-package internal state."
+    }
+   ],
+   "preflightChecks": [
+    "Does the user use the Microsoft 365 app launcher? Keep Office desktop apps untouched (they are not this package)."
+   ],
+   "safeProcedure": [
+    "Current-user removal only, record family name + Store id 9WZDNCRD29V9 (Winhance WindowsAppDefinitions.cs:230-231)."
+   ],
+   "restore": [
+    "Register from InstallLocation / RegisterByFamilyName; Store id 9WZDNCRD29V9."
+   ],
+   "breaksIfRemoved": [
+    "The launcher app only; installed Office apps keep working (general knowledge)."
+   ],
+   "dependents": [
+    "None known in the clones."
+   ],
+   "settingsInstead": []
+  },
+  {
+   "id": "cortana",
+   "title": "Cortana (Microsoft.549981C3F5F10) and Cortana-in-Search",
+   "verdict": "offer-with-safeguards",
+   "how": [
+    {
+     "project": "memstechtips/Winhance",
+     "method": "Catalogue: 'deprecated and replaced by Copilot', CanBeReinstalled=false, MsStoreId comment 'Package is deprecated'.",
+     "evidence": "WindowsAppDefinitions.cs:108-113",
+     "caveat": "Restore will NOT work from the Store: keep the recorded InstallLocation or warn the user it cannot come back."
+    },
+    {
+     "project": "agadiffe/WindowsMize",
+     "method": "GPO: HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search AllowCortana=0 and AllowCortanaAboveLock=0; package Microsoft.549981C3F5F10 marked 'old'.",
+     "evidence": "src/modules/applications/management/public/config/Set-Cortana.ps1:30-58; PreinstalledAppsList.ps1:12",
+     "caveat": ""
+    },
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "Disable_Bing_Cortana_In_Search.reg: HKCU Policies\\Explorer DisableSearchBoxSuggestions=1; HKLM Windows Search AllowCortana=0, CortanaConsent=0. App tier 'safe' (Config/Apps.json: Microsoft.549981C3F5F10 'Discontinued').",
+     "evidence": "Regfiles/Disable_Bing_Cortana_In_Search.reg",
+     "caveat": ""
+    },
+    {
+     "project": "Sycnex/Windows10Debloater",
+     "method": "Windows 10 system app Microsoft.Windows.Cortana is in the NonRemovables hard-coded list; only the toggle button changes policy.",
+     "evidence": "Windows10DebloaterGUI.ps1:141-182 (list), 331-349",
+     "caveat": ""
+    }
+   ],
+   "preflightChecks": [
+    "Windows 11 24H2+ may not ship it at all: only offer when the package is present."
+   ],
+   "safeProcedure": [
+    "Set the Windows Search policies; current-user removal of the package only if present; mark restore as not guaranteed."
+   ],
+   "restore": [
+    "Policies: delete values. Package: register from InstallLocation only (Store listing is gone)."
+   ],
+   "breaksIfRemoved": [
+    "Nothing on current Windows 11 (voice assistant retired)."
+   ],
+   "dependents": [
+    "None."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search",
+     "name": "AllowCortana, AllowCortanaAboveLock",
+     "value": "0 (DWORD)",
+     "default": "absent",
+     "effect": "Cortana off / not on lock screen.",
+     "evidence": "WindowsMize Set-Cortana.ps1"
+    },
+    {
+     "path": "HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer",
+     "name": "DisableSearchBoxSuggestions",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "No Bing web results in Start/Search box.",
+     "evidence": "Win11Debloat Disable_Bing_Cortana_In_Search.reg"
+    }
+   ]
+  },
+  {
+   "id": "xbox",
+   "title": "Xbox components: Game Bar (XboxGamingOverlay/XboxGameOverlay), Xbox app (GamingApp), Xbox Identity Provider, Xbox.TCUI, Xbox Speech To Text, Gaming Services, Xbox services",
+   "verdict": "policy-only",
+   "how": [
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "Catalogue tiers with reasons: Microsoft.GamingApp 'optional' ('required for installing some PC games'); XboxGamingOverlay/XboxGameOverlay 'optional' ('required/useful for some games'); Microsoft.XboxIdentityProvider 'unsafe' ('required for some games and Xbox services'); Microsoft.Xbox.TCUI 'unsafe' ('required for Microsoft Store, photos and certain games'); Microsoft.XboxSpeechToTextOverlay 'unsafe' ('cannot be reinstalled easily'); Microsoft.XboxApp 'safe' (old console companion). Game Bar can be neutralised without removal: GameDVR/AppCapture off and the ms-gamebar / ms-gamebarservices protocols pointed at systray.exe.",
+     "evidence": "Config/Apps.json:694, 846, 870, 878, and Xbox entries; Regfiles/Disable_Game_Bar_Integration.reg:4-22; Regfiles/Disable_DVR.reg:3-10",
+     "caveat": "The protocol override writes under HKCR and replaces the real handler even if Game Bar is installed; its Undo file deletes the shell\\open\\command keys."
+    },
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "appx.json warnings: XboxIdentityProvider 'removing this may break Microsoft account sign-in for non-Xbox games and apps'; Xbox.TCUI 'may break Microsoft account authentication in games and apps that do not otherwise require the Xbox app'. Removal of Game Bar first stops GameBarFTServer and sets GameDVR AppCaptureEnabled=0 'to stop the annoying ms-gamebar popup when launching games'.",
+     "evidence": "config/appx.json (XboxIdentityProvider, Xbox_TCUI descriptions); functions/public/Invoke-WPFAppxRemoval.ps1:30-38",
+     "caveat": ""
+    },
+    {
+     "project": "farag2/Sophia-Script-for-Windows",
+     "method": "Deliberately does NOT remove Xbox packages for Game Bar; XboxGameBar -Disable sets GameDVR AppCaptureEnabled=0 and GameConfigStore GameDVR_Enabled=0, with a note that the 'You'll need a new app to open this ms-gamingoverlay' popup appears unless the Game Bar is disabled this way even after uninstall. Xbox packages are only offered in the UWP removal UI list (Xbox TCUI, Speech To Text, Game Bar, Game Bar plugin).",
+     "evidence": "Sophia.psm1:7860-7912, 7530-7550",
+     "caveat": ""
+    },
+    {
+     "project": "Sycnex/Windows10Debloater",
+     "method": "Whitelist comments 'Many home users want to play games' (Issue 25, 91) for Xbox.TCUI, XboxGamingOverlay, XboxIdentityProvider; Microsoft.XboxGameCallableUI listed as NonRemovable.",
+     "evidence": "Windows10DebloaterGUI.ps1:108-113, 175",
+     "caveat": ""
+    },
+    {
+     "project": "undergroundwires/privacy.sexy",
+     "method": "Category 'Remove Xbox' (null recommend because 'Breaks Xbox gaming'). Docs: removing Xbox features 'may prevent Xbox Game Pass games, games that need Xbox sign-in, and some Windows games that require Xbox components'; Xbox app 'is required for Xbox Game Pass titles'. Game Bar removal removes Microsoft.XboxGamingOverlay + Microsoft.XboxGameOverlay.",
+     "evidence": "windows.yaml:36901-36975, 36984-37060, 37070-37210",
+     "caveat": ""
+    },
+    {
+     "project": "builtbybel/CrapFixer",
+     "method": "Removes Microsoft.GamingServices (not present in Win11Debloat) along with Xbox.TCUI, XboxApp, Game Bar, SpeechToText.",
+     "evidence": "plugins/Remove default apps.ps1:24, 38-42",
+     "caveat": "Gaming Services backs Game Pass PC titles (general knowledge, not stated in the clones): keep it protected in WinModes."
+    },
+    {
+     "project": "agadiffe/WindowsMize",
+     "method": "Xbox services group (XboxGipSvc, XblAuthManager, XblGameSave, XboxNetApiSvc) are set Disabled by its script, default Manual.",
+     "evidence": "src/modules/services/private/Xbox.ps1:5-32",
+     "caveat": "WinModes should keep them Manual: they are demand-start and idle."
+    },
+    {
+     "project": "Batlez/Batlez-Tweaks",
+     "method": "sc config start= disabled for XblAuthManager, XboxNetApiSvc, XblGameSave, XboxGipSvc (Start=4).",
+     "evidence": "Batlez-Tweaks.bat:8881-9045",
+     "caveat": "Breaks Xbox sign-in, cloud saves and controllers on demand."
+    }
+   ],
+   "preflightChecks": [
+    "Detect Game Pass / Xbox app use: installed Microsoft.GamingApp + Microsoft.GamingServices, installed games from the Xbox/MS Store, Minecraft Bedrock, Forza etc.",
+    "Detect whether Microsoft account sign-in for non-Xbox apps is used (XboxIdentityProvider/TCUI are shared sign-in plumbing).",
+    "Protect list: Microsoft.GamingServices, Microsoft.Xbox.TCUI, Microsoft.XboxIdentityProvider, Microsoft.XboxSpeechToTextOverlay, Microsoft.GamingApp."
+   ],
+   "safeProcedure": [
+    "Tier 1 (settings): AppCapture/GameDVR off, UseNexusForGameBarEnabled=0, ShowStartupPanel=0; optionally ms-gamebar protocol override with journal.",
+    "Tier 2 (opt-in, current user): Microsoft.XboxApp (old companion), Microsoft.XboxGamingOverlay + XboxGameOverlay if user does not use Game Bar.",
+    "Tier 3 (blocked): GamingServices, GamingApp, XboxIdentityProvider, Xbox.TCUI, XboxSpeechToTextOverlay."
+   ],
+   "restore": [
+    "Register from InstallLocation/RegisterByFamilyName; Store ids from Winhance: XboxIdentityProvider 9WZDNCRD1HKW, Xbox.TCUI 9NKNC0LD5NN6, Game Bar 9NZKPSTSNW4P, Xbox app 9MV0B5HZVK9Z (Game Bar plugin has no Store listing: CanBeReinstalled=false, WindowsAppDefinitions.cs:356-362). Delete protocol override keys."
+   ],
+   "breaksIfRemoved": [
+    "Game Pass PC game install/launch, Xbox sign-in in games, achievements/cloud saves, Store/Photos sign-in dialogs (TCUI), game capture and overlay widgets."
+   ],
+   "dependents": [
+    "Xbox/Game Pass titles, Minecraft Launcher (MSA sign-in), Microsoft Store purchases for games."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+     "name": "AppCaptureEnabled",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Game Bar capture off (also prevents ms-gamebar popup).",
+     "evidence": "Win11Debloat Disable_DVR.reg:7; Sophia.psm1:7903"
+    },
+    {
+     "path": "HKCU\\System\\GameConfigStore",
+     "name": "GameDVR_Enabled",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Game DVR off.",
+     "evidence": "Win11Debloat Disable_DVR.reg:4; Sophia.psm1:7904"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR",
+     "name": "AllowGameDVR",
+     "value": "0 (DWORD)",
+     "default": "absent",
+     "effect": "Policy-level Game DVR off.",
+     "evidence": "Win11Debloat Disable_DVR.reg:10"
+    },
+    {
+     "path": "HKCU\\SOFTWARE\\Microsoft\\GameBar",
+     "name": "UseNexusForGameBarEnabled",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Controller button no longer opens Game Bar.",
+     "evidence": "Win11Debloat Disable_Game_Bar_Integration.reg:5"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\GameBar",
+     "name": "ShowStartupPanel",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Hides the Game Bar startup tip.",
+     "evidence": "Sophia.psm1:7957"
+    }
+   ]
+  },
+  {
+   "id": "phone-link",
+   "title": "Phone Link (Microsoft.YourPhone) and Cross Device Experience Host (MicrosoftWindows.CrossDevice)",
+   "verdict": "offer-with-safeguards",
+   "how": [
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "Both 'optional': YourPhone 'Phone link (Connects Android/iOS phone to PC)'; CrossDevice 'Phone integration within File Explorer, Camera and more (Part of Phone Link features)'. Start page companion off: HKCU Software\\Microsoft\\Windows\\CurrentVersion\\Start\\Companions\\Microsoft.YourPhone_8wekyb3d8bbwe IsEnabled=0.",
+     "evidence": "Config/Apps.json:886, and CrossDevice entry; Regfiles/Disable_Phone_Link_In_Start.reg:4-5",
+     "caveat": ""
+    },
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "appx.json CrossDevice warning: 'Removing this may disable cross-device features such as phone screen mirroring, file transfer, and mobile hotspot handoff integrated into Windows Settings.'",
+     "evidence": "config/appx.json (WPFAppxMicrosoft_WindowsCrossDevice)",
+     "caveat": ""
+    },
+    {
+     "project": "agadiffe/WindowsMize",
+     "method": "Settings: HKCU Software\\Microsoft\\Windows\\CurrentVersion\\Mobility PhoneLinkEnabled (1 on, 0 off/default); GPO HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System EnableMmx=0 ('phone-PC linking on this device'); background-app mode for Microsoft.YourPhone_8wekyb3d8bbwe; CrossDeviceResume configuration; CDPUserSvc in services list.",
+     "evidence": "src/modules/settings_app/bluetooth_&_devices/private/mobile_devices/Set-MobileDevicesPhoneLink.ps1:38-72; src/modules/services/private/Features.ps1:32",
+     "caveat": ""
+    },
+    {
+     "project": "Batlez/Batlez-Tweaks",
+     "method": "Removes MicrosoftWindows.CrossDevice together with other 'advanced system apps' in one list.",
+     "evidence": "Batlez-Tweaks.bat:22783",
+     "caveat": "System-level removal; do not copy."
+    },
+    {
+     "project": "memstechtips/Winhance",
+     "method": "Edge-removal helper kills Resume/CrossDeviceResume processes before removal.",
+     "evidence": "EdgeRemovalScript.cs:126",
+     "caveat": "Shows these background processes are tied to Edge/WebView2 handoff."
+    }
+   ],
+   "preflightChecks": [
+    "Is a phone paired (HKCU Mobility, Microsoft.YourPhone data)?",
+    "Detect CrossDevice usage in Explorer/Camera (Android file access)."
+   ],
+   "safeProcedure": [
+    "Settings first: PhoneLinkEnabled=0, Start companion off, optional EnableMmx policy; then optional current-user removal of Microsoft.YourPhone; treat CrossDevice as system-level (Batlez treats it as 'AdvancedSystemApp'): do not remove."
+   ],
+   "restore": [
+    "Delete policy, set PhoneLinkEnabled=1, register package or winget/Store."
+   ],
+   "breaksIfRemoved": [
+    "Phone Link app, notification/SMS mirroring, Explorer Android file access, Camera 'use phone as webcam'."
+   ],
+   "dependents": [
+    "Users with paired phones."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+     "name": "EnableMmx",
+     "value": "0 (DWORD)",
+     "default": "absent",
+     "effect": "Blocks phone-PC linking on this device.",
+     "evidence": "WindowsMize Set-MobileDevicesPhoneLink.ps1:58-70"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Mobility",
+     "name": "PhoneLinkEnabled",
+     "value": "0 (DWORD)",
+     "default": "0 (off) per WindowsMize comment",
+     "effect": "Phone Link feature switch in Settings.",
+     "evidence": "WindowsMize Set-MobileDevicesPhoneLink.ps1:38-47"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Start\\Companions\\Microsoft.YourPhone_8wekyb3d8bbwe",
+     "name": "IsEnabled",
+     "value": "0 (DWORD)",
+     "default": "1",
+     "effect": "Hide mobile device in Start.",
+     "evidence": "Win11Debloat Disable_Phone_Link_In_Start.reg:5"
+    }
+   ]
+  },
+  {
+   "id": "store-appinstaller",
+   "title": "Microsoft Store, App Installer (winget) and the install chain (services, packages, tasks)",
+   "verdict": "never",
+   "how": [
+    {
+     "project": "undergroundwires/privacy.sexy",
+     "method": "Removal of Microsoft.WindowsStore / Microsoft.StorePurchaseApp via Get-AppxPackage | Remove-AppxPackage, no preset recommends it. Docs: 'Microsoft has mentioned that it doesn't officially support the uninstallation' ... 'may affect some core functionalities'. Strict preset DOES disable wlidsvc (Microsoft Account Sign-in Assistant) and the docs list Store failures PUR-AuthenticationFailure, 0x800706d9, 0x800704cf.",
+     "evidence": "windows.yaml:32200-32290, 38557-38620",
+     "caveat": "The wlidsvc item is 'recommend: strict' in the shipped collection; do not copy."
+    },
+    {
+     "project": "farag2/Sophia-Script-for-Windows",
+     "method": "Start-up check: if Microsoft.WindowsStore or MicrosoftWindows.Client.CBS (Windows Feature Experience Pack) is missing the script aborts with 'reinstall Windows'. UWP removal UI excludes Microsoft.WindowsStore, Microsoft.StorePurchaseApp, Microsoft.DesktopAppInstaller, WindowsTerminal, WSL, PowerShell, codec extensions and OEM driver apps.",
+     "evidence": "Module/Private/InitialActions.ps1:365-385; Sophia.psm1:7552-7637",
+     "caveat": "Strongest evidence that Store/CBS removal is treated as unrecoverable."
+    },
+    {
+     "project": "agadiffe/WindowsMize",
+     "method": "Documents the chain and keeps it Manual: AppXSvc (Automatic default, Manual, 'cannot be changed with services.msc'), camsvc, ClipSVC (also protected), wlidsvc ('needed to install new apps from microsoft store; not needed to auto-update already installed apps'), InstallService, LicenseManager ('needed by Windows Photos and probably more Store apps'); PushToInstall is the only one it disables (remote install). Optional removal group MicrosoftStore = Microsoft.Services.Store.Engagement, Microsoft.StorePurchaseApp, Microsoft.WindowsStore is never in the default list.",
+     "evidence": "src/modules/services/private/MicrosoftStore.ps1:5-60; src/modules/applications/management/private/PreinstalledAppsList.ps1:42-46",
+     "caveat": ""
+    },
+    {
+     "project": "itsfatduck/optimizerDuck",
+     "method": "Sets AppXSvc, ClipSVC, InstallService, LicenseManager, wlidsvc to Manual (never Disabled); Store, StorePurchaseApp, DesktopAppInstaller ('winget'), Terminal, Xbox identity packages are CautionApps; models ERROR_ACCESS_DENIED because AppXSvc/ClipSVC DACLs do not grant SERVICE_CHANGE_CONFIG to Administrators.",
+     "evidence": "Domain/Optimizations/Categories/BloatwareAndServices.cs:84, 101, 134, 142, 311; Common/Helpers/Shared.cs:162-216; Domain/Optimizations/Models/Services/ServiceChangeResult.cs:13-20",
+     "caveat": ""
+    },
+    {
+     "project": "Sycnex/Windows10Debloater",
+     "method": "Whitelist keeps Microsoft.WindowsStore, StorePurchaseApp, DesktopAppInstaller ('Issue 68'), codec extensions. SysPrep variant stops InstallService, sets Store policy AutoDownload=2 and (GUI) sets InstallService Disabled, then CheckInstallService starts it again and sets Automatic.",
+     "evidence": "Windows10DebloaterGUI.ps1:103-131, 690-707, 943-962; Windows10SysPrepDebloater.ps1:10-30, 229-250",
+     "caveat": "Shows the project learned that disabling InstallService breaks installs."
+    },
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "Catalogue: Microsoft.WindowsStore 'unsafe' ('cannot be reinstalled easily if removed'); Microsoft.Xbox.TCUI 'unsafe' (required for Store); uses winget uninstall for some apps so it warns if winget is missing. Aborts GUI removal with a warning if winget not found, but only checks Get-Command winget (comment says v1.4 check, code does not compare versions).",
+     "evidence": "Config/Apps.json:830-837, 846; Win11Debloat.ps1:331-347",
+     "caveat": ""
+    },
+    {
+     "project": "memstechtips/Winhance",
+     "method": "App Installer item has HasInstabilityWarning; Store item flagged CanBeReinstalled=true; ships a WinGetInstaller that installs Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle plus DesktopAppInstaller_Dependencies.zip when winget is missing.",
+     "evidence": "WindowsAppDefinitions.cs:388-396, 606-616; Infrastructure/.../WinGet/Utilities/WinGetInstaller.cs:23-24, 343-346",
+     "caveat": ""
+    },
+    {
+     "project": "microsoft/WindowsDeveloperConfig",
+     "method": "Authoritative winget repair: if App Installer is registered but broken, Add-AppxPackage -Register <InstallLocation>\\AppxManifest.xml -DisableDevelopmentMode; otherwise install pinned Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle (SHA256-pinned) with DesktopAppInstaller_Dependencies.zip (x64/x86/arm64 appx) via Windows PowerShell.",
+     "evidence": "src/windows-dev-config/steps/_winget.ps1:13-21, 88-130",
+     "caveat": ""
+    },
+    {
+     "project": "emylfy/Winrift",
+     "method": "Assert-WingetAvailable: Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe, else opens ms-windows-store://pdp?productid=9NBLGGH4NNS1.",
+     "evidence": "scripts/Common.Tools.ps1:198-214",
+     "caveat": ""
+    },
+    {
+     "project": "louzkk/Ghost-Optimizer",
+     "method": "Repair routine: DISM /Online /Cleanup-Image /RestoreHealth, sfc /scannow, wsreset, then re-register AppxManifest.xml of Microsoft.WindowsStore, DesktopAppInstaller, StorePurchaseApp, Services.Store.Engagement.",
+     "evidence": "bin/Ghost-Optimizer.bat:3720-3724",
+     "caveat": ""
+    },
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "Restore of removed AppX: register local manifest (installed or provisioned InstallLocation) via Windows PowerShell 5.1; only if none, winget install msstore:<StoreId>. Winget repair button = choco install winget. Edge/OneDrive undo scripts use winget --source winget (community source, no Store dependency).",
+     "evidence": "functions/private/Install-WinUtilAPPX.ps1:28-86; functions/public/Invoke-WPFFixesWinget.ps1:1-12; config/tweaks.json:608, 678",
+     "caveat": ""
+    }
+   ],
+   "preflightChecks": [
+    "Treat as blocklist: Microsoft.WindowsStore, Microsoft.StorePurchaseApp, Microsoft.Services.Store.Engagement, Microsoft.DesktopAppInstaller, MicrosoftWindows.Client.CBS, Microsoft.VCLibs.*, Microsoft.UI.Xaml.*, Microsoft.NET.Native.*, Microsoft.WindowsAppRuntime.*, Microsoft.Xbox.TCUI, Microsoft.XboxIdentityProvider, Microsoft.GamingServices.",
+    "Service start types are read-only for WinModes: AppXSvc, ClipSVC, wlidsvc, InstallService, LicenseManager, camsvc, BITS, wuauserv, UsoSvc, StorSvc (see traps). AppXSvc/ClipSVC may even refuse changes (ERROR_ACCESS_DENIED, optimizerDuck ServiceChangeResult.cs:13-20).",
+    "Scheduled tasks under \\Microsoft\\Windows\\InstallService\\ must stay enabled (winutil update-disable and Zoicware disable them).",
+    "Policies under HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsStore (RemoveWindowsStore, DisableStoreApps, AutoDownload) must be offered only with an explicit warning; AutoDownload=2 only stops Store auto-updates (WindowsMize Set-MicrosoftStoreSetting.ps1:55-66, 83-103).",
+    "Before any app removal verify winget still works (winget --info) and journal the result so a later failure can be attributed."
+   ],
+   "safeProcedure": [
+    "Do not remove or disable. For restore of user-removed apps use the order: (1) Add-AppxPackage -RegisterByFamilyName -MainPackage <family> or register InstallLocation manifest; (2) winget install --id <StoreId> --source msstore; (3) Store deep link ms-windows-store://pdp/?productid=<id>."
+   ],
+   "restore": [
+    "Repair ladder if broken: Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe (Winrift); register manifest of Store/DesktopAppInstaller/StorePurchaseApp/Services.Store.Engagement (Ghost-Optimizer); install pinned msixbundle + dependencies zip (WindowsDeveloperConfig); wsreset; DISM /RestoreHealth + sfc. Set InstallService/ClipSVC/wlidsvc/LicenseManager back to Manual (never Disabled), enable \\InstallService tasks. If Microsoft.WindowsStore itself is gone, Sophia and Win11Debloat both say reinstall/repair Windows."
+   ],
+   "breaksIfRemoved": [
+    "winget msstore source and 'winget install --id <Store id>'; App Installer file association for .msix/.appinstaller; every Store/UWP install, update and license check.",
+    "Photos, Xbox/Game Pass, Notepad/Paint updates through the Store (LicenseManager comment).",
+    "Windows Feature Experience Pack (MicrosoftWindows.Client.CBS) removal: Sophia refuses to run."
+   ],
+   "dependents": [
+    "winget, WinModes' own Debloat restore-by-id, every Store app, Game Pass, MSIX installers."
+   ],
+   "settingsInstead": [
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\PushToInstall",
+     "name": "DisablePushToInstall",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "Turns off remote 'push to install' of Store apps; safe, the only Store service WindowsMize disables.",
+     "evidence": "WindowsMize Set-MicrosoftStorePushToInstall.ps1:35-47"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsStore",
+     "name": "AutoDownload",
+     "value": "2 = off (4 = on)",
+     "default": "absent",
+     "effect": "Stops automatic Store app updates only. Sycnex and CrapFixer set 2; users will stop getting app updates.",
+     "evidence": "WindowsMize Set-MicrosoftStoreSetting.ps1:83-103; Sycnex Windows10DebloaterGUI.ps1:693-697; CrapFixer plugins/Remove default apps.ps1"
+    },
+    {
+     "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "PreInstalledAppsEnabled, PreInstalledAppsEverEnabled, OemPreInstalledAppsEnabled, SilentInstalledAppsEnabled",
+     "value": "0 (DWORD each)",
+     "default": "1",
+     "effect": "Stops silent re-installation of promoted apps after debloat; does not affect the Store.",
+     "evidence": "optimizerDuck BloatwareAndServices.cs:30-58"
+    },
+    {
+     "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableWindowsConsumerFeatures",
+     "value": "1 (DWORD)",
+     "default": "absent",
+     "effect": "No suggested/promoted app installs.",
+     "evidence": "CrapFixer plugins/Remove default apps.ps1"
+    }
+   ]
+  },
+  {
+   "id": "windows-terminal",
+   "title": "Windows Terminal (Microsoft.WindowsTerminal / Preview)",
+   "verdict": "never",
+   "how": [
+    {
+     "project": "Raphire/Win11Debloat",
+     "method": "'unsafe': 'Default terminal app in windows 11 ... Do not remove if you launched Win11Debloat from Windows Terminal, as this will cause the script to fail'.",
+     "evidence": "Config/Apps.json:838-844",
+     "caveat": ""
+    },
+    {
+     "project": "farag2/Sophia-Script-for-Windows",
+     "method": "Excluded from the removal list (WindowsTerminal and Preview) and the script checks Terminal version >= 1.24.",
+     "evidence": "Sophia.psm1:7594-7595; Module/Private/InitialActions.ps1:673-702 (version check only when the script itself runs inside Windows Terminal)",
+     "caveat": ""
+    },
+    {
+     "project": "itsfatduck/optimizerDuck",
+     "method": "CautionApps (WindowsTerminal, WindowsTerminalPreview).",
+     "evidence": "Common/Helpers/Shared.cs:179-180",
+     "caveat": ""
+    }
+   ],
+   "preflightChecks": [
+    "Hard blocklist; show as protected."
+   ],
+   "safeProcedure": [
+    "None."
+   ],
+   "restore": [
+    "winget install Microsoft.WindowsTerminal / Store 9N0DX20HK701 (Winhance WindowsAppDefinitions.cs:219)."
+   ],
+   "breaksIfRemoved": [
+    "The user's daily shell host (and the default terminal host in Windows 11)."
+   ],
+   "dependents": [
+    "PowerShell 7, WSL, Claude Code etc. sessions."
+   ],
+   "settingsInstead": []
+  },
+  {
+   "id": "defender",
+   "title": "Microsoft Defender / Windows Security (SecHealthUI, WinDefend, SecurityHealthService, Firewall) - for the record",
+   "verdict": "never",
+   "how": [
+    {
+     "project": "undergroundwires/privacy.sexy",
+     "method": "Large 'Disable Defender' tree (cloud protection, services and drivers, scans, notifications, firewall services). Docs: 'may reduce your security and cause issues with software relying on them'; borncity article noted that Defender can no longer be disabled on recent builds.",
+     "evidence": "windows.yaml:15520-27600 (category), 15540-15548 (caution)",
+     "caveat": "Tree is opt-in by recommend level, but present."
+    },
+    {
+     "project": "farag2/Sophia-Script-for-Windows",
+     "method": "Treats missing smartscreen.exe/SecurityHealthSystray.exe/CompatTelRunner.exe, or Windefend/SecurityHealthService/wscsvc/wdFilter not queryable, as a broken OS; also flags defendnot, AtlasOS, Revision Tool and RemoveWindowsAI as harmful tweakers.",
+     "evidence": "Module/Private/InitialActions.ps1:274-300, 387-491",
+     "caveat": ""
+    },
+    {
+     "project": "Sycnex/Windows10Debloater",
+     "method": "Microsoft.Windows.SecHealthUI in NonRemovables ('Issue 117 Windows Defender').",
+     "evidence": "Windows10DebloaterGUI.ps1:141-182",
+     "caveat": ""
+    }
+   ],
+   "preflightChecks": [
+    "Hard blocklist."
+   ],
+   "safeProcedure": [
+    "Never touch. Allowed: read-only status display."
+   ],
+   "restore": [
+    "n/a"
+   ],
+   "breaksIfRemoved": [
+    "Real-time protection, SmartScreen, Windows Security UI, third-party AV registration (Security Center)."
+   ],
+   "dependents": [
+    "Windows Security Center, Firewall, device encryption prompts."
+   ],
+   "settingsInstead": []
+  },
+  {
+   "id": "windows-update",
+   "title": "Windows Update, Update Orchestrator, BITS, InstallService tasks - for the record",
+   "verdict": "never",
+   "how": [
+    {
+     "project": "ChrisTitusTech/winutil",
+     "method": "Update 'disable' profile: NoAutoUpdate=1, AUOptions=1, DODownloadMode=0; BITS, wuauserv, UsoSvc Stopped+Disabled; deletes C:\\Windows\\SoftwareDistribution\\*; disables scheduled tasks \\Microsoft\\Windows\\InstallService\\*, UpdateOrchestrator\\*, UpdateAssistant\\*, WaaSMedic\\*, WindowsUpdate\\*. The function itself says 'Disabling Windows Update is not recommended' and shows a confirm dialog.",
+     "evidence": "functions/public/Invoke-WPFUpdatesdisable.ps1:6-9, 20-52, 58-70",
+     "caveat": "Collateral: InstallService tasks are the Store install service, so Store updates and winget msstore installs degrade."
+    },
+    {
+     "project": "memstechtips/Winhance",
+     "method": "UpdateService touches the same \\Microsoft\\Windows\\InstallService\\ task path.",
+     "evidence": "src/Winhance.Infrastructure/Features/Optimize/Services/UpdateService.cs:209; FeatureRegistryScriptSection.cs:401",
+     "caveat": ""
+    },
+    {
+     "project": "itsfatduck/optimizerDuck",
+     "method": "Does not disable wuauserv; keeps update-related services Manual.",
+     "evidence": "BloatwareAndServices.cs (service list)",
+     "caveat": ""
+    }
+   ],
+   "preflightChecks": [
+    "Hard blocklist. Reading status only."
+   ],
+   "safeProcedure": [
+    "Allowed settings: active hours, pause for 1 week (Windows' own UI) - out of scope here."
+   ],
+   "restore": [
+    "Set BITS, wuauserv, UsoSvc back to their recorded start types, delete AU policies, re-enable the tasks (winutil Invoke-WPFUpdatesdefault.ps1:74)."
+   ],
+   "breaksIfRemoved": [
+    "Security patches, Defender definitions delivery, Store/winget package source health, .NET/WebView2 servicing."
+   ],
+   "dependents": [
+    "Everything."
+   ],
+   "settingsInstead": []
+  }
+ ],
+ "traps": [
+  {
+   "title": "Edge removal that also wipes EdgeUpdate registration breaks WebView2",
+   "detail": "ZOICWARE EdgeRemove.ps1 deletes Microsoft\\EdgeUpdate under every HKCU/HKLM SOFTWARE hive including WOW6432Node (line 207) and unregisters MicrosoftEdgeUpdate* tasks (208), even when the user did not tick 'Edge WebView'. Winhance exports HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate\\ClientState before running EdgeUpdate /uninstall and re-imports it, commenting 'important, or else webview won't work' (EdgeRemovalScript.cs:402-440). WinModes: never touch EdgeUpdate registry/services/tasks."
+  },
+  {
+   "title": "Edge Update is also the WebView2 updater",
+   "detail": "privacy.sexy documents that MicrosoftEdgeUpdate.exe and the edgeupdate/edgeupdatem services update both Edge and WebView2 (windows.yaml:9430-9440, 9578-9600); its 'Disable Edge update executable' soft-deletes the exe and its Install{F3017226-...}=0 policy blocks WebView2 installs (9907-9917). Both are recommend:strict in privacy.sexy, i.e. the shipped 'strict' preset freezes WebView2."
+  },
+  {
+   "title": "Edge uninstall unlock trick leaves a fake system file",
+   "detail": "All 'official uninstaller' methods create %SystemRoot%\\SystemApps\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\MicrosoftEdge.exe (winutil tweaks.json:597, WindowsMize Remove-MicrosoftEdge.ps1:43-44, privacy.sexy windows.yaml:36113, ZOICWARE EdgeRemove.ps1:38). Only Win11Debloat deletes it afterwards (Invoke-ForceRemoveEdge.ps1:56). It also relies on AllowUninstall under EdgeUpdateDev with inconsistent types across tools (DWORD 1 in privacy.sexy, empty REG_SZ elsewhere)."
+  },
+  {
+   "title": "winutil Edge removal deletes the user's profile",
+   "detail": "tweaks.json:598 passes --delete-profile to setup.exe: bookmarks, saved passwords, extensions and sessions are gone with no backup or warning in the tweak."
+  },
+  {
+   "title": "Region spoofing to unlock Edge uninstall",
+   "detail": "ZOICWARE temporarily rewrites HKU\\.DEFAULT\\Control Panel\\International\\Geo (Nation=244, Name=US) and restores it afterwards (EdgeRemove.ps1:27-31, 220-222). If the script dies mid-way the machine keeps the wrong region."
+  },
+  {
+   "title": "Re-registration loops: Edge/Copilot come back after updates",
+   "detail": "Winhance registers a startup scheduled task EdgeRemoval that re-runs the Edge removal (BloatRemovalService.cs:241), privacy.sexy cites issue #309 'Microsoft Edge still alive after removal' (windows.yaml:9456), RemoveWindowsAI installs a fake update package and writes AppxAllUserStore Deprovisioned/EndOfLife keys to block re-staging (Documentation.md; RemoveWindowsAi.ps1:2426-2460). WinModes should not fight Windows Update; track state and warn instead."
+  },
+  {
+   "title": "Deprovisioning and -AllUsers by default",
+   "detail": "winutil Remove-WinUtilAPPX uses Get-AppxPackage \"*$Name*\" -AllUsers then Remove-AppxPackage -AllUsers (Remove-WinUtilAPPX.ps1:23-27) and always removes provisioned packages (Invoke-WPFAppxRemoval.ps1:60-61); Win11Debloat's AllUsers mode calls Remove-ProvisionedAppxPackage (Remove-SelectedApps.ps1:254-258); CrapFixer and Sycnex do the same. Deprovisioning means new users never get the app and the only restore source is the Store. Current-user RemovePackage (privacy.sexy windows.yaml:39925) keeps the staged payload so register-from-InstallLocation still works."
+  },
+  {
+   "title": "Wildcard package patterns remove more than intended",
+   "detail": "winutil '*$Name*' (Remove-WinUtilAPPX.ps1:23) and '*Copilot*' (tweaks.json:915), Win11Debloat '*' + $app + '*' (Remove-SelectedApps.ps1:225), Sycnex case-sensitive -cmatch regex over Name (GUI.ps1:676). 'Microsoft.Edge*' style patterns hit Microsoft.Edge.GameAssist (RemoveWindowsAi.ps1:2359). WinModes: exact PackageFamilyName/PackageFullName only."
+  },
+  {
+   "title": "'Restore all apps' scripts cannot restore what is gone",
+   "detail": "CrapFixer 'Restore all built-in apps.ps1' loops over Get-AppxPackage -AllUsers and registers each manifest, so it only repairs apps that are still installed (plugins/Restore all built-in apps.ps1:12-30); anything removed with -AllUsers + deprovision is not in that list. WinModes must journal PackageFamilyName/Fullname/InstallLocation/Store id at removal time."
+  },
+  {
+   "title": "Some packages cannot be reinstalled from the Store",
+   "detail": "Winhance marks CanBeReinstalled=false for Cortana, Skype, Maps, People, Paint 3D, Tips (:442-447), Xbox Game Bar plugin, and the MicrosoftWindows.Client.AIX/CoPilot/WindowsWorkload.* packages (WindowsAppDefinitions.cs:108-113, 172-178, 204-210, 248-253, 289-295, 356-362, 495-520). Win11Debloat: Microsoft.WindowsStore and XboxSpeechToTextOverlay 'cannot be reinstalled easily' (Apps.json:830, 878). For these the restore plan must be 'register from the saved InstallLocation or not at all'."
+  },
+  {
+   "title": "Store / install-chain services disabled by optimizers",
+   "detail": "GTweak Toggle.WindowsStore writes Start=4 via TrustedInstaller for ClipSVC, InstallService, wlidsvc, StorSvc, WalletService, VacSvc, MapsBroker, EntAppSvc, WEPHOSTSVC... and restores every one to 3 regardless of original (ServicesTweaks.cs:157-179). privacy.sexy disables wlidsvc in the strict preset although it documents Store failures (windows.yaml:38557-38620). winutil sets StorSvc Manual and SharedAccess Disabled in its essential 'Services' tweak (tweaks.json:146-185). Sycnex's SysPrep path sets InstallService Disabled before restoring it (GUI.ps1:703-706, 943-946). optimizerDuck documents that AppXSvc/ClipSVC have DACLs that refuse config changes (ServiceChangeResult.cs:13-20)."
+  },
+  {
+   "title": "InstallService scheduled tasks disabled by 'disable updates'",
+   "detail": "winutil disables \\Microsoft\\Windows\\InstallService\\* together with UpdateOrchestrator/WaaSMedic and stops BITS/wuauserv/UsoSvc (Invoke-WPFUpdatesdisable.ps1:29-44); Zoicware and Winhance mirror the same task list. Those tasks belong to the Store install service, so app updates and Store-sourced winget installs silently stall."
+  },
+  {
+   "title": "Store policies that look harmless",
+   "detail": "RyTuneX exposes RemoveWindowsStore and DisableStoreApps (HKLM\\SOFTWARE\\Policies\\Microsoft\\WindowsStore) as toggles (PolicyHelper.cs:2043-2064); winutil denies Everyone on the Store's store.db to hide recommended results (tweaks.json:96-107). Neither is reversible by deleting a single value in the second case (ACL deny)."
+  },
+  {
+   "title": "winget removed entirely",
+   "detail": "Batlez removes Microsoft.DesktopAppInstaller ('RemoveAppCompletely') plus Microsoft.Win32WebViewHost, MicrosoftWindows.CrossDevice, PeopleExperienceHost, CapturePicker, Windows.CBSPreview, PPIProjection and more as 'advanced system apps' (Batlez-Tweaks.bat:22771-22788). Ghost-Optimizer's own repair routine re-registers DesktopAppInstaller, Store, StorePurchaseApp and Services.Store.Engagement afterwards (Ghost-Optimizer.bat:3724), evidence that these get broken in the wild."
+  },
+  {
+   "title": "OneDrive: known folders redirected into OneDrive",
+   "detail": "Only privacy.sexy verifies that no User Shell Folder points into %USERPROFILE%\\OneDrive* before deleting (windows.yaml:35620-35745) and documents the failure mode ('if Desktop is redirected, deleting the OneDrive folder could make Desktop inaccessible'). Sophia/SophiApp/winutil/Winhance only test 'is the folder empty' or nothing; ZOICWARE rewrites ~25 shell-folder values with raw reg add and moves OneDrive contents into the profile with Move-Item -Force (zFunctions.psm1:236-300)."
+  },
+  {
+   "title": "OneDrive: cloud-only files and unsynced changes are never checked",
+   "detail": "None of the 12 projects inspects FILE_ATTRIBUTE_RECALL_* placeholders or sync status. privacy.sexy docs even state 'You won't lose data by uninstalling OneDrive ... stored in the cloud' (windows.yaml:35596-35598) which is false for files not yet uploaded."
+  },
+  {
+   "title": "OneDrive installer deleted -> no offline reinstall",
+   "detail": "Winhance deletes C:\\Windows\\System32\\OneDriveSetup.exe and SysWOW64 copy (OneDriveRemovalScript.cs:373-378); privacy.sexy's revert and Sophia's Install both start from that file. CrapFixer additionally takeowns and deletes %WinDir%\\WinSxS\\*onedrive* (plugins/Uninstall OneDrive.ps1:58-62)."
+  },
+  {
+   "title": "OneDrive removal side effects on unrelated things",
+   "detail": "winutil disables OneSyncSvc (Mail/Calendar/People sync host) as part of OneDrive removal (tweaks.json:671-673); Sophia toggles HKLM Winlogon AutoRestartShell around an Explorer kill (Sophia.psm1:3915, 3926); winutil leaves a deny ACE on %OneDrive% because it re-grants with /grant instead of /remove:d (tweaks.json:650, 664 vs 999/1032 in the same file)."
+  },
+  {
+   "title": "SophiApp port has an inverted sign-in check",
+   "detail": "OneDriveService.UserIsLogged returns !(IsNullOrWhiteSpace(personal) || IsNullOrWhiteSpace(business)), true only if both accounts have an email (src/SophiApp/Services/OneDriveService.cs:129). Sophia's original uses OR (Sophia.psm1:3878)."
+  },
+  {
+   "title": "UCPD blocks writes to some HKCU values",
+   "detail": "Sophia: 'We cannot set a value to TaskbarDa ... due to a UCPD driver tracks all executables to block the access to the registry', worked around by copying powershell.exe to powershell_temp.exe (Sophia.psm1:1935-1946). Same protected area covers taskbar/Start toggles such as TaskbarDa and ShowCopilotButton. WinModes must read back every HKCU write and report 'blocked by UCPD' instead of claiming success."
+  },
+  {
+   "title": "Policy values written in the wrong place or direction",
+   "detail": "privacy.sexy writes DisableAIDataAnalysis under ...\\WindowsCopilot (windows.yaml:2780, 2795) while Win11Debloat, WindowsMize and RemoveWindowsAI use ...\\WindowsAI. Win11Debloat's Edge ads file sets HideFirstRunExperience=0 (Disable_Edge_Ads_And_Suggestions.reg:13) whereas winutil sets 1. GenAILocalFoundationalModelSettings uses 1 = disable while sibling AI policies use 0. RemoveWindowsAI's revert writes opposite values (AllowRecallEnablement=1) instead of deleting the policy (RemoveWindowsAi.ps1:895), leaving the machine 'managed'. CrapFixer sets DisableFileSyncNGSC under Wow6432Node\\Policies (plugins/Uninstall OneDrive.ps1)."
+  },
+  {
+   "title": "Undocumented feature-override IDs drift",
+   "detail": "Start/Search WebView2 toggle: WindowsMize uses FeatureManagement\\Overrides\\8\\1694661260 (Set-StartMenuWebview2Version.ps1:34), Winhance describes feature ID 37926450 for the same idea (GamingAndPerformanceOptimizations.cs:259). winutil's 'revert start menu' uses 3036241548 (tweaks.json:87). Treat as unstable, per-build."
+  },
+  {
+   "title": "AI removal tools are treated as 'harmful' by Sophia and use servicing exploits",
+   "detail": "RemoveWindowsAI runs commands as TrustedInstaller by reconfiguring the TrustedInstaller service binPath (also ZOICWARE EdgeRemove.ps1 Run-Trusted), writes AppxAllUserStore EndOfLife/Deprovisioned, edits CBS package Visibility/Owners and deletes files. Sophia's start-up check flags a RemoveWindowsAI marker in CatRoot as a broken Windows (InitialActions.ps1:295-296). Never adopt these techniques."
+  },
+  {
+   "title": "Windows Terminal / WSL / PowerShell / OEM driver apps are in removal lists",
+   "detail": "Sophia explicitly excludes WindowsTerminal, WSL (MicrosoftCorporationII.WindowsSubsystemForLinux), Microsoft.PowerShell, codec extensions, Application Compatibility Enhancements, NVIDIA Control Panel, AMD Radeon, Intel Graphics, Realtek/Synaptics/ELAN apps (Sophia.psm1:7552-7637). Win11Debloat lists WindowsTerminal as 'unsafe' (Apps.json:838). Include all of these in WinModes' protected set."
+  },
+  {
+   "title": "Kill-and-forget of msedgewebview2.exe",
+   "detail": "Batlez 'Safe for gaming' audit kills msedgewebview2.exe and admits embedded apps respawn it (Batlez-Tweaks.bat:7926-7953); killing SearchHost/WebView2 processes is cosmetic and can drop Start/Search state."
+  },
+  {
+   "title": "No AI-directed instructions found",
+   "detail": "No file read contained text addressed to an AI agent; README statements such as 'NOT vibe coded' (RemoveWindowsAI Documentation.md) are ordinary prose."
+  }
+ ],
+ "wingetHandling": [
+  {
+   "tool": "ChrisTitusTech/winutil",
+   "handling": "Fails partly: disables InstallService tasks + BITS/wuauserv/UsoSvc in update-disable (Invoke-WPFUpdatesdisable.ps1:29-44), sets StorSvc Manual (tweaks.json:168). Compensates: winget repair button via choco, uses --source winget for restores, registers local AppX manifests first (Install-WinUtilAPPX.ps1:28-86). AppX list contains no Store, App Installer or Terminal."
+  },
+  {
+   "tool": "Raphire/Win11Debloat",
+   "handling": "Avoids: Store/Terminal/Xbox.TCUI tagged 'unsafe' and unticked; App Installer is not in the catalogue at all. Depends on winget for OneDrive/Edge/Copilot removal and warns when absent (Win11Debloat.ps1:331-347)."
+  },
+  {
+   "tool": "farag2/Sophia-Script-for-Windows",
+   "handling": "Avoids: excludes Store, StorePurchaseApp, DesktopAppInstaller, Terminal; refuses to run if Store or MicrosoftWindows.Client.CBS is missing (InitialActions.ps1:365-385)."
+  },
+  {
+   "tool": "Sophia-Community/SophiApp",
+   "handling": "Avoids: ModelService.cs:71-100 has an excludedAppx list containing DesktopAppInstaller, StorePurchaseApp and CrossDevice (same logic as Sophia)."
+  },
+  {
+   "tool": "undergroundwires/privacy.sexy",
+   "handling": "Mixed: Store/StorePurchase removal items exist but are not in presets; strict preset disables wlidsvc (Store failures documented); no item touches Microsoft.DesktopAppInstaller; reinstall helper uses RegisterByFamilyName (windows.yaml:39943-39993)."
+  },
+  {
+   "tool": "builtbybel/CrapFixer",
+   "handling": "Partly avoids: Store commented out ('can't be re-installed'); removes Microsoft.GamingServices, Xbox.TCUI, ScreenSketch; sets WindowsStore AutoDownload=2."
+  },
+  {
+   "tool": "zoicware/RemoveWindowsAI",
+   "handling": "Not winget-related but removes shell AI packages via servicing exploits; winget used only inside winutil's equivalent."
+  },
+  {
+   "tool": "memstechtips/Winhance",
+   "handling": "Avoids: App Installer HasInstabilityWarning; ships WinGetInstaller to restore winget (MSIX + dependencies); Store item CanBeReinstalled; Edge removal keeps WebView2."
+  },
+  {
+   "tool": "Sycnex/Windows10Debloater",
+   "handling": "Avoids: whitelist includes Store, StorePurchaseApp, DesktopAppInstaller, codec extensions; GUI SysPrep temporarily disables InstallService then re-enables (GUI.ps1:703-706 vs 943-946)."
+  },
+  {
+   "tool": "itsfatduck/optimizerDuck",
+   "handling": "Avoids: Store chain services Manual (never Disabled); Store/DesktopAppInstaller/Terminal in CautionApps."
+  },
+  {
+   "tool": "rayenghanmi/RyTuneX",
+   "handling": "Fails: user-toggle policies RemoveWindowsStore and DisableStoreApps with no dependency warning (Helpers/PolicyHelper.cs:2043-2064)."
+  },
+  {
+   "tool": "zoicware/ZOICWARE",
+   "handling": "Mixed: Set-StoreSettings.ps1 edits Store settings.dat only; disables InstallService scheduled tasks via update-disable list (zFunctions.psm1:8316)."
+  },
+  {
+   "tool": "Greedeks/GTweak",
+   "handling": "Fails: one toggle disables ClipSVC, InstallService, wlidsvc, StorSvc and 10 others via TrustedInstaller (ServicesTweaks.cs:157-179)."
+  },
+  {
+   "tool": "Batlez/Batlez-Tweaks",
+   "handling": "Fails: removes DesktopAppInstaller, Win32WebViewHost, CrossDevice and optionally WebView2 (Batlez-Tweaks.bat:22771-22788, 22988-23029)."
+  },
+  {
+   "tool": "agadiffe/WindowsMize",
+   "handling": "Avoids: Store chain services Manual; Store package group is opt-in and absent from the default list (debloat.ps1:74-125); disables only PushToInstall."
+  },
+  {
+   "tool": "louzkk/Ghost-Optimizer",
+   "handling": "Repairs after damage: re-registers Store, DesktopAppInstaller, StorePurchaseApp, Services.Store.Engagement (Ghost-Optimizer.bat:3724)."
+  }
+ ],
+ "notes": "Read-only study of the clones under D:\\tmp\\oss; nothing executed. Evidence is repository-relative path:line as read on disk (line numbers can drift with upstream; clones are shallow). Items flagged 'general knowledge' (cloud-only file attributes, Gaming Services role, Office AutoSave) are NOT in the clones and need verification on a test machine before WinModes relies on them. Decisions suggested for WinModes: (1) OneDrive = offer-with-safeguards with a hard stop when any User Shell Folder points into any OneDrive root, sign-in confirmation, a cloud-only count, per-user vs per-machine detection, reversible stage 1 (autostart/tasks/nav pane) before stage 2 (uninstall), and no deletion of System32\\OneDriveSetup.exe, WinSxS or non-empty folders. (2) Edge and WebView2 = policy-only and never-touch respectively; do not edit EdgeUpdate registry, services, tasks or exe; show WebView2 as a protected dependency of Start/Search, Widgets, Copilot, new Teams/Outlook and third-party apps. (3) Copilot/Recall/Widgets/Cortana/Phone Link/Teams/Office Hub = policies first, current-user AppX removal second, record PackageFamilyName+InstallLocation+Store id, restore by Add-AppxPackage -Register / -RegisterByFamilyName then winget msstore id (the sequence winutil and privacy.sexy use). Never use deprovisioning, EndOfLife/Deprovisioned keys, TrustedInstaller tricks or CBS edits. (4) Store, App Installer, the Store service chain (AppXSvc, ClipSVC, wlidsvc, InstallService, LicenseManager, camsvc), \\InstallService tasks, Windows Terminal, Defender, Firewall and Windows Update stay on the hard blocklist; WinModes services stay Manual. (5) Xbox: settings-level Game Bar neutralisation is safe; keep GamingServices, GamingApp, XboxIdentityProvider, Xbox.TCUI, XboxSpeechToTextOverlay protected. Extra top-level key 'wingetHandling' summarises how each tool treats winget and the Store chain. Not covered: Windows 10-only components (Edge Legacy, Cortana app internals) beyond what the clones show; Microsoft Learn documentation was not consulted (no web access used)."
+}

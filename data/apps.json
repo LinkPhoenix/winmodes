@@ -1,0 +1,975 @@
+[
+  {
+    "id": "bing-news",
+    "title": "Microsoft Start (News)",
+    "packages": [
+      "Microsoft.BingNews"
+    ],
+    "category": "Search and news",
+    "tier": "safe",
+    "why": "The news feed app. Nothing else depends on it.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "9WZDNCRFHVFW"
+    }
+  },
+  {
+    "id": "bing-weather",
+    "title": "MSN Weather",
+    "packages": [
+      "Microsoft.BingWeather"
+    ],
+    "category": "Search and news",
+    "tier": "safe",
+    "why": "The weather app. Nothing else depends on it.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "9WZDNCRFJ3Q2"
+    }
+  },
+  {
+    "id": "bing-finance-sports-legacy",
+    "title": "MSN Money, Sports, Food, Health, Travel and Translator",
+    "packages": [
+      "Microsoft.BingFinance",
+      "Microsoft.BingSports",
+      "Microsoft.BingFoodAndDrink",
+      "Microsoft.BingHealthAndFitness",
+      "Microsoft.BingTravel",
+      "Microsoft.BingTranslator"
+    ],
+    "category": "Search and news",
+    "tier": "safe",
+    "why": "Old MSN apps that Microsoft stopped. Usually already gone.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "microsoft-news",
+    "title": "Microsoft News",
+    "packages": [
+      "Microsoft.News"
+    ],
+    "category": "Search and news",
+    "tier": "safe",
+    "why": "The older news app. Nothing else depends on it.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "bing-search",
+    "title": "Bing Search",
+    "packages": [
+      "Microsoft.BingSearch"
+    ],
+    "category": "Search and news",
+    "tier": "consider",
+    "why": "Adds Bing web results to Start and taskbar search. The Optimize page can switch those results off without removing it.",
+    "breaksIfRemoved": "Web results disappear from Start and taskbar search.",
+    "reinstall": {
+      "store": "9NZBF4GT040C"
+    }
+  },
+  {
+    "id": "start-experiences-app",
+    "title": "Widgets feed",
+    "packages": [
+      "Microsoft.StartExperiencesApp"
+    ],
+    "category": "Search and news",
+    "tier": "consider",
+    "why": "Provides the news feed of the Widgets board.",
+    "breaksIfRemoved": "The Widgets feed stops.",
+    "reinstall": {
+      "store": "9PC1H9VN18CM"
+    }
+  },
+  {
+    "id": "widgets-platform-runtime",
+    "title": "Widgets platform",
+    "packages": [
+      "Microsoft.WidgetsPlatformRuntime"
+    ],
+    "category": "Search and news",
+    "tier": "consider",
+    "why": "The runtime of the Widgets board.",
+    "breaksIfRemoved": "Windows Widgets stops working.",
+    "reinstall": {}
+  },
+  {
+    "id": "office-hub",
+    "title": "Microsoft 365 hub",
+    "packages": [
+      "Microsoft.MicrosoftOfficeHub"
+    ],
+    "category": "Microsoft 365",
+    "tier": "safe",
+    "why": "A launcher for Microsoft 365. The Office apps you installed are separate.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "9WZDNCRD29V9"
+    }
+  },
+  {
+    "id": "onenote-uwp",
+    "title": "OneNote (Store app)",
+    "packages": [
+      "Microsoft.Office.OneNote"
+    ],
+    "category": "Microsoft 365",
+    "tier": "consider",
+    "why": "The Store version of OneNote.",
+    "breaksIfRemoved": "Notes not yet synced to your account can be lost with the app.",
+    "reinstall": {
+      "store": "XPFFZHVGQWWLHB"
+    }
+  },
+  {
+    "id": "sway",
+    "title": "Sway",
+    "packages": [
+      "Microsoft.Office.Sway"
+    ],
+    "category": "Microsoft 365",
+    "tier": "safe",
+    "why": "A web presentation app nobody depends on.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "power-bi-journal-lens",
+    "title": "Power BI, Journal and Office Lens",
+    "packages": [
+      "Microsoft.MicrosoftPowerBIForWindows",
+      "Microsoft.MicrosoftJournal",
+      "Microsoft.Office.Lens"
+    ],
+    "category": "Microsoft 365",
+    "tier": "safe",
+    "why": "Rarely used extras.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "m365-companions",
+    "title": "Microsoft 365 Companions",
+    "packages": [
+      "Microsoft.M365Companions"
+    ],
+    "category": "Microsoft 365",
+    "tier": "consider",
+    "why": "Mini apps for Microsoft 365 Business accounts.",
+    "breaksIfRemoved": "The Calendar, Files and People companions of a Microsoft 365 Business account.",
+    "reinstall": {}
+  },
+  {
+    "id": "outlook-new",
+    "title": "Outlook (new)",
+    "packages": [
+      "Microsoft.OutlookForWindows"
+    ],
+    "category": "Microsoft 365",
+    "tier": "consider",
+    "why": "The default mail app of recent Windows 11. Remove it only if you read your mail elsewhere.",
+    "breaksIfRemoved": "The default mail handler and the mail and calendar of accounts set up only here.",
+    "reinstall": {
+      "store": "9NRX63209R7B"
+    }
+  },
+  {
+    "id": "mail-calendar",
+    "title": "Mail and Calendar (classic)",
+    "packages": [
+      "microsoft.windowscommunicationsapps"
+    ],
+    "category": "Microsoft 365",
+    "tier": "consider",
+    "why": "The older mail app, no longer supported since the end of 2024.",
+    "breaksIfRemoved": "Mail, Calendar and People for accounts set up only here.",
+    "reinstall": {
+      "store": "9WZDNCRFHVQM"
+    }
+  },
+  {
+    "id": "people",
+    "title": "People",
+    "packages": [
+      "Microsoft.People"
+    ],
+    "category": "Microsoft 365",
+    "tier": "consider",
+    "why": "The contacts hub that comes with Mail and Calendar. It cannot be reinstalled from the Store.",
+    "breaksIfRemoved": "The contacts of Mail and Calendar.",
+    "reinstall": {}
+  },
+  {
+    "id": "teams",
+    "title": "Microsoft Teams",
+    "packages": [
+      "MSTeams"
+    ],
+    "category": "Communication",
+    "tier": "consider",
+    "why": "The Teams app that comes with Windows. Remove it only if you do not join meetings with it.",
+    "breaksIfRemoved": "Teams meetings and chat on this PC.",
+    "reinstall": {
+      "store": "XP8BT8DW290MPQ"
+    }
+  },
+  {
+    "id": "teams-classic-personal",
+    "title": "Microsoft Teams (old personal chat)",
+    "packages": [
+      "MicrosoftTeams"
+    ],
+    "category": "Communication",
+    "tier": "safe",
+    "why": "The old consumer chat, replaced by the new Teams.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "skype",
+    "title": "Skype (Store app)",
+    "packages": [
+      "Microsoft.SkypeApp"
+    ],
+    "category": "Communication",
+    "tier": "safe",
+    "why": "Retired by Microsoft in 2025.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "messaging-mobile-legacy",
+    "title": "Messaging, Mobile Plans, Wallet and GroupMe",
+    "packages": [
+      "Microsoft.Messaging",
+      "Microsoft.OneConnect",
+      "Microsoft.Wallet",
+      "Microsoft.GroupMe10"
+    ],
+    "category": "Communication",
+    "tier": "safe",
+    "why": "Old phone and wallet apps, mostly absent on Windows 11.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "legacy-phone-companion",
+    "title": "Old Windows Phone components",
+    "packages": [
+      "Microsoft.WindowsPhone",
+      "Microsoft.CommsPhone",
+      "Microsoft.ConnectivityStore",
+      "Microsoft.Appconnector"
+    ],
+    "category": "Communication",
+    "tier": "safe",
+    "why": "Leftovers of Windows Phone with no use today.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "phone-link",
+    "title": "Phone Link",
+    "packages": [
+      "Microsoft.YourPhone"
+    ],
+    "category": "Communication",
+    "tier": "consider",
+    "why": "Connects your Android or iPhone to the PC.",
+    "breaksIfRemoved": "Phone notifications, messages, photos and calls on the PC.",
+    "reinstall": {
+      "store": "9NMPJ99VJBWV"
+    }
+  },
+  {
+    "id": "cross-device-experience",
+    "title": "Cross Device Experience",
+    "packages": [
+      "MicrosoftWindows.CrossDevice"
+    ],
+    "category": "Communication",
+    "tier": "consider",
+    "why": "The phone integration used by Phone Link, File Explorer and Camera.",
+    "breaksIfRemoved": "Phone integration in File Explorer and Camera.",
+    "reinstall": {
+      "store": "9NTXGKQ8P7N0"
+    }
+  },
+  {
+    "id": "calling-shell-app",
+    "title": "Phone Link calling",
+    "packages": [
+      "Microsoft.Windows.CallingShellApp"
+    ],
+    "category": "Communication",
+    "tier": "consider",
+    "why": "The calling window of Phone Link.",
+    "breaksIfRemoved": "Calls from Phone Link.",
+    "reinstall": {}
+  },
+  {
+    "id": "family-safety",
+    "title": "Microsoft Family Safety",
+    "packages": [
+      "MicrosoftCorporationII.MicrosoftFamily"
+    ],
+    "category": "Communication",
+    "tier": "consider",
+    "why": "The parental control app.",
+    "breaksIfRemoved": "Screen time and content limits on child accounts.",
+    "reinstall": {
+      "store": "9PDJDJS743XF"
+    }
+  },
+  {
+    "id": "quick-assist",
+    "title": "Quick Assist",
+    "packages": [
+      "MicrosoftCorporationII.QuickAssist"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "The remote help tool that family and IT support use.",
+    "breaksIfRemoved": "Giving or receiving remote help with Quick Assist.",
+    "reinstall": {
+      "store": "9P7BP5VNWKX5"
+    }
+  },
+  {
+    "id": "support-diagnostic-tool",
+    "title": "Microsoft Support Diagnostic Tool",
+    "packages": [
+      "MicrosoftCorporationII.MicrosoftSupportDiagnosticTool"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "Used in support sessions.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "clipchamp",
+    "title": "Clipchamp",
+    "packages": [
+      "Clipchamp.Clipchamp"
+    ],
+    "category": "Media",
+    "tier": "safe",
+    "why": "The video editor that comes with Windows.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "9P1J8S7CCWWT"
+    }
+  },
+  {
+    "id": "media-player",
+    "title": "Media Player",
+    "packages": [
+      "Microsoft.ZuneMusic"
+    ],
+    "category": "Media",
+    "tier": "consider",
+    "why": "The default player for local music and video.",
+    "breaksIfRemoved": "Local audio and video have no default player until you pick another one.",
+    "reinstall": {
+      "store": "9WZDNCRFJ3PT"
+    }
+  },
+  {
+    "id": "movies-tv",
+    "title": "Movies & TV",
+    "packages": [
+      "Microsoft.ZuneVideo"
+    ],
+    "category": "Media",
+    "tier": "safe",
+    "why": "The older video player and store.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "9WZDNCRFJ3P2"
+    }
+  },
+  {
+    "id": "photos",
+    "title": "Photos",
+    "packages": [
+      "Microsoft.Windows.Photos"
+    ],
+    "category": "Media",
+    "tier": "consider",
+    "why": "The default picture viewer. The image codecs are kept in any case.",
+    "breaksIfRemoved": "Pictures open in nothing until you pick another viewer.",
+    "reinstall": {
+      "store": "9WZDNCRFJBH4"
+    }
+  },
+  {
+    "id": "photos-media-engine",
+    "title": "Photos media engine",
+    "packages": [
+      "Microsoft.Photos.MediaEngineDLC"
+    ],
+    "category": "Media",
+    "tier": "consider",
+    "why": "A component of Photos and its video editor. Remove it only with Photos.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "camera",
+    "title": "Camera",
+    "packages": [
+      "Microsoft.WindowsCamera"
+    ],
+    "category": "Media",
+    "tier": "consider",
+    "why": "The webcam app. Other apps use the camera without it.",
+    "breaksIfRemoved": "The Camera app.",
+    "reinstall": {
+      "store": "9WZDNCRFJBBG"
+    }
+  },
+  {
+    "id": "sound-recorder",
+    "title": "Sound Recorder",
+    "packages": [
+      "Microsoft.WindowsSoundRecorder"
+    ],
+    "category": "Media",
+    "tier": "consider",
+    "why": "The voice recorder.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "9WZDNCRFHWKN"
+    }
+  },
+  {
+    "id": "alarms-clock",
+    "title": "Clock",
+    "packages": [
+      "Microsoft.WindowsAlarms"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "Alarms, timer, world clock and focus sessions.",
+    "breaksIfRemoved": "The alarms, timers and world clock.",
+    "reinstall": {
+      "store": "9WZDNCRFJ3PR"
+    }
+  },
+  {
+    "id": "dolby-audio",
+    "title": "Dolby Access",
+    "packages": [
+      "DolbyLaboratories.DolbyAccess",
+      "DolbyLaboratories.DolbyDigitalPlusDecoderOEM"
+    ],
+    "category": "Media",
+    "tier": "consider",
+    "why": "Audio enhancement licensed to some hardware. The sources disagree on whether it is safe.",
+    "breaksIfRemoved": "Dolby Atmos or Digital Plus sound on PCs licensed for it.",
+    "reinstall": {}
+  },
+  {
+    "id": "notepad",
+    "title": "Notepad",
+    "packages": [
+      "Microsoft.WindowsNotepad"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "The default text editor of Windows 11.",
+    "breaksIfRemoved": "The default editor for text files.",
+    "reinstall": {
+      "store": "9MSMLRH6LZF3"
+    }
+  },
+  {
+    "id": "paint",
+    "title": "Paint",
+    "packages": [
+      "Microsoft.Paint"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "The classic picture editor. Not the same as Paint 3D.",
+    "breaksIfRemoved": "The quick picture editor.",
+    "reinstall": {
+      "store": "9PCFS5B6T72H"
+    }
+  },
+  {
+    "id": "paint-3d",
+    "title": "Paint 3D",
+    "packages": [
+      "Microsoft.MSPaint"
+    ],
+    "category": "Utilities",
+    "tier": "safe",
+    "why": "The discontinued 3D version of Paint. It cannot be reinstalled from the Store.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "snipping-tool",
+    "title": "Snipping Tool",
+    "packages": [
+      "Microsoft.ScreenSketch"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "Screenshots and screen recording (Win+Shift+S).",
+    "breaksIfRemoved": "Screenshots, annotations and screen recording.",
+    "reinstall": {
+      "store": "9MZ95KL8MR0L"
+    }
+  },
+  {
+    "id": "calculator",
+    "title": "Calculator",
+    "packages": [
+      "Microsoft.WindowsCalculator"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "The default calculator.",
+    "breaksIfRemoved": "The calculator and the Calculator key.",
+    "reinstall": {
+      "store": "9WZDNCRFHVN5"
+    }
+  },
+  {
+    "id": "sticky-notes",
+    "title": "Sticky Notes",
+    "packages": [
+      "Microsoft.MicrosoftStickyNotes"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "Your sticky notes.",
+    "breaksIfRemoved": "Notes not yet synced to your account can be lost with the app.",
+    "reinstall": {
+      "store": "9NBLGGH4QGHW"
+    }
+  },
+  {
+    "id": "todo",
+    "title": "Microsoft To Do",
+    "packages": [
+      "Microsoft.Todos",
+      "Microsoft.Office.Todo.List"
+    ],
+    "category": "Utilities",
+    "tier": "safe",
+    "why": "A task list whose data lives in your account.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "9NBLGGH5R558"
+    }
+  },
+  {
+    "id": "whiteboard",
+    "title": "Whiteboard",
+    "packages": [
+      "Microsoft.Whiteboard"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "A collaboration board.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "remote-desktop-store",
+    "title": "Remote Desktop (Store app)",
+    "packages": [
+      "Microsoft.RemoteDesktop"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "The Store remote desktop client. The built-in mstsc is separate.",
+    "breaksIfRemoved": "Connections saved in the Store client.",
+    "reinstall": {}
+  },
+  {
+    "id": "power-automate",
+    "title": "Power Automate",
+    "packages": [
+      "Microsoft.PowerAutomateDesktop"
+    ],
+    "category": "Developer",
+    "tier": "safe",
+    "why": "A desktop automation tool, rarely used.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "9NFTCH6J7FHV"
+    }
+  },
+  {
+    "id": "dev-home",
+    "title": "Dev Home",
+    "packages": [
+      "Microsoft.Windows.DevHome"
+    ],
+    "category": "Developer",
+    "tier": "consider",
+    "why": "Developer settings: sudo, long paths, Dev Drive, Git status in Explorer. Developers may want it.",
+    "breaksIfRemoved": "The Dev Home and Advanced Settings toggles.",
+    "reinstall": {
+      "store": "9N8MHTPHNGVV"
+    }
+  },
+  {
+    "id": "feedback-hub",
+    "title": "Feedback Hub",
+    "packages": [
+      "Microsoft.WindowsFeedbackHub"
+    ],
+    "category": "Utilities",
+    "tier": "safe",
+    "why": "Sends feedback to Microsoft.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "9NBLGGH4R32N"
+    }
+  },
+  {
+    "id": "get-help",
+    "title": "Get Help",
+    "packages": [
+      "Microsoft.GetHelp"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "Some Windows troubleshooters and support links open it.",
+    "breaksIfRemoved": "The network troubleshooter of the tray icon and the support links of the maker.",
+    "reinstall": {
+      "store": "9PKDZBMV1H3T"
+    }
+  },
+  {
+    "id": "tips-get-started",
+    "title": "Tips",
+    "packages": [
+      "Microsoft.Getstarted",
+      "Microsoft.WindowsTips"
+    ],
+    "category": "Utilities",
+    "tier": "safe",
+    "why": "The tips and get-started app. It cannot be reinstalled from the Store.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "maps",
+    "title": "Windows Maps",
+    "packages": [
+      "Microsoft.WindowsMaps"
+    ],
+    "category": "Utilities",
+    "tier": "safe",
+    "why": "The maps app. Microsoft removed it from the Store, so it cannot be reinstalled from there.",
+    "breaksIfRemoved": "Offline maps you downloaded.",
+    "reinstall": {}
+  },
+  {
+    "id": "pc-manager-network-speed",
+    "title": "PC Manager and Network Speed Test",
+    "packages": [
+      "Microsoft.PCManager",
+      "Microsoft.NetworkSpeedTest"
+    ],
+    "category": "Utilities",
+    "tier": "safe",
+    "why": "Optional utilities from Microsoft.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "3d-mixed-reality-legacy",
+    "title": "3D Viewer, 3D Builder, Print 3D and Mixed Reality Portal",
+    "packages": [
+      "Microsoft.Microsoft3DViewer",
+      "Microsoft.3DBuilder",
+      "Microsoft.Print3D",
+      "Microsoft.MixedReality.Portal"
+    ],
+    "category": "Utilities",
+    "tier": "safe",
+    "why": "Discontinued 3D and VR apps. The Mixed Reality Portal is only needed with a headset.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "cortana",
+    "title": "Cortana",
+    "packages": [
+      "Microsoft.549981C3F5F10"
+    ],
+    "category": "Utilities",
+    "tier": "safe",
+    "why": "The discontinued assistant.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "minecraft-uwp",
+    "title": "Minecraft for Windows (old edition)",
+    "packages": [
+      "Microsoft.MinecraftUWP"
+    ],
+    "category": "Other",
+    "tier": "consider",
+    "why": "A game you may own.",
+    "breaksIfRemoved": "The game and its local worlds.",
+    "reinstall": {}
+  },
+  {
+    "id": "solitaire",
+    "title": "Microsoft Solitaire Collection",
+    "packages": [
+      "Microsoft.MicrosoftSolitaireCollection"
+    ],
+    "category": "Games",
+    "tier": "safe",
+    "why": "Card games with ads.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "9WZDNCRFHWD2"
+    }
+  },
+  {
+    "id": "xbox-app",
+    "title": "Xbox app",
+    "packages": [
+      "Microsoft.GamingApp"
+    ],
+    "category": "Games",
+    "tier": "consider",
+    "why": "Needed to install and launch Game Pass PC games.",
+    "breaksIfRemoved": "Installing or signing in to Game Pass PC games.",
+    "reinstall": {
+      "store": "9MV0B5HZVK9Z"
+    }
+  },
+  {
+    "id": "xbox-game-bar",
+    "title": "Xbox Game Bar",
+    "packages": [
+      "Microsoft.XboxGamingOverlay",
+      "Microsoft.XboxGameOverlay"
+    ],
+    "category": "Games",
+    "tier": "consider",
+    "why": "The Win+G overlay, game capture and performance widgets.",
+    "breaksIfRemoved": "The Win+G overlay and game capture. Links to the Game Bar open a Store page.",
+    "reinstall": {}
+  },
+  {
+    "id": "xbox-console-companion",
+    "title": "Xbox Console Companion (old)",
+    "packages": [
+      "Microsoft.XboxApp"
+    ],
+    "category": "Games",
+    "tier": "safe",
+    "why": "The discontinued predecessor of the Xbox app.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "xbox-speech-to-text",
+    "title": "Xbox speech to text",
+    "packages": [
+      "Microsoft.XboxSpeechToTextOverlay"
+    ],
+    "category": "Games",
+    "tier": "consider",
+    "why": "An accessibility overlay used by some games.",
+    "breaksIfRemoved": "Speech transcription in the party chat of some games.",
+    "reinstall": {}
+  },
+  {
+    "id": "gaming-services",
+    "title": "Gaming Services",
+    "packages": [
+      "Microsoft.GamingServices"
+    ],
+    "category": "Games",
+    "tier": "consider",
+    "why": "The backbone of Game Pass and Store game installs.",
+    "breaksIfRemoved": "Installing and updating Game Pass and Store PC games.",
+    "reinstall": {}
+  },
+  {
+    "id": "sponsored-casual-games",
+    "title": "Promoted casual games",
+    "packages": [
+      "king.com.CandyCrushSaga",
+      "king.com.CandyCrushSodaSaga",
+      "king.com.BubbleWitch3Saga",
+      "GAMELOFTSA.Asphalt8Airborne",
+      "Playtika.CaesarsSlotsFreeCasino",
+      "NORDCURRENT.COOKINGFEVER",
+      "A278AB0D.DisneyMagicKingdoms",
+      "D52A8D61.FarmVille2CountryEscape",
+      "A278AB0D.MarchofEmpires",
+      "flaregamesGmbH.RoyalRevolt"
+    ],
+    "category": "Games",
+    "tier": "safe",
+    "why": "Games that Windows or the maker of the PC installed as advertising (Candy Crush and the like).",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "sponsored-streaming-social",
+    "title": "Promoted streaming, shopping and social apps",
+    "packages": [
+      "4DF9E0F8.Netflix",
+      "Disney.37853FC22B2CE",
+      "AmazonVideo.PrimeVideo",
+      "Amazon.com.Amazon",
+      "HULULLC.HULUPLUS",
+      "SlingTVLLC.SlingTV",
+      "FACEBOOK.FACEBOOK",
+      "Facebook.Instagram",
+      "BytedancePte.Ltd.TikTok",
+      "7EE7776C.LinkedInforWindows",
+      "9E2F88E3.Twitter",
+      "Flipboard.Flipboard",
+      "PandoraMediaInc.29680B314EFC2",
+      "ClearChannelRadioDigital.iHeartRadio",
+      "TuneIn.TuneInRadio",
+      "D5EA27B7.Duolingo-LearnLanguagesforFree",
+      "ShazamEntertainmentLtd.Shazam",
+      "CAF9E577.Plex"
+    ],
+    "category": "Other",
+    "tier": "safe",
+    "why": "Apps such as Netflix, Prime Video, Instagram or TikTok that were installed as advertising.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "sponsored-creative-and-utility",
+    "title": "Promoted editors and utilities",
+    "packages": [
+      "AdobeSystemsIncorporated.AdobePhotoshopExpress",
+      "89006A2E.AutodeskSketchBook",
+      "2FE3CB00.PicsArt-PhotoStudio",
+      "613EBCEA.PolarrPhotoEditorAcademicEdition",
+      "ThumbmunkeysLtd.PhototasticCollage",
+      "Drawboard.DrawboardPDF",
+      "WinZipComputing.WinZipUniversal",
+      "Sidia.LiveWallpaper",
+      "ActiproSoftwareLLC.562882FEEB491",
+      "DB6EA5DB.CyberLinkMediaSuiteEssentials",
+      "46928bounde.EclipseManager",
+      "6Wunderkinder.Wunderlist",
+      "KeeperSecurityInc.Keeper",
+      "Fitbit.FitbitCoach"
+    ],
+    "category": "Other",
+    "tier": "safe",
+    "why": "Third-party editors, PDF and zip tools installed as advertising.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "oem-hp",
+    "title": "HP apps",
+    "packages": [
+      "AD2F1837.*"
+    ],
+    "category": "Other",
+    "tier": "consider",
+    "why": "Apps of the maker. Some are hardware tools (power, diagnostics, privacy controls). Windows Update can reinstall them.",
+    "breaksIfRemoved": "The maker power, diagnostics and privacy controls of an HP laptop.",
+    "reinstall": {}
+  },
+  {
+    "id": "oem-dell-lenovo-lg",
+    "title": "Dell, Lenovo and LG apps",
+    "packages": [
+      "DellInc.*",
+      "E046963F.LenovoCompanion",
+      "LenovoCompanyLimited.LenovoVantageService",
+      "LGElectronics.LGMonitorApp"
+    ],
+    "category": "Other",
+    "tier": "consider",
+    "why": "Apps of the maker that manage drivers, battery modes and warranty.",
+    "breaksIfRemoved": "Driver updates, battery modes and support tools of the maker.",
+    "reinstall": {}
+  },
+  {
+    "id": "copilot-app",
+    "title": "Copilot",
+    "packages": [
+      "Microsoft.Copilot",
+      "Microsoft.Windows.Ai.Copilot.Provider"
+    ],
+    "category": "AI",
+    "tier": "safe",
+    "why": "The Copilot app. It can be reinstalled from the Store.",
+    "breaksIfRemoved": null,
+    "reinstall": {
+      "store": "XP9CXNGPPJ97XX"
+    }
+  },
+  {
+    "id": "windows-ai-hub",
+    "title": "Copilot+ AI hub",
+    "packages": [
+      "Microsoft.Windows.AIHub"
+    ],
+    "category": "AI",
+    "tier": "safe",
+    "why": "The hub of the Copilot+ PC features.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "windows-ai-workloads",
+    "title": "Windows AI models",
+    "packages": [
+      "WindowsWorkload.*",
+      "MicrosoftCorporationII.WinML.Qualcomm*"
+    ],
+    "category": "AI",
+    "tier": "consider",
+    "why": "On-device models used by Recall, Click to Do, camera effects and text recognition on Copilot+ PCs.",
+    "breaksIfRemoved": "Camera effects, text recognition and image search on a Copilot+ PC.",
+    "reinstall": {}
+  },
+  {
+    "id": "office-ai-helpers",
+    "title": "Microsoft 365 AI helpers",
+    "packages": [
+      "Microsoft.Office.ActionsServer",
+      "aimgr",
+      "Microsoft.WritingAssistant"
+    ],
+    "category": "AI",
+    "tier": "consider",
+    "why": "Background parts of the AI actions of Microsoft 365.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "ink-handwriting",
+    "title": "Handwriting recognition",
+    "packages": [
+      "Microsoft.Ink.Handwriting*"
+    ],
+    "category": "AI",
+    "tier": "consider",
+    "why": "The recognizers behind pen and touch handwriting.",
+    "breaksIfRemoved": "Converting pen and touch handwriting to text.",
+    "reinstall": {}
+  }
+]

@@ -1,0 +1,119 @@
+<Page x:Class="WinModes.App.Pages.DebloatPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:l="clr-namespace:WinModes.App.Localization"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="{l:T 'Debloat'}"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <StackPanel Margin="36,24,36,36" MaxWidth="1100">
+        <TextBlock Text="{l:T 'Debloat'}" FontSize="28" FontWeight="SemiBold" />
+        <TextBlock Text="{l:T 'Remove the apps Windows installed for you. They are removed for your account only, WinModes keeps the list and can bring them back. The Store, winget, Edge, WebView2 and the system apps are never offered.'}"
+                   Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,16" TextWrapping="Wrap" />
+
+        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="Headline" FontSize="20" FontWeight="SemiBold" Text="{l:T 'Reading the apps of this PC…'}" />
+                    <TextBlock x:Name="SubHeadline" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:Button x:Name="SelectSafe" Content="{l:T 'Select the safe ones'}" Icon="{ui:SymbolIcon CheckboxChecked24}" Margin="0,0,8,0"
+                               Click="OnSelectSafe" IsEnabled="False" />
+                    <ui:Button x:Name="RemoveButton" Content="{l:T 'Remove selected'}" Icon="{ui:SymbolIcon Delete24}" Appearance="Primary"
+                               Click="OnRemoveClick" IsEnabled="False" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border x:Name="OneDriveCard" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12" Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                    <TextBlock Text="OneDrive" FontWeight="SemiBold" FontSize="16" />
+                    <TextBlock x:Name="OneDriveText" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:Button x:Name="OneDriveRestore" Content="{l:T 'Install OneDrive again'}" Icon="{ui:SymbolIcon ArrowUndo24}" Click="OnOneDriveRestore" Visibility="Collapsed" />
+                    <ui:Button x:Name="OneDriveRemove" Content="{l:T 'Uninstall OneDrive'}" Icon="{ui:SymbolIcon Delete24}" Click="OnOneDriveRemove" Visibility="Collapsed" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <ui:TextBox x:Name="SearchBox" PlaceholderText="{l:T 'Search apps'}" Icon="{ui:SymbolIcon Search24}" Margin="0,0,0,12"
+                    TextChanged="OnFilterChanged" AutomationProperties.Name="{l:T 'Search apps'}" />
+
+        <Border x:Name="ResultCard" Style="{StaticResource CardBorderStyle}" Padding="16,12" Margin="0,0,0,12" Visibility="Collapsed">
+            <TextBlock x:Name="ResultText" TextWrapping="Wrap" />
+        </Border>
+
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <StackPanel>
+                <TextBlock x:Name="EmptyText" Margin="20,16" Style="{StaticResource SecondaryTextStyle}" Visibility="Collapsed"
+                           Text="{l:T 'No app of the list is installed for your account.'}" />
+                <ItemsControl x:Name="Rows">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" VerticalAlignment="Top" Margin="0,2,12,0"
+                                              Checked="OnSelectionChanged" Unchecked="OnSelectionChanged" AutomationProperties.Name="{Binding Title}" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Why}" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}" />
+                                        <TextBlock Text="{Binding Breaks}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" Visibility="{Binding BreaksVisibility}" />
+                                    </StackPanel>
+                                    <Border Grid.Column="2" Style="{StaticResource ChipStyle}" VerticalAlignment="Top" Background="{Binding TierTint}">
+                                        <TextBlock Text="{Binding TierText}" FontSize="12" FontWeight="SemiBold" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <TextBlock x:Name="RemovedTitle" Text="{l:T 'REMOVED BY WINMODES'}" Style="{StaticResource CardCaptionStyle}" Margin="4,24,0,8" Visibility="Collapsed" />
+        <Border x:Name="RemovedCard" Style="{StaticResource CardBorderStyle}" Padding="0" Visibility="Collapsed">
+            <ItemsControl x:Name="Removed">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding Detail}" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <ui:Button Content="{l:T 'Open in the Store'}" Icon="{ui:SymbolIcon Open24}" Margin="0,0,8,0" Click="OnOpenStore"
+                                               Visibility="{Binding StoreVisibility}" />
+                                    <ui:Button Content="{l:T 'Restore'}" Icon="{ui:SymbolIcon ArrowUndo24}" Click="OnRestoreClick" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+
+        <TextBlock Margin="4,16,0,0" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                   Text="{l:T 'A removal is for your account only: the files stay, so Restore brings an app back at once. After a major Windows update some of these apps can come back by themselves.'}" />
+    </StackPanel>
+</Page>
