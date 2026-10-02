@@ -63,6 +63,9 @@ internal sealed record AppSettings
     /// <summary>Keep daily totals of what each AI tool used per project. Off by default.</summary>
     public bool RecordUsageHistory { get; init; }
 
+    /// <summary>Count the tokens Claude Code and Codex used, from the logs they keep on this PC. Off by default: it opens those logs.</summary>
+    public bool ReadTokenLogs { get; init; }
+
     /// <summary>Last position of the desktop widget; null until the user moves it.</summary>
     public double? WidgetLeft { get; init; }
 

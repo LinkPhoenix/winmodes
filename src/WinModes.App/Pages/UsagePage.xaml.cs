@@ -24,6 +24,7 @@ public partial class UsagePage : Page
         Period.ItemsSource = Periods;
         Period.SelectedIndex = 1;
         Enabled.IsChecked = AppSettings.Load().RecordUsageHistory;
+        TokensEnabled.IsChecked = AppSettings.Load().ReadTokenLogs;
         _loaded = true;
 
         _timer.Tick += async (_, _) => await RefreshAsync();
@@ -38,6 +39,7 @@ public partial class UsagePage : Page
     private async Task RefreshAsync()
     {
         var days = (Period.SelectedItem as PeriodChoice)?.Days ?? 7;
+        await ShowTokensAsync(days);
         var summaries = await Task.Run(() => AppServices.Usage.Summarize(DateOnly.FromDateTime(DateTime.Now), days));
         var culture = CultureInfo.CurrentCulture;
         var largest = summaries.Count > 0 ? Math.Max(summaries[0].GbHours, double.Epsilon) : 1;
@@ -61,6 +63,52 @@ public partial class UsagePage : Page
         Summary.Text = summaries.Count == 0
             ? Loc.T("How much memory your AI tools used, per project.")
             : Loc.F("{0} project(s), ranked by memory held over time.", summaries.Count) + " " + Loc.T(recording ? "Recording is on." : "Recording is off.");
+    }
+
+    private static readonly TimeSpan TokenScanEvery = TimeSpan.FromSeconds(30);
+
+    /// <summary>The token cards for the chosen period; a scan of the logs is started in the background when the figures are getting old.</summary>
+    private async Task ShowTokensAsync(int days)
+    {
+        if (TokensEnabled.IsChecked != true)
+        {
+            TokenHost.Content = null;
+            TokenStatus.Text = "";
+            TokenEmpty.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        if (!TokenStats.IsScanning && (TokenStats.UpdatedAt is not { } updated || DateTimeOffset.Now - updated > TokenScanEvery))
+        {
+            _ = TokenStats.RefreshAsync();
+        }
+
+        var summaries = await Task.Run(() => TokenStats.Summarize(days));
+        TokenHost.Content = summaries.Count > 0 ? Controls.TokenCards.Build(summaries) : null;
+        var scanning = TokenStats.Progress;
+        var updatedAt = TokenStats.UpdatedAt?.ToString("t", CultureInfo.CurrentCulture) ?? "";
+        TokenEmpty.Visibility = summaries.Count == 0 && !TokenStats.IsScanning ? Visibility.Visible : Visibility.Collapsed;
+        TokenStatus.Text = TokenStats.IsScanning
+            ? scanning is { FilesTotal: > 0 } progress ? Loc.F("Reading the logs… {0} of {1} files", progress.FilesDone, progress.FilesTotal) : Loc.T("Reading the logs…")
+            : updatedAt.Length > 0 ? Loc.F("Updated {0}", updatedAt) : "";
+    }
+
+    private async void OnTokensChanged(object sender, RoutedEventArgs e)
+    {
+        if (!_loaded)
+        {
+            return;
+        }
+
+        var on = TokensEnabled.IsChecked == true;
+        (AppSettings.Load() with { ReadTokenLogs = on }).Save();
+        if (!on)
+        {
+            // Turned off: the figures kept for it go too.
+            TokenStats.Clear();
+        }
+
+        await RefreshAsync();
     }
 
     private static string FormatDuration(TimeSpan duration) =>

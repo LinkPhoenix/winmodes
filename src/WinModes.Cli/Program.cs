@@ -1,6 +1,8 @@
 using WinModes.Core.Planning;
 using WinModes.Core.Profiles;
 using WinModes.Core.Protection;
+using WinModes.Core.Usage;
+using WinModes.Core.Usage.Tokens;
 
 const int ExitOk = 0;
 const int ExitUsage = 2;
@@ -38,6 +40,10 @@ try
 
         case "plan" when args.Length >= 2:
             PrintPlan(new ModePlanner(new WindowsSystemProbe(), policy).Plan(store.Load(args[1])));
+            return ExitOk;
+
+        case "tokens":
+            PrintTokens(args.Length >= 2 && int.TryParse(args[1], out var days) ? Math.Clamp(days, 1, TokenIndex.RetainDays - 1) : 7);
             return ExitOk;
 
         default:
@@ -83,6 +89,29 @@ static void PrintPlan(ModePlan plan)
     Console.WriteLine($"{plan.Changes.Count} change(s), {plan.Skipped.Count} already in the target state or not applicable.");
 }
 
+static void PrintTokens(int days)
+{
+    var started = DateTime.Now;
+    var index = new TokenIndex();
+    var files = index.Update(TokenIndex.DefaultClaudeFolder, Subscriptions.DefaultCodexHome, DateTimeOffset.Now);
+    Console.WriteLine($"Tokens over the last {days} day(s), read from {files} log file(s) in {(DateTime.Now - started).TotalSeconds:0.0} s (nothing is saved):");
+    foreach (var summary in index.Summarize(DateOnly.FromDateTime(DateTime.Now), days))
+    {
+        var total = summary.Total;
+        Console.WriteLine();
+        Console.WriteLine($"{summary.Tool}: {total.Total:N0} tokens (input {total.Input:N0}, output {total.Output:N0}, cache read {total.CacheRead:N0}, cache write {total.CacheWrite:N0})");
+        foreach (var model in summary.Models.Take(5))
+        {
+            Console.WriteLine($"  model   {model.Name,-34} {model.Counts.Total,16:N0}");
+        }
+
+        foreach (var project in summary.Projects.Take(5))
+        {
+            Console.WriteLine($"  project {project.Name,-34} {project.Counts.Total,16:N0}");
+        }
+    }
+}
+
 static string? GetOption(string[] args, string name)
 {
     var index = Array.IndexOf(args, name);
@@ -98,6 +127,7 @@ static void PrintUsage()
           winmodes modes                 List available modes
           winmodes validate              Check every profile against data/protected.json
           winmodes plan <mode>           Show what switching to <mode> would change
+          winmodes tokens [days]         Tokens used by Claude Code and Codex, read from their logs (default 7 days)
         Options:
           --root <path>                  Repository root (default: search upward from the current directory)
         """);

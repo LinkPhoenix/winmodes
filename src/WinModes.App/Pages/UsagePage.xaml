@@ -13,14 +13,34 @@
             </Grid.ColumnDefinitions>
             <StackPanel>
                 <TextBlock Text="{l:T 'Usage'}" FontSize="28" FontWeight="SemiBold" />
-                <TextBlock x:Name="Summary" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0"
-                           Text="{l:T 'How much memory your AI tools used, per project.'}" />
+                <TextBlock Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0"
+                           Text="{l:T 'What your AI tools used: tokens, and the memory they held per project.'}" />
             </StackPanel>
             <ComboBox x:Name="Period" Grid.Column="1" MinWidth="150" VerticalAlignment="Top" DisplayMemberPath="Label"
                       SelectionChanged="OnPeriodChanged" AutomationProperties.Name="{l:T 'Period'}" />
         </Grid>
 
-        <Border Style="{StaticResource CardBorderStyle}" Margin="0,20,0,12">
+        <TextBlock Text="{l:T 'TOKENS'}" Style="{StaticResource CardCaptionStyle}" Margin="4,22,0,8" />
+        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+            <Grid>
+                <StackPanel Margin="0,0,80,0">
+                    <TextBlock Text="{l:T 'Count the tokens used'}" FontWeight="SemiBold" />
+                    <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                               Text="{l:T 'Off by default. Reads the usage figures that Claude Code and Codex write in their logs on this PC: the number of tokens, the model, the date and the name of the project folder. The text of your conversations is never kept or shown, and nothing leaves this PC.'}" />
+                    <TextBlock x:Name="TokenStatus" FontSize="12" Margin="0,6,0,0" Style="{StaticResource SecondaryTextStyle}" />
+                </StackPanel>
+                <ui:ToggleSwitch x:Name="TokensEnabled" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                 Checked="OnTokensChanged" Unchecked="OnTokensChanged" AutomationProperties.Name="{l:T 'Count the tokens used'}" />
+            </Grid>
+        </Border>
+        <ContentControl x:Name="TokenHost" Margin="0,0,0,4" />
+        <TextBlock x:Name="TokenEmpty" Visibility="Collapsed" Style="{StaticResource SecondaryTextStyle}" Margin="4,0,0,12"
+                   Text="{l:T 'No tokens found in the logs for this period.'}" />
+
+        <TextBlock Text="{l:T 'MEMORY'}" Style="{StaticResource CardCaptionStyle}" Margin="4,14,0,8" />
+        <TextBlock x:Name="Summary" Style="{StaticResource SecondaryTextStyle}" Margin="4,0,0,10"
+                   Text="{l:T 'How much memory your AI tools used, per project.'}" />
+        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
             <Grid>
                 <StackPanel Margin="0,0,220,0">
                     <TextBlock Text="{l:T 'Record usage history'}" FontWeight="SemiBold" />
