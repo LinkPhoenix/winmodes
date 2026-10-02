@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Windows.Automation;
 using Microsoft.Win32;
+using WinModes.Core;
 
 namespace WinModes.App.Services;
 
@@ -25,13 +26,15 @@ internal static class TaskbarDock
     private const string TrayClass = "TrayNotifyWnd";
     private const string SystemTrayClassPrefix = "SystemTray.";
     private const int OwnerIndex = -8;
+    private const uint MonitorDefaultToNearest = 2;
     private const uint NoSize = 0x0001;
     private const uint NoZOrder = 0x0004;
     private const uint NoActivate = 0x0010;
     private static readonly IntPtr Topmost = new(-1);
 
     /// <summary>
-    /// The primary taskbar when it lies along the top or bottom edge; null otherwise (not supported yet). Takes some tens of
+    /// The primary taskbar when it lies along the top or bottom edge (Windows 11 offers no other place) and is in sight; null
+    /// otherwise, in particular while an auto-hide taskbar is slid away. Takes some tens of
     /// milliseconds: call it from a worker thread. While the Start menu or a flyout is open, UI Automation sees no button at
     /// all: the icons did not go anywhere, so the last known place of the same taskbar (<paramref name="previous"/>) is kept,
     /// and null is returned only when there is nothing to keep.
@@ -40,6 +43,11 @@ internal static class TaskbarDock
     {
         var taskbar = FindWindow(TaskbarClass, null);
         if (taskbar == IntPtr.Zero || !GetWindowRect(taskbar, out var bar) || bar.Right - bar.Left <= bar.Bottom - bar.Top)
+        {
+            return null;
+        }
+
+        if (IsSlidOut(taskbar, bar))
         {
             return null;
         }
@@ -70,6 +78,14 @@ internal static class TaskbarDock
 
         var alignment = Registry.GetValue(@"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarAl", 1) is int value ? value : 1;
         return new TaskbarSignature(alignment, bar.Left, bar.Top, bar.Right, bar.Bottom);
+    }
+
+    /// <summary>An auto-hide taskbar that is out of sight: the widget must not stay behind over the desktop.</summary>
+    private static bool IsSlidOut(IntPtr taskbar, NativeRect bar)
+    {
+        var info = new MonitorInfo { Size = Marshal.SizeOf<MonitorInfo>() };
+        return GetMonitorInfo(MonitorFromWindow(taskbar, MonitorDefaultToNearest), ref info)
+            && TaskbarVisibility.IsSlidOut(bar.Top, bar.Bottom, info.Monitor.Top, info.Monitor.Bottom);
     }
 
     /// <summary>Calls <paramref name="changed"/> (from another thread) when icons are added to or removed from the taskbar.</summary>
@@ -150,6 +166,24 @@ internal static class TaskbarDock
         public int Right;
         public int Bottom;
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MonitorInfo
+    {
+        public int Size;
+        public NativeRect Monitor;
+        public NativeRect Work;
+        public uint Flags;
+    }
+
+    [DllImport("user32.dll")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern IntPtr MonitorFromWindow(IntPtr window, uint flags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetMonitorInfoW")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
