@@ -42,6 +42,15 @@ public sealed class ModePlanner(ISystemProbe probe, ProtectionPolicy policy, ITw
             changes.Add(new PlannedChange(ChangeKind.SetPowerPlan, Loc.T("power plan"), Loc.T("current"), profile.Power.Plan, Loc.T("Mode power plan")));
         }
 
+        foreach (var value in profile.Power.Values)
+        {
+            if (PowerCatalog.Find(value.Setting) is { } info)
+            {
+                var target = string.Join(" / ", new[] { value.Ac, value.Dc }.OfType<int>().Select(number => info.Seconds ? PowerCatalog.DescribeSeconds(number) : number.ToString(System.Globalization.CultureInfo.CurrentCulture)));
+                changes.Add(new PlannedChange(ChangeKind.SetPowerPlan, Loc.T(info.Title), Loc.T("current"), target, Loc.T("On a copy of the power plan")));
+            }
+        }
+
         return new ModePlan(profile.Mode, changes, skipped);
     }
 

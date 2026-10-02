@@ -122,6 +122,19 @@ public partial class App : Application, IDisposable
 
         _ = CheckForUpdatesAsync();
         WarnAboutBrokenStartup();
+        // A copy of a power plan left by a mode that never ended cleanly (a crash, a power cut) is removed once the PC has settled.
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(40));
+            try
+            {
+                await Services.ModeSwitcher.RemoveOrphanPowerPlansAsync();
+            }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or IOException)
+            {
+                // The plan list could not be read: try again at the next start.
+            }
+        });
 
         var autoMode = Services.AppSettings.Load().AutoActivateMode;
         if (autoMode is null || Services.ModeSwitcher.ActiveMode is not null)

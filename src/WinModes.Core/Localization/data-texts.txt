@@ -21,3 +21,10 @@ Web results in Start search, Widgets, Recall and Windows Copilot.
 Game Mode, background recording and pointer behaviour.
 What keeps running or loading when you are not using it.
 Small conveniences for File Explorer, the taskbar and development.
+Turn the display off after
+Put the PC to sleep after
+Hibernate after
+Turn the hard disk off after
+Highest processor speed (%)
+Lowest processor speed (%)
+USB selective suspend (1 on, 0 off)

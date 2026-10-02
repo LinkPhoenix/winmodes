@@ -1,6 +1,7 @@
 using System.IO.Enumeration;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using WinModes.Core.Planning;
 using WinModes.Core.Profiles;
 
 namespace WinModes.Core.Protection;
@@ -99,6 +100,8 @@ public sealed partial class ProtectionPolicy
         violations.AddRange(profile.Apps.Close
             .Where(app => IsProtectedApp(app.Id) || IsProtectedProcess(app.Process) || profile.Apps.KeepOpen.Contains(app.Id, StringComparer.OrdinalIgnoreCase))
             .Select(app => $"App '{app.Id}' is protected and cannot be closed."));
+
+        violations.AddRange(PowerCatalog.Validate(profile.Power));
 
         return violations;
     }

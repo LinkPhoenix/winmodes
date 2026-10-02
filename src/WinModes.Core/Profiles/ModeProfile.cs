@@ -22,6 +22,20 @@ public sealed record PowerSettings
 {
     public string Plan { get; init; } = "";
     public string? Fallback { get; init; }
+
+    /// <summary>
+    /// Values to change on a copy of the plan (see <see cref="Planning.PowerCatalog"/>), for example the display and sleep timeouts.
+    /// When there are some, the mode makes a copy of its plan, changes the copy and uses it; the copy is deleted when the mode ends.
+    /// </summary>
+    public IReadOnlyList<PowerValue> Values { get; init; } = [];
+}
+
+/// <summary>One power setting of a mode: the value on mains (Ac) and on battery (Dc); null leaves that side as the plan has it.</summary>
+public sealed record PowerValue
+{
+    public required string Setting { get; init; }
+    public int? Ac { get; init; }
+    public int? Dc { get; init; }
 }
 
 public sealed record WslSettings

@@ -103,6 +103,8 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         // Keep the very first power plan so Undo returns to it even after several switches.
         var originalScheme = previous?.PreviousPowerScheme ?? await GetActivePowerSchemeAsync();
         lines.Add(await SetPowerPlanAsync(profile.Power));
+        var (powerLines, powerClone) = await ApplyPowerValuesAsync(profile, previous?.PowerClone);
+        lines.AddRange(powerLines);
         lines.AddRange(await CloseAppsAsync(profile.Apps.Close));
         lines.AddRange(LaunchApps(profile.Apps.Launch));
         lines.AddRange(await ApplyWslAsync(profile.Wsl));
@@ -111,7 +113,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         lines.AddRange(tweakLines);
 
         var source = automatic ? AutomaticSource : null;
-        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Source: source, TweakIds: ownedTweaks));
+        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Source: source, TweakIds: ownedTweaks, PowerClone: powerClone));
 
         // Stopped services and closed apps release their memory over a few seconds.
         await Task.Delay(MemorySettleDelay);
@@ -120,7 +122,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         var outcome = freedGb >= MinFreedGbToReport ? Loc.F("{0:0.0} GB freed", freedGb) : Loc.T("no measurable change");
         lines.Insert(0, Loc.F("Memory in use: {0:0.0} GB before, {1:0.0} GB after ({2}).", usedBeforeGb, usedAfterGb, outcome));
         // Kept for the summary shown when the mode is deactivated.
-        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Math.Max(freedGb, 0), source, ownedTweaks));
+        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Math.Max(freedGb, 0), source, ownedTweaks, powerClone));
         return new SwitchReport(true, lines);
     }
 
@@ -140,7 +142,11 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
             lines.Add(Loc.T("Services restored to their previous state."));
         }
 
-        if (state?.PreviousPowerScheme is { } scheme)
+        if (state?.PowerClone is { } clone)
+        {
+            lines.Add(await RestorePlanAndDeleteCloneAsync(clone, state.PreviousPowerScheme));
+        }
+        else if (state?.PreviousPowerScheme is { } scheme)
         {
             var result = await RunAsync("powercfg.exe", $"/setactive {scheme}");
             lines.Add(Loc.T(result.ExitCode == 0 ? "Power plan restored." : "The previous power plan could not be restored."));
@@ -267,6 +273,106 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         return string.IsNullOrEmpty(power.Plan)
             ? Loc.T("Power plan: unchanged.")
             : Loc.F("Power plan: '{0}' is not available on this PC; left unchanged.", power.Plan);
+    }
+
+    /// <summary>
+    /// A mode that changes power values never edits a plan of the user: it changes a copy of its plan and uses the copy. Returns the
+    /// lines for the report and the GUID of the copy now in use (null when there is none). A copy left by the mode it replaces is deleted.
+    /// </summary>
+    private static async Task<(List<string> Lines, string? Clone)> ApplyPowerValuesAsync(ModeProfile profile, string? previousClone)
+    {
+        var lines = new List<string>();
+        string? clone = null;
+        if (profile.Power.Values.Count > 0 && await GetActivePowerSchemeAsync() is { } basePlan)
+        {
+            clone = await MakePowerCloneAsync(basePlan, profile, lines);
+        }
+
+        if (previousClone is not null && !previousClone.Equals(clone, StringComparison.OrdinalIgnoreCase))
+        {
+            await RunAsync("powercfg.exe", $"/delete {previousClone}");
+        }
+
+        return (lines, clone);
+    }
+
+    private static async Task<string?> MakePowerCloneAsync(string basePlan, ModeProfile profile, List<string> lines)
+    {
+        var duplicate = await RunAsync("powercfg.exe", $"/duplicatescheme {basePlan}");
+        var match = GuidPattern().Match(duplicate.Output);
+        if (duplicate.ExitCode != 0 || !match.Success)
+        {
+            lines.Add(Loc.T("Power values: the power plan could not be copied; left unchanged."));
+            return null;
+        }
+
+        var clone = match.Value;
+        var failed = (await RunAsync("powercfg.exe", $"/changename {clone} \"{PowerCloneName(profile.Label)}\"")).ExitCode != 0;
+        foreach (var value in profile.Power.Values)
+        {
+            foreach (var command in PowerCatalog.Commands(clone, value))
+            {
+                failed |= (await RunAsync("powercfg.exe", string.Join(' ', command))).ExitCode != 0;
+            }
+        }
+
+        // The user's own plan is made active again, and the unfinished copy removed: either all the values apply or none.
+        if (failed || (await RunAsync("powercfg.exe", $"/setactive {clone}")).ExitCode != 0)
+        {
+            await RunAsync("powercfg.exe", $"/setactive {basePlan}");
+            await RunAsync("powercfg.exe", $"/delete {clone}");
+            lines.Add(Loc.T("Power values: they could not be applied; the power plan is left unchanged."));
+            return null;
+        }
+
+        lines.Add(Loc.F("Power values: {0} (on a copy of the power plan).", string.Join(", ", profile.Power.Values.Select(DescribePowerValue))));
+        return clone;
+    }
+
+    private static string DescribePowerValue(PowerValue value) =>
+        PowerCatalog.Find(value.Setting) is { } info
+            ? Loc.T(info.Title) + ": " + string.Join(" / ", new[] { value.Ac, value.Dc }.Where(number => number is not null).Select(number => info.Seconds ? PowerCatalog.DescribeSeconds(number!.Value) : number!.Value.ToString(System.Globalization.CultureInfo.CurrentCulture)))
+            : value.Setting;
+
+    /// <summary>The copy gets a name the app recognises, so that one left by a crash can be found and removed.</summary>
+    internal static string PowerCloneName(string label) => PowerClonePrefix + new string([.. label.Where(character => char.IsLetterOrDigit(character) || character == ' ')]).Trim();
+
+    private const string PowerClonePrefix = "WinModes ";
+
+    /// <summary>Back to the plan the user had, and the copy deleted. If the user chose another plan meanwhile, theirs is kept.</summary>
+    private static async Task<string> RestorePlanAndDeleteCloneAsync(string clone, string? originalPlan)
+    {
+        var active = await GetActivePowerSchemeAsync();
+        if (active is null || active.Equals(clone, StringComparison.OrdinalIgnoreCase))
+        {
+            var target = originalPlan ?? PowerSchemes["balanced"];
+            var restored = (await RunAsync("powercfg.exe", $"/setactive {target}")).ExitCode == 0
+                || (await RunAsync("powercfg.exe", $"/setactive {PowerSchemes["balanced"]}")).ExitCode == 0;
+            if (!restored)
+            {
+                return Loc.T("The previous power plan could not be restored.");
+            }
+        }
+
+        await RunAsync("powercfg.exe", $"/delete {clone}");
+        return Loc.T("Power plan restored.");
+    }
+
+    /// <summary>Deletes a copy of a plan left behind by a mode that never ended cleanly. Never touches a plan the user made.</summary>
+    internal static async Task RemoveOrphanPowerPlansAsync()
+    {
+        var keep = ReadUserState()?.PowerClone;
+        var list = await RunAsync("powercfg.exe", "/list");
+        foreach (Match plan in PowerPlanLine().Matches(list.Output))
+        {
+            var guid = plan.Groups["guid"].Value;
+            var name = plan.Groups["name"].Value;
+            if (name.StartsWith(PowerClonePrefix, StringComparison.Ordinal) && !plan.Groups["active"].Success
+                && !guid.Equals(keep, StringComparison.OrdinalIgnoreCase))
+            {
+                await RunAsync("powercfg.exe", $"/delete {guid}");
+            }
+        }
     }
 
     private async Task<List<string>> CloseAppsAsync(IReadOnlyList<AppClose> apps)
@@ -435,7 +541,13 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     [GeneratedRegex("[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}")]
     private static partial Regex GuidPattern();
 
+    // "Power Scheme GUID: 381b4222-...  (Balanced) *" in any language: the name is between brackets and an asterisk marks the active plan.
+    [GeneratedRegex(@"(?<guid>[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12})\s+\((?<name>[^)]*)\)(?<active>\s*\*)?")]
+    private static partial Regex PowerPlanLine();
+
+    /// <param name="PowerClone">GUID of the copy of a power plan the mode made and uses; deleted when the mode ends.</param>
     /// <param name="TweakIds">Settings of the Optimize catalog that this mode set and will put back; null in a file written before modes had settings.</param>
     private sealed record UserState(
-        string Mode, string? PreviousPowerScheme, DateTimeOffset SwitchedUtc, double FreedGb = 0, string? Source = null, IReadOnlyList<string>? TweakIds = null);
+        string Mode, string? PreviousPowerScheme, DateTimeOffset SwitchedUtc, double FreedGb = 0, string? Source = null, IReadOnlyList<string>? TweakIds = null,
+        string? PowerClone = null);
 }
