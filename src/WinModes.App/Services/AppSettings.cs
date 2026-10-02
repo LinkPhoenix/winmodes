@@ -140,6 +140,19 @@ internal sealed record AppSettings
         }
     }
 
+    /// <summary>The command of the Run entry; null when there is none.</summary>
+    public static string? StartupCommand
+    {
+        get
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(RunKeyPath);
+            return key?.GetValue(RunValueName) as string;
+        }
+    }
+
+    /// <summary>Whether the Run entry can start the app: a missing target is skipped by Windows without any message.</summary>
+    public static StartupState StartupState => StartupEntry.Inspect(StartupCommand, File.Exists);
+
     public static void SetStartWithWindows(bool enabled, bool minimized)
     {
         using var key = Registry.CurrentUser.CreateSubKey(RunKeyPath);

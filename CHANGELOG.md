@@ -28,6 +28,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Fixed
 
+- Settings: when "Start with Windows" is on but its startup entry points to a file that no longer exists (WinModes was moved, reinstalled or updated elsewhere), Windows skipped it silently. WinModes now says so once at start, and the Settings page offers "Use this copy of WinModes" to repair the entry.
 - Widget: with an auto-hide taskbar, the widget on the taskbar now slides out of sight with it instead of staying over the desktop, and comes back when the taskbar does.
 - Notifications: a plan limit that stayed low or used up no longer raised the same notification each time WinModes started; the update notification is no longer repeated at each start either.
 - Notifications: the plan notifications no longer need the widget to be visible; they are watched in the background as long as the plan usage is turned on.

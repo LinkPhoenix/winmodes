@@ -53,6 +53,23 @@ public partial class SettingsPage : Page
 
         // Setting the initial values raises the change events; only user changes are saved.
         _loaded = true;
+        ShowStartupWarning();
+    }
+
+    private void ShowStartupWarning()
+    {
+        var broken = AppSettings.StartupState == WinModes.Core.StartupState.TargetMissing;
+        StartupWarning.Visibility = broken ? Visibility.Visible : Visibility.Collapsed;
+        StartupWarning.Background = Palette.Tint(Palette.Power);
+        StartupWarning.BorderBrush = Palette.Power;
+        StartupWarningIcon.Foreground = Palette.Power;
+    }
+
+    /// <summary>Points the startup entry to the copy of WinModes that is running now.</summary>
+    private void OnFixStartup(object sender, RoutedEventArgs e)
+    {
+        AppSettings.SetStartWithWindows(true, StartMinimized.IsChecked == true);
+        ShowStartupWarning();
     }
 
     private void OnChanged(object sender, RoutedEventArgs e) => Save();

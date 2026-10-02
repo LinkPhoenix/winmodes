@@ -26,6 +26,9 @@ public sealed class NoticeLedger
     /// <summary>Release tag of the last update announced.</summary>
     public string? UpdateTag { get; set; }
 
+    /// <summary>The startup command that was reported as pointing to a missing file, so it is reported once and not at every start.</summary>
+    public string? StartupWarned { get; set; }
+
     /// <summary>Something changed since the last <see cref="Save"/>.</summary>
     [JsonIgnore]
     public bool Changed { get; set; }

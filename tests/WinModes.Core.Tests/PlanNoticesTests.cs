@@ -210,6 +210,18 @@ public sealed class PlanNoticesTests : IDisposable
     }
 
     [Fact]
+    public void Ledger_KeepsWhatWasAnnouncedAboutTheUpdateAndTheStartupEntry()
+    {
+        var path = Path.Combine(_folder, "notices.json");
+        new NoticeLedger { UpdateTag = "v0.9.0", StartupWarned = "\"C:\\old\\WinModes.exe\" --minimized" }.Save(path);
+
+        var restored = NoticeLedger.Load(path);
+
+        Assert.Equal("v0.9.0", restored.UpdateTag);
+        Assert.Equal("\"C:\\old\\WinModes.exe\" --minimized", restored.StartupWarned);
+    }
+
+    [Fact]
     public void Ledger_ReportsChangesAndSurvivesADamagedFile()
     {
         var ledger = new NoticeLedger();

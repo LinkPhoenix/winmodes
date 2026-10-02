@@ -121,6 +121,7 @@ public partial class App : Application, IDisposable
         }
 
         _ = CheckForUpdatesAsync();
+        WarnAboutBrokenStartup();
 
         var autoMode = Services.AppSettings.Load().AutoActivateMode;
         if (autoMode is null || Services.ModeSwitcher.ActiveMode is not null)
@@ -155,6 +156,27 @@ public partial class App : Application, IDisposable
                 Forms.ToolTipIcon.Info, () => OpenPage(typeof(Pages.AboutPage)), durationMs: 8000))
         {
             _ledger.UpdateTag = status.LatestTag;
+            _ledger.Changed = true;
+            SaveLedger();
+        }
+    }
+
+    /// <summary>
+    /// "Start with Windows" is on but its entry points to a file that is gone: Windows would skip it silently, so the user is told
+    /// once per broken entry, with the way to fix it.
+    /// </summary>
+    private void WarnAboutBrokenStartup()
+    {
+        var command = Services.AppSettings.StartupCommand;
+        if (Services.AppSettings.StartupState != StartupState.TargetMissing || _ledger.StartupWarned == command || _notifier is null)
+        {
+            return;
+        }
+
+        if (_notifier.Show(Services.NoticeKind.Problem, Loc.T("WinModes will not start with Windows"),
+            Loc.T("Its startup entry points to a file that no longer exists. Fix it on the Settings page."), Forms.ToolTipIcon.Warning, () => OpenPage(typeof(Pages.SettingsPage))))
+        {
+            _ledger.StartupWarned = command;
             _ledger.Changed = true;
             SaveLedger();
         }
