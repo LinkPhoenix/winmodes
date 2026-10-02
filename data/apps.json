@@ -247,7 +247,8 @@
       "Microsoft.Messaging",
       "Microsoft.OneConnect",
       "Microsoft.Wallet",
-      "Microsoft.GroupMe10"
+      "Microsoft.GroupMe10",
+      "Microsoft.MSWallet"
     ],
     "category": "Communication",
     "tier": "safe",
@@ -707,7 +708,8 @@
     "id": "cortana",
     "title": "Cortana",
     "packages": [
-      "Microsoft.549981C3F5F10"
+      "Microsoft.549981C3F5F10",
+      "Microsoft.Windows.Cortana"
     ],
     "category": "Utilities",
     "tier": "safe",
@@ -817,7 +819,9 @@
       "A278AB0D.DisneyMagicKingdoms",
       "D52A8D61.FarmVille2CountryEscape",
       "A278AB0D.MarchofEmpires",
-      "flaregamesGmbH.RoyalRevolt"
+      "flaregamesGmbH.RoyalRevolt",
+      "Microsoft.Asphalt8Airborne",
+      "flaregamesGmbH.RoyalRevolt2"
     ],
     "category": "Games",
     "tier": "safe",
@@ -846,7 +850,11 @@
       "TuneIn.TuneInRadio",
       "D5EA27B7.Duolingo-LearnLanguagesforFree",
       "ShazamEntertainmentLtd.Shazam",
-      "CAF9E577.Plex"
+      "CAF9E577.Plex",
+      "Facebook.InstagramBeta",
+      "Microsoft.LinkedIn",
+      "XINGAG.XING",
+      "A025C540.Yandex*"
     ],
     "category": "Other",
     "tier": "safe",
@@ -871,7 +879,9 @@
       "46928bounde.EclipseManager",
       "6Wunderkinder.Wunderlist",
       "KeeperSecurityInc.Keeper",
-      "Fitbit.FitbitCoach"
+      "Fitbit.FitbitCoach",
+      "Microsoft.FreshPaint",
+      "Microsoft.DrawboardPDF"
     ],
     "category": "Other",
     "tier": "safe",
@@ -970,6 +980,82 @@
     "tier": "consider",
     "why": "The recognizers behind pen and touch handwriting.",
     "breaksIfRemoved": "Converting pen and touch handwriting to text.",
+    "reinstall": {}
+  },
+  {
+    "id": "legacy-feedback-reading-list",
+    "title": "Windows Feedback and Reading List (legacy)",
+    "packages": [
+      "Microsoft.WindowsFeedback",
+      "Microsoft.WindowsReadingList"
+    ],
+    "category": "Utilities",
+    "tier": "safe",
+    "why": "Old Windows 10 apps that Windows 11 no longer uses.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "wireless-display-connect",
+    "title": "Connect (wireless display)",
+    "packages": [
+      "Microsoft.PPIProjection"
+    ],
+    "category": "Utilities",
+    "tier": "consider",
+    "why": "Lets this PC act as a screen for a phone or another PC (Miracast).",
+    "breaksIfRemoved": "Projecting a phone or another PC onto this one.",
+    "reinstall": {}
+  },
+  {
+    "id": "sponsored-travel-and-notes",
+    "title": "Promoted travel and note apps",
+    "packages": [
+      "Expedia.ExpediaHotelsFlightsCarsActivities",
+      "4AE8B7C2.Booking.comPartnerEdition",
+      "PricelinePartnerNetwork.*",
+      "Evernote.Evernote"
+    ],
+    "category": "Other",
+    "tier": "safe",
+    "why": "Booking.com, Expedia, Priceline and Evernote, installed by the PC maker or Windows as promotions.",
+    "breaksIfRemoved": null,
+    "reinstall": {}
+  },
+  {
+    "id": "oem-acer",
+    "title": "Acer apps",
+    "packages": [
+      "AcerIncorporated.*"
+    ],
+    "category": "Other",
+    "tier": "consider",
+    "why": "The PC maker's own tools (Care Center, Quick Access, Jumpstart and similar), installed on Acer PCs.",
+    "breaksIfRemoved": "The maker's update checks, shortcut keys and support tools.",
+    "reinstall": {}
+  },
+  {
+    "id": "oem-asus",
+    "title": "ASUS apps",
+    "packages": [
+      "B9ECED6F.*"
+    ],
+    "category": "Other",
+    "tier": "consider",
+    "why": "The PC maker's own tools (MyASUS, Armoury Crate and similar), installed on ASUS PCs.",
+    "breaksIfRemoved": "Fan, power and lighting profiles, the maker's updates and support tools.",
+    "reinstall": {}
+  },
+  {
+    "id": "oem-samsung",
+    "title": "Samsung apps",
+    "packages": [
+      "SAMSUNGELECTRONICSCO.LTD.*"
+    ],
+    "category": "Other",
+    "tier": "consider",
+    "why": "The PC maker's own tools (Settings, Update, Quick Share and similar), installed on Samsung PCs.",
+    "breaksIfRemoved": "The maker's update checks, device settings and sharing with Galaxy phones.",
     "reinstall": {}
   }
 ]
