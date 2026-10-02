@@ -64,6 +64,8 @@
                                        TargetPageType="{x:Type pages:AutomationPage}" />
                 <ui:NavigationViewItem Content="{l:T 'Widget'}" Icon="{ui:SymbolIcon PictureInPicture24}"
                                        TargetPageType="{x:Type pages:WidgetPage}" />
+                <ui:NavigationViewItem Content="{l:T 'Notifications'}" Icon="{ui:SymbolIcon Alert24}"
+                                       TargetPageType="{x:Type pages:NotificationsPage}" />
                 <ui:NavigationViewItem Content="{l:T 'History'}" Icon="{ui:SymbolIcon History24}"
                                        TargetPageType="{x:Type pages:HistoryPage}" />
             </ui:NavigationView.MenuItems>

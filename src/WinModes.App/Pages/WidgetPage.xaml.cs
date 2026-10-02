@@ -46,8 +46,6 @@ public partial class WidgetPage : Page
         ShowClaudePlan.IsChecked = widget.ShowClaudePlan;
         ShowCodexPlan.IsChecked = widget.ShowCodexPlan;
         ShowResetCredits.IsChecked = widget.ShowResetCredits;
-        ClaudeAlert.IsChecked = widget.ClaudeLowAlert;
-        CodexAlert.IsChecked = widget.CodexLowAlert;
         ShowClaudeUsage();
         ShowAccounts();
         LockPosition.IsChecked = widget.LockPosition;
@@ -340,8 +338,6 @@ public partial class WidgetPage : Page
                 ShowClaudePlan = ShowClaudePlan.IsChecked == true,
                 ShowCodexPlan = ShowCodexPlan.IsChecked == true,
                 ShowResetCredits = ShowResetCredits.IsChecked == true,
-                ClaudeAlert = ClaudeAlert.IsChecked == true,
-                CodexAlert = CodexAlert.IsChecked == true,
                 MaxTools = (MaxTools.SelectedItem as Option)?.Value ?? 4,
                 RefreshSeconds = (Refresh.SelectedItem as Option)?.Value ?? 3,
                 LockPosition = LockPosition.IsChecked == true,

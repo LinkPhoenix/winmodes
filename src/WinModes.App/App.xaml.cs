@@ -1,6 +1,8 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Threading;
 using WinModes.Core;
+using WinModes.Core.Notifications;
 using WinModes.Core.Planning;
 using WinModes.Core.Profiles;
 using WinModes.Core.Protection;
@@ -18,6 +20,9 @@ public partial class App : Application, IDisposable
     private Services.ErrorGuard? _errorGuard;
     private Mutex? _singleInstance;
     private Forms.NotifyIcon? _trayIcon;
+    private Services.Notifier? _notifier;
+    private readonly NoticeLedger _ledger = NoticeLedger.Load(NoticeLedger.DefaultPath);
+    private DispatcherTimer? _planTimer;
     private MainWindow? _window;
     private readonly Services.LiveStats _liveStats = new();
     private Services.TrayMeter? _trayMeter;
@@ -37,8 +42,8 @@ public partial class App : Application, IDisposable
     private void OnStartup(object sender, StartupEventArgs e)
     {
         _errorGuard = Services.ErrorGuard.Register(this, new ErrorLog(ErrorLog.DefaultPath), () =>
-            _trayIcon?.ShowBalloonTip(5000, "WinModes",
-                Loc.T("WinModes hit an unexpected error and kept running. The details are in errors.log in %LocalAppData%\\WinModes."), Forms.ToolTipIcon.Warning));
+            _notifier?.Show(Services.NoticeKind.Problem, "WinModes",
+                Loc.T("WinModes hit an unexpected error and kept running. The details are in errors.log in %LocalAppData%\\WinModes."), Forms.ToolTipIcon.Warning, durationMs: 5000));
 
         _singleInstance = new Mutex(initiallyOwned: true, SingleInstanceMutexName, out var isFirstInstance);
         if (!isFirstInstance)
@@ -81,6 +86,8 @@ public partial class App : Application, IDisposable
         _window = new MainWindow(pageIndex >= 0 && pageIndex + 1 < e.Args.Length ? e.Args[pageIndex + 1] : null,
             showOnboarding: e.Args.Contains(OnboardingArgument));
         _trayIcon = CreateTrayIcon();
+        _notifier = new Services.Notifier(_trayIcon);
+        Services.AccountSession.SessionEnded += OnSessionEnded;
         _trayMeter = new Services.TrayMeter(_trayIcon, _trayIcon.Icon!);
         ApplyDisplaySettings();
         StartSession(e.Args);
@@ -124,12 +131,12 @@ public partial class App : Application, IDisposable
         try
         {
             var report = await AppServices.Switcher.ActivateAsync(AppServices.Store.Load(autoMode));
-            _trayIcon?.ShowBalloonTip(4000, "WinModes",
-                report.Succeeded ? Loc.F("{0} mode activated automatically.", autoMode) : report.Lines[0], Forms.ToolTipIcon.Info);
+            _notifier?.Show(report.Succeeded ? Services.NoticeKind.Mode : Services.NoticeKind.Problem, "WinModes",
+                report.Succeeded ? Loc.F("{0} mode activated automatically.", autoMode) : report.Lines[0], Forms.ToolTipIcon.Info, durationMs: 4000);
         }
         catch (ProfileException ex)
         {
-            _trayIcon?.ShowBalloonTip(4000, "WinModes", ex.Message, Forms.ToolTipIcon.Warning);
+            _notifier?.Show(Services.NoticeKind.Problem, "WinModes", ex.Message, Forms.ToolTipIcon.Warning, durationMs: 4000);
         }
     }
 
@@ -140,21 +147,41 @@ public partial class App : Application, IDisposable
             return;
         }
 
+        // Announced once per release: the About page keeps showing it, but the notification is not repeated at each start.
         var status = await Services.UpdateChecker.CheckAsync();
-        if (status.IsNewer && _trayIcon is not null)
+        if (status.IsNewer && _notifier is not null && _ledger.UpdateTag != status.LatestTag
+            && _notifier.Show(Services.NoticeKind.Update, Loc.T("WinModes update available"),
+                Loc.F("Version {0} is out (you have v{1}). Click to see it on the About page.", status.LatestTag, AppInfo.Version),
+                Forms.ToolTipIcon.Info, () => OpenPage(typeof(Pages.AboutPage)), durationMs: 8000))
         {
-            _trayIcon.BalloonTipClicked += OnUpdateBalloonClicked;
-            _trayIcon.ShowBalloonTip(8000, Loc.T("WinModes update available"),
-                Loc.F("Version {0} is out (you have v{1}). Click to see it on the About page.", status.LatestTag, AppInfo.Version), Forms.ToolTipIcon.Info);
+            _ledger.UpdateTag = status.LatestTag;
+            _ledger.Changed = true;
+            SaveLedger();
         }
     }
 
-    private void OnUpdateBalloonClicked(object? sender, EventArgs e)
+    private void OpenPage(Type page)
     {
-        _trayIcon!.BalloonTipClicked -= OnUpdateBalloonClicked;
         ShowWindow();
-        _window?.NavigateTo(typeof(Pages.AboutPage));
+        _window?.NavigateTo(page);
     }
+
+    private void SaveLedger()
+    {
+        if (_ledger.Changed)
+        {
+            _ledger.Save(NoticeLedger.DefaultPath);
+        }
+    }
+
+    /// <summary>The provider ended a WinModes sign-in (the session was revoked): the usage can no longer be read until the user signs in again.</summary>
+    private void OnSessionEnded(object? sender, WinModes.Core.Accounts.AccountProvider provider) =>
+        _notifier?.Show(Services.NoticeKind.SignIn, Loc.F("{0} sign-in expired", provider.DisplayName),
+            Loc.T("The usage can no longer be read. Sign in again on the Widget page."), Forms.ToolTipIcon.Warning, () => OpenPage(typeof(Pages.WidgetPage)));
+
+    /// <summary>The "test notification" button of the Notifications page; shown whatever the choices, to check that Windows lets it through.</summary>
+    internal void ShowTestNotice() =>
+        _notifier?.Show(Services.NoticeKind.Test, "WinModes", Loc.T("This is a test notification: they work."));
 
     /// <summary>Turns the tray meter and the desktop widget on or off to match the settings.</summary>
     internal void ApplyDisplaySettings()
@@ -224,6 +251,7 @@ public partial class App : Application, IDisposable
             _trayMeter?.Reset();
         }
 
+        ApplyPlanWatch(settings);
         ApplyHotkeys(settings.EnableHotkeys);
         _autoSwitcher ??= new Services.AutoSwitcher(SwitchFromTrayAsync);
         _autoSwitcher.Apply(settings.AutoSwitch);
@@ -312,7 +340,6 @@ public partial class App : Application, IDisposable
         }
 
         CheckToolAlerts(reading, settings.AiToolAlertGb);
-        CheckPlanAlerts(settings.Widget);
         EndIdleSessions(reading, settings.AutoEndIdleMinutes);
         RecordUsage(reading, settings.RecordUsageHistory);
 
@@ -326,7 +353,7 @@ public partial class App : Application, IDisposable
         {
             _alertRaised = true;
             var top = reading.AiTools.Count > 0 ? " " + Loc.F("Largest: {0}.", reading.AiTools[0].Name) : "";
-            _trayIcon?.ShowBalloonTip(6000, Loc.T("WinModes - AI tools memory"),
+            _notifier?.Show(Services.NoticeKind.Memory, Loc.T("WinModes - AI tools memory"),
                 Loc.F("AI tools use {0:0.0} GB, above your {1} GB limit.", usedGb, settings.AiMemoryAlertGb) + top,
                 Forms.ToolTipIcon.Warning);
         }
@@ -336,35 +363,49 @@ public partial class App : Application, IDisposable
         }
     }
 
-    private readonly HashSet<string> _planAlerted = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly TimeSpan PlanWatchInterval = TimeSpan.FromSeconds(30);
 
-    /// <summary>One notification when a plan falls under 10 % left; armed again once it is clearly above or has reset.</summary>
-    private void CheckPlanAlerts(Services.WidgetSettings widget)
+    /// <summary>
+    /// Watches the plans for notices while they are wanted and a plan is read at all: independent of the widget, which only shows them.
+    /// </summary>
+    private void ApplyPlanWatch(Services.AppSettings settings)
     {
-        const double LowPercent = 10;
-        const double RearmPercent = 15;
-
-        if (!widget.ShowSubscriptions || (!widget.ClaudeLowAlert && !widget.CodexLowAlert))
+        var wanted = settings.Notifications.Enabled && settings.Widget.ShowSubscriptions;
+        if (wanted && _planTimer is null)
         {
-            _planAlerted.Clear();
+            _planTimer = new DispatcherTimer { Interval = PlanWatchInterval };
+            _planTimer.Tick += (_, _) => CheckPlans();
+            _planTimer.Start();
+            // Asking now starts the first read; its result is picked up at the next tick.
+            CheckPlans();
+        }
+        else if (!wanted && _planTimer is not null)
+        {
+            _planTimer.Stop();
+            _planTimer = null;
+        }
+    }
+
+    private void CheckPlans()
+    {
+        var settings = Services.AppSettings.Load();
+        var widget = settings.Widget;
+        var statuses = Services.SubscriptionMonitor.Get(widget.ClaudeOnline, widget.CodexOnline, widget.ShowClaudePlan, widget.ShowCodexPlan);
+        if (!Services.SubscriptionMonitor.HasRead || _notifier is null)
+        {
             return;
         }
 
         var now = DateTimeOffset.Now;
         var culture = System.Globalization.CultureInfo.CurrentCulture;
-        foreach (var status in Services.SubscriptionMonitor.Current)
+        var notices = PlanNoticeEngine.Evaluate(_ledger, statuses, tool => settings.Notifications.ChoiceFor(tool, widget), settings.Notifications.LowPercent, now);
+        foreach (var notice in notices)
         {
-            var wanted = status.Tool == "Claude" ? widget.ClaudeLowAlert : widget.CodexLowAlert;
-            if (!wanted || status.Primary is not { } limit || limit.HasReset(now) || limit.RemainingPercent >= RearmPercent)
-            {
-                _planAlerted.Remove(status.Tool);
-            }
-            else if (limit.RemainingPercent < LowPercent && _planAlerted.Add(status.Tool))
-            {
-                var (value, detail, _) = WinModes.Core.Usage.Subscriptions.Describe(status, now, culture);
-                _trayIcon?.ShowBalloonTip(6000, $"WinModes - {status.Tool} {status.Plan}", $"{value}. {detail.Split('\n')[0]}.", Forms.ToolTipIcon.Warning);
-            }
+            var warning = notice.Kind is PlanNoticeKind.Low or PlanNoticeKind.Reached;
+            _notifier.Show(Services.NoticeKind.Plan, notice.Title, notice.Message(now, culture), warning ? Forms.ToolTipIcon.Warning : Forms.ToolTipIcon.Info);
         }
+
+        SaveLedger();
     }
 
     private void CheckToolAlerts(Services.StatsReading reading, int limitGb)
@@ -383,7 +424,7 @@ public partial class App : Application, IDisposable
             var usedGb = tool.MemoryMb / MbPerGb;
             if (usedGb >= limitGb && _toolAlertsRaised.Add(tool.Name))
             {
-                _trayIcon?.ShowBalloonTip(6000, $"WinModes - {tool.Name}",
+                _notifier?.Show(Services.NoticeKind.Memory, $"WinModes - {tool.Name}",
                     Loc.F("{0} uses {1:0.0} GB, above your {2} GB limit per tool.", tool.Name, usedGb, limitGb),
                     Forms.ToolTipIcon.Warning);
             }
@@ -413,8 +454,8 @@ public partial class App : Application, IDisposable
             var project = Services.Privacy.Project(Services.AiSessions.ProjectName(session));
             if (Services.AiSessions.End(session))
             {
-                _trayIcon?.ShowBalloonTip(5000, Loc.T("WinModes - idle session ended"),
-                    Loc.F("{0} in {1} used no CPU for {2} minutes and was closed.", session.Tool.Name, project, idleMinutes), Forms.ToolTipIcon.Info);
+                _notifier?.Show(Services.NoticeKind.Idle, Loc.T("WinModes - idle session ended"),
+                    Loc.F("{0} in {1} used no CPU for {2} minutes and was closed.", session.Tool.Name, project, idleMinutes), Forms.ToolTipIcon.Info, durationMs: 5000);
             }
         }
     }
@@ -494,13 +535,13 @@ public partial class App : Application, IDisposable
         try
         {
             var report = await action();
-            _trayIcon?.ShowBalloonTip(4000, $"WinModes - {title}",
+            _notifier?.Show(report.Succeeded ? Services.NoticeKind.Mode : Services.NoticeKind.Problem, $"WinModes - {title}",
                 report.Succeeded ? string.Join("\n", report.Lines.Take(3)) : report.Lines[0],
-                report.Succeeded ? Forms.ToolTipIcon.Info : Forms.ToolTipIcon.Warning);
+                report.Succeeded ? Forms.ToolTipIcon.Info : Forms.ToolTipIcon.Warning, durationMs: 4000);
         }
         catch (ProfileException ex)
         {
-            _trayIcon?.ShowBalloonTip(4000, "WinModes", ex.Message, Forms.ToolTipIcon.Warning);
+            _notifier?.Show(Services.NoticeKind.Problem, "WinModes", ex.Message, Forms.ToolTipIcon.Warning, durationMs: 4000);
         }
     }
 

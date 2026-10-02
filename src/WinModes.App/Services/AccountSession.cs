@@ -35,6 +35,9 @@ internal static class AccountSession
 
     public static void SignOut(AccountProvider provider) => Vault.Remove(provider.Tool);
 
+    /// <summary>Raised, from a background thread, when the provider refused to renew a session and WinModes signed the account out by itself.</summary>
+    public static event EventHandler<AccountProvider>? SessionEnded;
+
     private static CancellationTokenSource? _pendingSignIn;
 
     /// <summary>Stops the sign-in being waited for, if any (the page was left); it ends as timed out.</summary>
@@ -149,6 +152,7 @@ internal static class AccountSession
             if (answer.Status is HttpStatusCode.BadRequest or HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
             {
                 Vault.Remove(provider.Tool);
+                SessionEnded?.Invoke(null, provider);
             }
 
             return null;

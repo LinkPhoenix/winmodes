@@ -16,10 +16,14 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Widget: the Claude Code and Codex sections and their account rows show the logo of each tool, and the checks list whether WinModes is signed in.
 - Widget: a "Check Claude Code" button lists, one by one, what is missing for the Claude usage to appear (plan, status line, last call of the status line, usage record, sign-in) and what to do about it.
 - Widget: a "Check Codex" button does the same for Codex (folder, last usage record, plan, sign-in).
+- Notifications: a new page lists everything WinModes can notify about and switches each one on or off, with a master switch and a "Send a test" button. For Claude Code and Codex: running low (5 %, 10 %, 20 % or 30 % left, for the 5 hour and the weekly limits), limit reached, available again once a limit you had used up starts over, and a limit reset added to your reserve. Also AI tools memory (all tools, or one tool), an idle session ended, mode switches, a new release, and a sign-in that expired.
+- Notifications: what was already announced is remembered across restarts, so a limit left at 0 % is announced once per cycle instead of at every start of the app, and a release is announced once.
 - Modes: when the administrator helper fails, the reason is written to `helper-errors.log` in `%ProgramData%\WinModes\logs` instead of being lost.
 
 ### Fixed
 
+- Notifications: a plan limit that stayed low or used up no longer raised the same notification each time WinModes started; the update notification is no longer repeated at each start either.
+- Notifications: the plan notifications no longer need the widget to be visible; they are watched in the background as long as the plan usage is turned on.
 - Widget: on the taskbar it no longer disappears for a moment when the Start menu opens or closes; it keeps its place while Windows hides the taskbar icons from the readout, and ignores buttons of other windows that appear there for an instant.
 - Modes: a switch interrupted by a crash or a failed restore stays listed as active and is retried on the next undo, instead of being forgotten with services left changed.
 - Services and Optimize: a damaged record of original settings is set aside as a `.corrupt-` file instead of being overwritten, so the values to restore are not lost.
@@ -33,6 +37,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Changed
 
+- Settings and Widget: the AI tools memory alerts and the "warn when Claude or Codex runs low" options moved to the new Notifications page. A choice you had made for the low-usage warning is kept.
 - Widget: while WinModes is signed in to Claude or Codex, the "read the usage online" option of that tool is greyed out, since the usage is then read with its own session.
 - Widget page: every option and every section has a coloured icon, and the options are laid out as rows in cards, so the page is easier to scan.
 - Widget page: Claude Code and Codex each have their own section with their own options (show, read online, warn when low). The settings you already had are kept for both.

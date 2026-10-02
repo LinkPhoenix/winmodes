@@ -180,7 +180,7 @@
             </StackPanel>
         </Border>
 
-        <TextBlock Text="{l:T 'SHORTCUTS AND ALERTS'}" Style="{StaticResource SectionTitleStyle}" />
+        <TextBlock Text="{l:T 'SHORTCUTS AND IDLE SESSIONS'}" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <StackPanel>
                 <Border Style="{StaticResource RowStyle}">
@@ -196,38 +196,6 @@
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="EnableHotkeys" Grid.Column="1" VerticalAlignment="Center"
                                          Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Global keyboard shortcuts'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{l:T 'Alert when AI tools use too much memory'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Shows a notification when all AI tools together reach the limit.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ComboBox x:Name="AiAlert" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
-                                  DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
-                                  AutomationProperties.Name="{l:T 'AI tools memory alert limit'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
-                            <TextBlock Text="{l:T 'Alert when one AI tool uses too much memory'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Shows a notification when a single tool, all its sessions together, reaches the limit.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ComboBox x:Name="AiToolAlert" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
-                                  DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
-                                  AutomationProperties.Name="{l:T 'Alert when one AI tool uses too much memory'}" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">

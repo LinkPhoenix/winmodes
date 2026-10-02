@@ -71,6 +71,9 @@ internal sealed record AppSettings
     /// <summary>Look and content of the desktop widget.</summary>
     public WidgetSettings Widget { get; init; } = new();
 
+    /// <summary>Which notifications are shown, edited on the Notifications page.</summary>
+    public NotificationSettings Notifications { get; init; } = new();
+
     /// <summary>Automatic switching when a program starts. Off by default.</summary>
     public AutoSwitchSettings AutoSwitch { get; init; } = new();
 
@@ -162,6 +165,57 @@ internal sealed record AutoSwitchSettings
 /// <summary>Where the widget is shown.</summary>
 internal enum WidgetPlacement { Desktop, Taskbar, Both }
 
+/// <summary>The notices wanted for one tool. Low is null until chosen, so the older alert choice of the widget still applies.</summary>
+internal sealed record ToolNotices
+{
+    public bool? Low { get; init; }
+
+    /// <summary>The limit is used up.</summary>
+    public bool Reached { get; init; } = true;
+
+    /// <summary>A limit that was used up started over.</summary>
+    public bool Reset { get; init; } = true;
+
+    /// <summary>A limit reset was added to the reserve of the account.</summary>
+    public bool CreditGained { get; init; } = true;
+}
+
+/// <summary>What WinModes may notify about, edited on the Notifications page. Everything is on until the user turns it off.</summary>
+internal sealed record NotificationSettings
+{
+    /// <summary>Master switch: off, no optional notification is shown (errors and the test notice still are).</summary>
+    public bool Enabled { get; init; } = true;
+
+    /// <summary>A plan window counts as running low under this share left.</summary>
+    public int LowPercent { get; init; } = 10;
+
+    public ToolNotices Claude { get; init; } = new();
+
+    public ToolNotices Codex { get; init; } = new();
+
+    public bool UpdateAvailable { get; init; } = true;
+
+    public bool SignInExpired { get; init; } = true;
+
+    /// <summary>Result of a mode switch started from the tray, a shortcut, an automation rule or at start.</summary>
+    public bool ModeChanges { get; init; } = true;
+
+    public bool IdleSessionEnded { get; init; } = true;
+
+    public ToolNotices For(string tool) => tool == "Claude" ? Claude : Codex;
+
+    /// <summary>What the plan notices have to send for a tool, the widget's older alert choice standing in for "running low" until chosen.</summary>
+    public WinModes.Core.Notifications.PlanNoticeChoice ChoiceFor(string tool, WidgetSettings widget)
+    {
+        var notices = For(tool);
+        return new(notices.Low ?? LegacyLow(tool, widget), notices.Reached, notices.Reset, notices.CreditGained);
+    }
+
+    public bool LowFor(string tool, WidgetSettings widget) => For(tool).Low ?? LegacyLow(tool, widget);
+
+    private static bool LegacyLow(string tool, WidgetSettings widget) => (tool == "Claude" ? widget.ClaudeAlert : widget.CodexAlert) ?? true;
+}
+
 /// <summary>Options of the desktop widget, edited on the Widget page.</summary>
 internal sealed record WidgetSettings
 {
@@ -203,7 +257,8 @@ internal sealed record WidgetSettings
     /// <summary>Show how many limit resets the account has in reserve, when the online reading gives it.</summary>
     public bool ShowResetCredits { get; init; } = true;
 
-    /// <summary>Notify once when a plan falls under 10 % left. Off by default. Before each tool had its own choice this was shared.</summary>
+    // The three alert settings below are read only as the starting value of the "running low" notice: the Notifications page
+    // now owns it (see NotificationSettings), so an existing choice is kept without a migration.
     public bool PlanAlert { get; init; }
 
     /// <summary>
@@ -228,12 +283,6 @@ internal sealed record WidgetSettings
 
     [System.Text.Json.Serialization.JsonIgnore]
     public bool CodexOnline => ReadCodexOnline ?? ReadUsageOnline;
-
-    [System.Text.Json.Serialization.JsonIgnore]
-    public bool ClaudeLowAlert => ClaudeAlert ?? PlanAlert;
-
-    [System.Text.Json.Serialization.JsonIgnore]
-    public bool CodexLowAlert => CodexAlert ?? PlanAlert;
 
     /// <summary>Seconds between two refreshes: 1, 3 or 5.</summary>
     public int RefreshSeconds { get; init; } = 3;

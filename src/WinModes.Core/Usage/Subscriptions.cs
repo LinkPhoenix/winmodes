@@ -209,9 +209,12 @@ public static partial class Subscriptions
 
     private static readonly TimeSpan StaleAfter = TimeSpan.FromHours(1);
 
-    private static string Capitalize(string text) => text.Length == 0 ? text : char.ToUpperInvariant(text[0]) + text[1..];
+    /// <summary>A moment as local clock time, in the offset of <paramref name="now"/>: "2 Oct 14:30".</summary>
+    internal static string LocalTime(DateTimeOffset moment, DateTimeOffset now, CultureInfo culture) => moment.ToOffset(now.Offset).ToString("d MMM HH:mm", culture);
 
-    private static string Span(TimeSpan span) =>
+    internal static string Capitalize(string text) => text.Length == 0 ? text : char.ToUpperInvariant(text[0]) + text[1..];
+
+    internal static string Span(TimeSpan span) =>
         span.TotalDays >= 1 ? Loc.F("{0} d {1} h", (int)span.TotalDays, span.Hours)
         : span.TotalHours >= 1 ? $"{(int)span.TotalHours} h {span.Minutes} min"
         : $"{Math.Max((int)span.TotalMinutes, 1)} min";

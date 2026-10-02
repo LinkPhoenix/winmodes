@@ -130,10 +130,6 @@
                                              Description="{l:T 'Every 5 minutes, ask Anthropic for the live figures, using the sign-in Claude Code already keeps on this PC. The sign-in is sent only to Anthropic and is never stored or shown by WinModes. This address is the one Claude Code uses itself, not a public API: it may stop working.'}">
                             <ui:ToggleSwitch x:Name="ReadClaudeOnline" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Read the Claude usage online'}" />
                         </controls:SettingRow>
-                        <controls:SettingRow Icon="Alert24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Warn when Claude runs low'}"
-                                             Description="{l:T 'A notification, once, when your Claude plan has less than 10 % of its limit left, with the time of the reset.'}">
-                            <ui:ToggleSwitch x:Name="ClaudeAlert" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when Claude runs low'}" />
-                        </controls:SettingRow>
                         <controls:SettingRow Icon="Stethoscope24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Check Claude Code'}"
                                              Description="{l:T 'Shows, one by one, what is missing for the Claude usage to appear.'}">
                             <controls:SettingRow.Footer>
@@ -160,10 +156,6 @@
                         <controls:SettingRow Icon="ArrowCounterclockwise24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Limit resets in reserve'}"
                                              Description="{l:T 'How many resets of the usage limit your account holds, shown as ↻ and a number in the compact layout. Only Codex gives it, and only with the online reading.'}">
                             <ui:ToggleSwitch x:Name="ShowResetCredits" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show limit resets in reserve'}" />
-                        </controls:SettingRow>
-                        <controls:SettingRow Icon="Alert24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Warn when Codex runs low'}"
-                                             Description="{l:T 'A notification, once, when your Codex plan has less than 10 % of its limit left, with the time of the reset.'}">
-                            <ui:ToggleSwitch x:Name="CodexAlert" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when Codex runs low'}" />
                         </controls:SettingRow>
                         <controls:SettingRow Icon="Stethoscope24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Check Codex'}"
                                              Description="{l:T 'Shows, one by one, what is missing for the Codex usage to appear.'}">
