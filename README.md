@@ -2,7 +2,7 @@
 
 Reversible Windows 11 modes for coding, work and gaming.
 
-WinModes switches your PC between modes (Code, Work, Game) to free memory and cut background load, without the usual damage of "debloat" tools: nothing is uninstalled, no security feature is weakened, and every switch can be undone.
+WinModes switches your PC between modes (Code, Work, Game, Focus, Eco) to free memory and cut background load, without the usual damage of "debloat" tools: nothing is uninstalled, no security feature is weakened, and every switch can be undone.
 
 It also watches the AI coding tools you run: what each one costs in memory, how much of your Claude Code and Codex plans is left, and how many tokens they used.
 
@@ -14,14 +14,14 @@ It also watches the AI coding tools you run: what each one costs in memory, how 
 
 ## What it does
 
-- **Modes**: each mode stops the services it does not need, closes or launches apps, sets the power plan and starts or stops WSL and Docker Desktop.
+- **Modes**: each mode stops the services it does not need, closes or launches apps, sets the power plan and starts or stops WSL and Docker Desktop. Five come with the app: **Code** (dev stack up, performance plan), **Work** (WSL and Docker stopped), **Game** (best performance plan, notifications off), **Focus** (notifications silenced, screen and PC kept awake on mains power, the dev stack left alone) and **Eco** (Power saver plan for the battery). A mode can also turn on Windows settings and change power values such as when the display turns off; it does so on a copy of your power plan, so your own plans are never edited. You can edit, duplicate, export and import modes.
 - **Preview before anything changes**: every mode shows exactly what it would change on your PC, compared with its current state.
 - **Undo**: the state of each service is recorded before it is touched, and "Deactivate" restores it.
 - **Dashboard**: CPU and memory gauges, 60-second history graphs for CPU, memory, GPU and disk, what each AI tool uses at a glance, top memory consumers.
 - **Processes page**: process tree with child processes, PID, CPU, memory, threads and command line; search, sort, and a right-click menu (end task, end process tree, open file location, copy).
 - **AI tools page**: every running session of Claude Code, Claude desktop, Codex, Cursor, VS Code and others, with the project folder it works in and all the processes it started.
 - **Services page**: search, filters, real app icons, and a lock on everything that is protected; a right-click starts, stops or changes the start type of a service that is not protected.
-- **Optimize page**: 28 Windows settings by category (privacy and telemetry, ads and suggestions, search and AI, gaming, background, Explorer) and the services worth starting only when needed. Each row shows whether it is already applied on your PC and how many of 12 surveyed open-source optimizers ship the same setting. You choose what to apply; WinModes records the current value first and Undo puts it back. Settings that weaken security or updates are not in the catalog and are refused by the engine. Nothing is uninstalled or deleted.
+- **Optimize page**: 79 Windows settings by category (privacy and telemetry, ads and suggestions, search and AI, gaming, background, Explorer), found by reading the code of more than forty open-source Windows optimizers, and the services worth starting only when needed. Each row shows whether it is already applied on your PC and how many of those optimizers ship the same setting. After each write WinModes reads the value back, so a setting that Windows refuses is reported instead of shown as applied. You choose what to apply; WinModes records the current value first and Undo puts it back. Settings that weaken security or updates are not in the catalog and are refused by the engine. Nothing is uninstalled or deleted.
 - **Usage page** (optional, off by default): the **tokens** Claude Code and Codex used (total, new input, output, cache, per day, per model and per project) and how much **memory** each AI tool held per project, over the last day, week or month. The tokens are counted from the usage figures in the logs of the two tools, never from the text of a conversation; everything stays on your PC.
 - **MCP servers in double**: the AI tools page shows the MCP servers that several sessions each started, and the memory they hold together.
 - **Idle sessions**: flagged after 30 minutes without CPU use; end them by hand, or let WinModes do it after a delay you choose (off by default).
