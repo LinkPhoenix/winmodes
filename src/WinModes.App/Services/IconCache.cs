@@ -16,6 +16,21 @@ internal static class IconCache
     public static ImageSource? Get(string? executablePath) =>
         string.IsNullOrEmpty(executablePath) ? null : Cache.GetOrAdd(executablePath, Load);
 
+    /// <summary>The icon when it was already read, without reading it now.</summary>
+    public static ImageSource? Peek(string? executablePath) =>
+        !string.IsNullOrEmpty(executablePath) && Cache.TryGetValue(executablePath, out var icon) ? icon : null;
+
+    /// <summary>Reads the icons that are not cached yet, several at a time. True when something new was read, so a list can be redrawn.</summary>
+    public static Task<bool> PreloadAsync(IEnumerable<string?> executablePaths) => Task.Run(() =>
+    {
+        var missing = executablePaths
+            .Where(path => !string.IsNullOrEmpty(path) && !Cache.ContainsKey(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        Parallel.ForEach(missing, path => Cache.GetOrAdd(path!, Load));
+        return missing.Count > 0;
+    });
+
     private static ImageSource? Load(string path)
     {
         try

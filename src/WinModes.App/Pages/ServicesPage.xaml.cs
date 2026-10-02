@@ -1,7 +1,9 @@
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using WinModes.App.Controls;
 using WinModes.App.Services;
 using WinModes.Core.Planning;
 using WinModes.Core.Tuning;
@@ -13,6 +15,7 @@ public partial class ServicesPage : Page
 {
     private IReadOnlyList<ServiceInfo> _services = [];
     private Dictionary<string, ServiceTweak> _tweaks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ObservableCollection<RowHolder<Row>> _rows = [];
     private bool _menuOpen;
     private bool _changing;
 
@@ -24,6 +27,7 @@ public partial class ServicesPage : Page
     public ServicesPage()
     {
         InitializeComponent();
+        Rows.ItemsSource = _rows;
         _timer.Tick += async (_, _) => await RefreshAsync();
         Loaded += async (_, _) =>
         {
@@ -44,19 +48,16 @@ public partial class ServicesPage : Page
         _refreshing = true;
         try
         {
-            (_services, _tweaks) = await Task.Run(() =>
-            {
-                var list = SystemMonitor.GetServices();
-                var tweaks = ServiceTuning.Store.Load().ToDictionary(tweak => tweak.Service, StringComparer.OrdinalIgnoreCase);
-                // Extract icons off the UI thread; the cache keeps later refreshes cheap.
-                foreach (var service in list)
-                {
-                    IconCache.Get(service.ExecutablePath);
-                }
-
-                return (list, tweaks);
-            });
+            (_services, _tweaks) = await Task.Run(() => (
+                SystemMonitor.GetServices(),
+                ServiceTuning.Store.Load().ToDictionary(tweak => tweak.Service, StringComparer.OrdinalIgnoreCase)));
             ApplyFilter();
+
+            // Rows first, icons when they are read: reading them is most of the time the page took to appear.
+            if (await IconCache.PreloadAsync(_services.Select(service => service.ExecutablePath)))
+            {
+                ApplyFilter();
+            }
         }
         finally
         {
@@ -84,13 +85,25 @@ public partial class ServicesPage : Page
             .Select(ToRow)
             .ToList();
 
-        Rows.ItemsSource = visible;
+        _rows.Reconcile(visible, row => row.Name);
         Summary.Text =
             Loc.F("{0} of {1} services are running. Showing {2}. Right-click a service to start it, stop it or change its start type.",
                 _services.Count(service => service.IsRunning), _services.Count, visible.Count);
     }
 
-    private void OnMenuOpening(object sender, ContextMenuEventArgs e) => _menuOpen = true;
+    private void OnMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        // The menu belongs to the list: point it at the row under the pointer, or show nothing between rows.
+        var row = (e.OriginalSource as DependencyObject)?.FindAncestor<ContentPresenter>()?.Content as RowHolder<Row>;
+        if (row is null)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        Rows.ContextMenu!.DataContext = row.Data;
+        _menuOpen = true;
+    }
 
     private void OnMenuClosing(object sender, ContextMenuEventArgs e) => _menuOpen = false;
 
@@ -155,7 +168,7 @@ public partial class ServicesPage : Page
             AppServices.Policy.IsProtectedService(service.Name),
             _tweaks.GetValueOrDefault(service.Name)?.OriginalStartMode,
             ServiceTuning.Knowledge.Find(service.Name)?.Description is { Length: > 0 } description ? description : null,
-            IconCache.Get(service.ExecutablePath));
+            IconCache.Peek(service.ExecutablePath));
     }
 
     private sealed record Row(

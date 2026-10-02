@@ -4,6 +4,7 @@
       xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       Title="{l:T 'Processes'}"
+      ScrollViewer.CanContentScroll="False"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Page.Resources>
         <Style x:Key="SortHeaderStyle" TargetType="Button">
@@ -50,7 +51,13 @@
         </Style>
     </Page.Resources>
 
-    <StackPanel Margin="36,24,36,36" MaxWidth="1400">
+    <!-- The page scrolls its list itself (the shell's scrolling is off): only the rows in view are built, and the column titles stay in view. -->
+    <Grid Margin="36,24,36,24" MaxWidth="1400">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel>
         <TextBlock Text="{l:T 'Processes'}" FontSize="28" FontWeight="SemiBold" />
         <TextBlock x:Name="Summary" Text="{l:T 'Reading processes…'}" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,16" />
 
@@ -64,9 +71,14 @@
             <CheckBox x:Name="ProtectedOnly" Grid.Column="1" Content="{l:T 'Protected only'}" Margin="16,0,0,0"
                       Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
         </Grid>
+        </StackPanel>
 
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <StackPanel>
+        <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
                 <Border Padding="16,8" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AppCardStrokeBrush}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -87,24 +99,38 @@
                     </Grid>
                 </Border>
 
-                <ItemsControl x:Name="Rows">
+                <!-- One menu for the whole list, filled for the row under the pointer when it opens: a menu per row made the page slow to build. -->
+                <ItemsControl x:Name="Rows" Grid.Row="1" ContextMenuOpening="OnMenuOpening" ContextMenuClosing="OnMenuClosing"
+                              VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.ScrollUnit="Pixel" ScrollViewer.CanContentScroll="True">
+                    <ItemsControl.Template>
+                        <ControlTemplate TargetType="ItemsControl">
+                            <ScrollViewer Focusable="False" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                                <ItemsPresenter />
+                            </ScrollViewer>
+                        </ControlTemplate>
+                    </ItemsControl.Template>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="{l:T 'End task'}" Click="OnEndTask" />
+                            <MenuItem Header="{l:T 'End process tree'}" Click="OnEndTree" />
+                            <Separator />
+                            <MenuItem Header="{l:T 'Open file location'}" Click="OnOpenLocation" IsEnabled="{Binding HasPath}" />
+                            <MenuItem Header="{l:T 'Open working folder'}" Click="OnOpenFolder" IsEnabled="{Binding HasFolder}" />
+                            <MenuItem Header="{l:T 'Search online'}" Click="OnSearchOnline" />
+                            <Separator />
+                            <MenuItem Header="{l:T 'Copy process name'}" Click="OnCopyName" />
+                            <MenuItem Header="{l:T 'Copy PID'}" Click="OnCopyPid" />
+                            <MenuItem Header="{l:T 'Copy command line'}" Click="OnCopyCommand" IsEnabled="{Binding HasCommand}" />
+                        </ContextMenu>
+                    </ItemsControl.ContextMenu>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource ProcessRowStyle}" DataContext="{Binding Data}" ContextMenuOpening="OnMenuOpening" ContextMenuClosing="OnMenuClosing">
-                                <Border.ContextMenu>
-                                    <ContextMenu>
-                                        <MenuItem Header="{l:T 'End task'}" Click="OnEndTask" />
-                                        <MenuItem Header="{l:T 'End process tree'}" Click="OnEndTree" />
-                                        <Separator />
-                                        <MenuItem Header="{l:T 'Open file location'}" Click="OnOpenLocation" IsEnabled="{Binding HasPath}" />
-                                        <MenuItem Header="{l:T 'Open working folder'}" Click="OnOpenFolder" IsEnabled="{Binding HasFolder}" />
-                                        <MenuItem Header="{l:T 'Search online'}" Click="OnSearchOnline" />
-                                        <Separator />
-                                        <MenuItem Header="{l:T 'Copy process name'}" Click="OnCopyName" />
-                                        <MenuItem Header="{l:T 'Copy PID'}" Click="OnCopyPid" />
-                                        <MenuItem Header="{l:T 'Copy command line'}" Click="OnCopyCommand" IsEnabled="{Binding HasCommand}" />
-                                    </ContextMenu>
-                                </Border.ContextMenu>
+                            <Border Style="{StaticResource ProcessRowStyle}" DataContext="{Binding Data}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="300" />
@@ -146,7 +172,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </StackPanel>
+            </Grid>
         </Border>
-    </StackPanel>
+    </Grid>
 </Page>

@@ -31,6 +31,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Automation: a mode started automatically now stays on while any program or tool that triggers it is still open, and ends one minute after the last one closes, so going from Claude Code to Codex (or running both) no longer makes the PC go back and forth. A mode starts only after its trigger has held for 10 seconds, so a program that opens and closes at once changes nothing.
 - Automation: automatic switching never replaces or undoes a mode you chose yourself. A mode it started is remembered, so it is still undone after WinModes was restarted.
 - Automation: automatic switching waits 30 seconds after WinModes starts (Windows is still loading your programs) and stays quiet for 10 minutes after a switch that was refused or failed, instead of asking for the permission again at every check.
+- Processes and Services: the pages open about four times faster and no longer freeze for more than a second at each refresh (Services rebuilt its whole list every five seconds). Only the rows in view are drawn, the column titles stay in place while the list scrolls, and the icons appear a moment after the list.
 
 ## [0.9.2] - 2026-10-02
 
