@@ -17,8 +17,8 @@ namespace WinModes.App.Pages;
 /// </summary>
 public partial class OptimizePage : Page
 {
-    // Projects whose code was read for the survey in research/oss-optimizers.
-    private const int SurveyedTools = 12;
+    // Projects whose code was read for the surveys in research/oss-optimizers: the first twelve, then about thirty more.
+    private const int SurveyedTools = 44;
     private static string ServicesTitle => Loc.T("Services");
     private const string AdminGlyph = "";
     private const string AccountGlyph = "";
@@ -371,7 +371,7 @@ public partial class OptimizePage : Page
                     : tweak.Tools.Count > 0
                         ? "A matter of preference or with a side effect: read the note before applying it."
                         : "Well-known setting, but not part of the code-verified survey: optional."),
-                Tools = tweak.Tools.Count > 0 ? Loc.F("{0} of {1} optimizers", tweak.Tools.Count, SurveyedTools) : "",
+                Tools = tweak.Tools.Count > 0 ? Loc.N(tweak.Tools.Count, "1 optimizer", "{0} optimizers") : "",
                 ToolsTip = Loc.F("Also set by: {0}.", string.Join(", ", tweak.Tools)),
                 Restart = restart,
                 RestartTip = restartTip,

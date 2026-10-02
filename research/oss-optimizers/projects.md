@@ -38,3 +38,70 @@ I found no mature OSS project that switches between reversible Code/Work/Game mo
 - **CrapFixer** (code-verified, builtbybel active tool): small per-feature classes (Recall, Click to Do, Copilot, ads, Edge policies, GameDVR, PowerThrottling, NetworkThrottling, SystemResponsiveness, TaskbarEndTask). No security-weakening features found.
 - **winutil applications.json** (code-verified): 236 winget/choco install entries (41 Development, incl. Docker Desktop); an installer catalog, not tweaks. `feature.json` enables WSL, Hyper-V and Sandbox. `preset.json` has Standard (12), Minimal (4), Advanced (17) presets.
 - **tiny11builder**: works on install images only. It is not usable at runtime.
+
+## Second survey (2026-10-02): about forty more projects
+
+Found with `gh search repos` on Windows optimizer, debloat, tweak, game mode, power plan, process priority and profile-switching topics (about 110 candidates), then the ones below were cloned shallow into a temporary folder and read as data (nothing run). Six analysts read them by theme (C# tweak apps, script collections, performance and latency, mode and process switchers, developer setup, Windows AI and interface settings) and wrote findings with file and line evidence, kept in `round2/`. Their output was merged and deduplicated: 145 distinct candidate settings, of which `round2-tweaks.json` keeps the ones that are reversible, user-visible and clear of the protected areas. Licences of the projects read are GPL, AGPL, MIT and others; only ideas, setting names and values were used, no code.
+
+Still no mature open-source project switches between several reversible modes. The closest are Pavise-Game (game resource manager with a crash-safe recovery ledger), ThreadPilot, SebastianBecker2/PowerPlanSwitcher and process-governor, each doing one part (priorities, power plans, process rules).
+
+| Name | URL | Stars | Last push | Licence | What it is |
+|---|---|---|---|---|---|
+| optimizerDuck | https://github.com/itsfatduck/optimizerDuck | 9.8k | 2026-09 | NOASSERTION | C# tweak app with a real rollback journal |
+| RyTuneX | https://github.com/rayenghanmi/RyTuneX | 5.5k | 2026-09 | AGPL-3.0 | WinUI 3 optimizer |
+| SophiApp | https://github.com/Sophia-Community/SophiApp | 5.2k | 2026-09 | MIT | C# port of Sophia with a 15-check preflight |
+| RemoveWindowsAI | https://github.com/zoicware/RemoveWindowsAI | 13.2k | 2026-10 | MIT | removes Copilot, Recall and AI components (aggressive; only its policy switches were used) |
+| winscript | https://github.com/flick9000/winscript | 2.9k | 2026-09 | GPL-3.0 | script builder with debloat and privacy options |
+| sparkle | https://github.com/thedogecraft/sparkle | 2.1k | 2026-09 | GPL-3.0 | Electron debloat/optimize app |
+| ET-Optimizer | https://github.com/semazurek/ET-Optimizer | 624 | 2026-08 | GPL-3.0 | C# optimizer |
+| ZOICWARE | https://github.com/zoicware/ZOICWARE | 263 | 2026-09 | MIT | PowerShell tweak app |
+| WindowsMize | https://github.com/agadiffe/WindowsMize | 190 | 2026-09 | MIT | documents on/off values, defaults and policies per setting |
+| Winrift | https://github.com/emylfy/Winrift | 196 | 2026-06 | MIT | post-install pipeline |
+| chemo | https://github.com/t-richards/chemo | 180 | 2026-09 | MIT | opinionated setup tool |
+| TweakList | https://github.com/couleur-tweak-tips/TweakList | 154 | 2025-03 | GPL-3.0 | tweaking PowerShell module |
+| Ancels-Performance-Batch | https://github.com/ancel1x/Ancels-Performance-Batch | 250 | 2026-04 | MIT | latency batch (several dangerous tweaks) |
+| PC-Optimization-Hub | https://github.com/BoringBoredom/PC-Optimization-Hub | 1.3k | 2026-09 | - | performance and input-lag resource collection |
+| windows11 | https://github.com/awesome-windows11/windows11 | 3.6k | 2026-08 | GPL-3.0 | Windows 11 tweak list |
+| Windows-11-Latency-Optimization | https://github.com/NicholasBly/Windows-11-Latency-Optimization | 64 | 2026-02 | MIT | latency scripts |
+| Batlez-Tweaks | https://github.com/Batlez/Batlez-Tweaks | 112 | 2026-10 | MIT | batch tweaker with per-mode power plan cloning |
+| Ghost-Optimizer | https://github.com/louzkk/Ghost-Optimizer | 49 | 2026-08 | MIT | batch optimizer (some inverted values) |
+| WinTune | https://github.com/tranht17/WinTune | 720 | 2026-03 | GPL-3.0 | AutoHotkey tuner |
+| win11tweak | https://github.com/kyaulabs/win11tweak | 113 | 2026-07 | AGPL-3.0 | template-based scripts |
+| Project-Ronin | https://github.com/keiretrogaming/Project-Ronin | 91 | 2026-06 | MIT | handheld/gaming presets |
+| GTweak | https://github.com/Greedeks/GTweak | 1.8k | 2026-09 | BSD-3-Clause | C# portable tool |
+| WindowsDeveloperConfig | https://github.com/microsoft/WindowsDeveloperConfig | 2.9k | 2026-10 | MIT | Microsoft's own developer setup (authoritative values) |
+| windows-dev-box-setup-scripts | https://github.com/microsoft/windows-dev-box-setup-scripts | 1.9k | 2024-02 | MIT | Microsoft dev box scripts |
+| MajorGeeks-Windows-Tweaks | https://github.com/MajorGeek/MajorGeeks-Windows-Tweaks | 414 | 2024-04 | - | 200+ tweaks collection |
+| Windows | https://github.com/TairikuOokami/Windows | 491 | 2026-09 | MIT | large batch tweak file |
+| windows | https://github.com/equk/windows | 318 | 2024-11 | - | PowerShell tweaks |
+| WinSlap | https://github.com/svenmauch/WinSlap | 434 | 2024-04 | GPL-2.0 | fresh-install configurator |
+| Win10BloatRemover | https://github.com/Fs00/Win10BloatRemover | 396 | 2026-01 | BSD-3-Clause-Clear | aggressive CLI debloater |
+| XToolbox | https://github.com/nyxiereal/XToolbox | 974 | 2026-05 | GPL-2.0 | catalog launcher (no tweaks of its own) |
+| TimerResolution | https://github.com/valleyofdoom/TimerResolution | 131 | 2026-01 | GPL-3.0 | timer-resolution tool with documented reasoning |
+| BCDEditTweaks | https://github.com/dubbyOW/BCDEditTweaks | 54 | 2025-03 | MIT | bcdedit tweaks (out of scope) |
+| Win32PrioritySeparationTool | https://github.com/keoy7am/Win32PrioritySeparationTool | 36 | 2024-03 | - | quantum tuning tool |
+| Windows-MultiTool | https://github.com/BoringBoredom/Windows-MultiTool | 60 | 2026-08 | - | enumerates powercfg settings and ranges |
+| Windows11-Optimizer-Debloater | https://github.com/vukilis/Windows11-Optimizer-Debloater | 78 | 2026-09 | MIT | winutil derivative |
+| Windows-On-Reins | https://github.com/gordonbay/Windows-On-Reins | 481 | 2025-06 | GPL-3.0 | hardening script |
+| Pavise-Game | https://github.com/dulaiduwang003/Pavise-Game | 537 | 2026-10 | GPL-3.0 | game resource manager with a crash-safe recovery ledger |
+| process-governor | https://github.com/SystemXFiles/process-governor | 314 | 2025-04 | GPL-3.0 | rules for process priority and services |
+| process-governor | https://github.com/lowleveldesign/process-governor | 819 | 2026-07 | MIT | process limits via job objects |
+| ThreadPilot | https://github.com/PrimeBuild-pc/ThreadPilot | 46 | 2026-09 | AGPL-3.0 | Process Lasso alternative (power plans, priorities) |
+| PowerPlanSwitcher | https://github.com/SebastianBecker2/PowerPlanSwitcher | 116 | 2026-09 | MIT | switches power plan by process rules |
+| PowerPlanSwitcher | https://github.com/Ladbaby/PowerPlanSwitcher | 83 | 2026-10 | MIT | AutoHotkey power plan switcher |
+| Game-Optimizer-CPUs-Threads-Optimizer | https://github.com/charlie754/Game-Optimizer-CPUs-Threads-Optimizer | 211 | 2026-09 | MIT | pins games to CPU cores; documents polling cost |
+| WinMemoryCleaner | https://github.com/IgorMundstein/WinMemoryCleaner | 5.1k | 2025-12 | GPL-3.0 | RAM cleaner |
+| memreduct | https://github.com/henrypp/memreduct | 10.7k | 2026-08 | GPL-3.0 | memory reduction tool (flags the standby list as freezing) |
+| DisplayProfileManager | https://github.com/zac15987/DisplayProfileManager | 109 | 2026-03 | MIT | display profiles with revert on failure |
+| AnyFSE | https://github.com/ashpynov/AnyFSE | 337 | 2026-10 | MIT | Xbox full screen experience helper |
+| GamesDows | https://github.com/jazir555/GamesDows | 209 | 2026-06 | GPL-3.0 | boots into a game launcher |
+| nztsapp | https://github.com/nezhatweaks/nztsapp | 53 | 2025-07 | GPL-3.0 | gaming optimizer app |
+| Windows-Auto-Night-Mode | https://github.com/AutoDarkMode/Windows-Auto-Night-Mode | ? | ? | - | switches theme on time, location and session events |
+| Playnite | https://github.com/Playnite/Playnite | ? | ? | - |  |
+| setup-dev-drive | https://github.com/samypr100/setup-dev-drive | 51 | 2026-08 | MIT | GitHub Action that sets up a Dev Drive |
+
+What the survey changed in WinModes:
+
+- The Optimize page gained 51 settings (Privacy, Ads, Search and AI, Explorer, Gaming) with the projects that ship each one.
+- Findings that are not settings (ownership-aware revert, trigger arbitration, anti-flapping, per-process EcoQoS, per-mode power plans, display profiles, a dev-mode definition) are kept in `round2/` (the analysts' findings, one JSON file per theme, with file and line evidence) and drive the engine and mode work that follows.
+- What not to copy, found in the code: Defender and SmartScreen switches, disabling the UserChoice protection driver, Image File Execution Options debuggers, deleting Explorer `Bags` key trees, Realtime priority for system processes, and global timer-resolution or power-throttling switches.

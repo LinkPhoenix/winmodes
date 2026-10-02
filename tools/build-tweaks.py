@@ -4,6 +4,9 @@ Each tweak is a list of registry values and scheduled tasks. The list of tools t
 setting comes from research/oss-optimizers/tweaks-consensus.json (code-verified survey); a tweak
 without a research id has no tool list and is never marked as recommended.
 
+A second survey (research/oss-optimizers/round2-tweaks.json, from reading about forty more optimizers) adds
+settings of its own, with the projects that ship each one and where in their code it was seen.
+
 Run: python tools/build-tweaks.py
 """
 import json
@@ -123,7 +126,8 @@ TWEAKS = [
     tweak("recall", "Turn off Recall snapshots",
           "Windows does not save snapshots of the screen for Recall. Only matters on Copilot+ PCs.",
           SEARCH, [dword(HKLM, r"SOFTWARE\Policies\Microsoft\Windows\WindowsAI", "DisableAIDataAnalysis", 1)],
-          research="reg-recall"),
+          research="reg-recall",
+          warning="Snapshots that Recall already saved are removed when the policy takes effect."),
     tweak("windows-copilot", "Turn off Windows Copilot",
           "Policy that hides the Windows Copilot side panel. It does not affect Claude, Codex or any other AI tool.",
           SEARCH, [dword(HKCU, r"Software\Policies\Microsoft\Windows\WindowsCopilot", "TurnOffWindowsCopilot", 1)],
@@ -183,6 +187,11 @@ TWEAKS = [
           EXPLORER, [dword(HKLM, r"SYSTEM\CurrentControlSet\Control\FileSystem", "LongPathsEnabled", 1)],
           research="reg-longpaths"),
 ]
+
+# Second survey: curated by hand from the findings, with the texts shown in the app. The evidence stays in the research file.
+for item in json.loads((ROOT / "research/oss-optimizers/round2-tweaks.json").read_text(encoding="utf-8")):
+    TWEAKS.append({key: item[key] for key in (
+        "id", "title", "description", "category", "risk", "recommended", "restart", "warning", "tools", "values", "tasks")})
 
 ids = [item["id"] for item in TWEAKS]
 assert len(ids) == len(set(ids)), "duplicate tweak id"

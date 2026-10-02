@@ -1,0 +1,2009 @@
+{
+ "theme": "windows-ai-and-ui",
+ "repos": [
+  {
+   "repo": "zoicware/RemoveWindowsAI",
+   "what": "Single 5100-line PowerShell script that disables Copilot/Recall/Click to Do/Notepad+Paint+Office+Edge AI through policies and registry, then also removes packages, services and files (only the policy/registry part is reusable).",
+   "licence": "MIT",
+   "relevance": "high"
+  },
+  {
+   "repo": "Raphire/Win11Debloat",
+   "what": "Catalogue of .reg files (Regfiles/ + Regfiles/Undo/ + Config/Features.json with MinVersion/RequiresReboot) for AI, suggestions, Start, taskbar and Explorer; the Undo files give reliable defaults.",
+   "licence": "MIT",
+   "relevance": "high"
+  },
+  {
+   "repo": "ChrisTitusTech/winutil",
+   "what": "config/tweaks.json: registry/scheduled-task tweaks with OriginalValue; useful for Explorer, taskbar and Start toggles, but several OriginalValue entries are wrong (see dangers).",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "agadiffe/WindowsMize",
+   "what": "Best-documented source: every Set-* file states the registry key, the on/off values, the Windows default and the equivalent GPO (Recall, Click to Do, Search, Start, Taskbar, Explorer, Lock screen, Notifications).",
+   "licence": "MIT",
+   "relevance": "high"
+  },
+  {
+   "repo": "microsoft/WindowsDeveloperConfig",
+   "what": "Microsoft-published developer setup: authoritative HKCU values for Explorer (hidden files, full path, This PC, Quick Access), Do Not Disturb, Start/search noise; also shows UCPD-aware best-effort registry steps.",
+   "licence": "MIT",
+   "relevance": "high"
+  },
+  {
+   "repo": "Sophia-Community/SophiApp",
+   "what": "C# app with Mutators.cs (setter per UI preference with both states); useful for defaults and for the UCPD-bypass pitfall.",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "memstechtips/Winhance",
+   "what": "C# models with RegistrySetting(EnabledValue/DisabledValue/DefaultValue) for taskbar, Start, Explorer, privacy and AI; used only as a second source for values.",
+   "licence": "PolyForm Shield 1.0.0 (not OSI, do not copy code)",
+   "relevance": "medium"
+  },
+  {
+   "repo": "itsfatduck/optimizerDuck",
+   "what": "C# optimizer with AI category (Recall, Click to Do) and a CustomizeRefreshScope/SystemRefreshService that refreshes the shell with window messages instead of restarting Explorer.",
+   "licence": "GPL-3.0 (ideas only, do not copy code)",
+   "relevance": "medium"
+  },
+  {
+   "repo": "zoicware/ZOICWARE",
+   "what": "RegTweaks.txt: one large .reg file with comments per tweak; second source for AI/Start/Explorer keys, also contains risky items.",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "TairikuOokami/Windows",
+   "what": "Windows Tweaks.bat with commented value meanings (Edge AI policies, ShouldPrelaunchFileExplorer, StickyKeys flags).",
+   "licence": "MIT",
+   "relevance": "low"
+  },
+  {
+   "repo": "Batlez/Batlez-Tweaks",
+   "what": "Huge batch file; AI/Edge/notification blocks used only to corroborate keys.",
+   "licence": "MIT",
+   "relevance": "low"
+  },
+  {
+   "repo": "t-richards/chemo",
+   "what": "C# tool whose RemoveWindowsAI/RemoveWidgets treatments carry useful comments about what Recall policies delete and about UCPD.",
+   "licence": "MIT",
+   "relevance": "low"
+  },
+  {
+   "repo": "AutoDarkMode/Windows-Auto-Night-Mode",
+   "what": "Theme switcher; DwmRefreshHandler shows the broadcast sequence (WM_SETTINGCHANGE ImmersiveColorSet + WM_THEMECHANGED) used to apply theme changes live.",
+   "licence": "GPL-3.0 (ideas only)",
+   "relevance": "low"
+  },
+  {
+   "repo": "Fs00/Win10BloatRemover",
+   "what": "SuggestionsDisabler.cs: ContentDeliveryManager keys; corroboration only.",
+   "licence": "Clear BSD",
+   "relevance": "low"
+  },
+  {
+   "repo": "rayenghanmi/RyTuneX",
+   "what": "AGPL C# optimizer; read only for InsightsEnabled/DisallowShaking corroboration.",
+   "licence": "AGPL-3.0 (ideas only)",
+   "relevance": "low"
+  }
+ ],
+ "tweaks": [
+  {
+   "id": "click-to-do",
+   "title": "Turn off Click to Do (AI screen overlay)",
+   "category": "Search and AI",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\Shell\\ClickToDo",
+     "name": "DisableClickToDo",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0 = Click to Do on)"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "low",
+   "buildRange": "Windows 11 24H2+ (Win11Debloat gates at 22621, optimizerDuck at 24H2)",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "zoicware/RemoveWindowsAI",
+    "Raphire/Win11Debloat",
+    "itsfatduck/optimizerDuck",
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/settings_app/privacy_&_security/private/windows_permissions/ai/Set-WinPermissionsClickToDo.ps1:37-45 (HKCU toggle: off = 1, on = 0 default)",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:940 (same HKCU key set to 1)",
+    "Raphire_Win11Debloat/Regfiles/Disable_Click_to_Do.reg (policy form under Policies\\Microsoft\\Windows\\WindowsAI, HKCU and HKLM)",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/AI.cs:DisableClickToDo (policy form)"
+   ],
+   "benefit": "Removes the AI overlay and its background component for the current user without any HKLM write; the user-level toggle is the one Settings itself writes.",
+   "caveat": "Only does something on builds that ship Click to Do. The HKCU\\Software\\Policies\\...\\WindowsAI\\DisableClickToDo form (Win11Debloat) is the alternative if the Settings toggle is hidden. Does not touch Claude, Codex or any other AI tool.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "copilot-taskbar-button",
+   "title": "Hide the Copilot button and Ask Copilot entry on the taskbar",
+   "category": "Search and AI",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "ShowCopilotButton",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "TaskbarCompanion",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (sources disagree: Winhance default 1, WindowsMize 'NoneSelected' default)"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11 22H2/23H2 for ShowCopilotButton; TaskbarCompanion is newer (24H2/25H2)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "zoicware/RemoveWindowsAI",
+    "zoicware/ZOICWARE",
+    "TairikuOokami/Windows",
+    "memstechtips/Winhance",
+    "agadiffe/WindowsMize"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Copilot.reg (ShowCopilotButton=0)",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:938 and :1094 (ShowCopilotButton, TaskbarCompanion)",
+    "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/taskbar/items_&_tray_icons/Set-TaskbarAskCopilot.ps1:30-50",
+    "TairikuOokami_Windows/Windows Tweaks.bat:2736 (comment: Copilot / 0 - Off / 1 - On)"
+   ],
+   "benefit": "Removes the Copilot entry points from the taskbar. This is not covered by the existing windows-copilot tweak, which only sets the TurnOffWindowsCopilot policy.",
+   "caveat": "Cosmetic. Do not also write BrandedKey (Copilot hardware key): the user-choice protection driver blocks it for normal tools (see dangers).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "input-insights",
+   "title": "Turn off typing insights (AI input suggestions)",
+   "category": "Search and AI",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\input\\Settings",
+     "name": "InsightsEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11 (all current)",
+   "projects": [
+    "zoicware/ZOICWARE",
+    "zoicware/RemoveWindowsAI",
+    "TairikuOokami/Windows",
+    "memstechtips/Winhance",
+    "rayenghanmi/RyTuneX",
+    "semazurek/ET-Optimizer"
+   ],
+   "evidence": [
+    "zoicware_ZOICWARE/src/RegTweaks.txt:122-124 (comment: Disable AI insights)",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:939",
+    "TairikuOokami_Windows/Windows Tweaks.bat:2356",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:2391-2396 (Enabled 1 / Disabled 0)"
+   ],
+   "benefit": "Stops an input-panel feature that analyses what is typed; agreed by 6 repos.",
+   "caveat": "No source documents exactly what it drives; describe it conservatively in the UI. Value is a per-user DWORD, trivially reversible.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "inking-typing-personalization",
+   "title": "Stop learning from typing and handwriting (inking and typing personalization)",
+   "category": "Privacy and telemetry",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\InputPersonalization",
+     "name": "RestrictImplicitInkCollection",
+     "kind": "Number",
+     "value": "1",
+     "default": "0"
+    },
+    {
+     "path": "Software\\Microsoft\\InputPersonalization",
+     "name": "RestrictImplicitTextCollection",
+     "kind": "Number",
+     "value": "1",
+     "default": "0"
+    },
+    {
+     "path": "Software\\Microsoft\\InputPersonalization\\TrainedDataStore",
+     "name": "HarvestContacts",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Personalization\\Settings",
+     "name": "AcceptedPrivacyPolicy",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\CPSS\\Store\\InkingAndTypingPersonalization",
+     "name": "Value",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "Raphire/Win11Debloat",
+    "zoicware/RemoveWindowsAI",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/settings_app/privacy_&_security/private/windows_permissions/ai/Set-WinPermissionsInkingAndTypingPersonalization.ps1:30-77 (on: 0 0 1 1 1 default | off: 1 1 0 0 0)",
+    "Raphire_Win11Debloat/Regfiles/Disable_Telemetry.reg (RestrictImplicit*, HarvestContacts, AcceptedPrivacyPolicy)",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:1105-1109",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:611-620"
+   ],
+   "benefit": "Windows no longer builds a personal dictionary from what the user types or writes, which is the data the on-device AI input features are trained on.",
+   "caveat": "Loses learned words and text predictions in the touch keyboard and handwriting panel. Not relevant to code editors.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "search-cloud-accounts",
+   "title": "Do not search Microsoft and work accounts from Windows Search",
+   "category": "Search and AI",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+     "name": "IsMSACloudSearchEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+     "name": "IsAADCloudSearchEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 2004+ / Windows 11",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "zoicware/ZOICWARE",
+    "TairikuOokami/Windows",
+    "Batlez/Batlez-Tweaks",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/settings_app/privacy_&_security/private/windows_permissions/search/Set-WinPermissionsCloudSearch.ps1:43-69 (on: 1 default | off: 0)",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:635-641",
+    "TairikuOokami_Windows/Windows Tweaks.bat:3090"
+   ],
+   "benefit": "Search stays local: no query goes to the Microsoft account or Entra tenant. Complements bing-search, which only removes web suggestions.",
+   "caveat": "A user who searches Outlook/SharePoint content from the Start menu with a work account loses that; suggest it for Code/Game, not Work. Policy forms (HKLM AllowCloudSearch=0) exist but are not needed.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "search-device-history",
+   "title": "Do not keep a search history on this device",
+   "category": "Privacy and telemetry",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+     "name": "IsDeviceSearchHistoryEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "agadiffe/WindowsMize",
+    "zoicware/ZOICWARE",
+    "TairikuOokami/Windows",
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Search_History.reg",
+    "Raphire_Win11Debloat/Regfiles/Undo/Enable_Search_History.reg (restores 1)",
+    "agadiffe_WindowsMize/src/modules/settings_app/privacy_&_security/private/windows_permissions/search/Set-WinPermissionsSearchHistory.ps1:28-36"
+   ],
+   "benefit": "Start search no longer records what was searched on the device.",
+   "caveat": "Existing history is not deleted by this value. Previous suggestions disappear from the search box.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "settings-ai-agent",
+   "title": "Turn off the AI agent in Settings search",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "DisableSettingsAgent",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11 24H2/25H2 builds that ship the Settings agent (mostly Copilot+ PCs)",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "zoicware/RemoveWindowsAI",
+    "t-richards/chemo",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/tweaks/public/user_interface_and_experience/Set-WindowsSettingsSearchAgent.ps1:28-39",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:879 (value list in Disable-Registry-Keys)",
+    "t-richards_chemo/src/Treatment/CopilotAI/RemoveWindowsAI.cs (comment: only Enterprise and Education let you turn it off)"
+   ],
+   "benefit": "Settings search stays a plain keyword search.",
+   "caveat": "Chemo notes the policy may only be honoured on Enterprise/Education; on Pro it can be a no-op. Verify on the target build before showing it as effective.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "agentic-features-policy",
+   "title": "Block Windows experimental agent workspaces and connectors (policy)",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "DisableAgentWorkspaces",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "DisableAgentConnectors",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "DisableRemoteAgentConnectors",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "Windows 11 25H2 Insider / recent 26xxx builds only",
+   "projects": [
+    "zoicware/RemoveWindowsAI",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:876-885 (value list), :902-925 (written with Reg.exe and Registry.pol)",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs (DisableAgentConnectors, DisableAgentWorkspaces, DisableRemoteAgentConnectors)"
+   ],
+   "benefit": "Prevents Microsoft's own experimental agent runtime from being enabled behind the user's back.",
+   "caveat": "Only two repos know these names and neither links Microsoft documentation. Agent connectors are the Windows-side hook for MCP-style tool hosts, so this could interfere with AI tools that register with Windows; WinModes' protected-apps rule requires Claude/Codex/Cursor to keep working. Ship as opt-in, never in a default profile, and test with the user's tools first. Do NOT also touch the IsoEnvBroker service key RemoveWindowsAI sets.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "notepad-ai",
+   "title": "Turn off AI writing tools in Notepad",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\WindowsNotepad",
+     "name": "DisableAIFeatures",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Notepad 11.2410+ (Windows 11 22H2+); policy honoured by the Store app",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "zoicware/RemoveWindowsAI",
+    "ChrisTitusTech/winutil",
+    "zoicware/ZOICWARE",
+    "t-richards/chemo"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Notepad_AI_Features.reg",
+    "Raphire_Win11Debloat/Regfiles/Undo/Enable_Notepad_AI_Features.reg (deletes the value)",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:3258 (older approach via settings.dat marked DEPRECATED in the same function)",
+    "ChrisTitusTech_winutil/config/tweaks.json:896-905 (DisableAIFeatures at :902)"
+   ],
+   "benefit": "Removes Rewrite/Summarize/Write from Notepad and its sign-in nudges. Five repos agree on this single documented policy.",
+   "caveat": "Do not copy the older settings.dat hive-loading approach.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "paint-ai",
+   "title": "Turn off generative AI features in Paint",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Paint",
+     "name": "DisableCocreator",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Paint",
+     "name": "DisableGenerativeFill",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Paint",
+     "name": "DisableGenerativeErase",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Paint",
+     "name": "DisableRemoveBackground",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "Windows 11 22H2+ with the Store Paint app",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "memstechtips/Winhance",
+    "zoicware/ZOICWARE",
+    "zoicware/RemoveWindowsAI"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Paint_AI_Features.reg (5 values incl. DisableImageCreator)",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:1119-1127 (comment: DisableImageCreator makes mspaint.exe exit, DisableCocreator/DisableGenerativeFill 'still do nothing'; fixed in 26200.8328)",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs (DisableRemoveBackground, DisableGenerativeErase)"
+   ],
+   "benefit": "Hides the cloud-backed Paint AI tools.",
+   "caveat": "DisableImageCreator is deliberately excluded: RemoveWindowsAI reports Paint refusing to start with it on some builds, while Win11Debloat still sets it. RemoveWindowsAI also reports the other policies had no effect on the builds it tested, so the effect is unproven; test that Paint still opens, and keep the tweak out of default profiles.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "office-copilot",
+   "title": "Turn off Copilot buttons in Word, Excel and PowerPoint",
+   "category": "Search and AI",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Office\\16.0\\Word\\Options",
+     "name": "EnableCopilot",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (= on)"
+    },
+    {
+     "path": "Software\\Microsoft\\Office\\16.0\\Excel\\Options",
+     "name": "EnableCopilot",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (= on)"
+    },
+    {
+     "path": "Software\\Microsoft\\Office\\16.0\\PowerPoint\\Options",
+     "name": "EnableCopilot",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (= on)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Microsoft 365 Apps (16.0 channel) with Copilot enabled",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "zoicware/RemoveWindowsAI",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/applications/settings/private/MicrosoftOffice/options/Set-MSOfficeCopilot.ps1:30-62 (on: 1 default | off: 0, Excel/PowerPoint/Word)",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:2817-2868 (Word, Excel EnableCopilot, default null)",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:1023-1033 (Word/Excel EnableCopilot; PowerPoint uses the name 'Enable Copilot in Settings')"
+   ],
+   "benefit": "The Copilot pane/button disappears from the three Office apps for this user; per-user key, no admin.",
+   "caveat": "Sources disagree on the PowerPoint value name (EnableCopilot in WindowsMize, 'Enable Copilot in Settings' in RemoveWindowsAI). Verify on a real Office install before shipping; write only the names that exist. Do NOT set the Office 'connected experiences' policies RemoveWindowsAI adds (see dangers).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "edge-ai-features",
+   "title": "Turn off Copilot and AI features in Microsoft Edge (policy)",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "CopilotPageContext",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "CopilotCDPPageContext",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "HubsSidebarEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "EdgeEntraCopilotPageContext",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "EdgeHistoryAISearchEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "ComposeInlineEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "NewTabPageBingChatEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "GenAILocalFoundationalModelSettings",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (1 = do not download the local model)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Edge 120+ (policies unknown to older Edge are ignored)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "zoicware/RemoveWindowsAI",
+    "Batlez/Batlez-Tweaks",
+    "TairikuOokami/Windows"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Edge_AI_Features.reg (8 values, Undo deletes them)",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:957-967 (same keys plus others, comments mark CopilotCDPPageContext and Microsoft365CopilotChatIconEnabled as deprecated)",
+    "TairikuOokami_Windows/Windows Tweaks.bat:1498-1523 (value meaning comments)"
+   ],
+   "benefit": "Edge stays fully usable but loses the Copilot side pane, page-context sharing, AI history search and the local model download. Same style as the existing edge-background tweak.",
+   "caveat": "Edge shows 'managed by your organization' once any policy exists. HubsSidebarEnabled=0 hides the whole sidebar, not only Copilot. Do not add BuiltInAIAPIsEnabled=0 / DevToolsGenAiSettings=2 from RemoveWindowsAI: they can break sites and DevTools features developers use. Edge/WebView2 must keep working, so never use the Local State edit or taskkill that RemoveWindowsAI uses.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "edge-ads-suggestions",
+   "title": "Turn off Edge recommendations, shopping and feedback prompts (policy)",
+   "category": "Ads and suggestions",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "ShowRecommendationsEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "EdgeShoppingAssistantEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "UserFeedbackAllowed",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "AlternateErrorPagesEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "WalletDonationEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "DefaultBrowserSettingsCampaignEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "NewTabPageContentEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "SpotlightExperiencesAndRecommendationsEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Edge 100+",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "ChrisTitusTech/winutil"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Edge_Ads_And_Suggestions.reg",
+    "ChrisTitusTech_winutil/config/tweaks.json:302-430 (WPFTweaksEdgeDebloat: ShowRecommendationsEnabled, EdgeShoppingAssistantEnabled, UserFeedbackAllowed, AlternateErrorPagesEnabled, WalletDonationEnabled, DefaultBrowserSettingsCampaignEnabled, EdgeCollectionsEnabled, ShowMicrosoftRewards, WebWidgetAllowed, EdgeAssetDeliveryServiceEnabled)"
+   ],
+   "benefit": "Removes the MSN feed, sponsored tiles, shopping assistant popups and 'make Edge default' campaigns without disabling Edge.",
+   "caveat": "Direction check: Win11Debloat also sets HideFirstRunExperience=0 and TabServicesEnabled=0, which are excluded here (0 does not hide the first-run page; winutil uses 1). Policies make Edge show the managed banner.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "taskbar-task-view",
+   "title": "Hide the Task View button on the taskbar",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "ShowTaskViewButton",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "ChrisTitusTech/winutil",
+    "zoicware/ZOICWARE",
+    "memstechtips/Winhance",
+    "itsfatduck/optimizerDuck"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Hide_Taskview_Taskbar.reg",
+    "Raphire_Win11Debloat/Regfiles/Undo/Show_Taskview_Taskbar.reg (restores 1)",
+    "ChrisTitusTech_winutil/config/tweaks.json:1814-1830"
+   ],
+   "benefit": "Declutters the taskbar; Win+Tab still works.",
+   "caveat": "Pure preference; keep out of default profiles.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "taskbar-search-box",
+   "title": "Shrink the taskbar search box to an icon",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+     "name": "SearchboxTaskbarMode",
+     "kind": "Number",
+     "value": "1",
+     "default": "2"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11 (Win11Debloat gates at 22000)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "agadiffe/WindowsMize",
+    "ChrisTitusTech/winutil",
+    "memstechtips/Winhance",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/taskbar/items_&_tray_icons/Set-TaskbarSearchBox.ps1:37-45 (hide 0 | icon 1 | box 2 default | icon+label 3)",
+    "Raphire_Win11Debloat/Regfiles/Hide_Search_Taskbar.reg, Show_Search_Icon.reg, Show_Search_Box.reg, Show_Search_Icon_And_Label.reg"
+   ],
+   "benefit": "Frees horizontal taskbar space; also removes the search box's rotating highlights tile surface.",
+   "caveat": "Default 2 is per WindowsMize; some OEM images ship 1. Journal the live value. A policy (HKLM Windows Search SearchOnTaskbarMode) also exists and would override the user value, so do not mix.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "taskbar-last-active-click",
+   "title": "Taskbar: click an app icon to cycle its windows",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "LastActiveClick",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (= 0)"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11 (Win11Debloat gates at 22000)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "agadiffe/WindowsMize",
+    "itsfatduck/optimizerDuck"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Enable_Last_Active_Click.reg (explanatory comment)",
+    "Raphire_Win11Debloat/Regfiles/Undo/Disable_Last_Active_Click.reg (deletes the value)",
+    "agadiffe_WindowsMize/src/modules/tweaks/public/windows_features_and_settings/Set-TaskbarLastActiveClick.ps1:33-42 (on: 1 | off: delete)"
+   ],
+   "benefit": "With many terminals/editors open, one click focuses the last active window of that app instead of showing a thumbnail list that needs a second click; hover still shows the list.",
+   "caveat": "Behaviour change, so opt-in. Undo = delete the value (absent default), which the journal handles.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "taskbar-never-combine",
+   "title": "Taskbar: never combine buttons and show labels",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "TaskbarGlomLevel",
+     "kind": "Number",
+     "value": "2",
+     "default": "0 (always combine)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "MMTaskbarGlomLevel",
+     "kind": "Number",
+     "value": "2",
+     "default": "0"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11 builds that expose 'never combine' (25H2/24H2 and 22H2 updates; Win11Debloat gates at 22000, so the exact first build is unverified)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Combine_Taskbar_Never.reg and Combine_MMTaskbar_Never.reg (0 always | 1 when full | 2 never)",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Customize/Models/TaskbarCustomizations.cs:444-530"
+   ],
+   "benefit": "Each terminal/editor window gets its own labelled button.",
+   "caveat": "Preference only; MMTaskbarGlomLevel matters only with multiple monitors.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "snap-popups",
+   "title": "Turn off snap suggestions and snap layout popups",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "EnableSnapAssistFlyout",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "EnableSnapBar",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "SnapAssist",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11 (Win11Debloat gates at 22000)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "agadiffe/WindowsMize",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Snap_Layouts.reg and Disable_Snap_Assist.reg",
+    "agadiffe_WindowsMize/src/modules/settings_app/system/private/multitasking/Set-SnapShowLayoutOnTopScreen.ps1:30-37, Set-SnapShowLayoutOnMaxButtonHover.ps1:30-37, Set-SnapSuggestions.ps1:30-37 (all on: 1 default)"
+   ],
+   "benefit": "No layout flyout when hovering the maximize button or dragging to the top, and no 'what to snap next' overlay. Win+Arrow snapping keeps working.",
+   "caveat": "Do not take Win11Debloat's Disable_Window_Snapping (Control Panel\\Desktop WindowArrangementActive=0): that turns snapping off completely.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "alt-tab-windows-only",
+   "title": "Alt+Tab and Snap show windows only (no Edge tabs)",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "MultiTaskingAltTabFilter",
+     "kind": "Number",
+     "value": "3",
+     "default": "2 (3 most recent tabs, per WindowsMize); 0 = 20 tabs, 1 = 5 tabs"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11 22H2+ (Win11Debloat gates at 22000)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "agadiffe/WindowsMize",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Hide_Tabs_In_Alt_Tab.reg, Show_3_Tabs_In_Alt_Tab.reg (2), Show_5_Tabs_In_Alt_Tab.reg (1), Show_20_Tabs_In_Alt_Tab.reg (0)",
+    "agadiffe_WindowsMize/src/modules/settings_app/system/private/multitasking/Set-MultitaskingShowAppsTabsOnSnapAndAltTab.ps1:37 (0=20, 1=5, 2=3 default, 3=none)"
+   ],
+   "benefit": "Alt+Tab lists only real windows; with dozens of Edge tabs open the switcher is much shorter.",
+   "caveat": "Windows default differs between builds (older 22H2 default was 5 tabs); journal the live value. A policy form with shifted numbering exists (1..4); do not mix.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "lockscreen-widgets",
+   "title": "Turn off lock screen widgets",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Lock Screen",
+     "name": "LockScreenWidgetsEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Lock Screen",
+     "name": "LockScreenWidgetsSystemCurationEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11 23H2+/24H2+ with lock screen widgets",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/lock_screen/Set-LockScreenWidgets.ps1:37-45 and Set-LockScreenWidgetsSuggestion.ps1:28-36 (on: 1 default | off: 0)",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:304-306 (LockScreenWidgetsEnabled=0, AutoSelectWidgetsOnLockScreen=0)"
+   ],
+   "benefit": "No news/weather widgets or 'suggested widgets' on the lock screen. Complements the existing widgets and lockscreen-tips tweaks.",
+   "caveat": "The HKLM policy DisableWidgetsOnLockScreen exists (WindowsMize) but is machine scope and not needed.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "share-surfaces",
+   "title": "Turn off the Share drag tray and promoted apps in Share",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\CDP",
+     "name": "DragTrayEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\CDP",
+     "name": "EnablePromotionalAppsForShare",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "DragTray: Windows 11 24H2/25H2 (Win11Debloat gates at 26200); Share promos: 22H2+",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "agadiffe/WindowsMize",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Share_Drag_Tray.reg and Undo/Enable_Share_Drag_Tray.reg",
+    "agadiffe_WindowsMize/src/modules/settings_app/system/private/multitasking/Set-MultitaskingDropTray.ps1:28-36",
+    "agadiffe_WindowsMize/src/modules/settings_app/system/private/share/Set-ShareShowSuggestedApps.ps1:28-36",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:1129-1131"
+   ],
+   "benefit": "The tray that pops up while dragging files stops appearing, and the Share dialog stops advertising apps.",
+   "caveat": "Do not copy ZOICWARE's RomeSdkChannelUserAuthzPolicy/NearShare CDP policies in the same file: they disable cross-device sharing wholesale.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "welcome-and-setup-nags",
+   "title": "Stop 'welcome experience' and 'finish setting up your device' prompts",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "SubscribedContent-310093Enabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\UserProfileEngagement",
+     "name": "ScoobeSystemSettingEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "SubscribedContent-353698Enabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 / 11",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "agadiffe/WindowsMize",
+    "Fs00/Win10BloatRemover",
+    "zoicware/ZOICWARE",
+    "memstechtips/Winhance",
+    "Sophia-Community/SophiApp"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Windows_Suggestions.reg (SubscribedContent-310093Enabled, ScoobeSystemSettingEnabled, SubscribedContent-353698Enabled)",
+    "agadiffe_WindowsMize/src/modules/settings_app/system/private/notifications/Set-NotificationsShowWelcomeExperience.ps1:39-47 and Set-NotificationsSuggestWaysToFinishConfig.ps1:30-38 (on: 1 default)",
+    "Fs00_Win10BloatRemover/src/Operations/SuggestionsDisabler.cs:21,43",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:698,828"
+   ],
+   "benefit": "No full-screen 'Let's finish setting up' or post-update welcome pages. Not in the existing start-suggestions tweak, which already covers 338388/338389/338393/353694/353696.",
+   "caveat": "Windows can re-seed these after a feature update; show drift status (see modeIdeas).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "account-notifications",
+   "title": "Hide Microsoft account promotions in Start and Settings",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "Start_AccountNotifications",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SystemSettings\\AccountNotifications",
+     "name": "EnableAccountNotifications",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig",
+    "Raphire/Win11Debloat",
+    "agadiffe/WindowsMize",
+    "Sophia-Community/SophiApp",
+    "ChrisTitusTech/winutil",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-taskbar-search.ps1:55-61 (Start_AccountNotifications=0, written by Microsoft's own dev setup)",
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/README.md:241",
+    "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/start/other/Set-StartShowAccountNotifications.ps1:28-36 and privacy_&_security/private/windows_permissions/user data/Set-WinPermissionsShowNotifsInSettingsApp.ps1:30-37",
+    "Raphire_Win11Debloat/Regfiles/Disable_Windows_Suggestions.reg"
+   ],
+   "benefit": "Removes the 'back up with OneDrive / finish account setup' badges on the profile menu in Start and in Settings. Microsoft's own developer configuration sets the Start key, so it is the safest item here.",
+   "caveat": "Genuine account problems (expired sign-in) are no longer flagged in Start.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "promo-toasts",
+   "title": "Block promotional toasts (suggestions, backup reminder, phone link)",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings\\Windows.SystemToast.Suggested",
+     "name": "Enabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (= on)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings\\Windows.SystemToast.BackupReminder",
+     "name": "Enabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (= on)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Mobility",
+     "name": "OptedIn",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent / 1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "agadiffe/WindowsMize",
+    "zoicware/ZOICWARE",
+    "ChrisTitusTech/winutil"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Windows_Suggestions.reg (Windows.SystemToast.Suggested, BackupReminder, Mobility OptedIn)",
+    "Raphire_Win11Debloat/Regfiles/Undo/Enable_Windows_Suggestions.reg (all three restored to 1)",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:685-690"
+   ],
+   "benefit": "Targets only the advertising toast categories, instead of disabling all notifications.",
+   "caveat": "Do NOT copy ZOICWARE's neighbouring entries for Windows.SystemToast.SecurityAndMaintenance, CapabilityAccess, StartupApp or LowDisk (RegTweaks.txt:647-696): they silence security and maintenance alerts. Win11Debloat's Undo also writes HKLM WindowsBackup DisableMonitoring, which is not needed here.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "content-delivery-master",
+   "title": "Turn off Windows content delivery (pre-installed app and tip pipeline)",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "ContentDeliveryAllowed",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "FeatureManagementEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "OemPreInstalledAppsEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "PreInstalledAppsEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "PreInstalledAppsEverEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "SubscribedContentEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 / 11",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "ChrisTitusTech/winutil",
+    "TairikuOokami/Windows",
+    "Batlez/Batlez-Tweaks",
+    "memstechtips/Winhance",
+    "zoicware/ZOICWARE",
+    "itsfatduck/optimizerDuck"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/tweaks/public/user_interface_and_experience/Set-SuggestedContent.ps1:28-83 (on: 1 default | off: 0)",
+    "ChrisTitusTech_winutil/config/tweaks.json:446-570 (telemetry tweak includes ContentDeliveryAllowed, OemPreInstalledAppsEnabled, PreInstalledAppsEnabled)",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:748-749"
+   ],
+   "benefit": "Master switches behind the per-slot SubscribedContent keys already covered by start-suggestions and lockscreen-tips; stops Windows from fetching new promotional content at all (about 19 repos set at least one of them).",
+   "caveat": "May also stop Windows Spotlight images on the lock screen if Spotlight is selected (not proven by the sources; check RotatingLockScreenEnabled). The existing consumer-features tweak already covers SilentInstalledAppsEnabled.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "start-recommended",
+   "title": "Hide the Recommended section in Start",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer",
+     "name": "HideRecommendedSection",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "medium",
+   "buildRange": "Windows 11 22H2+ (Win11Debloat gates at 22621)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "ChrisTitusTech/winutil",
+    "agadiffe/WindowsMize"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Start_Recommended.reg (HKCU policy form)",
+    "Raphire_Win11Debloat/Regfiles/Undo/Enable_Start_Recommended.reg (comment: HKLM Policies, PolicyManager\\device\\Start and Education IsEducationEnvironment kept 'for legacy reasons')",
+    "ChrisTitusTech_winutil/config/tweaks.json:1706-1748 (HKLM PolicyManager + Policies form; description warns it also disables Spotlight on the lock screen)"
+   ],
+   "benefit": "Removes recent files and promoted apps from Start for the current user.",
+   "caveat": "Effectiveness of the HKCU policy on Windows 11 Pro is the least-verified item in this list: the older, documented path needed the education SKU switch (IsEducationEnvironment) which writes under SOFTWARE\\Microsoft\\PolicyManager (unsupported direct write). Test on the target build; fall back to Start_IrisRecommendations (already covered).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "start-app-lists",
+   "title": "Hide 'Recently added' and 'Most used' app lists in Start",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Start",
+     "name": "ShowRecentList",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Start",
+     "name": "ShowFrequentList",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "memstechtips/Winhance",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/start/all_apps/Set-StartShowMostUsedApps.ps1:39-47 and Set-StartShowRecentAddedApps.ps1:37-45 (on: 1 default | off: 0)",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:107-110"
+   ],
+   "benefit": "Start's All apps list becomes a plain alphabetical list.",
+   "caveat": "Do not use the HKLM Policies equivalents (HideRecentlyAddedApps, ShowOrHideMostUsedApps) that ZOICWARE writes; they lock the user's own setting.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "start-track-apps",
+   "title": "Stop Windows tracking app launches for Start and search ranking",
+   "category": "Privacy and telemetry",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "Start_TrackProgs",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 / 11",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "ChrisTitusTech/winutil",
+    "agadiffe/WindowsMize",
+    "Fs00/Win10BloatRemover",
+    "zoicware/ZOICWARE",
+    "memstechtips/Winhance",
+    "itsfatduck/optimizerDuck"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Telemetry.reg (comment: Let Windows improve Start and search results by tracking app launches)",
+    "agadiffe_WindowsMize/src/modules/settings_app/privacy_&_security/private/windows_permissions/user data/Set-WinPermissionsTrackAppLaunches.ps1:37-45",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:604-609"
+   ],
+   "benefit": "Privacy toggle (Settings > Privacy > General); 18 repos set it.",
+   "caveat": "Start/search no longer learn frequently used apps, so ranking of results is less personal.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "start-track-docs",
+   "title": "Do not keep recently opened items (Start, Jump Lists, Explorer)",
+   "category": "Privacy and telemetry",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "Start_TrackDocs",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "medium",
+   "buildRange": "Windows 10 / 11",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "zoicware/ZOICWARE",
+    "Sophia-Community/SophiApp",
+    "ChrisTitusTech/winutil",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/start/other/Set-StartShowRecentItems.ps1:6-7,41-49 (on: 1 default | off: 0)",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:254-257"
+   ],
+   "benefit": "No list of recently opened files in Start, taskbar Jump Lists or Explorer's Recent.",
+   "caveat": "Removes useful 'recent files' in Jump Lists of editors and terminals; developer-unfriendly, so keep it out of the Code mode. Do not add the HKLM NoRecentDocsHistory / ClearRecentDocsOnExit policies from ZOICWARE.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-home-recommended",
+   "title": "Hide recommended and cloud files in File Explorer Home",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+     "name": "ShowRecommendations",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+     "name": "ShowCloudFilesInQuickAccess",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11 22H2+",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig",
+    "agadiffe/WindowsMize",
+    "memstechtips/Winhance",
+    "TairikuOokami/Windows"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-explorer.ps1:132-136 (ShowCloudFilesInQuickAccess=0, 'recommended/cloud files')",
+    "agadiffe_WindowsMize/src/modules/file_explorer/private/general/Set-FileExplorerShowRecommendedSection.ps1:5,30-32 and Set-FileExplorerShowCloudFiles.ps1:30-32 (on: 1 default; Recommended requires CloudFiles)",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Customize/Models/ExplorerCustomizations.cs (ShowRecommendations, ShowCloudFilesInQuickAccess)"
+   ],
+   "benefit": "Removes Office.com/OneDrive recommended files from Home and Quick Access, which makes Explorer open faster and quieter.",
+   "caveat": "Complements explorer-ads (ShowSyncProviderNotifications) already in WinModes.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "quick-access-history",
+   "title": "Do not show recent files and frequent folders in Quick Access",
+   "category": "Privacy and telemetry",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+     "name": "ShowRecent",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+     "name": "ShowFrequent",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 10 / 11",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig",
+    "Sophia-Community/SophiApp",
+    "zoicware/ZOICWARE",
+    "agadiffe/WindowsMize"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-explorer.ps1:118-130 (ShowFrequent=0, ShowRecent=0)",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:483-498"
+   ],
+   "benefit": "Explorer stops listing recently opened files and frequently used folders; used by Microsoft's own dev config.",
+   "caveat": "Also hides useful recent folders. Neither value clears existing history.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-hidden-files",
+   "title": "Show hidden files and folders in File Explorer",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "Hidden",
+     "kind": "Number",
+     "value": "1",
+     "default": "2"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig",
+    "Raphire/Win11Debloat",
+    "ChrisTitusTech/winutil",
+    "Sophia-Community/SophiApp",
+    "agadiffe/WindowsMize",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-explorer.ps1:95-100 (Value 1, ResetValue 2)",
+    "Raphire_Win11Debloat/Regfiles/Show_Hidden_Folders.reg and Undo/Hide_Hidden_Folders.reg (2)",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:388-391 (enable ? 1 : 2)",
+    "agadiffe_WindowsMize/src/modules/file_explorer/private/view/files_and_folders/Set-FileExplorerShowHiddenItems.ps1:28-31 (on: 1 | off: 2 default)"
+   ],
+   "benefit": "Dotfiles, .git, .vscode and AppData are visible. Complements the existing file-extensions tweak.",
+   "caveat": "Direction trap: the OFF value is 2, not 0. ChrisTitusTech/winutil stores OriginalValue 0 (tweaks.json:1377-1390 (Hidden at :1386)), which is wrong. Leave ShowSuperHidden (protected OS files) alone.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-full-path-title",
+   "title": "Show the full path in the File Explorer title bar",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\CabinetState",
+     "name": "FullPath",
+     "kind": "Number",
+     "value": "1",
+     "default": "0"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig",
+    "agadiffe/WindowsMize",
+    "itsfatduck/optimizerDuck",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-explorer.ps1:103-108 (Value 1, ResetValue 0)",
+    "agadiffe_WindowsMize/src/modules/file_explorer/private/view/files_and_folders/Set-FileExplorerShowFullPathInTitleBar.ps1:28-36 (on: 1 | off: 0 default)"
+   ],
+   "benefit": "Window title and taskbar thumbnail show the full folder path.",
+   "caveat": "Cosmetic.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-launch-this-pc",
+   "title": "Open File Explorer to This PC",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "LaunchTo",
+     "kind": "Number",
+     "value": "1",
+     "default": "2 on current Windows 11 (Home); 3 = Downloads, 4 = OneDrive"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any (value 4 and Home need 22H2+)",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig",
+    "Raphire/Win11Debloat",
+    "ChrisTitusTech/winutil",
+    "Sophia-Community/SophiApp",
+    "agadiffe/WindowsMize"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-explorer.ps1:111-115",
+    "Raphire_Win11Debloat/Regfiles/Launch_File_Explorer_To_This_PC.reg, _To_Home.reg (2), _To_Downloads.reg (3)",
+    "agadiffe_WindowsMize/src/modules/file_explorer/private/general/Set-FileExplorerLaunchTo.ps1:28 (This PC 1 | Home 2 default | Downloads 3 | OneDrive 4)"
+   ],
+   "benefit": "Skips the Home page, which loads cloud recommendations.",
+   "caveat": "If Home is hidden from the navigation pane (explorer-gallery-home), LaunchTo must not be 2.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-compact-view",
+   "title": "Use compact spacing in File Explorer lists",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "UseCompactMode",
+     "kind": "Number",
+     "value": "1",
+     "default": "0"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11 21H2+",
+   "projects": [
+    "Sophia-Community/SophiApp",
+    "agadiffe/WindowsMize",
+    "itsfatduck/optimizerDuck",
+    "memstechtips/Winhance",
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:428-431",
+    "agadiffe_WindowsMize/src/modules/file_explorer/private/view/files_and_folders/Set-FileExplorerCompactView.ps1:28-31 (on: 1 | off: 0 default)"
+   ],
+   "benefit": "Denser file lists, more files per screen for repo-heavy folders.",
+   "caveat": "Preference only.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-prelaunch",
+   "title": "Do not preload File Explorer in the background",
+   "category": "System and background",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "ShouldPrelaunchFileExplorer",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "low",
+   "buildRange": "Windows 11 24H2/25H2 (option 'Enable window preloading for faster launch times')",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "TairikuOokami/Windows",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/file_explorer/private/view/files_and_folders/Set-FileExplorerPrelaunch.ps1:25-33 (on: 1 default | off: 0)",
+    "TairikuOokami_Windows/Windows Tweaks.bat:650-651 (0 disables preloading)",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:1122-1123 (sets 1: the opposite choice)"
+   ],
+   "benefit": "Saves an idle explorer.exe window's memory, which matches the 'keep the system light' goal.",
+   "caveat": "First Explorer window opens a little slower. Sources disagree on the preferred direction (ZOICWARE enables it for speed), so present it as a memory-vs-speed choice for Work/Code modes.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "classic-context-menu",
+   "title": "Use the classic right-click menu (no 'Show more options')",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32",
+     "name": "",
+     "kind": "Text",
+     "value": "",
+     "default": "absent (the whole CLSID key does not exist)"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11 (all builds so far)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "ChrisTitusTech/winutil",
+    "zoicware/ZOICWARE",
+    "Sophia-Community/SophiApp",
+    "itsfatduck/optimizerDuck"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Show_More_Options_Context_Menu.reg (default value of InprocServer32 set to empty string)",
+    "Raphire_Win11Debloat/Regfiles/Undo/Enable_W11_Style_Context_Menu.reg (deletes the whole CLSID key)",
+    "ChrisTitusTech_winutil/config/tweaks.json:1088-1102 (InvokeScript creates the key, UndoScript removes it)",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Customize/Categories/Preferences.cs:499-502"
+   ],
+   "benefit": "Full context menu (Open with, Open in Terminal, VS Code entries) without an extra click; the most widely shipped Windows 11 tweak in the sample.",
+   "caveat": "Engine requirement: the CLSID key and its InprocServer32 subkey do not exist by default, and the value is the unnamed default value. The journal must record 'key absent' and undo by deleting the key tree, not by writing a value. Hijacks a shell CLSID only in HKCU, so it affects this user only.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-gallery-home",
+   "title": "Hide Gallery and Home in the File Explorer navigation pane",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Classes\\CLSID\\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}",
+     "name": "System.IsPinnedToNameSpaceTree",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (pinned)"
+    },
+    {
+     "path": "Software\\Classes\\CLSID\\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}",
+     "name": "System.IsPinnedToNameSpaceTree",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (pinned)"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11 22H2+ (Home 22H2, Gallery 23H2; Win11Debloat gates at 22000)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "ChrisTitusTech/winutil"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Hide_Gallery_from_Explorer.reg and Hide_Home_from_Explorer.reg (per-user CLSID values; the HKLM 'Show Gallery/Home' checkbox entries in the same files are not needed)",
+    "Raphire_Win11Debloat/Regfiles/Undo/Show_Home_in_Explorer.reg (sets 1)",
+    "ChrisTitusTech_winutil/config/tweaks.json:686-715 (WPFTweaksRemoveHomeAndGallery, also forces LaunchTo=1)"
+   ],
+   "benefit": "Removes two cloud-backed navigation entries.",
+   "caveat": "Set explorer-launch-this-pc together with this one, otherwise Explorer tries to open a hidden Home. Only the HKCU part is proposed; Win11Debloat's HKLM option-registration keys change Explorer's Folder Options dialog for all users and are skipped.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "sticky-keys-shortcut",
+   "title": "Turn off the Shift x5 Sticky Keys shortcut",
+   "category": "Input and latency",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Control Panel\\Accessibility\\StickyKeys",
+     "name": "Flags",
+     "kind": "Text",
+     "value": "506",
+     "default": "510"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "low",
+   "buildRange": "any (Win11Debloat gates at 26100 for unclear reasons)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "Sophia-Community/SophiApp",
+    "ChrisTitusTech/winutil",
+    "TairikuOokami/Windows",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Sticky_Keys_Shortcut.reg (string 506)",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:1268-1270 (REG_SZ: 510 enabled, 506 shortcut off)",
+    "ChrisTitusTech_winutil/config/tweaks.json:1750-1766 (Flags at :1759) (writes 506 as DWord with OriginalValue 58: wrong type and wrong default)",
+    "TairikuOokami_Windows/Windows Tweaks.bat:2333-2334 (26 = disable all, claims default 511)"
+   ],
+   "benefit": "Pressing Shift five times while gaming or coding no longer opens the Sticky Keys prompt and steals focus.",
+   "caveat": "Flags is a REG_SZ bit mask: 506 = 510 with bit 0x4 (hotkey active) cleared, so Sticky Keys stays available in Settings. Implement as 'clear one bit of the live value' (see modeIdeas), not as a blind overwrite; sources disagree on the default (510 Sophia, 511 Tairiku, 58 winutil). Accessibility users who rely on the shortcut must not get it.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "window-animations",
+   "title": "Reduce window and taskbar animations",
+   "category": "System and background",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Control Panel\\Desktop\\WindowMetrics",
+     "name": "MinAnimate",
+     "kind": "Text",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "TaskbarAnimations",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\DWM",
+     "name": "EnableAeroPeek",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "ChrisTitusTech/winutil",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "ChrisTitusTech_winutil/config/tweaks.json:716-815 (WPFTweaksDisplay: MinAnimate '0' orig '1', TaskbarAnimations 0 orig 1, EnableAeroPeek 0 orig 1)",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:375-391 (same three)"
+   ],
+   "benefit": "Minimise/maximise and taskbar transitions are instant; Peek previews are off. Pairs with the existing transparency tweak for a lighter Work/Code mode.",
+   "caveat": "Deliberately excludes UserPreferencesMask (binary, not representable as Number/Text) and winutil's DragFullWindows/MenuShowDelay/KeyboardDelay: the sources disagree on them, and winutil writes KeyboardDelay as DWord although Windows stores it as a string. MinAnimate is a REG_SZ.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "do-not-disturb",
+   "title": "Turn on Do Not Disturb (silence all toasts)",
+   "category": "Gaming",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings",
+     "name": "NOC_GLOBAL_SETTING_TOASTS_ENABLED",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (= 1, toasts on)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "Windows 11",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-taskbar-search.ps1:13-19 (DoNotDisturb: NOC_GLOBAL_SETTING_TOASTS_ENABLED=0, 'disable all notifications')",
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/README.md:235",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:29142-29151 (uses PushNotifications ToastEnabled and a differently named NOC_GLOBAL_SETTING_ALLOW_TOASTS)"
+   ],
+   "benefit": "A reversible per-user quiet switch for Game mode (no toast popups over a full-screen game or a recording). Only Microsoft's own repo names this value; the other repos use different value names.",
+   "caveat": "Single-source (but the source is Microsoft). Silences every toast including Defender/Bitdefender alerts and update-restart prompts, so make it Game-mode only and restore the recorded value on exit. Whether the Settings > Do Not Disturb UI updates immediately is not shown in the source; verify on the target build. Never copy ZOICWARE's per-category switches for SecurityAndMaintenance toasts.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "settings-online-tips",
+   "title": "Turn off online tips in the Settings app",
+   "category": "Ads and suggestions",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+     "name": "AllowOnlineTips",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 / 11",
+   "projects": [
+    "agadiffe/WindowsMize",
+    "Fs00/Win10BloatRemover",
+    "TairikuOokami/Windows",
+    "Batlez/Batlez-Tweaks",
+    "rayenghanmi/RyTuneX"
+   ],
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/tweaks/public/user_interface_and_experience/Set-OnlineTips.ps1:28-39 (not configured: delete | off: 0)",
+    "Fs00_Win10BloatRemover/src/Operations/SuggestionsDisabler.cs:54",
+    "TairikuOokami_Windows/Windows Tweaks.bat:1110"
+   ],
+   "benefit": "Settings no longer fetches online tips from Microsoft.",
+   "caveat": "Machine-scope policy under the shared Policies\\Explorer key; do not write SettingsPageVisibility there (see dangers).",
+   "alreadyInWinModes": false
+  }
+ ],
+ "modeIdeas": [
+  {
+   "title": "Game mode: switch Do Not Disturb on, restore the recorded value on exit",
+   "kind": "notification",
+   "how": "Microsoft's WindowsDeveloperConfig sets HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings\\NOC_GLOBAL_SETTING_TOASTS_ENABLED=0 as its 'Do Not Disturb' step. Batlez's batch also writes PushNotifications\\ToastEnabled and NOC_GLOBAL_SETTING_ALLOW_NOTIFICATION_SOUND, and on 'enable' hardcodes 1 for everything.",
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-taskbar-search.ps1:13-19",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:29142-29151 (disable) and :29184-29189 (enable with hardcoded 1)",
+    "Raphire_Win11Debloat/Regfiles/Disable_Notifications.reg (ToastEnabled=0)"
+   ],
+   "applicableToWinModes": "Add as a per-mode option applied unelevated by ModeSwitcher with the live value journaled first (absent is a valid previous state). Undo must delete the value if it was absent, never write 1. Warn that security-product and update toasts are silenced; consider leaving ToastEnabled and the sound switch alone and using only the single DND value."
+  },
+  {
+   "title": "Refresh the shell with window messages instead of restarting Explorer",
+   "kind": "ui",
+   "how": "optimizerDuck declares a refresh scope per setting: WM_SETTINGCHANGE broadcast (also with the string 'TraySettings' for taskbar changes), SHChangeNotify(SHCNE_ASSOCCHANGED), SystemParametersInfo with SPIF_SENDCHANGE, WM_THEMECHANGED. winutil's Invoke-WinUtilExplorerUpdate sends WM_SETTINGCHANGE 'ImmersiveColorSet' for refresh and only kills explorer.exe for 'restart'. AutoDarkMode broadcasts ImmersiveColorSet then WM_THEMECHANGED, with SMTO_ABORTIFHUNG and a short timeout.",
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Common/Helpers/SystemRefreshService.cs:95-127,180-198",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Customize/Models/CustomizeRefreshScope.cs:4-60",
+    "ChrisTitusTech_winutil/functions/private/Invoke-WinUtilExplorerUpdate.ps1",
+    "AutoDarkMode_Windows-Auto-Night-Mode/AutoDarkModeSvc/Handlers/DwmRefreshHandler.cs:239-262"
+   ],
+   "applicableToWinModes": "Add a 'refresh' field next to 'restart' in tweaks.json (none | broadcast | taskbar | explorer-restart | sign-out) and use the lightest one that works. A mode switch would then not flicker or close open Explorer windows. Re-implement the idea in WinModes' own code (optimizerDuck and AutoDarkMode are GPL-3.0). SendMessageTimeout with SMTO_ABORTIFHUNG avoids blocking on a hung window."
+  },
+  {
+   "title": "Per-mode dark/light theme with live broadcast",
+   "kind": "display",
+   "how": "HKCU Themes\\Personalize AppsUseLightTheme and SystemUsesLightTheme (0 = dark, 1 = light). Win11Debloat ships Enable_Dark_Mode.reg and an Undo Enable_Light_Mode.reg; AutoDarkMode writes AppsUseLightTheme as a DWORD in RegistryHandler and then broadcasts.",
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Enable_Dark_Mode.reg",
+    "AutoDarkMode_Windows-Auto-Night-Mode/AutoDarkModeSvc/Handlers/RegistryHandler.cs:189",
+    "AutoDarkMode_Windows-Auto-Night-Mode/AutoDarkModeSvc/Handlers/DwmRefreshHandler.cs:235-262",
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/README.md:249-253"
+   ],
+   "applicableToWinModes": "Two Number values plus a broadcast. Record the previous pair so a mode that goes dark returns the user's exact previous theme (not a fixed light). Existing 'transparency' tweak lives under the same key."
+  },
+  {
+   "title": "Treat Windows-protected keys as 'blocked', never bypass the protection",
+   "kind": "safety",
+   "how": "TaskbarDa (Widgets button) and BrandedKey are protected by the User Choice Protection Driver: WindowsMize's Set-TaskbarWidgets says 'Requested registry access is not allowed' and leaves it commented out; Microsoft's dev config marks the Widgets step BestEffort and catches UnauthorizedAccessException; Sophia, RemoveWindowsAI copy PowerShell/reg.exe under another name to slip past the driver.",
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/taskbar/items_&_tray_icons/Set-TaskbarWidgets.ps1:5-8",
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-taskbar-search.ps1:45-52 and steps/_registry.ps1 (Set-DevConfigRegistryValue catch)",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:1095-1101",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:517-526 and Services/PowerShellService.cs:69"
+   ],
+   "applicableToWinModes": "When a write fails with Access denied on a key that normally succeeds, report 'blocked by Windows protection' in the history and skip, without retry tricks. Existing widgets tweak uses the HKLM AllowNewsAndInterests policy, which the dev config also treats as best-effort, so give the tweak a 'may be ignored by Windows' status."
+  },
+  {
+   "title": "Show whether a tweak is still applied (drift detection)",
+   "kind": "ui",
+   "how": "Win11Debloat's Test-FeatureApplied compares every operation of a feature's .reg file with the live registry, treating a missing key as 'not applied'; the Microsoft dev config uses Test-DevConfigRegistryValue and Test-DevConfigRegistryValueAbsent as idempotency checks. chemo's description says 'If a Windows update brings it back, run this again'.",
+   "evidence": [
+    "Raphire_Win11Debloat/Scripts/Features/Get-CurrentTweakState.ps1 (Test-FeatureApplied)",
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/_registry.ps1 (Test-DevConfigRegistryValue / Test-DevConfigRegistryValueAbsent)",
+    "t-richards_chemo/src/Treatment/Taskbar/RemoveWidgets.cs (description)"
+   ],
+   "applicableToWinModes": "On the Optimize page compute applied / partial / reverted for each catalog tweak by reading through ISystemProbe; offer 'Reapply' after feature updates. Partial must not be shown as applied."
+  },
+  {
+   "title": "Hide tweaks the running Windows build cannot honour",
+   "kind": "safety",
+   "how": "Win11Debloat's Config/Features.json carries MinVersion per feature (22000, 22621, 22631, 26100, 26200); optimizerDuck uses Windows11_24H2OrGreaterCondition and RecallInstalledCondition to hide the AI optimisations that do nothing on the current machine.",
+   "evidence": [
+    "Raphire_Win11Debloat/Config/Features.json (MinVersion fields, e.g. DisableCopilot 22621, DisableDragTray 26200, EnableEndTask 22631)",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/AI.cs (Condition = typeof(RecallInstalledCondition), typeof(Windows11_24H2OrGreaterCondition))"
+   ],
+   "applicableToWinModes": "Add minBuild and an optional probe (feature installed? app present?) to each entry so the recall, click-to-do, notepad-ai, paint-ai and share-surfaces tweaks only appear when applicable. Fewer meaningless 'applied' rows."
+  },
+  {
+   "title": "Snapshot whole subkeys for tweaks that create or delete keys",
+   "kind": "restore-logic",
+   "how": "Win11Debloat's registry backup records, per operation, DeleteKey (full subtree) and DeleteValue cases plus an explicit Exists=false marker for values that were absent, then replays them on restore.",
+   "evidence": [
+    "Raphire_Win11Debloat/Scripts/Features/Backup-RegistrySnapshotCapture.ps1:75-90,184,233,261",
+    "Raphire_Win11Debloat/Regfiles/Undo/Enable_W11_Style_Context_Menu.reg (undo = delete key tree)"
+   ],
+   "applicableToWinModes": "Needed for classic-context-menu (and any future CLSID tweak): journal 'key did not exist' and undo with RegDeleteTree on only the key WinModes created. Refuse to delete a key that existed before or has extra values."
+  },
+  {
+   "title": "Bit-mask values: change one flag, restore only that flag",
+   "kind": "restore-logic",
+   "how": "StickyKeys\\Flags is a REG_SZ bit mask; Sophia toggles 510/506 (bit 0x4), Tairiku writes 26 for 'disable all' and quotes 511 as default, winutil writes 506 as a DWORD with OriginalValue 58. Writing a constant erases other flags the user changed.",
+   "evidence": [
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:1268-1270",
+    "TairikuOokami_Windows/Windows Tweaks.bat:2333-2334",
+    "ChrisTitusTech_winutil/config/tweaks.json:1750-1766 (Flags at :1759)"
+   ],
+   "applicableToWinModes": "Add a 'clearBits' kind to the catalog: read the live string, clear mask 0x4, write back the same type; undo sets the bit again only if the journal says WinModes cleared it. Same pattern applies to FilterKeys/ToggleKeys."
+  },
+  {
+   "title": "Never overwrite shared list-valued strings such as SettingsPageVisibility",
+   "kind": "safety",
+   "how": "Four tools write the same value 'SettingsPageVisibility' with different payloads: Win11Debloat 'hide:home' (HKLM), winutil 'hide:aicomponents' (HKLM) and 'show:home' (HKCU), ZOICWARE 'hide:home;' (HKLM). RemoveWindowsAI is the only one that parses and merges the existing 'hide:' list (and bails out on 'showonly:').",
+   "evidence": [
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:3208-3247 (Hide-AI-Components merge logic)",
+    "Raphire_Win11Debloat/Regfiles/Disable_Settings_Home.reg",
+    "ChrisTitusTech_winutil/config/tweaks.json:887-895 and :1635-1650",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:932-934"
+   ],
+   "applicableToWinModes": "Keep these out of the catalog. If ever needed, parse the 'hide:a;b;' list, add/remove only WinModes' tokens and journal the original full string; refuse when the value starts with 'showonly:'."
+  },
+  {
+   "title": "Aggregate the 'restart' hints into one post-apply message",
+   "kind": "ui",
+   "how": "Win11Debloat flags features with RequiresReboot in Features.json, prints the list in Invoke-RestartExplorer (Get-RebootFeatureLabels) and offers to skip the Explorer restart.",
+   "evidence": [
+    "Raphire_Win11Debloat/Scripts/Features/Invoke-RestartExplorer.ps1:8-37",
+    "Raphire_Win11Debloat/Config/Features.json:859,873,888 (RequiresReboot: true)"
+   ],
+   "applicableToWinModes": "After a mode applies, show 'Sign out for: X, Y' and 'Explorer restarted for: Z' from the tweaks' restart field instead of silently restarting; let the user defer."
+  },
+  {
+   "title": "Read-only protection check before and after a mode (Defender/Bitdefender state)",
+   "kind": "safety",
+   "how": "RemoveWindowsAI queries root\\SecurityCenter2 AntiVirusProduct and decodes productState bits into ON / OFF / SNOOZED / EXPIRED to see which antivirus is active. Its use of the result (telling the user to disable the antivirus) is the part not to copy.",
+   "evidence": [
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:95-130"
+   ],
+   "applicableToWinModes": "Reuse only the read side on the Protection page: show each registered product and its state, and flag in History if a mode switch coincided with a state change. Never prompt the user to disable security software."
+  },
+  {
+   "title": "Warn when a reboot is already pending before applying service or policy changes",
+   "kind": "safety",
+   "how": "RemoveWindowsAI reads HKLM CBS RebootPending and WindowsUpdate\\Auto Update\\RebootRequired before doing its work.",
+   "evidence": [
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:319-340"
+   ],
+   "applicableToWinModes": "Read-only probe through ISystemProbe; show a one-line note in the activation dialog. Do not delete those keys (the script does in Update-Repair)."
+  },
+  {
+   "title": "Guard rule: reject keys that would block the user's own AI tools",
+   "kind": "safety",
+   "how": "RemoveWindowsAI forces HKLM AppPrivacy LetAppsAccessGenerativeAI=2 and LetAppsAccessSystemAIModels=2, ConsentStore\\generativeAI and systemAIModels=Deny, and sets DisableAgentConnectors/DisableAgentWorkspaces. These affect any packaged app that uses on-device models or Windows agent hosting.",
+   "evidence": [
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:1056-1076 (ConsentStore and AppPrivacy)",
+    "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:876-885 (agent policies)"
+   ],
+   "applicableToWinModes": "Add these paths to ProtectionPolicy as 'review required' for imported tweaks, consistent with the invariant that Claude, Codex, Cursor and other AI tools must keep working. The agentic-features-policy tweak should be gated behind an explicit warning."
+  },
+  {
+   "title": "After applying the Widgets policy, end the Widgets processes",
+   "kind": "process-handling",
+   "how": "winutil stops anything matching *Widget* before touching the packages; chemo passes the process names Widgets and WidgetService to its removal step to avoid locked files.",
+   "evidence": [
+    "ChrisTitusTech_winutil/config/tweaks.json:61-75 (Get-Process *Widget* | Stop-Process)",
+    "t-richards_chemo/src/Treatment/Taskbar/RemoveWidgets.cs (AppPackagesRemoved ... \"Widgets\", \"WidgetService\")"
+   ],
+   "applicableToWinModes": "Only the process-stop half is applicable (no package removal): after the existing 'widgets' tweak is applied, close Widgets.exe and WidgetService.exe in the user session to reclaim memory immediately. Do not touch msedgewebview2.exe, which other apps depend on."
+  },
+  {
+   "title": "Store the Windows default beside each tweak for a 'reset to default' action",
+   "kind": "ui",
+   "how": "WindowsMize documents on/off and default per setting in comments ('on: 1 (default) | off: 0') and the Microsoft dev config keeps a ResetValue for each key; winutil's OriginalValue is hand-written and wrong in several entries (Hidden 0 instead of 2, StickyKeys 58).",
+   "evidence": [
+    "agadiffe_WindowsMize/src/modules/file_explorer/private/view/files_and_folders/Set-FileExplorerShowHiddenItems.ps1:28",
+    "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-explorer.ps1:87-108",
+    "ChrisTitusTech_winutil/config/tweaks.json:1377-1390 (Hidden at :1386)"
+   ],
+   "applicableToWinModes": "Keep the journal's recorded value as the primary undo; add a catalog 'default' used only for a documented 'reset to Windows default' button and for the tooltip. Validate it against two sources before shipping."
+  }
+ ],
+ "dangers": [
+  "zoicware/RemoveWindowsAI hijacks the TrustedInstaller service (sc.exe config TrustedInstaller binPath= \"cmd.exe /c ... -encodedcommand ...\", start, then restore) to run code as TrustedInstaller: RemoveWindowsAi.ps1:195-220. WinModes must never run anything as TrustedInstaller or SYSTEM through service rebinding.",
+  "RemoveWindowsAI deletes services with sc.exe delete (WSAIFabricSvc :1470, AarSvc :1509, MicrosoftCopilotElevationService :1558) and sets HKLM\\SYSTEM\\CurrentControlSet\\Services\\IsoEnvBroker Start=4. That is the forbidden Services key and a destructive change; winutil WPFTweaksWindowsAI (tweaks.json:887-930) and Win11Debloat Disable_AI_Service_Auto_Start.reg (WSAIFabricSvc Start=3) also touch it.",
+  "Package removal tricks: RemoveWindowsAI adds EndOfLife / Deprovisioned / InboxApplications entries under HKLM\\...\\Appx\\AppxAllUserStore, runs Set-NonRemovableAppsPolicy and Remove-AppxPackage -AllUsers (RemoveWindowsAi.ps1:2426-2445, Documentation.md 'Appx Package Removal'); winutil WindowsAI, Win11Debloat DisableWidgets and Batlez RemoveCopilot (Batlez-Tweaks.bat:22802-22807) remove appx packages. All forbidden for WinModes.",
+  "Windows Component Store tampering: RemoveWindowsAI flips Visibility and deletes Owners/Updates sub-keys under Component Based Servicing\\Packages so DISM can remove hidden AI packages, and installs a fake Windows Update package to block reinstalls (Documentation.md 'Hidden AI CBS Packages', 'Prevent Reinstall of AI Packages'). Touches servicing and updates.",
+  "Recall data loss: AllowRecallEnablement=0 (and per optimizerDuck/chemo comments also DisableAIDataAnalysis) makes Windows remove the Recall feature and delete existing snapshots: itsfatduck_optimizerDuck AI.cs DisableRecall comment, t-richards_chemo RemoveWindowsAI.cs ('removes the feature and any saved snapshots at the next restart'). RemoveWindowsAI additionally runs dism /Disable-Feature Recall /Remove (:2600) and deletes snapshot files (:3021). WinModes' existing 'recall' tweak (DisableAIDataAnalysis) should say it also drops saved snapshots, and AllowRecallEnablement must not be added.",
+  "Defender interference: RemoveWindowsAI sets Set-MpPreference -AiAgentProtection / -AiAgentNetworkInspection Disabled (:3430-3438) and writes an Image File Execution Options Debugger=taskkill.exe on DefenderAiPlatformHost.exe (:3446). Defender settings are off limits and IFEO is also a persistence/hijack mechanism.",
+  "RemoveWindowsAI tells users with a third-party antivirus (e.g. Bitdefender) to 'disable or uninstall this anti-virus temporarily' (:111-130). Never give or automate such advice.",
+  "UCPD (UserChoice Protection Driver) bypasses: copying reg.exe to reg1.exe to write BrandedKey (RemoveWindowsAi.ps1:1095-1101), Sophia InvokeCommandBypassUCPD (Mutators.cs:522-524), TairikuOokami 'sc config ucpd start= disabled' (Windows Tweaks.bat:2242-2243), ZOICWARE RegTweaks.txt:181-183 (UCPD Start key), Fs00 and RyTuneX disabling the 'UCPD velocity' task. Disabling UCPD removes default-app hijack protection; WinModes should report 'blocked' instead.",
+  "Edits of protected OS files after takeown/icacls: System32\\IntegratedServicesRegionPolicySet.json (:2062-2068), SystemApps ...\\SettingsExtensions.json (:1194), deleting System32\\voiceaccess.exe (:1615) and copying classic Snipping Tool/Notepad binaries into System32 (:3577-3578). Outside user data, not reversible by a value; forbidden.",
+  "Device removal and install policy: pnputil /remove-device on the 'Voice Clarity' audio effect device plus DeviceInstall\\Restrictions DenyInstanceIDs (RemoveWindowsAi.ps1:1649-1666). Drivers are off limits.",
+  "RemoveWindowsAI writes machine and user Registry.pol (Edit-PolFile, :614-736), the Default user hive HKU\\DefaultUser (:1390-1431) and every user SID (:1088-1092). WinModes should stay current-user (HKCU) or a journaled HKLM policy value, not rewrite policy stores or the default profile; Win11Debloat's Regfiles/Sysprep/* do the same for new users.",
+  "Office: RemoveWindowsAI disables AI content-safety checks (policies disablecontentsafety=1 under HKLM Policies\\office\\16.0\\common\\ai\\contentsafety\\*, :1047-1055 area) and the Office 'connected experiences' (HKCU Policies\\office\\16.0\\common\\privacy controllerconnectedservicesenabled=2, usercontentdisabled=2, :1021-1022), which turn off online content, translation and cloud features for all Office apps. Do not copy.",
+  "App-privacy blanket denies: HKLM AppPrivacy LetAppsAccessGenerativeAI=2 / LetAppsAccessSystemAIModels=2 and ConsentStore generativeAI/systemAIModels=Deny (RemoveWindowsAi.ps1:1056-1076) block every packaged app from on-device models, which can include the user's AI tooling.",
+  "Edge: RemoveWindowsAI runs taskkill /f msedge.exe and rewrites Local State to add enabled_labs_experiments flags (:969-1012); also BuiltInAIAPIsEnabled=0 and DevToolsGenAiSettings=2 (:955-956). Direct profile-file editing can corrupt Edge and the extra policies change web-platform behaviour; use policies only (see edge-ai-features).",
+  "Windows Update interference: RemoveWindowsAI's Update-Repair stops wuauserv/BITS/DoSvc/UsoSvc/WaaSMedicSvc, deletes SoftwareDistribution and catroot2, renames WinSxS\\pending.xml (:3874-3890). Win11Debloat Prevent_Auto_Reboot.reg (WindowsUpdate\\AU NoAutoRebootWithLoggedOnUsers), Disable_Update_ASAP.reg and Disable_Delivery_Optimization.reg, and Disable_Bitlocker_Auto_Encryption.reg (PreventDeviceEncryption) are update/security settings and were intentionally not proposed.",
+  "Policy that triggers package removal: TairikuOokami sets RemoveMicrosoftCopilotApp=1 under both HKCU and HKLM Policies\\Microsoft\\Windows\\WindowsCopilot (Windows Tweaks.bat:2752,2760). Setting it asks Windows to uninstall the app; never write it.",
+  "Wrong or non-restorable undo data: winutil Hidden OriginalValue 0 (tweaks.json:1377-1390 (Hidden at :1386); Windows default is 2), StickyKeys Flags written as DWord with OriginalValue 58 (:1750-1766), WPFTweaksDisplay undo deletes UserPreferencesMask entirely (:808-811) instead of restoring it, store.db is locked with icacls /deny Everyone (:96-107), 'Start Menu Previous Layout' writes an undocumented FeatureManagement\\Overrides\\8\\3036241548 velocity override whose own description says it fails on newer builds (:80-93). Microsoft's WindowsDeveloperConfig resets by deleting the value or writing a fixed ResetValue (steps/_registry.ps1 New-DevConfigRegistryStep), losing a user's previous custom setting. WinModes' journal-first rule avoids all of these.",
+  "Explorer 'automatic folder type discovery' tweaks delete HKCU Shell\\Bags and BagMRU (winutil tweaks.json:1208-1262; WindowsMize Set-FileExplorerAutoFolderTypeDetection.ps1:40-58), wiping every saved folder view; the data cannot be restored from a recorded value. Not proposed.",
+  "Notification over-reach: ZOICWARE switches off Windows.SystemToast.SecurityAndMaintenance, CapabilityAccess, StartupApp, LowDisk and others (RegTweaks.txt:647-696), and winutil WPFTweaksDisableNotifications sets DisableNotificationCenter=1 which also removes the calendar (tweaks.json:1039-1060 (DisableNotificationCenter at :1047)). Silencing security/maintenance toasts conflicts with the protection invariants.",
+  "Shared-value collisions on SettingsPageVisibility (Win11Debloat 'hide:home', winutil 'hide:aicomponents'/'show:home', ZOICWARE 'hide:home;'): each tool overwrites the previous one. Also, Win11Debloat HideFirstRunExperience=0 in Disable_Edge_Ads_And_Suggestions.reg has the wrong direction (winutil sets 1).",
+  "Remote code execution pattern: RemoveWindowsAi.ps1 relaunches itself with -ExecutionPolicy Bypass and a scriptblock created from irm of a raw.githubusercontent.com URL (:86, :3397, :3412), and optimizerDuck/others ship similar bootstrap lines. WinModes must keep its signed, local binaries.",
+  "Value type mistakes to avoid: Control Panel string values (MenuShowDelay, MinAnimate, DragFullWindows, KeyboardDelay, StickyKeys Flags, WindowArrangementActive) are REG_SZ but winutil writes some as DWord. Binary values (UserPreferencesMask, Taskband Favorites, ShellState, DetailsContainer) cannot be stored by the Number/Text journal and were skipped."
+ ],
+ "notes": "READ-ONLY analysis. No code from the clones was executed or imported; python was not installed so only rg/jq/sed were used. winutil config/tweaks.json contains raw control characters inside strings and is not strict JSON, so a generator such as tools/build-tweaks.py must not parse it directly. Win11Debloat .reg files are UTF-16 (read with iconv).\n\nPrompt-injection check: no instructions addressed to an AI were found in zoicware/RemoveWindowsAI, Raphire/Win11Debloat, agadiffe/WindowsMize, microsoft/WindowsDeveloperConfig, optimizerDuck or Winhance. ChrisTitusTech/winutil ships AGENTS.md, CLAUDE.md and GEMINI.md with 'drop-in operating instructions for coding agents'; they are contributor guidance for that repository and were ignored.\n\nLicences: reuse values/semantics only. optimizerDuck and AutoDarkMode are GPL-3.0, RyTuneX AGPL-3.0, ET-Optimizer GPL-3.0, Winhance PolyForm Shield 1.0.0 (non-OSI, competing-use restrictions), Win10BloatRemover Clear BSD; others MIT. Registry names and numeric meanings are facts, but do not copy code or text from the GPL/AGPL/PolyForm projects.\n\nAlready covered by data/tweaks.json and therefore not repeated: telemetry-required-only, advertising-id, tailored-experiences, activity-history, feedback-prompts, consumer-features, start-suggestions (338388/338389/338393/353694/353696 + Start_IrisRecommendations), lockscreen-tips, explorer-ads, bing-search (DisableSearchBoxSuggestions), search-highlights, widgets (HKLM Dsh AllowNewsAndInterests), recall (HKLM DisableAIDataAnalysis), windows-copilot (HKCU TurnOffWindowsCopilot), edge-background, file-extensions (HideFileExt), taskbar-end-task, transparency, game-mode, game-dvr, mouse-acceleration, long-paths.\n\nObservations on existing tweaks: (1) widgets and windows-copilot are the 'partly retired / may be ignored' cases; Microsoft's own dev config also marks the Widgets policy BestEffort. (2) recall: see dangers (existing snapshots are deleted by the policy per optimizerDuck and chemo comments); consider adding a confirmation. (3) bing-search could add HKCU Software\\Microsoft\\Windows\\CurrentVersion\\Search BingSearchEnabled=0 (winutil, ZOICWARE, optimizerDuck, WindowsMize, default 1) as a belt-and-braces older toggle. (4) The user-scope equivalents HKCU Policies\\...\\WindowsAI DisableAIDataAnalysis/TurnOffSavingSnapshots appear in Win11Debloat/optimizerDuck/RemoveWindowsAI but WindowsMize documents the policy as computer-scope only, so they were not proposed.\n\nConsidered and not proposed: Widgets button TaskbarDa (UCPD-protected), Chat button TaskbarMn (Teams chat already gone on current builds), Copilot hardware key BrandedKey/SetCopilotHardwareKey (UCPD-protected), Title bar window shake DisallowShaking (WindowsMize documents default 1 = already off on current Windows 11, so Sophia/optimizerDuck's 'default 0' is stale), Phone Link in Start IsEnabled (default already 0 per WindowsMize), Desktop Spotlight policies, CopilotPWAPin/RecallPin (Winhance puts them under Explorer\\Advanced, RemoveWindowsAI and ET-Optimizer under Explorer\\Taskband\\AuxilliaryPins: unresolved), ShowCopilotNudges (single source), SmartClipboard (WindowsMize marks it old), HKLM Windows Search web policies (redundant with bing-search), Start menu 'Disable_Start_All_Apps' (NoStartMenuMorePrograms), settings.dat hive editing for Notepad/Photos (needs the app closed, fragile).\n\nMost valuable finds: (1) microsoft/WindowsDeveloperConfig gives Microsoft-authored HKCU values (hidden files with ResetValue 2, full path, This PC, Quick Access, Start_AccountNotifications, NOC_GLOBAL_SETTING_TOASTS_ENABLED for Do Not Disturb); (2) agadiffe/WindowsMize documents default and on/off direction for ~hundreds of settings, which resolves several conflicts between tools; (3) the classic-context-menu key needs the journal to support 'key created / delete key tree' semantics."
+}

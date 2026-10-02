@@ -1,0 +1,389 @@
+{
+ "theme": "mode-switchers",
+ "repos": [
+  {
+   "repo": "dulaiduwang003/Pavise-Game",
+   "what": "Game resource manager: detects a game session (ETW/WMI/poll + foreground fullscreen), suppresses background processes (priority, IO, page priority, EcoQoS, CPU sets), switches a managed power plan, journals every original value and recovers after a crash",
+   "licence": "GPL-3.0-only (ideas only, do not copy code into a non-GPL repo)",
+   "relevance": "high"
+  },
+  {
+   "repo": "SebastianBecker2/PowerPlanSwitcher",
+   "what": "Tray power-plan switcher with an ordered rule list (process, power line, idle, startup, shutdown), trigger ref-counting, baseline plan relearning",
+   "licence": "MIT",
+   "relevance": "high"
+  },
+  {
+   "repo": "PrimeBuild-pc/ThreadPilot",
+   "what": "Process control centre: WMI process start/stop events with adaptive polling fallback, process to power-plan associations with priority, delay and duplicate gate, persistent per-process rules, protected-process list",
+   "licence": "AGPL-3.0 (ideas only)",
+   "relevance": "high"
+  },
+  {
+   "repo": "charlie754/Game-Optimizer-CPUs-Threads-Optimizer",
+   "what": "Per-game CPU Set isolation for X3D/hybrid CPUs; unelevated 250 ms polling, pid+creation-time restore journal, no-focus-steal game prompt, documented shutdown ordering",
+   "licence": "MIT",
+   "relevance": "high"
+  },
+  {
+   "repo": "AutoDarkMode/Windows-Auto-Night-Mode",
+   "what": "Theme switcher with a postpone-queue model: session lock/unlock, resume, energy saver, battery, idle, GPU load, process block list, user delay toast",
+   "licence": "GPL-3.0 (ideas only)",
+   "relevance": "high"
+  },
+  {
+   "repo": "JosefNemec/Playnite",
+   "what": "Game launcher: 5 game start/stop tracking modes (process tree, original process, directory, process name), global and per-game pre/started/exit scripts, HDR ref-counting, cancellable client auto-shutdown",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "SystemXFiles/process-governor",
+   "what": "Python tray tool applying priority, IO priority and CPU affinity by rules (first match wins), 1 s polling, optional force re-apply and delay",
+   "licence": "GPL-3.0 (ideas only)",
+   "relevance": "medium"
+  },
+  {
+   "repo": "lowleveldesign/process-governor",
+   "what": "procgov: job-object limits, efficiency mode (EcoQoS + Idle class), job freeze, installable service that auto-applies saved settings by polling every 1.5 s",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "zac15987/DisplayProfileManager",
+   "what": "Display profiles (resolution, refresh, HDR, DPI, rotation, audio device, monitor on/off) with tray, global hotkeys, staged apply and in-memory revert on failure",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "ashpynov/AnyFSE",
+   "what": "Home app for the Windows Xbox Full Screen Experience; uses the gaming-experience API set change notification; also contains risky injection and device-form spoofing",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "Ladbaby/PowerPlanSwitcher",
+   "what": "AutoHotkey tray power-plan switcher with AC/DC auto plans (100 ms polling of GetSystemPowerStatus) and vendor fan-curve scripts",
+   "licence": "MIT",
+   "relevance": "low"
+  },
+  {
+   "repo": "jazir555/GamesDows",
+   "what": "Batch scripts that replace the Winlogon shell with Steam/Playnite to emulate a console mode; mostly a list of what a mode must never do",
+   "licence": "GPL-3.0",
+   "relevance": "low"
+  }
+ ],
+ "tweaks": [],
+ "modeIdeas": [
+  {
+   "title": "Ownership-aware revert (only restore a value if it still equals what we wrote)",
+   "kind": "restore-logic",
+   "how": "Pavise PowerPlan: before switching, the previous plan GUID is written to a journal key and read back to verify; the plan is switched and read back again. On revert it reads the live plan: if live == recorded original it just clears the journal; if live is a plan Pavise owns (managed plan or one it set) it restores the original; if the user (or another tool) switched to a third plan it does NOT override and only clears the journal. After a crash restart (active=false) it uses the conservative check RestorePlanIsOwned so a stale receipt never overrides a choice made while the app was not running. SebastianBecker2 does the same for the baseline: BaselineSchemeGuid is captured at start and re-learned whenever the system plan changes while no rule is applied.",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Core/Tweaks/PowerPlan.cs:363-420 (ActivateInner: journal then read-back then switch then read-back)",
+    "dulaiduwang003/Pavise-Game/src/Core/Tweaks/PowerPlan.cs:495-535 (restore path; line 520 bool? ours = active ? true : RestorePlanIsOwned)",
+    "SebastianBecker2/PowerPlanSwitcher/PowerPlanSwitcher/AppContext.cs:35,92-96,118-132 (BaselineSchemeGuid captured, re-learned only if AppliedRule is null, restored when no rule triggers)"
+   ],
+   "applicableToWinModes": "Apply to every journaled item, not only power plans: for services (live start type == the value the mode wrote?), for tweaks (live registry value == written value?), for .wslconfig (file hash). If the live value differs from what the mode wrote, treat it as a user or Windows change: log it, drop the journal entry, do not overwrite. This removes the main risk of the exact-undo promise (undoing over a legitimate later change). Show such items as 'kept your newer value' in History."
+  },
+  {
+   "title": "Write-ahead ledger keyed by process identity (pid + creation time), atomic file, residue detection after a crash",
+   "kind": "restore-logic",
+   "how": "Three projects journal BEFORE changing a process. Pavise SuppressionCore writes one line per process (pid|creation|base64 name|original priority|affinity|io|page|cpusets|QoS control|QoS state|gpu|boost) to a tmp file then File.Replace; Acquire calls PersistJournalLocked and aborts with ApplyFailed if the ledger cannot be written. If the same process is acquired twice, the ORIGINAL values from the ledger are reused (never re-snapshot an already changed process). After an unclean exit, a process that already looks like Pavise output (Idle class, IO 0, page priority 1, own cpu sets) is treated as residue: its original is recorded as Normal/defaults instead of the throttled state. charlie754 writes applied.journal (pid, creation low, creation high, exe name) before the first apply and on startup clears only entries whose pid is alive AND whose creation time matches, then truncates.",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Core/Suppression/SuppressionCore.Recovery.cs:21-62 (SaveJournalLocked: tmp + File.Replace)",
+    "dulaiduwang003/Pavise-Game/src/Core/Suppression/SuppressionCore.Acquire.cs:156-175,195 (residue detection; journal before apply)",
+    "dulaiduwang003/Pavise-Game/src/Core/CrashGuard.cs:75-130 (MarkBoostProcess: second boost returns the ledger original; pid recycling entries dropped; ownership only claimed after the write hits disk)",
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/docs/spec/02-architecture.md:383-394 (restore journal format and startup recovery)"
+   ],
+   "applicableToWinModes": "WinModes already journals service and tweak state under ProgramData. Reuse the pattern for any NEW per-process feature (EcoQoS/priority list): journal line = pid, creation time (GetProcessTimes), image name, original masks; write it before the change; on app start and at each mode exit, restore only entries whose (pid, creation, name) still match; delete the rest silently (the process is gone, its setting died with it). Add the residue check when snapshotting: if the live value already equals what the mode would write and a journal entry exists, keep the journal original."
+  },
+  {
+   "title": "Phased receipts for each reversible change (Prepared, Owned, Restoring, Settled)",
+   "kind": "restore-logic",
+   "how": "Pavise ServicePauser and the CPU idle policy keep a receipt per object with an explicit phase. Prepared = intent recorded, nothing changed yet (a crash here means 'nothing to undo'); Owned = change applied and verified (a crash here means 'restore the recorded original'); Restoring = revert in progress; Settled = verified back to the original, receipt cleared. The CPU idle receipt also has MayRestoreValue/OriginalObserved flags so that a revert after a half-failed write does not write a wrong 'original'. Ledger writes are verified by reading the ledger back (WriteCpuIdleLedgerVerified).",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Core/Tweaks/ServicePauser.cs:1-10,26-40 (enum Phase { Prepared, Owned, Restoring, Settled })",
+    "dulaiduwang003/Pavise-Game/src/Core/Tweaks/PowerPlan.CpuIdle.cs:169-204 (receipt Prepared then Owned, ledger verified each time)"
+   ],
+   "applicableToWinModes": "Add a phase field to journal entries so recovery after a crash or reboot is deterministic: Prepared entries are discarded, Owned entries are reverted, Restoring entries are retried. Also lets History show 'interrupted' sessions. Needed for the helper that changes service start types, where a crash between 'sc config' and 'journal updated' is the dangerous window."
+  },
+  {
+   "title": "Rule arbitration: per-rule trigger counters, ordered list, null result means restore baseline",
+   "kind": "trigger",
+   "how": "SebastianBecker2: every rule keeps TriggerCount (ProcessRule = number of live matching processes; IdleRule = 0/1; PowerLineRule; StartupRule; ShutdownRule). RuleManager.Rule_TriggerChanged recomputes the FIRST rule (list order = priority) with TriggerCount > 0; if it differs from AppliedRule it raises RuleApplicationChanged; when no rule is triggered AppliedRule becomes null and the app restores the baseline plan. Rule edits are diffed (identity key + semantic key) so unchanged rules keep their live state and counters. ThreadPilot instead picks OrderByDescending(association.Priority) among running associated processes and re-evaluates the whole set whenever one starts or stops.",
+   "evidence": [
+    "SebastianBecker2/PowerPlanSwitcher/RuleManagement/RuleManager.cs:93-140 (Rule_TriggerChanged), :405 (FindFirstTriggeredRule), :217-260 (BuildRuleUpdatePlan)",
+    "SebastianBecker2/PowerPlanSwitcher/RuleManagement/Rules/ProcessRule.cs:65-123 (counter incremented on create, decremented on terminate)",
+    "PrimeBuild-pc/ThreadPilot/Services/ProcessMonitorManagerService.cs:516-545 (DeterminePowerPlanAsync, OrderByDescending Priority; no running associated process means default plan)",
+    "PrimeBuild-pc/ThreadPilot/Services/ProcessMonitorManagerService.cs:153,219 (EvaluateCurrentProcessesAsync at start and on configuration change)"
+   ],
+   "applicableToWinModes": "Model WinModes auto-switching as N rules each exposing a counter (programs running, AI coding tools open, on battery, time range). Mode in force = first rule in a user-ordered list with count > 0 (or highest mode priority); count == 0 for all rules means start the grace timer and then revert to the pre-mode journal. This makes 'several triggers at once' deterministic (Game beats Code beats Work, or user order) and makes a trigger leaving only a re-evaluation, not a special case. A rule that stays active while another higher one ends must not revert; just re-apply the next mode's delta (journal stays anchored to the ORIGINAL state, not the previous mode). Seed the counters with one scan at app start (SebastianBecker2 ProcessRule.StartRuling:65-86 iterates GetUsersProcesses() before subscribing; RuleManager.Subscribe:148-165 applies the first triggered rule at once), so a Code tool opened before WinModes started still enters Code mode; if a journal is open but no trigger is present after a restart, start the grace timer instead of reverting instantly."
+  },
+  {
+   "title": "Process-start detection tiers: ETW (admin) then WMI then snapshot polling, plus a slow reconcile",
+   "kind": "trigger",
+   "how": "Pavise: when elevated it opens an ETW real-time session on provider Microsoft-Windows-Kernel-Process {22FB2CD6-0E7B-422B-A0C7-2FAD1FD0E716}, keyword 0x10, event id 1 (process start), stopping any stale session of the same name first; otherwise WMI ManagementEventWatcher; events are only a 'dirty' flag that coalesces into a scan; a baseline scan still runs (4 s polling-only, 20 s when events exist) and a snapshot is ONE NtQuerySystemInformation(SystemProcessInformation) call reused for 5 s. ThreadPilot: WMI Win32_ProcessStartTrace/StopTrace, with a fallback timer (5 s, backing off x1..x6 up to 60 s while nothing changes) that keeps trying to recover WMI. charlie754 and SebastianBecker2 and Playnite poll (250 ms, 2 s, 2 s) because they do not want elevation; charlie754 documents why: WMI events have 1-2 s latency and ProcessStartTrace/ETW kernel provider need administrator.",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Platform/EtwProcessWatcher.cs:11-14,42,49-90",
+    "dulaiduwang003/Pavise-Game/src/Platform/ProcNotify.cs:55,115-130,169-172 (ETW only if Native.IsElevated, WMI fallback)",
+    "dulaiduwang003/Pavise-Game/src/Core/GameMode.ProcessEvents.cs:19-45 (PollingSweepIntervalMs 4000, EventBackedSweepIntervalMs 20000, DirtyScanFloorMs 500; bench comment)",
+    "PrimeBuild-pc/ThreadPilot/Services/ProcessMonitorService.cs:271-272,321-342,561-590",
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/src/procwatch.h:1-6 and docs/spec/02-architecture.md:262-270 (rejected alternatives table)",
+    "SebastianBecker2/PowerPlanSwitcher/ProcessManagement/ProcessMonitor.cs:61-145 and PowerPlanSwitcher/Properties/Settings.settings (ProcessMonitorIntervalInMilliseconds 2000)"
+   ],
+   "applicableToWinModes": "The WinModes app is unelevated, so snapshot polling (Toolhelp or NtQuerySystemInformation) every 2 s while idle is the right default; keep a diff of (pid, creation time) sets, not names. Measured cost reference: charlie754 measured about 5.8 ms per tick on ~300 processes (docs/spec/02-architecture.md:236-262), so avoid OpenProcess/QueryFullProcessImageName for pids already known (cache path by pid+creation). Elevated helper could optionally subscribe to the ETW provider to cut latency but it is not needed for a mode that starts after a dwell anyway."
+  },
+  {
+   "title": "Trigger identity: always (pid, creation time); parent links only valid if parent is older than child",
+   "kind": "trigger",
+   "how": "SebastianBecker2 ProcessRule keeps matched processes in a HashSet with ProcessIdentityComparer (ProcessId + StartTime); ProcessMonitor diffs maps keyed by that record. charlie754 builds the descendant tree but honours a ppid only when the parent is live AND parent.creationTime <= child.creationTime (comment: load-bearing, a recycled pid would otherwise pull a random process into the game set). Playnite's MonitorProcessTree grows a set of ids by checking each process' parent id, and filters out SessionId 0.",
+   "evidence": [
+    "SebastianBecker2/PowerPlanSwitcher/RuleManagement/Rules/ProcessRule.cs:13-35",
+    "SebastianBecker2/PowerPlanSwitcher/ProcessManagement/ProcessMonitor.cs:9,165-178",
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/src/procwatch.h:44-52 (Descendants, PID-REUSE GUARD)",
+    "JosefNemec/Playnite/source/Playnite/Common/ProcessMonitor.cs:24-60"
+   ],
+   "applicableToWinModes": "Use for the 'AI coding tool is open' rule: Claude Code, Codex, OpenCode run as node/electron trees; track by image path or by tree root plus descendants with the creation-time guard, and count live members so the rule ends only when the whole tree is gone. Ignore generic runtimes by name alone: charlie754 refuses to guess about java/javaw/electron/node/python (games.cpp:863-865), which is exactly the ambiguity for AI tools, so match on full path or command line, not on node.exe."
+  },
+  {
+   "title": "Anti-flapping toolkit: start dwell, end grace with resume, pre-release, duplicate gate, hysteresis, episode cap",
+   "kind": "trigger",
+   "how": "Pavise ends a session with ExitGraceSeconds = 8: on the first miss it records gameGoneSinceTicks, immediately releases the background suppression (ReleaseBackground) but keeps the session; if the game is seen again inside the grace the same session continues (no new report, no re-journal); only after 8 s of continuous absence does Deactivate run. Detection itself is sticky (StickyGraceMisses = 1, identity re-checked with AliveWithIdentity). ThreadPilot: PowerPlanChangeDelayMs debounce timer sets pendingPowerPlanReevaluation and on expiry re-evaluates ALL running associated processes once; PowerPlanTransitionGate refuses 'AlreadyActive' and a repeat of the same target within 2 s. AdaptiveGuard: sensor with hysteresis (enter at 90 percent CPU for 10 s, leave at 80 percent for 5 s), de-escalate only after 120 s calm, at most 3 episodes per session. AutoDarkMode GPUMonitor: switch allowed only after N consecutive samples below a threshold (counter reset on any high sample). charlie754: no unpin hysteresis on purpose because flapping a mask mid-match is worse; CPU% rule requires dwell seconds above threshold. Playnite client shutdown: 60 s cancellable job, skipped if session shorter than 120 s, cancelled and rescheduled if another game from the same library starts.",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Core/GameMode.cs:153,155 (StickyGraceMisses, ExitGraceSeconds)",
+    "dulaiduwang003/Pavise-Game/src/Core/GameMode.Lifecycle.cs:283-299,310",
+    "dulaiduwang003/Pavise-Game/src/Core/GameMode.Sticky.cs:6-80",
+    "PrimeBuild-pc/ThreadPilot/Services/ProcessMonitorManagerService.cs:403-413,489-509",
+    "PrimeBuild-pc/ThreadPilot/Services/PowerPlanTransitionGate.cs:14-61",
+    "dulaiduwang003/Pavise-Game/src/Core/Suppression/AdaptiveGuard.cs:6-57",
+    "AutoDarkMode/Windows-Auto-Night-Mode/AutoDarkModeSvc/Modules/GPUMonitorModule.cs:60-110",
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/docs/spec/02-architecture.md:300-306",
+    "JosefNemec/Playnite/source/Playnite/GamesEditor.cs:1495-1565 and Settings/AutoClientShutdownSettings.cs:10-25"
+   ],
+   "applicableToWinModes": "Concrete algorithm for the grace period: state ACTIVE(mode); each tick compute triggerCount; if 0 and no pending-end timestamp, store endingSince=now and (optionally) start a cheap 'pre-release' of the load-reducing parts only; if triggerCount>0 again before endingSince+grace, clear endingSince and continue the SAME journal session; else revert the whole journal. Add: (1) start dwell (trigger must be present N seconds, ThreadPilot-style debounce that re-evaluates everything once), (2) minimum session length before closing user apps (Playnite 120 s), (3) a flap counter: after 3 enter/exit cycles in 10 minutes, extend grace or pause automation and say so in the notification, (4) a duplicate-request gate on actions (2 s window) to stop double powercfg calls."
+  },
+  {
+   "title": "Per-process EcoQoS (power throttling) with exact restore of the original control/state masks",
+   "kind": "process-handling",
+   "how": "API: SetProcessInformation(handle, ProcessPowerThrottling=4, PROCESS_POWER_THROTTLING_STATE{Version=1, ControlMask, StateMask}). Direction: ControlMask bit 0x1 (EXECUTION_SPEED) says 'I control this bit', StateMask bit 0x1 = throttling ON (EcoQoS). Pavise throttles with (control=1,state=1), or (5,5) to also set IGNORE_TIMER_RESOLUTION (bit 0x4, Windows 11 build 22000+, falls back to (1,1) on ERROR_INVALID_PARAMETER 87). It explicitly turns throttling OFF for the foreground/game process with (1,0) or (5,0). Before touching a process it reads the current masks with GetProcessInformation(ProcessPowerThrottling) (falling back to NtQueryInformationProcess class 77) and stores them; restore writes the stored (control,state), and if no state could be read it writes (0,0) which hands control back to the system. procgov's efficiency mode: on = (control 1, state 1) + Idle priority class (what Task Manager shows as the green leaf), off = (1,0) + Normal, auto = (0,0) + Normal.",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Platform/Native.CpuSets.cs:276-300,335-352,357-380,523-526",
+    "dulaiduwang003/Pavise-Game/src/Core/Suppression/SuppressionCore.Apply.cs:13-31 (ThrottleMatches verifies (qosControl & 1) != 0 and (qosState & 1) != 0 by read-back)",
+    "lowleveldesign/process-governor/procgov-lib/Win32ProcessModule.cs:548-566 (SetEfficiencyMode)",
+    "lowleveldesign/process-governor/procgov/Program.cs:285-317 (efficiency mode = power throttling + priority class)"
+   ],
+   "applicableToWinModes": "Best low-risk process lever for a 'Code' mode: EcoQoS on a USER-CHOSEN list of background apps (not the AI tools). Fully reversible by the stored masks, needs only PROCESS_SET_INFORMATION/PROCESS_QUERY_LIMITED_INFORMATION on same-user processes (no elevation), and dies with the process. Read back after the write (Pavise verifies). Do not use the timer-resolution bit on Windows 10 / before build 22000. Check direction in tests: StateMask 1 = throttled."
+  },
+  {
+   "title": "Priority, IO priority, page (memory) priority and CPU Sets: what is restorable and the ladder Pavise uses",
+   "kind": "process-handling",
+   "how": "Pavise levels: Eco (EcoQoS only), Restrained (BelowNormal class), Isolated (Idle class + IO priority 0 'very low' + page priority 1 + timer seal), with IO priority via NtSetInformationProcess class 33 (0 very low, 1 low, 2 normal), memory/page priority via class 39 (1..5, normal 5 per Microsoft docs), CPU Sets via SetProcessDefaultCpuSets and cleared with NULL. All originals are read with Get/Nt queries before the write and verified by read-back. Pavise itself says the strongest level starved anti-cheat scanners and froze games, so that level is not used for anti-cheat and the 'Frozen' (suspend) level was removed: 'suppression stops at Isolated, no process is ever suspended'. ThreadPilot sets memory priority through SetProcessInformation(ProcessMemoryPriority). charlie754 uses CPU Sets only, never SetProcessAffinityMask, because CPU sets are not inherited by children (it re-applies to descendants every tick) and are cleared cleanly. SystemXFiles documents the opposite property of affinity: children inherit it, so a '*' affinity rule or a restricted explorer.exe silently propagates.",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Core/Suppression/SuppressionCore.Apply.cs:40-70 (DesiredPriority / DesiredIoPriority / DesiredPagePriority and the comment on anti-cheat freezes)",
+    "dulaiduwang003/Pavise-Game/src/Core/Suppression/SuppressionLevel.cs:6-9 (Frozen removed, never suspended)",
+    "PrimeBuild-pc/ThreadPilot/Services/ProcessMemoryPriorityService.cs:75-130 (ProcessMemoryPriority get/set)",
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/README.md:12-30 (CPU Sets only, children included) and docs/spec/02-architecture.md:328-345",
+    "SystemXFiles/process-governor/docs/rule_behavior_and_tips.md (Core Affinity Inheritance in Windows)"
+   ],
+   "applicableToWinModes": "If WinModes ever touches processes: start with EcoQoS + BelowNormal for user-listed apps only; keep IO priority 'low' (not 'very low'), page priority default; do not use Idle class for anything interactive; never suspend. Prefer CPU Sets over affinity. Always journal originals first. ThreadPilot keeps only the FIRST original per pid (TrackPriorityChange ignores later calls) which is the right rule."
+  },
+  {
+   "title": "Layered process safeguards: preset list, system-path validation, same session, protection level, refusal memory, give-up",
+   "kind": "safety",
+   "how": "Pavise: (1) preset whitelist of core and shell processes (system, smss, csrss, winlogon, services, lsass, svchost, dwm, audiodg, explorer, sihost, runtimebroker, searchhost, vmmem, vmmemwsl, wslservice and more); (2) IsCoreSystemProcess requires the image PATH to start with the Windows directory, so a user program named svchost.exe is not protected by name alone; (3) only processes of the owner's session are even enumerated (entry.Session != ownerSession is skipped), other logged-in accounts are never touched; (4) anti-cheat catalog excluded from ordinary suppression; (5) transient processes younger than 2 s are skipped; (6) ProtectedGameRoster remembers, per app version, executables whose writes kernel anti-cheat refused, so the app stops trying; (7) GiveUpAntiCheatLocked restores what was written and marks the entry GaveUp to avoid log spam and fighting. ThreadPilot: ProtectedProcesses list (System, csrss, winlogon, services, lsass, svchost, dwm, explorer, wininit, smss, WmiPrvSE, MsMpEng, SecurityHealthService, audiodg) plus a dynamic NtQueryInformationProcess class 61 (ProcessProtectionInformation) check that refuses PPL processes. charlie754: exclusion list incl. anti-cheat services, launchers, drivers; pids 0 and 4 never touched.",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Core/SystemProcessCatalog.cs:11-21,27-45",
+    "dulaiduwang003/Pavise-Game/src/Core/Detection/GameSessionDetector.cs:156-170 (session filter in TryCaptureProcessIdentity)",
+    "dulaiduwang003/Pavise-Game/src/Core/GameMode.Sweep.cs:94,200 (TransientProcessTicks)",
+    "dulaiduwang003/Pavise-Game/src/Core/Suppression/ProtectedGameRoster.cs:1-3,60-80 and SuppressionCore.Apply.cs:103-125",
+    "PrimeBuild-pc/ThreadPilot/Services/SecurityService.cs:33-50,53,160-210",
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/docs/spec/02-architecture.md:311-326 (default exclusions)"
+   ],
+   "applicableToWinModes": "WinModes' data/protected.json can gain: match by full path under %WINDIR% for system names, same-session-only filter, PPL check (NtQueryInformationProcess 61) before any handle write, skip processes younger than 2 s, and a per-process 'refused' memory that disables further attempts. Keep the invariant that a mode only touches processes the user listed in that mode's profile (an allow-list), which is stricter than every project here (they use deny-lists)."
+  },
+  {
+   "title": "Working-set trim only under real memory pressure, once per process",
+   "kind": "process-handling",
+   "how": "Pavise WsTrim calls EmptyWorkingSet on suppressed background processes, but only when GlobalMemoryStatusEx reports available physical memory below 4 GiB AND below 1/8 of total (sampled at most every 5 s), and remembers processes already trimmed. Comment: with memory not tight, trimming is pure cost because the app re-faults when switched back and the game gets nothing.",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Core/Suppression/WsTrim.cs:6-40 (FloorBytes, ShouldTrim, SampleIntervalTicks)"
+   ],
+   "applicableToWinModes": "If a 'free memory' action is ever added (WSL/Docker + IDE + browser on 16 GB), gate it on the same pressure rule and apply only to listed processes. Never trim protected or interactive foreground apps; no journal needed since nothing persistent changes."
+  },
+  {
+   "title": "Fullscreen / game-in-foreground detection recipe (and its false positives)",
+   "kind": "trigger",
+   "how": "Three variants. SebastianBecker2: foreground window rect within +-2 px of its monitor rect (no shell exclusion, so a maximised-borderless desktop or WorkerW can read as fullscreen). Pavise: window visible, not minimised, owner pid equals a known game, no WS_CAPTION style, and the intersection with the monitor covers >= 97 percent of the monitor area (FullscreenCoveragePercent); cloaked UWP windows are excluded via DwmGetWindowAttribute(DWMWA_CLOAKED=14) in the window enumeration; the foreground check is the hot path and results are cached 1.5 s. charlie754: EnumWindows for a visible top-level window covering a monitor, plus presence of a graphics runtime module, plus an exclusion list (browsers, video players, launchers, shells, IDEs, terminals, creative tools) and a confidence score (known game 0.9, fullscreen + graphics runtime 0.6, fullscreen only 0.35); prompts only once per exe per run and never for confidence below 0.5 unless it is on the known list. I did not find SHQueryUserNotificationState (QUNS) used by any of the 12 repos.",
+   "evidence": [
+    "SebastianBecker2/PowerPlanSwitcher/SystemManagement/SystemManager.cs:10-52",
+    "dulaiduwang003/Pavise-Game/src/Core/Detection/GameSessionDetector.Window.cs:143-195,241-243",
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/src/games.cpp:832-868,871-900,1205-1232",
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/src/main.cpp:290-345 (detect thread, once-per-exe prompt)"
+   ],
+   "applicableToWinModes": "For a 'Game' rule: foreground pid + no WS_CAPTION + visible + >=97 percent monitor coverage + class not in {Progman, WorkerW, Shell_TrayWnd} + process not on an exclusion list (browsers, video players, VS Code, Cursor, terminals, Claude desktop, Discord, Spotify) to avoid starting Game mode from a fullscreen video or an IDE in F11. Keep the dwell (foreground fullscreen for >= 5-10 s) before switching, and a user-visible reason ('fullscreen: eldenring.exe')."
+  },
+  {
+   "title": "Xbox Full Screen Experience (handheld shell mode) change notification as a Game-mode trigger",
+   "kind": "trigger",
+   "how": "AnyFSE loads the API set api-ms-win-gaming-experience-l1-1-0 only if IsApiSetImplemented and the export RegisterGamingFullScreenExperienceChangeNotification exists, then registers a callback; IsFullscreenMode = IsGamingFullScreenExperienceActive(); IsDesktopMode = !active but IsGamingFullScreenExperienceSupported(). The callback just raises an event; the app re-reads the state. SetGamingFullScreenExperience(TRUE/FALSE) enters or leaves the mode.",
+   "evidence": [
+    "ashpynov/AnyFSE/src/App/GamingExperience.cpp:41-48,87-98,217-240 (apiset check, IsFullscreenMode, RegisterGamingFullScreenExperienceChangeNotification)",
+    "ashpynov/AnyFSE/src/App/GamingExperience.cpp:128-141 (ExitFSEMode / SetGamingFullScreenExperience)"
+   ],
+   "applicableToWinModes": "On Windows 11 builds that ship the Xbox full-screen experience, add an optional rule 'Full Screen Experience active' -> Game mode. Read-only use only: query IsGamingFullScreenExperienceActive and subscribe, with delay-load and graceful absence on older builds. Do NOT copy the DeviceForm spoofing (see dangers)."
+  },
+  {
+   "title": "Power-source, energy saver and battery triggers (events, not polling)",
+   "kind": "trigger",
+   "how": "SebastianBecker2: BatteryMonitor creates a hidden window and RegisterPowerSettingNotification(GUID_ACDC_POWER_SOURCE) then reacts to WM_POWERBROADCAST / PBT_POWERSETTINGCHANGE; PowerManager registers PowerSettingRegisterNotification(GUID_ACTIVE_POWERSCHEME) with a callback to see plan changes made by anyone. AutoDarkMode: Energy Saver: on Windows 11 24H2+ it reads HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power value EnergySaverState (1 = on) and watches the key with RegNotifyChangeKeyValue in a cancellable task; on older builds it uses the WinRT PowerManager.EnergySaverStatus event; battery via PowerManager.PowerSupplyStatus. Ladbaby polls GetSystemPowerStatus every 100 ms (what not to do).",
+   "evidence": [
+    "SebastianBecker2/PowerPlanSwitcher/PowerManagement/BatteryMonitor.cs:55-100",
+    "SebastianBecker2/PowerPlanSwitcher/PowerManagement/PowerManager.cs:176-210",
+    "AutoDarkMode/Windows-Auto-Night-Mode/AutoDarkModeSvc/Handlers/RegistryHandler.cs:46-123,125-135",
+    "AutoDarkMode/Windows-Auto-Night-Mode/AutoDarkModeSvc/Handlers/SystemEventHandler.cs:166-216",
+    "Ladbaby/PowerPlanSwitcher/PowerPlanSwitcher.ahk:278,471-533 (100 ms timer)"
+   ],
+   "applicableToWinModes": "Replace any polling of 'on battery' with a power-setting notification (message-only window) and add 'Energy Saver on' as a rule input (read-only registry value, build-gated: EnergySaverState only on 24H2+). Use PowerSettingRegisterNotification(GUID_ACTIVE_POWERSCHEME) to detect the user changing the plan during a mode, which feeds the ownership-aware revert."
+  },
+  {
+   "title": "Session lock/unlock, resume and clock-change handling for the grace timer",
+   "kind": "trigger",
+   "how": "AutoDarkMode: SessionLock adds a 'session lock' postpone item; SessionUnlock removes it and, unless the user has a pause/delay item, requests an immediate re-evaluation (SwitchSource.SystemUnlock); resume/unlock events bypass only the 'system idle' postpone (IsPostponedExcept) so the owning module keeps its state. After PowerModes.Resume all postpone expiry timers are re-synced with the wall clock (SyncExpiryTimesWithSystemClock: expired ones removed, others re-armed). TimeChanged events are ignored while locked, deduplicated (Windows fires twice), and a time zone change re-reads geoposition. The postpone queue (reason, expiry, skip type, clearable) is persisted to postpone_data.yaml so user delays survive a restart.",
+   "evidence": [
+    "AutoDarkMode/Windows-Auto-Night-Mode/AutoDarkModeSvc/Handlers/SystemEventHandler.cs:219-312,338-358,385-445",
+    "AutoDarkMode/Windows-Auto-Night-Mode/AutoDarkModeSvc/Core/ThemeManager.cs:41-70 (RequestSwitch bypass rules)",
+    "AutoDarkMode/Windows-Auto-Night-Mode/AutoDarkModeSvc/Core/PostponeManager.cs:483-560 (PostponeItem expiry, SyncExpiryWithSystemClock) and AutoDarkModeLib/AdmConfigBuilder.cs:46 (postpone_data.yaml)"
+   ],
+   "applicableToWinModes": "WinModes' grace timer should use absolute UTC deadlines (not a sleeping countdown) and re-evaluate on resume and on unlock: processes may have exited while asleep, and a long suspend must not count as grace. Optionally pause the end-timer while the session is locked so a mode does not end during a lunch break with the IDE open; persist user 'keep this mode for X min' overrides. None of the other 10 repos react to session lock, resume or display-change messages (grep for SessionSwitch/WM_POWERBROADCAST/WM_DISPLAYCHANGE found nothing in Pavise, ThreadPilot, charlie754, DisplayProfileManager)."
+  },
+  {
+   "title": "Idle trigger that respects execution state and fullscreen",
+   "kind": "trigger",
+   "how": "SebastianBecker2 IdleRule: triggers when the idle time (input-based, polled 1 s) >= threshold, but is blocked if CallNtPowerInformation(SystemExecutionState) shows ES_SYSTEM_REQUIRED (0x1), ES_DISPLAY_REQUIRED (0x2) or ES_AWAYMODE_REQUIRED (0x40) (video playback, presentations, builds that hold wake locks) or if a fullscreen app is active; the reason is logged only when it changes.",
+   "evidence": [
+    "SebastianBecker2/PowerPlanSwitcher/RuleManagement/Rules/IdleRule.cs:57-100",
+    "SebastianBecker2/PowerPlanSwitcher/PowerManagement/PowerManager.cs:57-110"
+   ],
+   "applicableToWinModes": "Useful for a 'Work' idle rule or to veto a mode END while a build/AI agent holds a system-required wake lock (agents running unattended keep the machine awake). Read-only, no elevation. Log the block reason once per change so the History page can explain 'mode kept: wake lock active'."
+  },
+  {
+   "title": "Power-plan switching rules: powercfg or API, duplicate gate, managed clone, startup boost window",
+   "kind": "power",
+   "how": "ThreadPilot shells out to powercfg.exe (full path under System32) and guards with PowerPlanTransitionGate (skip if target is already active, skip same target within 2 s) plus a semaphore so two switches never run concurrently; default (fallback) plan is a configured GUID, not the previously active plan (weakness). SebastianBecker2 uses the powrprof API and keeps a baseline instead. Pavise never edits the user's plans: it duplicates a scheme with PowerDuplicateScheme, names it as managed (note text says it is created and managed by the app and switched back automatically), writes only to the duplicate (EPP, min/max state, boost mode, USB/PCIe/disk settings via PowerWriteACValueIndex), re-activates it when a value must be re-read, and deletes it by name on uninstall; temporary changes (EPP yield, CPU idle) are receipt-tracked and always restored. StartupRule (SebastianBecker2): optional delay, then plan active for a duration, then falls back to the next rule.",
+   "evidence": [
+    "PrimeBuild-pc/ThreadPilot/Services/PowerPlanService.cs:17,200-215 and Services/PowerPlanTransitionGate.cs:14-61",
+    "PrimeBuild-pc/ThreadPilot/Services/ProcessMonitorManagerService.cs:264-325 (ForceDefaultPowerPlanAsync)",
+    "dulaiduwang003/Pavise-Game/src/Core/Tweaks/PowerPlan.Schemes.cs:16-18,974-990 (PowerDuplicateScheme), :576-690 (EPP yield on managed scheme only), :841-860 (DeleteManagedPlansByName)",
+    "SebastianBecker2/PowerPlanSwitcher/RuleManagement/Rules/StartupRule.cs:8-143"
+   ],
+   "applicableToWinModes": "WinModes currently selects balanced/high/ultimate GUIDs. Option: clone the current plan, tune only the clone (e.g. EPP, processor max state) and delete it at revert, so the user's plans are never edited. Always read back powercfg /getactivescheme after set (Pavise verifies), avoid a plan fallback that is not the recorded one, and add a 2 s duplicate-request gate. Ultimate Performance does not exist on every machine (Ladbaby validates that the target GUID exists before enabling a rule, PowerPlanSwitcher.ahk:262-270): check first."
+  },
+  {
+   "title": "Continuous re-apply (reconcile) with backoff, jitter and a force vs one-shot choice",
+   "kind": "process-handling",
+   "how": "Pavise reconciles each held entry: fast checks for 4 s after apply, then stable checks every 20 s plus up to 11 s jitter, failures back off to a cap of 60 s; ThrottleMatches re-reads every knob and re-applies only on drift; entries that refuse writes are given up. SystemXFiles exposes the same decision to the user as a rule flag: force = Y re-applies every loop (1 s) even if the application resets it; force = N applies once per new process; a delay field (seconds) postpones the first apply because early priority/affinity changes broke audio in some games.",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Core/Suppression/SuppressionCore.cs:104-107 and SuppressionCore.Acquire.cs:84-120",
+    "SystemXFiles/process-governor/src/configuration/rule.py:55-72 and src/service/rules_service.py:54-73",
+    "SystemXFiles/process-governor/docs/rule_behavior_and_tips.md (Using Delay to Avoid Side Effects)"
+   ],
+   "applicableToWinModes": "For services/tweaks that Windows or an installer flips back during a mode (e.g. a service restarted by its recovery action), re-verify the live value on a slow timer (20-30 s, jitter) and either re-apply once or flag drift in the UI; never loop at 1 s. Default to one-shot, add a 'start delay' per app for process-level changes."
+  },
+  {
+   "title": "Shutdown, logoff and startup ordering so nothing is stranded",
+   "kind": "restore-logic",
+   "how": "charlie754 fixed order: signal stop, JOIN the watcher thread, clear every applied mask, truncate the journal, stop hooks, save config, remove the tray icon (the earlier draft cleared first and could be re-applied by a still-running watcher). WM_QUERYENDSESSION runs the full idempotent clear immediately because after WM_ENDSESSION the process may be killed at any time. Pavise Stop(): sets stopping, drains async gates with a shared 8 s budget, and returns false (keeping all restore records) if anything cannot be proven finished; its Loop also performs a final Deactivate and restores GameDvr and Mmcss on exit; startup recovery retries journals. SebastianBecker2 uses ShutdownBlockReasonCreate plus a ShutdownRule on QueryEndSession (switch plan while shutting down; cancel when EndSession wParam == 0) and writes a run marker file to detect an unclean previous run, but only logs it (no state recovery).",
+   "evidence": [
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/docs/spec/02-architecture.md:485-506",
+    "dulaiduwang003/Pavise-Game/src/Core/GameMode.Lifecycle.cs:19-75,300-337",
+    "SebastianBecker2/PowerPlanSwitcher/SystemManagement/WindowMessageMonitor.cs:112 and RuleManagement/Rules/ShutdownRule.cs:23-33; PowerPlanSwitcher/Program.cs:74-110,403-410"
+   ],
+   "applicableToWinModes": "In the app: on exit/logoff stop the watcher first, then ask the helper for 'revert' (idempotent), and only then exit. After an unclean exit, use the SilentSwitchTask / next launch to run 'auto revert' when a journal is still open and no trigger is currently active (Sebastian's unclean-run marker is the detection idea; Pavise's journal is the recovery). Do not block shutdown with ShutdownBlockReasonCreate unless the revert is actually running."
+  },
+  {
+   "title": "Tray UX: pause automation, live status, quick profile list, active/idle icon",
+   "kind": "ui",
+   "how": "charlie754 tray: disabled status line at the top, Settings, a checkable Pause item (st.paused), Start with Windows (checkable), Open config folder; icon is generated at the shell's DPI in two states (idle/active) from theme colours. ThreadPilot tray: Open Dashboard, 'Pause Automation Monitoring' toggle (text flips to resume), System Status submenu, selected process + 'Apply pending settings', Power Plans and Profiles submenus. DisplayProfileManager tray: Profiles submenu (click applies), Manage, Refresh, Settings, global hotkeys per profile registered with RegisterHotKey + MOD_NOREPEAT. AutoDarkMode: separate icons for enabled / paused / disabled and a pending postpone count in the tooltip. SebastianBecker2: tooltip names the applied rule.",
+   "evidence": [
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/src/tray.cpp:82-90,271-303",
+    "PrimeBuild-pc/ThreadPilot/Services/SystemTrayService.cs:113-183,330-335",
+    "zac15987/DisplayProfileManager/src/UI/TrayIcon.cs:97-153 and src/Helpers/GlobalHotkeyHelper.cs:20,55-60,115",
+    "AutoDarkMode/Windows-Auto-Night-Mode/adm_tray_new_paused.ico and AutoDarkModeSvc/Core/PostponeManager.cs:101-110 (state.UpdateNotifyIcon)",
+    "SebastianBecker2/PowerPlanSwitcher/PowerPlanSwitcher/AppContext.cs:72,48-49 (UpdateTooltip with the applied rule)"
+   ],
+   "applicableToWinModes": "Add to the existing tray: a 'Pause automatic switching (1 h / until restart)' item, a one-line status ('Code mode: Claude Code running, ends 30 s after it closes'), quick 'Keep this mode for 30/60/180 min', and distinct icons for auto-paused vs manual mode. Give each mode an optional global hotkey with MOD_NOREPEAT."
+  },
+  {
+   "title": "Non-intrusive notifications: no focus steal, once per program, delay choices, throttle and dedupe",
+   "kind": "notification",
+   "how": "charlie754 gameprompt: bottom-right popup with WS_EX_NOACTIVATE|TOOLWINDOW|TOPMOST, shown with SW_SHOWNOACTIVATE, WM_MOUSEACTIVATE answered MA_NOACTIVATE and NO child controls (a real button would call SetFocus and minimise a fullscreen game); asks once per exe per run, remembers 'declined'. AutoDarkMode toast before a pending switch with a selection box (15/30/60/180 min or 'until next switch'), a grace period item that expires on its own, skipped if the user already has a pause. ThreadPilot SmartNotificationService: per-category throttle (default MinInterval 30 s), deduplication of similar notifications, and quiet hours. Pavise shipped a notification do-not-disturb feature that was later withdrawn; the only code left is Notif.cs which restores HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\PushNotifications\\ToastEnabled from a backup value (default when absent: enabled). No repo here implements Focus Assist / QUNS handling.",
+   "evidence": [
+    "charlie754/Game-Optimizer-CPUs-Threads-Optimizer/src/gameprompt.cpp:19-42",
+    "AutoDarkMode/Windows-Auto-Night-Mode/AutoDarkModeSvc/Handlers/ToastHandler.cs:44-100",
+    "PrimeBuild-pc/ThreadPilot/Services/SmartNotificationService.cs:109-130,290-300,459-480,560-566",
+    "dulaiduwang003/Pavise-Game/src/Core/Tweaks/Notif.cs:1-30"
+   ],
+   "applicableToWinModes": "Mode start/stop toasts must never take focus (users may be in a game or a terminal): use the normal Windows toast channel or a NOACTIVATE popup. Offer 'keep mode 30 min' actions on the 'mode ending' toast, rate-limit repeated toasts (30 s per category) and dedupe flaps. Do not toggle ToastEnabled/Focus Assist for the user: Pavise withdrew its version and it cannot be restored if the app is killed during a quiet period."
+  },
+  {
+   "title": "Panic / restore-all button and a rescue path",
+   "kind": "safety",
+   "how": "Pavise GameMode.Loop honours a panicReq flag: runs Deactivate immediately, signals panicDone, and the UI reports the result; failures keep records and retry (RetryDeactivate when residue is seen while disabled). The repo ships Pavise-Rescue.cmd (admin, ASCII header, logic in an embedded PowerShell block) that first exports logs and power configuration, then restores from receipts, resets what lacks a receipt to Windows defaults, deletes managed plans, and finally deletes app data; it requires a reboot. It exists because the author saw machines hard-crash after deep system writes.",
+   "evidence": [
+    "dulaiduwang003/Pavise-Game/src/Core/GameMode.Lifecycle.cs:108-120,148-160,300-315",
+    "dulaiduwang003/Pavise-Game/Pavise-Rescue.cmd:1-40"
+   ],
+   "applicableToWinModes": "Add a prominent 'Restore everything now' action (and CLI `winmodes revert --force`) that replays the journal and reports each item; export diagnostics first. Do not delete user data in the rescue path (Pavise does) and do not 'reset to Windows defaults' items that lack a receipt: report them instead."
+  },
+  {
+   "title": "Game/app session tracking modes for 'program is running' rules",
+   "kind": "trigger",
+   "how": "Playnite supports five modes: Process (original process plus all children), OriginalProcess (HasExited of the started process), Directory (any process whose main module path starts with the directory plus a trailing separator, so c:\\Fallout does not match c:\\Fallout 2), ProcessName, and Default (tree). The tracker loop polls every TrackingFrequency (default 2000 ms), optionally waits InitialTrackingDelay, has a startup phase (wait until a process is seen) and a run phase, ignores iterations that took more than frequency + 30 s (sleep/hibernation) when counting play time, and treats repeated exceptions as stopped (note: failCount is reset to 0 at the top of each loop so the cap is never reached in the run phase). Launchers that spawn the game and exit are handled by the directory/name modes.",
+   "evidence": [
+    "JosefNemec/Playnite/source/PlayniteSDK/Models/GameAction.cs:15-42",
+    "JosefNemec/Playnite/source/Playnite/Common/ProcessMonitor.cs:24-150",
+    "JosefNemec/Playnite/source/Playnite/Controllers/GenericGameController.cs:664-770 (StartTracking)"
+   ],
+   "applicableToWinModes": "Let a program rule choose how to match: image name, full path, directory prefix (with trailing separator), or process tree. Directory prefix is the right match for AI tools that re-exec through launchers (npx/node shims). Use the sleep-gap rule (ignore any tick whose elapsed time exceeds interval + 30 s) when measuring how long a trigger has been present."
+  },
+  {
+   "title": "User hook scripts on enter/exit with defined order and cancel-on-failure",
+   "kind": "process-handling",
+   "how": "Playnite runs PowerShell per game and globally: global pre-script, per-game pre-script (either can cancel startup via StartingArgs.CancelStartup or by failing; failure shows an error dialog and aborts), then the game starts; GameStartedScript fires after the process is detected; PostScript (exit) runs after tracking ends, then the runtime is disposed. Script variables expose the Game object and the API; scripts run in the install directory.",
+   "evidence": [
+    "JosefNemec/Playnite/source/Playnite/GamesEditor.cs:340-376,1384-1385,1485-1492,1622-1670"
+   ],
+   "applicableToWinModes": "A mode could expose optional 'on enter' and 'on exit' hooks (a PowerShell file in the profile) for things WinModes will not do natively (a VPN, a dev stack). Constraints: run unelevated, with a timeout, never as part of the elevated helper, log exit codes, and never let a failing exit hook block the journal revert. This is a design option, not a recommendation to ship arbitrary code execution by default."
+  },
+  {
+   "title": "Display profile per mode with revert-on-failure and HDR ref-counting",
+   "kind": "display",
+   "how": "DisplayProfileManager clones the QueryDisplayConfig(QDC_ALL_PATHS) path/mode arrays before SetDisplayConfig(SDC_APPLY | SDC_USE_SUPPLIED_DISPLAY_CONFIG | SDC_ALLOW_CHANGES | SDC_SAVE_TO_DATABASE) and re-applies the clone if the call fails; refuses a topology with no enabled display; optional 'staged' application with a pause between phases for multi-monitor stability; HDR toggled through DisplayConfigSetDeviceInfo(SET_ADVANCED_COLOR_STATE). The pre-state is NOT persisted, so a crash or reboot loses it. Playnite handles several games at once for HDR: the 'was HDR enabled' value is captured only when the first HDR game starts and restored only when the last one stops (kept in a private field, also not persisted).",
+   "evidence": [
+    "zac15987/DisplayProfileManager/src/Helpers/DisplayConfigHelper.cs:595-760 (revert on failure), :1007-1030 (ValidateDisplayTopology)",
+    "zac15987/DisplayProfileManager/src/Core/ProfileManager.cs:363-368,800-883 (staged path)",
+    "JosefNemec/Playnite/source/Playnite/GamesEditor.cs:82,347-356,1470-1476"
+   ],
+   "applicableToWinModes": "Possible future 'display' kind for Game mode (refresh rate / HDR) with the WinModes journal storing the previous refresh rate, HDR flag and primary monitor BEFORE the change, ref-counted across triggers, and a post-apply check that at least one display stays active. Never disable monitors that are not in the profile (the project does)."
+  }
+ ],
+ "dangers": [
+  "dulaiduwang003/Pavise-Game stops Windows Update services during a match (src/Core/Tweaks/UpdatePause.cs:7 Names = wuauserv, UsoSvc) and ships tweaks named VbsTweak, MemCompressTweak, SpecMitigationTweak, IrqAffinityEngine, MsiModeTweak, IfeoBoost, GlobalTimerResTweak, HagsTweak under src/Core/Tweaks (names seen in the directory listing; I did not audit their contents). All of these are in WinModes' BLOCKED list or are not exactly reversible; do not port them. Its own Pavise-Rescue.cmd header says it exists for machines that 'hard-crash after deep system writes' and it deletes the game library and settings.",
+  "Pavise Isolated suppression (Idle class + IO 0 + page priority 1 + timer seal) starved anti-cheat scanners and froze games (comment at src/Core/Suppression/SuppressionCore.Apply.cs:40-44); the repo removed process suspension ('no process is ever suspended', SuppressionLevel.cs:6-9). WinModes must not suspend or Idle-class user apps.",
+  "PrimeBuild-pc/ThreadPilot SystemTweaksService writes HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling PowerThrottlingOff=1 (system-wide EcoQoS off), disables the SysMain service via SetServiceStartModeAsync(Disabled) (Services/SystemTweaksService.cs:413-447), edits Prefetch parameters and has HAGS/MSI/NIC tweaks; its SecurityService allow-list includes CreateScheduledTask and ModifyRegistryAutostart (SecurityService.cs:22-30). Also its fallback is a configured default plan, not the recorded previous plan (ProcessMonitorManagerService.cs:264-295), and it allows Realtime priority with only a user message when blocked.",
+  "SystemXFiles/process-governor allows Realtime priority for processes AND services (docs recommend Realtime for audiodg/AudioSrv), wildcard '*' rules, and affinity on every process; it has no restore at all (grep for restore/revert finds nothing) so closing the app leaves every change in place; force = Y re-applies every second; startup task is created with schtasks /sc onlogon /rl highest (src/util/windows_scheduler.py:20).",
+  "lowleveldesign/process-governor: job-object limits can terminate processes (clock-time limit calls TerminateJob, ProcessGovernorInstance.cs:75-92), max working set needs SeIncreaseBasePriorityPrivilege, it can inject environment variables and enable privileges in a target, and the service mode runs as SYSTEM and persists settings in the registry (Program_Service.cs). Fine as a developer tool, not as a mode lever.",
+  "SebastianBecker2/PowerPlanSwitcher stores the baseline plan only in memory and the unclean-run marker is only logged (Program.cs:403-410), so a crash while a rule plan is active leaves the machine on that plan; its fullscreen test has no shell-window exclusion (SystemManager.cs:10-52) and the hidden window calls ShutdownBlockReasonCreate permanently (WindowMessageMonitor.cs:112).",
+  "Ladbaby/PowerPlanSwitcher commits a prebuilt PowerPlanSwitcher.exe next to the AutoHotkey source, polls GetSystemPowerStatus every 100 ms, spawns cmd.exe per switch (vbs/*.vbs) and runs atrofac-cli.exe to write laptop fan curves (vbs/High_Performance.vbs) - hardware-level writes that cannot be restored from a journal.",
+  "ashpynov/AnyFSE injects a DLL into AsusOptimization.exe from an auto-start service (VirtualAllocEx, WriteProcessMemory, CreateRemoteThread, LoadLibraryW, SeDebugPrivilege - README 'ACSE Filter and antivirus detection', src/Ally/ACSEfilter/Injector.cpp:71), spoofs HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\OEM DeviceForm = 46 (handheld) to unlock the Full Screen Experience (src/App/GamingExperience.cpp:60-77), its installer enables developer mode and trusts a temporary certificate, and it kills hidden SystemSettings.exe windows (GamingExperience.cpp:110-130). None of this is acceptable in WinModes (injection, system identity spoofing, security setting changes).",
+  "jazir555/GamesDows replaces the Winlogon Shell value (HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\Shell), enables AutoAdminLogon with a plaintext DefaultPassword, sets bcdedit bootuxdisabled/quietboot, DisableLogonUI, NtfsDisableLastAccessUpdate, DisablePagingExecutive, LargeSystemCache, an IFEO PerfOptions CpuPriorityClass on explorer.exe, and turns off the password requirement on wake (powercfg CONSOLELOCK 0) (Enable GamesDows Steam V3.bat:52-127, DisableWindowsLockscreenOnWake.bat). The 'Disable' script restores a hard-coded explorer.exe shell, not a recorded value. Every one of these is on WinModes' never-do list (Winlogon, bcdedit, credentials, security downgrade).",
+  "zac15987/DisplayProfileManager disables every connected monitor that is not part of the profile (DisplayConfigHelper.cs:668-683) and persists with SDC_SAVE_TO_DATABASE with no persisted pre-state; a wrong profile can leave a black screen. SDC_VALIDATE is defined but never used.",
+  "charlie754 optional AMD 3D V-Cache setting changes a driver start type and needs a reboot (README 'two exceptions'), which is a HKLM\\SYSTEM\\CurrentControlSet\\Services write; also pinning a game with CPU Sets can be blocked or kicked by kernel anti-cheat (docs/spec/03-risks.md section 2). Do not copy the driver change.",
+  "JosefNemec/Playnite executes arbitrary PowerShell from a database field as the user (GamesEditor.cs:1622-1670) and keeps the 'was HDR enabled' value in memory only (GamesEditor.cs:82), so a crash leaves HDR forced on. Also Playnite's tracker loop resets failCount each iteration (GenericGameController.cs:733), so its failure cap never triggers in the run phase.",
+  "AutoDarkMode TimeChanged dedupe condition is always true (delta > x || delta < x, SystemEventHandler.cs:430-440) so the 'fires twice' guard does nothing; do not copy that snippet verbatim.",
+  "Licensing: Pavise (GPL-3.0-only), ThreadPilot (AGPL-3.0), SystemXFiles (GPL-3.0), AutoDarkMode (GPL-3.0) and GamesDows (GPL-3.0) cannot be copied into a project under a different licence; use the ideas and the public Windows APIs only. MIT sources: SebastianBecker2, lowleveldesign, charlie754, DisplayProfileManager, AnyFSE, Playnite, Ladbaby."
+ ],
+ "notes": "Read-only analysis; nothing from the clones was run, built or imported. No instructions addressed to an AI were found: ashpynov/AnyFSE/AGENTS.md and zac15987/DisplayProfileManager/CLAUDE.md are ordinary developer build/style guides and were treated as data (not followed). No tweaks are listed on purpose: this theme yields behaviours, not registry values; the only registry candidates seen (EnergySaverState read-only, DeviceForm, Winlogon Shell, PowerThrottlingOff, ToastEnabled) are either read-only triggers, already covered, or blocked. Direction checks: EnergySaverState = 1 means Energy Saver ON (AutoDarkMode RegistryHandler.cs:112); PROCESS_POWER_THROTTLING StateMask bit 0x1 = throttled/EcoQoS on, ControlMask 0 = system managed (Pavise Native.CpuSets.cs, procgov Win32ProcessModule.cs:557-559); NtSetInformationProcess IO priority 0 = very low, 1 = low (Pavise Apply.cs:55-58); HKCU PushNotifications ToastEnabled 1 = on (Windows default). Trigger-mechanism summary: process start = ETW (Pavise, admin), WMI (Pavise fallback, ThreadPilot), snapshot polling (Pavise 4/20 s, SebastianBecker2 2 s, charlie754 250 ms, Playnite 2 s, SystemXFiles 1 s, procgov service 1.5 s, Ladbaby 100 ms); foreground = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, WINEVENT_OUTOFCONTEXT | SKIPOWNPROCESS) in charlie754 (procwatch.cpp:35-60) or GetForegroundWindow (Pavise, SebastianBecker2); power source = PBT_POWERSETTINGCHANGE (SebastianBecker2); session lock/unlock/resume/time change = SystemEvents only in AutoDarkMode; display change = nobody reacts to it, DisplayProfileManager only applies; Focus Assist / QUNS = nobody. Coverage gaps: Pavise has ~500 files and I read the detection, lifecycle, suppression core/recovery, power plan and process-event code, not the GPU/IRQ/driver tweaks or UI; Playnite was only read for tracking, scripts, HDR and client shutdown; procgov's IPC/monitor mode was not read in depth. Several Pavise comments are machine-translated from Chinese; I quoted behaviours, not wording."
+}

@@ -1,0 +1,1164 @@
+{
+ "theme": "performance-latency",
+ "repos": [
+  {
+   "repo": "BoringBoredom/PC-Optimization-Hub",
+   "what": "Curated guide (README + a few notes) on input lag, frame pacing, BIOS, peripherals; almost no registry changes, mostly methodology and tool links",
+   "licence": "no LICENSE file in the clone",
+   "relevance": "medium"
+  },
+  {
+   "repo": "BoringBoredom/Windows-MultiTool",
+   "what": "Python/pywebview GUI that enumerates every power-plan setting through powrprof, edits IFEO PerfOptions, PCI interrupt policy, ReservedCpuSets/SmallProcessorMask and compat flags",
+   "licence": "no LICENSE file in the clone",
+   "relevance": "high"
+  },
+  {
+   "repo": "ancel1x/Ancels-Performance-Batch",
+   "what": "Deprecated interactive .bat tweaker (README says outdated values may break Windows); large registry list, imports a .pow plan, deletes the built-in plans",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "NicholasBly/Windows-11-Latency-Optimization",
+   "what": "Personal 'latency' checklist + Latency Tweaks.reg + tweaked .pow plan + NVIDIA profile; contains the clearest per-setting explanations but mostly anecdotal ('felt best for me'); its own 'Untested' folder",
+   "licence": "MIT",
+   "relevance": "high"
+  },
+  {
+   "repo": "Batlez/Batlez-Tweaks",
+   "what": "35k-line .bat; the only repo that builds a power plan with explicit powercfg /setacvalueindex calls (desktop vs laptop), plus detection of dual-CCD X3D CPUs and a visual-effects backup/restore",
+   "licence": "MIT",
+   "relevance": "high"
+  },
+  {
+   "repo": "louzkk/Ghost-Optimizer",
+   "what": "Batch optimizer with Performance, Latency, KBM, Network menus and a downloaded .pow plan; several keys are invented or have the wrong direction",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "tranht17/WinTune",
+   "what": "AutoHotkey v2 GUI optimizer with a data-driven tweak table, live state detection per tweak, JSON save/load, and powrprof calls for sleep/display timeouts",
+   "licence": "GPL-3.0",
+   "relevance": "medium"
+  },
+  {
+   "repo": "valleyofdoom/TimerResolution",
+   "what": "SetTimerResolution (NtSetTimerResolution + power-throttling opt-out) and MeasureSleep (Sleep(1) precision benchmark) with a resolution-vs-precision sweep script",
+   "licence": "GPL-3.0",
+   "relevance": "high"
+  },
+  {
+   "repo": "dubbyOW/BCDEditTweaks",
+   "what": "bcdedit tweak script (dynamic tick, platform tick, TSC policy, hypervisor off, integrity checks off, nx AlwaysOff); everything is bcdedit so BLOCKED for WinModes",
+   "licence": "MIT",
+   "relevance": "low"
+  },
+  {
+   "repo": "keoy7am/Win32PrioritySeparationTool",
+   "what": "WinForms tool that writes Win32PrioritySeparation from a fixed list of 13 values with a decoded table (long/short, variable/fixed, foreground boost)",
+   "licence": "no LICENSE file in the clone",
+   "relevance": "medium"
+  },
+  {
+   "repo": "IgorMundstein/WinMemoryCleaner",
+   "what": "WPF RAM cleaner calling NtSetSystemInformation memory-list commands (working set, standby, modified, combined, registry cache) with auto-optimisation by threshold/period",
+   "licence": "GPL-3.0",
+   "relevance": "low"
+  },
+  {
+   "repo": "henrypp/memreduct",
+   "what": "C memory reducer; its own code and 30+ translations document that purging the standby/modified lists can freeze the PC and excludes them from automatic cleaning by default",
+   "licence": "GPL-3.0",
+   "relevance": "medium"
+  }
+ ],
+ "tweaks": [
+  {
+   "id": "power-cpu-performance-ac",
+   "title": "Keep the CPU at high clocks on AC inside a dedicated WinModes power plan (min state, boost mode, EPP)",
+   "category": "Power",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "powercfg SUB_PROCESSOR 54533251-82be-4824-96c1-47b60b740d00",
+     "name": "PROCTHROTTLEMIN 893dee8e-2bef-41e0-89c6-b55d0929964c",
+     "kind": "Number",
+     "value": "AC=85..100 (Batlez laptop AC 85, NicholasBly 100); DC unchanged",
+     "default": "plan-dependent (Batlez sets DC=5); journal live value"
+    },
+    {
+     "path": "powercfg SUB_PROCESSOR 54533251-82be-4824-96c1-47b60b740d00",
+     "name": "PROCTHROTTLEMAX bc5038f7-23e0-4960-96da-33abaf5935ec",
+     "kind": "Number",
+     "value": "AC=100",
+     "default": "100 in all stock plans"
+    },
+    {
+     "path": "powercfg SUB_PROCESSOR 54533251-82be-4824-96c1-47b60b740d00",
+     "name": "PERFBOOSTMODE be337238-0d82-4146-a960-4f3749d470c7",
+     "kind": "Number",
+     "value": "AC=2 (Aggressive; Batlez desktop) or 5 (Aggressive At Guaranteed; NicholasBly); Batlez laptop AC=3, DC=1",
+     "default": "plan-dependent"
+    },
+    {
+     "path": "powercfg SUB_PROCESSOR 54533251-82be-4824-96c1-47b60b740d00",
+     "name": "PERFEPP 36687f9e-e3a5-4dbf-b1dc-15eb381c6863",
+     "kind": "Number",
+     "value": "AC=0 (Batlez desktop, echo says 'EPP 0')",
+     "default": "plan-dependent (Balanced is far above 0)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 1809+ (Windows 11 for PERFEPP behaviour on hybrid CPUs)",
+   "projects": [
+    "Batlez/Batlez-Tweaks",
+    "NicholasBly/Windows-11-Latency-Optimization",
+    "BoringBoredom/Windows-MultiTool"
+   ],
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1698-1712 (desktop plan CPU block)",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1921-1935 (laptop plan: AC min 85 / DC 5, max 100/90, boost 3/1; the DC max line has a mistyped GUID so it silently fails)",
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:319-327 (min=max=100, boost 'Aggressive At Guaranteed')"
+   ],
+   "benefit": "Removes the frequency ramp-up delay after idle. No repo gives a benchmark; NicholasBly only says 'important CPU latency reducing settings'. Apply only to the AC half of the plan.",
+   "caveat": "More heat, noise and idle power. Never apply the DC half on laptops (Batlez keeps DC at 5-90). Batlez's own desktop text claims '100% minimum' but writes min=5, so the claim and the code disagree. Write to a cloned plan (see modeIdeas), not to the user's plans.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "power-core-parking-off",
+   "title": "Disable CPU core parking for the duration of a performance mode (min/max cores 100%)",
+   "category": "Power",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "powercfg SUB_PROCESSOR 54533251-82be-4824-96c1-47b60b740d00",
+     "name": "CPMINCORES 0cc5b647-c1df-4637-891a-dec35c318583",
+     "kind": "Number",
+     "value": "AC=100 (AC and DC in the AMD/Universal path)",
+     "default": "plan-dependent (Balanced parks down to a low percentage)"
+    },
+    {
+     "path": "powercfg SUB_PROCESSOR 54533251-82be-4824-96c1-47b60b740d00",
+     "name": "CPMAXCORES ea062031-0e34-4ff1-9b6d-eb1059334028",
+     "kind": "Number",
+     "value": "AC=100",
+     "default": "100"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10/11",
+   "projects": [
+    "Batlez/Batlez-Tweaks",
+    "NicholasBly/Windows-11-Latency-Optimization"
+   ],
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1713-1722 (skips the write when a Ryzen 7900X3D/7950X3D/9900X3D/9950X3D is detected)",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:5366 and the 'powercfg -setacvalueindex scheme_current sub_processor CPMINCORES 100' lines in the Ryzen path (alias form)",
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:86 (QuickCPU: core parking, performance 100%)"
+   ],
+   "benefit": "Avoids wake-up latency of parked cores when a game or build suddenly fans out threads.",
+   "caveat": "MUST be skipped on dual-CCD X3D Ryzen (Batlez preserves 3D V-Cache core scheduling by skipping it). Do NOT copy Batlez's edits of PowerSettings\\...\\0cc5b647...\\ValueMin/ValueMax (Batlez-Tweaks.bat:5086-5100): those change the machine-wide allowed range, not a plan value. Costs idle power.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "power-pcie-aspm-off",
+   "title": "Turn PCIe Link State Power Management off on AC",
+   "category": "Power",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "powercfg SUB_PCIEXPRESS 501a4d13-42af-4429-9fd1-a8218c268e20",
+     "name": "ASPM ee12f906-d277-404b-b6da-e5fa1a576df5",
+     "kind": "Number",
+     "value": "AC=0 (Off); Batlez laptop DC=1 (Moderate)",
+     "default": "plan-dependent (Balanced usually Moderate=1)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1712 (desktop AC) and :1942-1943 (laptop AC=0 / DC=1)"
+   ],
+   "benefit": "Prevents the link from sleeping between GPU/NVMe/NIC transfers (L0s/L1 exit latency).",
+   "caveat": "Small idle power increase; matters on laptops only on battery, so leave DC alone. Batlez gives no measurements.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "power-usb-suspend-off",
+   "title": "Disable USB selective suspend and USB 3 link power management in the mode's power plan",
+   "category": "Input and latency",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "powercfg SUB_USB 2a737441-1930-4402-8d77-b2bebba308a3",
+     "name": "USBSELECTIVESUSPEND 48e6b7a6-50f5-4782-a5d4-53bb8f07e226",
+     "kind": "Number",
+     "value": "AC=0 (Disabled); Batlez laptop DC=1",
+     "default": "1 (Enabled) in stock plans"
+    },
+    {
+     "path": "powercfg SUB_USB 2a737441-1930-4402-8d77-b2bebba308a3",
+     "name": "USB 3 Link Power Management d4e98f31-5ffe-4ce1-be31-1b38b384c009",
+     "kind": "Number",
+     "value": "AC=0 (Off)",
+     "default": "plan-dependent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "Batlez/Batlez-Tweaks",
+    "ancel1x/Ancels-Performance-Batch"
+   ],
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1753-1758 (selective suspend and USB3 LPM written to 0)",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1940-1941 (laptop plan: AC 0 / DC 1)",
+    "ancel1x_Ancels-Performance-Batch/AncelsPerformanceBatch.bat:1104-1170 (same intent via per-device Enum keys and Services\\USB, both of which WinModes must not touch)"
+   ],
+   "benefit": "Stops mouse/keyboard/headset/controller ports from entering suspend, which is a known source of first-input hiccups. The per-plan powercfg route replaces the forbidden Services\\USB\\DisableSelectiveSuspend key.",
+   "caveat": "Battery drain on laptops (keep DC at 1). The other two USB values Batlez writes (498c044a..., d502f7ee...) are not named in any repo, do not copy them without checking with powercfg /qh.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "power-disk-never-sleep-ac",
+   "title": "Do not spin down or idle-park disks on AC",
+   "category": "Power",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "powercfg SUB_DISK 0012ee47-9041-4b5d-9b77-535fba8b1442",
+     "name": "DISKIDLE 6738e2c4-e8a5-4a42-b16a-e040e769756e",
+     "kind": "Number",
+     "value": "AC=0 (never); Batlez laptop DC=600 s",
+     "default": "1200 s typical"
+    },
+    {
+     "path": "powercfg SUB_DISK 0012ee47-9041-4b5d-9b77-535fba8b1442",
+     "name": "NVMe idle timeouts d639518a-e56d-4345-8af2-b9f32fb26109 / d3d55efd-c1ff-424e-9dc3-441be7833010",
+     "kind": "Number",
+     "value": "AC=0, DC=60000 (ms)",
+     "default": "plan-dependent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1731-1747 (storage block)",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1969-1970 (laptop DISKIDLE AC 0 / DC 600)"
+   ],
+   "benefit": "Only matters for HDDs (spin-up delay) and drives that enter deep power states; no gain on a plain NVMe.",
+   "caveat": "Names for the NVMe GUIDs are not given in the repo (Batlez echo: 'NVMe 0ms transition latency on AC'); verify with powercfg /qh before use. Low value, treat as optional.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "power-wifi-max-performance",
+   "title": "Set the wireless adapter power-saving mode to Maximum Performance on AC",
+   "category": "Network",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "powercfg 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 (Wireless Adapter Settings)",
+     "name": "Power Saving Mode 12bbebe6-58d6-4636-95bb-3217ef867c1a",
+     "kind": "Number",
+     "value": "AC=0 (Maximum Performance); DC unchanged",
+     "default": "plan-dependent (Power Saver plan uses a higher index)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1783-1787 (written for AC and DC in the desktop plan)"
+   ],
+   "benefit": "Reduces Wi-Fi radio sleep jitter for gaming/calls without touching the adapter driver keys (safer than the *EEE/PowerSavingMode driver keywords Batlez writes).",
+   "caveat": "Battery drain on DC; effect is driver-dependent. Desktop with Ethernet: no effect.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "power-no-sleep-display-off-ac",
+   "title": "Never sleep, hibernate or turn the display off on AC while a mode is active",
+   "category": "Power",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "powercfg SUB_VIDEO 7516b95f-f776-4464-8c53-06167f40cc99",
+     "name": "VIDEOIDLE 3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e",
+     "kind": "Number",
+     "value": "AC=0 (never)",
+     "default": "900 s typical (WinTune Value0 for the display setting is 300)"
+    },
+    {
+     "path": "powercfg SUB_SLEEP 238c9fa8-0aad-41ed-83f4-97be242c8f20",
+     "name": "STANDBYIDLE 29f6c1db-86da-48c5-9fdb-f2b67b1f44da",
+     "kind": "Number",
+     "value": "AC=0 (never)",
+     "default": "1800 s typical (WinTune Value0 900)"
+    },
+    {
+     "path": "powercfg SUB_SLEEP 238c9fa8-0aad-41ed-83f4-97be242c8f20",
+     "name": "HIBERNATEIDLE 9d7815a6-7ee4-497e-8888-515a05f02364",
+     "kind": "Number",
+     "value": "AC=0 (never)",
+     "default": "plan-dependent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "Batlez/Batlez-Tweaks",
+    "tranht17/WinTune"
+   ],
+   "evidence": [
+    "tranht17_WinTune/Lib/Powrprof.ahk:1-55 (GUIDs and read/write via PowerReadACValueIndex/PowerWriteACValueIndex)",
+    "tranht17_WinTune/Inc/Data.ahk:312-315 (DisableSleep / DisableHibernate / DisableHybridSleep / DisableTurnOffDisplay)",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1798-1807 (sleep/hibernate/display = 0 in the desktop plan, 900/300 etc. in the laptop plan)"
+   ],
+   "benefit": "A long download, build, training run or game session is not interrupted by sleep or a black screen. Fits Code and Game modes.",
+   "caveat": "Do not zero the DC (battery) side (Batlez desktop plan does, laptop plan keeps 300/900 s). WinTune restores with hard-coded Value0 numbers and writes only to the power source active at that moment (Powrprof.ahk:57-65), so its undo is inexact; WinModes must journal AC and DC separately. Note WinTune labels the 94ac6d29... setting 'HybridSleepIdleTimeout' but it is the Allow Hybrid Sleep boolean.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "power-switchable-graphics-max",
+   "title": "Prefer the high-performance GPU in the power plan (switchable dynamic graphics) on AC",
+   "category": "Gaming",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "powercfg 5fb4938d-1ee8-4b0f-9a3c-5036b0ab995c (Switchable Dynamic Graphics)",
+     "name": "Global setting dd848b2a-8a5d-4451-9ae2-39cd41658f6c",
+     "kind": "Number",
+     "value": "AC=2 (maximize performance); Batlez laptop DC=0",
+     "default": "plan-dependent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1771-1772 and :1963-1964 (laptop AC 2 / DC 0)",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1606 (echo 'Maximum GPU performance preference')"
+   ],
+   "benefit": "Hybrid-graphics laptops: stops the plan from forcing the iGPU. No effect on desktops.",
+   "caveat": "Only meaningful on hybrid GPU laptops; the Intel/AMD graphics sub-settings Batlez also sets (44f3beca..., 02f815b5...) are vendor-specific and unnamed, skip them.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "win32-priority-separation",
+   "title": "Tune foreground/background CPU quantum split (Win32PrioritySeparation)",
+   "category": "Input and latency",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
+     "name": "Win32PrioritySeparation",
+     "kind": "Number",
+     "value": "0x26 (38) in 5 repos; NicholasBly suggests 0x16, 0x28 or 0x2A and says to A/B test",
+     "default": "2 on Windows client (keoy7am table: 'Windows Default'; WinTune Value0=2); servers use 0x18"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any (takes effect without reboot per NicholasBly)",
+   "projects": [
+    "keoy7am/Win32PrioritySeparationTool",
+    "NicholasBly/Windows-11-Latency-Optimization",
+    "tranht17/WinTune",
+    "ancel1x/Ancels-Performance-Batch",
+    "louzkk/Ghost-Optimizer",
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "keoy7am_Win32PrioritySeparationTool/Readme.md (decoded table: 0x14-0x1A long, 0x24-0x2A short, 0x*4/*5/*6 no/medium/high foreground boost, *8 fixed)",
+    "keoy7am_Win32PrioritySeparationTool/Win32PrioritySeparation.cs:23 (key) and :47-56",
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:173-182 and 'Best Latency Tweaks TL;DR.txt':2",
+    "tranht17_WinTune/Inc/Data.ahk:133-135 ('Optimizeprocessorperformance' 38, default 2)",
+    "ancel1x_Ancels-Performance-Batch/AncelsPerformanceBatch.bat:227; louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:980; Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:4378,5134"
+   ],
+   "benefit": "Claimed 'more responsive' foreground; the only evidence is a Blur Busters thread and personal impressions (keoy7am Readme, NicholasBly). No benchmark in any repo.",
+   "caveat": "Likely little or no change on client Windows: per Windows Internals (not stated in the repos) the default 2 already means short, variable quanta with 3:1 foreground boost, which is what 0x26 spells out; treat 0x26 as placebo and offer only as an A/B test. keoy7am's tool overwrites an unknown current value with its first list item without recording it (Win32PrioritySeparation.cs:49-56), the opposite of what WinModes must do. Backgrounds (builds, AI tools) may get less CPU with higher foreground boost.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "mmcss-gaming-profile",
+   "title": "MMCSS gaming profile: lower reserved CPU share, no network throttling, higher Games task priority",
+   "category": "Gaming",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+     "name": "SystemResponsiveness",
+     "kind": "Number",
+     "value": "10",
+     "default": "20 (verify live; NicholasBly's own value 10 is therefore a change)"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+     "name": "NetworkThrottlingIndex",
+     "kind": "Number",
+     "value": "4294967295 (0xFFFFFFFF = off, Batlez/Ancel) ",
+     "default": "10 (0xA); NicholasBly writes 0xA which is a no-op"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+     "name": "GPU Priority / Priority / Scheduling Category / SFIO Priority",
+     "kind": "Text",
+     "value": "GPU Priority=8, Priority=6, Scheduling Category=High, SFIO Priority=High",
+     "default": "GPU Priority 8, Priority 2, Scheduling Category Medium, SFIO Priority Normal (verify live)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10/11",
+   "projects": [
+    "NicholasBly/Windows-11-Latency-Optimization",
+    "Batlez/Batlez-Tweaks",
+    "louzkk/Ghost-Optimizer",
+    "ancel1x/Ancels-Performance-Batch"
+   ],
+   "evidence": [
+    "NicholasBly_Windows-11-Latency-Optimization/Latency Tweaks.reg:95-149",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:4128-4129, :4469-4470, :4823-4824",
+    "louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:985-994 and :1896-1899",
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:416 (Chris Titus' tool overwrites these exact values, i.e. several tools fight over them)"
+   ],
+   "benefit": "Only affects threads registered with MMCSS (some games, audio apps, browsers' media) and packet processing while multimedia plays. No repo shows a measurement.",
+   "caveat": "Low effect, but also low risk. Skip the cargo-cult extras (Latency Sensitive, Clock Rate, NoLazyMode, AlwaysOn, Affinity/Background Only on Audio): no repo documents them. The Audio task edits NicholasBly makes (Affinity=7, Background Only=True) can break audio apps. Keys are HKLM so need the elevated helper.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "power-throttling-off",
+   "title": "Disable Windows power throttling (EcoQoS) machine-wide while plugged in",
+   "category": "Power",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling",
+     "name": "PowerThrottlingOff",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "Windows 10 1709+",
+   "projects": [
+    "Batlez/Batlez-Tweaks",
+    "louzkk/Ghost-Optimizer",
+    "ancel1x/Ancels-Performance-Batch",
+    "NicholasBly/Windows-11-Latency-Optimization"
+   ],
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1825, :2030",
+    "louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:1008",
+    "ancel1x_Ancels-Performance-Batch/AncelsPerformanceBatch.bat:295",
+    "NicholasBly_Windows-11-Latency-Optimization/Latency Tweaks.reg:140 (WRONG key: Control\\Power\\PowerThrottlingOff without the PowerThrottling subkey, so it does nothing)",
+    "valleyofdoom_TimerResolution/SetTimerResolution/SetTimerResolution.cpp:77-89 (per-process opt-out with ProcessPowerThrottling instead)"
+   ],
+   "benefit": "Stops Windows from pushing background-classified processes (including a game that lost focus, a minimised IDE, a build) onto efficiency cores / low frequency.",
+   "caveat": "Laptop battery cost. Prefer the per-process API (SetProcessInformation ProcessPowerThrottling) used by SetTimerResolution, which needs no machine-wide change. The key is in Control\\Power, not Services, so it is allowed, but is a mode-scoped setting only.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "hags-hwschmode",
+   "title": "Hardware-accelerated GPU scheduling on/off",
+   "category": "Gaming",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+     "name": "HwSchMode",
+     "kind": "Number",
+     "value": "2 = on, 1 = off",
+     "default": "absent (driver/OS decides)"
+    }
+   ],
+   "tasks": [],
+   "restart": "restart",
+   "risk": "medium",
+   "buildRange": "Windows 10 2004+ with a WDDM 2.7+ GPU driver",
+   "projects": [
+    "ancel1x/Ancels-Performance-Batch",
+    "Batlez/Batlez-Tweaks",
+    "louzkk/Ghost-Optimizer",
+    "NicholasBly/Windows-11-Latency-Optimization"
+   ],
+   "evidence": [
+    "ancel1x_Ancels-Performance-Batch/AncelsPerformanceBatch.bat:300 (2)",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:3380 (2) and :3421 echo 'HAGS enabled (HwSchMode=2)'",
+    "louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:960 and :1940 (writes 1 and calls it 'GPU Scheduling optimized': wrong direction)",
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:427 (enable via Settings > Graphics)"
+   ],
+   "benefit": "Required for some frame-generation features (external knowledge, not in the repos); otherwise mixed results. No repo has numbers.",
+   "caveat": "Needs a reboot and a compatible driver; the supported way is Settings > Graphics, so prefer reading the live value and linking to Settings rather than forcing it in a mode. Ghost shows how easily the direction is inverted.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "global-timer-resolution-requests",
+   "title": "Make timer-resolution requests system-wide again (Windows 11)",
+   "category": "Input and latency",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel",
+     "name": "GlobalTimerResolutionRequests",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "restart",
+   "risk": "medium",
+   "buildRange": "Windows 11 and Windows Server 2022+",
+   "projects": [
+    "valleyofdoom/TimerResolution",
+    "NicholasBly/Windows-11-Latency-Optimization",
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "valleyofdoom_TimerResolution/README.md ('should only be used for debugging purposes' + link to the Great Rule Change article)",
+    "NicholasBly_Windows-11-Latency-Optimization/Latency Tweaks.reg:17-22 and Best Latency Tweaks.txt:288-306",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:2275-2276 (Run-key autostart of SetTimerResolution) and the GlobalTimerResolutionRequests write in the pre-step of the :B bcdedit block (about line 2250)"
+   ],
+   "benefit": "Without it, on Windows 11 a process that raises the timer (SetTimerResolution.exe) only helps itself. With it, a 0.5 ms request benefits games. valleyofdoom ships MeasureSleep to prove the effect (Sleep(1) should return ~1.0x ms instead of ~1.5-2 ms).",
+   "caveat": "The author of the tool that documents it says debugging only. Higher timer rate means more wakeups and power (laptops). Run only for the mode's lifetime (see the timer modeIdea), never via a Run key (Batlez does that at line 2276; Run keys are forbidden).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "ifeo-perfoptions-per-exe",
+   "title": "Persistent per-executable CPU / IO / page priority (IFEO PerfOptions) for user-chosen apps",
+   "category": "System and background",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\<exe name>\\PerfOptions",
+     "name": "CpuPriorityClass",
+     "kind": "Number",
+     "value": "1 Idle, 5 Below normal, 2 Normal, 6 Above normal, 3 High (4 Realtime exists, never use)",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\<exe name>\\PerfOptions",
+     "name": "IoPriority",
+     "kind": "Number",
+     "value": "0 Very low, 1 Low, 2 Normal, 3 High, 4 Critical",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\<exe name>\\PerfOptions",
+     "name": "PagePriority",
+     "kind": "Number",
+     "value": "1 Very low .. 5 Normal",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "any (applies at next process start)",
+   "projects": [
+    "BoringBoredom/Windows-MultiTool",
+    "NicholasBly/Windows-11-Latency-Optimization"
+   ],
+   "evidence": [
+    "BoringBoredom_Windows-MultiTool/src/IFEO/CpuPriority.tsx, IoPriority.tsx, PagePriority.tsx (value maps) and py/IFEO/__init__.py:12-69",
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks TL;DR.txt:2 (game exe I/O priority High; eac_eos.exe for EAC games)",
+    "NicholasBly_Windows-11-Latency-Optimization/Latency Tweaks.reg:9-15"
+   ],
+   "benefit": "Lets a mode lower background tools (indexers, sync clients, launchers) or raise one game without a resident process-manager. Windows already boosts the foreground app, so gain for a single game is unproven.",
+   "caveat": "Only for processes the user names in the mode profile. NEVER touch csrss/dwm/lsass/ntoskrnl/svchost/TrustedInstaller/wuauclt/MsMpEng (Ancel and Batlez do, see dangers). Only write the PerfOptions subkey, never Debugger/GlobalFlag (that is the IFEO hijack surface that security tools watch). Undo = delete the value, and the key if WinModes created it. A runtime SetPriorityClass/IoPriority from the app is less invasive for processes WinModes already controls.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "fullscreen-optimizations-behavior",
+   "title": "Control Fullscreen Optimizations / DXGI flip-model behaviour (GameConfigStore)",
+   "category": "Gaming",
+   "hive": "User",
+   "values": [
+    {
+     "path": "System\\GameConfigStore",
+     "name": "GameDVR_FSEBehaviorMode",
+     "kind": "Number",
+     "value": "0 = keep Windows 11 optimizations (NicholasBly); 2 = force true exclusive fullscreen",
+     "default": "absent"
+    },
+    {
+     "path": "System\\GameConfigStore",
+     "name": "GameDVR_HonorUserFSEBehaviorMode",
+     "kind": "Number",
+     "value": "0 (NicholasBly) / 1 (Ancel, Ghost, needed for the forced modes)",
+     "default": "absent"
+    },
+    {
+     "path": "System\\GameConfigStore",
+     "name": "GameDVR_DXGIHonorFSEWindowsCompatible",
+     "kind": "Number",
+     "value": "0 / 1",
+     "default": "absent"
+    },
+    {
+     "path": "System\\GameConfigStore",
+     "name": "GameDVR_EFSEFeatureFlags",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11 22H2+ for the 'optimizations' semantics; NicholasBly warns Windows 10 behaves differently",
+   "projects": [
+    "NicholasBly/Windows-11-Latency-Optimization",
+    "louzkk/Ghost-Optimizer",
+    "ancel1x/Ancels-Performance-Batch",
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "NicholasBly_Windows-11-Latency-Optimization/Latency Tweaks.reg:24-31 and Best Latency Tweaks.txt:442-445 ('set FSEBehavior to 2 to disable it otherwise')",
+    "louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:943-947 (FSEBehaviorMode=1, EFSEFeatureFlags=1)",
+    "ancel1x_Ancels-Performance-Batch/AncelsPerformanceBatch.bat (GameDVR_* block under HKCU\\SYSTEM\\GameConfigStore)",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:4208 (writes GameDVR_FSEBehavior under HKCU\\SOFTWARE\\Microsoft\\GameBar: wrong key, no effect)"
+   ],
+   "benefit": "Per NicholasBly, Windows 11 22H2+ fullscreen optimizations give the lower latency of flip model with windowed behaviour; others disable it. The repos contradict each other, so the safe design is a per-user toggle with live-value journaling, not a default.",
+   "caveat": "Four repos write four different combinations. The existing game-dvr tweak already owns GameDVR_Enabled in this same key, so WinModes should model the full combination in one place. Per-game overrides live in AppCompatFlags\\Layers (DISABLEDXMAXIMIZEDWINDOWEDMODE), see MultiTool COMPATIBILITY_OPTIONS.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "windowed-game-optimizations",
+   "title": "Optimizations for windowed games (swap-effect upgrade) per user",
+   "category": "Gaming",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\DirectX\\UserGpuPreferences",
+     "name": "DirectXUserGlobalSettings",
+     "kind": "Text",
+     "value": "SwapEffectUpgradeEnable=1; (Ghost/Ancel also write VRROptimizeEnable=0; which turns the VRR windowed optimisation OFF)",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11 22H2+",
+   "projects": [
+    "NicholasBly/Windows-11-Latency-Optimization",
+    "louzkk/Ghost-Optimizer",
+    "ancel1x/Ancels-Performance-Batch"
+   ],
+   "evidence": [
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:423-430 (Settings > Graphics > default graphics settings)",
+    "louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:951-954",
+    "ancel1x_Ancels-Performance-Batch/AncelsPerformanceBatch.bat (DirectXUserGlobalSettings, HKCU)"
+   ],
+   "benefit": "Lets DX10/11 windowed and borderless games use the flip presentation model (lower latency, VRR in windowed mode).",
+   "caveat": "Read the existing string first and merge keys instead of overwriting (it can carry other flags). Do not copy Ghost/Ancel's VRROptimizeEnable=0, it disables a feature the user may want with G-Sync/FreeSync.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "dwm-disable-mpo",
+   "title": "Disable Multiplane Overlay (troubleshooting tweak for flicker or stutter)",
+   "category": "Gaming",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\Dwm",
+     "name": "OverlayTestMode",
+     "kind": "Number",
+     "value": "5 (= MPO off)",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "restart",
+   "risk": "medium",
+   "buildRange": "Windows 10/11",
+   "projects": [
+    "NicholasBly/Windows-11-Latency-Optimization",
+    "Batlez/Batlez-Tweaks",
+    "louzkk/Ghost-Optimizer"
+   ],
+   "evidence": [
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:329-334 ('only if you have graphical issues... might introduce additional latency')",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:3207 (written together with DisableOverlays, in the disable direction) and :32785 (reg delete as undo)",
+    "louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:957 and :1942 (writes 5 and prints 'Multi Plane Overlay enabled': INVERTED label)"
+   ],
+   "benefit": "Fixes black flashes, flicker and some multi-monitor stutter with certain NVIDIA/AMD drivers.",
+   "caveat": "Not a performance gain; the repo that documents it says it may add latency. Offer only as an opt-in fix. Ghost's description is the opposite of reality, a good example of why directions must be verified.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "gpu-tdr-delay",
+   "title": "Give long GPU compute jobs more time before the driver is reset (TdrDelay)",
+   "category": "Dev",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+     "name": "TdrDelay",
+     "kind": "Number",
+     "value": "10 (seconds)",
+     "default": "absent (2 s)"
+    },
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+     "name": "TdrDdiDelay",
+     "kind": "Number",
+     "value": "10",
+     "default": "absent (5 s)"
+    }
+   ],
+   "tasks": [],
+   "restart": "restart",
+   "risk": "medium",
+   "buildRange": "Windows 10/11",
+   "projects": [
+    "louzkk/Ghost-Optimizer"
+   ],
+   "evidence": [
+    "louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:965-966 (Control\\GraphicsDrivers) versus :1974-1976 (same values under Services\\DXGKrnl, which WinModes must not touch)"
+   ],
+   "benefit": "Relevant for local AI / CUDA / compute workloads that otherwise hit 'display driver stopped responding' on a busy GPU. Defaults quoted from Microsoft's TDR documentation, not from the repo.",
+   "caveat": "A frozen GPU takes up to 10 s to recover. Do NOT copy NicholasBly's TdrLevel=0 / TdrDebugMode=0 (Latency Tweaks.reg:128-130): that disables recovery altogether and turns a driver hiccup into a hang.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "nvidia-disable-dynamic-pstate",
+   "title": "NVIDIA: lock the GPU out of low power states (DisableDynamicPstate)",
+   "category": "Gaming",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter index discovered via Enum 'Driver' value>",
+     "name": "DisableDynamicPstate",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "restart",
+   "risk": "high",
+   "buildRange": "NVIDIA GeForce drivers",
+   "projects": [
+    "NicholasBly/Windows-11-Latency-Optimization",
+    "Batlez/Batlez-Tweaks",
+    "ancel1x/Ancels-Performance-Batch"
+   ],
+   "evidence": [
+    "NicholasBly_Windows-11-Latency-Optimization/Disable_P-States.bat (discovers the adapter key through Enum\\...\\Driver instead of hard-coding 0000)",
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:271-281 ('will increase idle power draw', alternative limit-nvpstate)",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:2998, :3543"
+   ],
+   "benefit": "Constant GPU clocks remove P-state transition spikes in frame time (claim only; no numbers).",
+   "caveat": "Driver-private value, NVIDIA only, idle power and heat rise permanently. Ancel/Batlez loop over every Class\\0000-9999 key, which is unsafe; use the Enum Driver value like Disable_P-States.bat. Better scoped alternative named in the same repo: limit-nvpstate keeps P8 until a listed game runs. If implemented, tie it to Game mode and revert on exit; needs driver restart so likely not worth it.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "sticky-keys-hotkey-prompts-off",
+   "title": "Disable the Sticky/Filter/Toggle Keys shortcut prompts that interrupt games",
+   "category": "Input and latency",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Control Panel\\Accessibility\\StickyKeys",
+     "name": "Flags",
+     "kind": "Text",
+     "value": "506",
+     "default": "510"
+    },
+    {
+     "path": "Control Panel\\Accessibility\\Keyboard Response",
+     "name": "Flags",
+     "kind": "Text",
+     "value": "122",
+     "default": "126"
+    },
+    {
+     "path": "Control Panel\\Accessibility\\ToggleKeys",
+     "name": "Flags",
+     "kind": "Text",
+     "value": "58",
+     "default": "62"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "ancel1x/Ancels-Performance-Batch",
+    "louzkk/Ghost-Optimizer"
+   ],
+   "evidence": [
+    "ancel1x_Ancels-Performance-Batch/AncelsPerformanceBatch.bat:1109-1111",
+    "louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:2120-2122"
+   ],
+   "benefit": "Pressing Shift five times or holding Shift in a game no longer pops a dialog that steals focus. Each value only clears the 'hotkey active' bit (0x4) of the Windows default.",
+   "caveat": "Accessibility: users who rely on Sticky Keys by the hotkey lose the shortcut (the feature itself stays available in Settings). Defaults are quoted from Windows, the repos only show the target.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "visual-effects-best-performance",
+   "title": "Reduce Windows visual effects (animations, shadows) for a performance mode",
+   "category": "System and background",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects",
+     "name": "VisualFXSetting",
+     "kind": "Number",
+     "value": "2 (best performance; DWORD, Ghost wrongly writes REG_SZ)",
+     "default": "absent or 0/1/3 depending on the user"
+    },
+    {
+     "path": "Control Panel\\Desktop",
+     "name": "UserPreferencesMask",
+     "kind": "Text",
+     "value": "binary 90 12 03 80 10 00 00 00 (the Windows 'best performance' mask)",
+     "default": "binary, record live (typical best-appearance mask starts 9E 3E 07 80)"
+    },
+    {
+     "path": "Control Panel\\Desktop\\WindowMetrics",
+     "name": "MinAnimate",
+     "kind": "Text",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "TaskbarAnimations / ListviewAlphaSelect / ListviewShadow",
+     "kind": "Number",
+     "value": "0",
+     "default": "1"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "Batlez/Batlez-Tweaks",
+    "louzkk/Ghost-Optimizer"
+   ],
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:29618-29628 (apply with a UserPreferencesMask backup) and :29645-29665 (restore)",
+    "louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:737-740"
+   ],
+   "benefit": "Visible snappiness on weak GPUs, VMs, remote sessions. On a modern GPU no repo shows any measurable gain (Batlez claims lower DWM frame delay without numbers).",
+   "caveat": "Batlez backs up only UserPreferencesMask and restores everything else with hard-coded values (VisualFXSetting 1, MenuShowDelay 200 while the Windows default is 400, per WinTune Data.ahk:86), so its undo is inexact. Needs sign-out or SystemParametersInfo broadcast. Do not turn off font smoothing (Batlez 28692-28694 does in one path). The existing transparency tweak already covers EnableTransparency.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "menu-show-delay",
+   "title": "Show menus and hover previews faster (MenuShowDelay, MouseHoverTime)",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Control Panel\\Desktop",
+     "name": "MenuShowDelay",
+     "kind": "Text",
+     "value": "0 (WinTune, Ancel) or 100 (Ghost)",
+     "default": "400"
+    },
+    {
+     "path": "Control Panel\\Mouse",
+     "name": "MouseHoverTime",
+     "kind": "Text",
+     "value": "100 (WinTune); Ghost uses 20",
+     "default": "400"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "tranht17/WinTune",
+    "louzkk/Ghost-Optimizer",
+    "ancel1x/Ancels-Performance-Batch"
+   ],
+   "evidence": [
+    "tranht17_WinTune/Inc/Data.ahk:85-96 (MenuShowDelay 0/400, MouseHoverTime 100/400) and Lang/en.json:50 ('Optimized response speed of system display')",
+    "louzkk_Ghost-Optimizer/bin/Ghost-Optimizer.bat:1903-1913",
+    "ancel1x_Ancels-Performance-Batch/AncelsPerformanceBatch.bat (MenuShowDelay 0)"
+   ],
+   "benefit": "Perceived UI responsiveness only; no latency effect on games.",
+   "caveat": "Cosmetic. MouseHoverTime of 20 ms makes tooltips and Aero-peek fire on any pass of the cursor.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "nic-energy-saving-off",
+   "title": "Turn off Energy-Efficient Ethernet and Green Ethernet on the active wired adapter",
+   "category": "Network",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\<NNNN of the active adapter>",
+     "name": "*EEE",
+     "kind": "Text",
+     "value": "0",
+     "default": "driver-defined (usually 1)"
+    },
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\<NNNN of the active adapter>",
+     "name": "EnableGreenEthernet",
+     "kind": "Text",
+     "value": "0",
+     "default": "driver-defined"
+    },
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}\\<NNNN of the active adapter>",
+     "name": "PowerSavingMode",
+     "kind": "Text",
+     "value": "0",
+     "default": "driver-defined"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "any (driver keywords differ)",
+   "projects": [
+    "NicholasBly/Windows-11-Latency-Optimization",
+    "Batlez/Batlez-Tweaks"
+   ],
+   "evidence": [
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:432-440 (power saving, EEE, Green Ethernet, Ultra Low Power off)",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:4416-4450 and :4723 (the only part where the two repos agree)"
+   ],
+   "benefit": "Avoids link-state transitions that add latency spikes/packet loss on some Realtek/Intel NICs. Prefer Get/Set-NetAdapterAdvancedProperty (records the current DisplayValue) and only keywords the adapter already exposes.",
+   "caveat": "Brief link drop when the adapter restarts. The two repos CONTRADICT each other on interrupt moderation (NicholasBly: Enabled; Batlez: disabled), flow control (Batlez writes 0 in one path and 3 in another) and offloads (NicholasBly and Batlez disable all offloads, which raises CPU use and can cut throughput). Batlez blindly writes ~40 keywords the driver may not define, and also disables Wake-on-LAN. Only touch the three above.",
+   "alreadyInWinModes": false
+  }
+ ],
+ "modeIdeas": [
+  {
+   "title": "One WinModes-owned power plan per mode, cloned from the user's plan",
+   "kind": "power",
+   "how": "Batlez duplicates a built-in plan into a fixed GUID, renames it, sets values with powercfg /setacvalueindex and /setdcvalueindex, then activates it (-duplicatescheme, /changename, -SETACTIVE) and deletes a previous copy of its own GUID first (powercfg /d). Ancel instead imports a downloaded .pow and deletes every built-in plan.",
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1677-1698 and :1864-1872",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1910 (powercfg -restoredefaultschemes) and ancel1x_Ancels-Performance-Batch/AncelsPerformanceBatch.bat:2267-2285 (deletes Balanced, Power Saver, High, Ultimate, Ryzen Balanced: DO NOT COPY)"
+   ],
+   "applicableToWinModes": "Replace 'switch to the Ultimate Performance GUID' by: record the active GUID, powercfg -duplicatescheme <active> <WinModes GUID per mode>, apply only the per-plan settings listed above to that clone (AC side only on laptops), set it active. Undo = set the recorded GUID active and powercfg -delete the clone, which is exact and never edits the user's own plans. Also survives users who customised Balanced. Never use -restoredefaultschemes."
+  },
+  {
+   "title": "Enumerate every power setting through powrprof and validate before writing",
+   "kind": "power",
+   "how": "MultiTool loops PowerEnumerate over schemes, subgroups and individual settings, reads AC and DC values (PowerReadACValueIndex/PowerReadDCValueIndex), the allowed range (PowerReadValueMin/Max/Increment/UnitsSpecifier) or the option list (PowerReadPossibleFriendlyName/Description) and shows hidden settings too.",
+   "evidence": [
+    "BoringBoredom_Windows-MultiTool/py/POWER_SETTINGS/__init__.py:267-435 (get_settings) and :438-519 (get_power_settings)",
+    "BoringBoredom_Windows-MultiTool/src/POWER_SETTINGS/NumberOption.tsx (clamps the input to min/max/increment)"
+   ],
+   "applicableToWinModes": "Use the same API in ISystemProbe so a profile entry is checked against the range/options of THIS machine (settings such as boost mode or core-parking exist only on some CPUs) and skipped with a clear message if absent. Show the friendly name and description in the Services/Optimize page. Hidden settings (Batlez uses powercfg /attributes ... -ATTRIB_HIDE) are readable this way without changing attributes."
+  },
+  {
+   "title": "Writing a plan value must not silently change the active plan",
+   "kind": "restore-logic",
+   "how": "MultiTool's write_value_index calls PowerWriteACValueIndex/DCValueIndex and then PowerSetActiveScheme on the plan it just edited, so editing a non-active plan activates it. WinTune writes only the AC or DC half that matches the current power source (IsOnAc), then re-activates the current plan.",
+   "evidence": [
+    "BoringBoredom_Windows-MultiTool/py/POWER_SETTINGS/__init__.py:204-232",
+    "tranht17_WinTune/Lib/Powrprof.ahk:57-65 and :77-83"
+   ],
+   "applicableToWinModes": "Journal (scheme GUID, subgroup, setting, AC value, DC value) for each write, always read both halves, and call PowerSetActiveScheme only on the WinModes clone (or re-apply the previously active GUID afterwards). The PowerSetActiveScheme re-activation is needed for the change to apply immediately."
+  },
+  {
+   "title": "Timer-resolution helper that lives exactly as long as the mode",
+   "kind": "process-handling",
+   "how": "SetTimerResolution calls NtSetTimerResolution(resolution, TRUE) in a process that then sleeps forever, after opting out of power throttling for timer resolution (SetProcessInformation ProcessPowerThrottling with PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION and StateMask 0). The resolution reverts when the process exits. MeasureSleep reports Sleep(1) average/stdev; micro-adjust-benchmark.ps1 sweeps 0.500-0.800 ms in 0.002 ms steps to find the best stable value. Reported sweet spots: 0.500, 0.504-0.508 ms (NicholasBly) with Sleep(1) around 1.0xx ms.",
+   "evidence": [
+    "valleyofdoom_TimerResolution/SetTimerResolution/SetTimerResolution.cpp:77-98",
+    "valleyofdoom_TimerResolution/micro-adjust-benchmark.ps1:13-68",
+    "valleyofdoom_TimerResolution/README.md (GlobalTimerResolutionRequests note)",
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:113-118 and :294-306"
+   ],
+   "applicableToWinModes": "Game mode could start a tiny owned child process (not a Run key, not a scheduled task) that requests 0.5 ms and is killed on revert; nothing to restore in the registry. Pair with the optional GlobalTimerResolutionRequests value on Windows 11. Show the before/after Sleep(1) number to justify it. Caveats: power draw, and on laptops only while on AC. This is GPLv3 code, so reimplement the idea, do not copy it."
+  },
+  {
+   "title": "Per-process power-throttling opt-out instead of the machine-wide switch",
+   "kind": "process-handling",
+   "how": "The same SetProcessInformation(ProcessPowerThrottling) call that SetTimerResolution uses on itself can be applied to a chosen process (e.g. the game or the IDE) to switch EcoQoS off for that process only, versus writing PowerThrottlingOff under HKLM for everybody.",
+   "evidence": [
+    "valleyofdoom_TimerResolution/SetTimerResolution/SetTimerResolution.cpp:77-89",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1825 (machine-wide variant)"
+   ],
+   "applicableToWinModes": "For processes in the mode profile ('keep this app at full speed'), call it from the unelevated app for same-user processes: nothing persists, no journal needed. Reserve PowerThrottlingOff for AC-only desktops as an explicit opt-in."
+  },
+  {
+   "title": "Do not purge the standby list automatically; if offered, make it a manual, warned, one-shot action",
+   "kind": "safety",
+   "how": "Mem Reduct's own code excludes REDUCT_STANDBYLIST and REDUCT_MODIFIEDLIST ('freezes') from automatic cleaning unless the user ticks IsAllowStandbyListCleanup, shows a confirmation when enabling them, and 30+ translations of that confirmation say it may freeze the computer for about a minute. Its default mask is working set + system file cache + priority-0 standby + registry cache + combined lists + modified file cache; auto threshold default 90 % used, every 30 min. WinMemoryCleaner offers the same areas and its 'proof' is only that Standby shrinks and Free grows in Resource Monitor.",
+   "evidence": [
+    "henrypp_memreduct/src/main.h:24-25,61-62",
+    "henrypp_memreduct/src/main.c:312-318 and :2374-2378",
+    "henrypp_memreduct/bin/memreduct.lng:161,581,750,973,1292,1750 (confirmation text in Bulgarian, Dutch, German, Indonesian, Korean, Russian)",
+    "IgorMundstein_WinMemoryCleaner/README.md ('Proof of Concept' section; 'Technical Deep Dive' table)"
+   ],
+   "applicableToWinModes": "Standby memory is already counted as available by Windows; emptying it throws away file cache that must be re-read from disk, which is why the benefit is unproven (no benchmark in either repo). Verdict: do not add a standby purge to mode switching. The safe subset, if wanted at all, is the priority-0 (low) standby purge and per-process working-set trim as a user-clicked action with the freeze warning, on RAM-starved machines only; both need NtSetSystemInformation and admin, so only through the elevated helper."
+  },
+  {
+   "title": "Detect dual-CCD X3D Ryzen and skip scheduler-affecting tweaks",
+   "kind": "safety",
+   "how": "Batlez runs a CPU-name regex for 7900X3D/7950X3D/9900X3D/9950X3D and, when matched, skips the core-parking write ('Preserving AMD 3D V-Cache core scheduling'). NicholasBly's TL;DR says not to disable/uninstall Game Bar on multi-CCD CPUs such as the 7950X3D because it is required for proper gaming behaviour.",
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1713-1722 and :5366",
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks TL;DR.txt:7-9 (item 3)"
+   ],
+   "applicableToWinModes": "Add a CPU capability probe (name from HKLM\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0 or CIM) and mark core-parking, game-dvr/game-mode tweaks and Xbox/Game Bar service stops as 'skip on dual-CCD X3D'. This also protects the existing game-mode and game-dvr tweaks."
+  },
+  {
+   "title": "Idle-based exit from performance mode",
+   "kind": "trigger",
+   "how": "NicholasBly points to Process Lasso's IdleSaver (leave 'Bitsum Highest Performance' after N idle seconds) and to limit-nvpstate (GPU stays at P8 until a listed game runs) as the way to keep performance without a permanent power cost.",
+   "evidence": [
+    "NicholasBly_Windows-11-Latency-Optimization/README.md ('Max performance with some energy savings')"
+   ],
+   "applicableToWinModes": "Add a rule 'revert the mode after the system has been input-idle for N minutes' (GetLastInputInfo) next to the existing grace period; re-enter on the next trigger. Also a principle: prefer game-scoped performance to global switches (do not ship DisableDynamicPstate globally)."
+  },
+  {
+   "title": "Try-for-N-minutes trial with automatic rollback for instant tweaks",
+   "kind": "ui",
+   "how": "NicholasBly: Win32PrioritySeparation 'can be tested without rebooting, simply change the value and go back into your game'. keoy7am gives a one-click selector of 13 presets. BoringBoredom: 'keep track of everything you do... instead of blindly changing many settings at once'.",
+   "evidence": [
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:181-182",
+    "keoy7am_Win32PrioritySeparationTool/Readme.md",
+    "BoringBoredom_PC-Optimization-Hub/README.md:18"
+   ],
+   "applicableToWinModes": "For settings that apply live (Win32PrioritySeparation, power-plan values, visual effects), offer 'Try for 10 minutes' that journals the live value, applies, and auto-reverts unless the user clicks Keep. One setting at a time, as the hub recommends, with the result logged in History."
+  },
+  {
+   "title": "Built-in before/after measurements",
+   "kind": "ui",
+   "how": "The hub recommends FrameView/PresentMon for frame time and PC Latency, LatencyMon for DPC/ISR, MousePlotter; TimerResolution ships MeasureSleep (Sleep(1) statistics, needs admin) and a CSV sweep.",
+   "evidence": [
+    "BoringBoredom_PC-Optimization-Hub/README.md:22,289-300",
+    "valleyofdoom_TimerResolution/MeasureSleep/MeasureSleep.cpp (args --sleep_n, --samples; avg/stdev/max)"
+   ],
+   "applicableToWinModes": "Add a small 'Verify' action on the Optimize page that runs a 5-second Sleep(1) test and shows average/stdev before and after a mode, and links to PresentMon for frame times. It turns unproven latency tweaks into measurable ones and discourages placebo changes."
+  },
+  {
+   "title": "Show the current state of each tweak from live values",
+   "kind": "ui",
+   "how": "WinTune evaluates CheckStatusItem for every tweak against the registry, scheduled tasks, and power values (Type RegChange / RegAdd / Power) and can save/load that state as a JSON config (/SaveConfig, /LoadConfig).",
+   "evidence": [
+    "tranht17_WinTune/Inc/OptimizeConfig.ahk:1-17,64-90",
+    "tranht17_WinTune/Inc/Data.ahk:121-137,302-315 (data-driven definitions with RegValue0 / RegValue1)",
+    "tranht17_WinTune/Inc/Optimizer.ahk:57,198 (Power type)"
+   ],
+   "applicableToWinModes": "WinModes already has data/tweaks.json; add a 'Power' value type backed by ISystemProbe and show applied / not applied / mixed per row. Do NOT copy its restore model: WinTune restores to the static RegValue0 numbers (e.g. 900 s sleep, 300 s display), WinModes restores the journaled live value."
+  },
+  {
+   "title": "Hard-coded 'default' values make undo wrong",
+   "kind": "restore-logic",
+   "how": "Batlez backs up only UserPreferencesMask before visual-effects changes and restores VisualFXSetting=1, MenuShowDelay=200 (Windows default 400), TaskbarAnimations=1 etc. from constants. WinTune's Value0 constants and Ancel's 'disable' branches do the same. keoy7am's tool overwrites an unrecognised Win32PrioritySeparation with its first list item.",
+   "evidence": [
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:29645-29665",
+    "tranht17_WinTune/Inc/Data.ahk:85-96",
+    "keoy7am_Win32PrioritySeparationTool/Win32PrioritySeparation.cs:47-56"
+   ],
+   "applicableToWinModes": "Keep the existing rule (record the live value first, including 'value absent'). Treat any 'default' in a tweak as documentation only. Add a test that a tweak whose pre-state differs from the documented default still round-trips exactly."
+  },
+  {
+   "title": "Per-user process-priority rules without resident tools",
+   "kind": "process-handling",
+   "how": "NicholasBly sets Process Lasso rules (CPU priority High, I/O priority High, ProBalance exclusion, 'disallowed processes' list). MultiTool and NicholasBly's reg file persist the same through IFEO PerfOptions.",
+   "evidence": [
+    "NicholasBly_Windows-11-Latency-Optimization/Best Latency Tweaks.txt:102-121",
+    "BoringBoredom_Windows-MultiTool/src/IFEO/index.tsx",
+    "NicholasBly_Windows-11-Latency-Optimization/Latency Tweaks.reg:9-15"
+   ],
+   "applicableToWinModes": "Mode profile could carry 'lower priority' for background apps (below-normal CPU, low I/O, EcoQoS) instead of or in addition to closing them, applied at runtime via SetPriorityClass/SetProcessInformation and reverted by restoring the recorded class. Only for user-listed apps, never system processes. IFEO is the persistent variant (see tweak ifeo-perfoptions-per-exe)."
+  },
+  {
+   "title": "Read-only inspectors for interrupt policy and CPU sets",
+   "kind": "ui",
+   "how": "MultiTool lists PCI devices with MSISupported, DevicePriority, DevicePolicy, AssignmentSetOverride, MessageNumberLimit under Enum\\PCI\\...\\Device Parameters\\Interrupt Management, plus ReservedCpuSets and KGroups\\00\\SmallProcessorMask under Session Manager\\kernel. NicholasBly's BasicUpdates.md says MSI mode is automatic with NVCleanstall and for 30xx/40xx cards.",
+   "evidence": [
+    "BoringBoredom_Windows-MultiTool/py/PCI_IRQs/__init__.py (Device TypedDict and BASE_PATH near the top), src/PCI_IRQs/index.tsx:30-32",
+    "BoringBoredom_Windows-MultiTool/src/PCI_IRQs/DevicePolicy.tsx (policy values 0-6)",
+    "BoringBoredom_Windows-MultiTool/py/SCHEDULING/__init__.py:11-36",
+    "NicholasBly_Windows-11-Latency-Optimization/BasicUpdates.md"
+   ],
+   "applicableToWinModes": "Expose them as read-only diagnostics in the Processes page (is the GPU on MSI? are CPUs reserved?). Writing is out of scope: device-specific, needs a reboot, can render the device unusable, and the hub itself offers no measurement."
+  },
+  {
+   "title": "Display refresh and FPS-cap hint for Game mode",
+   "kind": "display",
+   "how": "The hub states VRR and V-Sync add input lag and gives two formulas for mistiming-free FPS caps: cap = refresh * Y, or refresh / Y when it divides evenly, with an online calculator.",
+   "evidence": [
+    "BoringBoredom_PC-Optimization-Hub/README.md:62-82"
+   ],
+   "applicableToWinModes": "Information only: read the refresh rate (EnumDisplaySettings) and display the list of safe FPS caps in the Game mode page. No system change, so no journal."
+  },
+  {
+   "title": "Keep the display awake for the mode through a power-plan clone",
+   "kind": "power",
+   "how": "WinTune and Batlez set display/sleep/hibernate idle timeouts to 0 (never) for AC. WinTune does it per current power source.",
+   "evidence": [
+    "tranht17_WinTune/Inc/Data.ahk:312-315",
+    "Batlez_Batlez-Tweaks/Batlez-Tweaks.bat:1798-1807"
+   ],
+   "applicableToWinModes": "Part of the cloned mode plan (tweak power-no-sleep-display-off-ac); only AC side on laptops. Undo with the plan swap, nothing else to restore."
+  }
+ ],
+ "dangers": [
+  "ancel1x/Ancels-Performance-Batch is marked DEPRECATED by its own README ('outdated values and registry keys... could break certain system functionality'). Do not mine it for values without independent confirmation (README.md lines 1-8).",
+  "Ancel deletes every subkey of HKLM\\...\\Image File Execution Options with Remove-Item -Recurse (AncelsPerformanceBatch.bat:189), irreversible and it wipes legitimate IFEO entries. Then it writes PerfOptions for system processes: csrss/dwm/ntoskrnl CpuPriorityClass=4 (Realtime) + IoPriority 3, svchost/SearchIndexer/TrustedInstaller/wuauclt/lsass at Idle (lines 363-365, 533-560) and MsMpEng.exe/MsMpEngCP.exe at Idle (line 592, touches Defender). NicholasBly and Batlez also set csrss to High/Realtime (Latency Tweaks.reg:3-6, Batlez-Tweaks.bat:4212,4475,4832). Realtime priority on csrss/dwm can starve the input and display path; Idle svchost starves every service.",
+  "Ancel writes 40+ values under HKLM\\SYSTEM\\ResourcePolicyStore\\...\\Importance|Flags|CPU (BasePriority 82, OverTargetPriority 50 for every class, IsLowPriority 0, CapPercentage 0) (AncelsPerformanceBatch.bat:659-700): this flattens Windows' own resource-management policy, no documentation, no evidence.",
+  "Ancel, Ghost, Batlez and NicholasBly all disable VBS/HVCI/Core isolation, Spectre/Meltdown mitigations (FeatureSettingsOverride/Mask), hypervisor launch, DEP/SEHOP/CFG, Process mitigations, ELAM, driver integrity (Ancel .bat:187-199; Ghost .bat:1052-1128; Batlez .bat:2474 and the :B bcdedit block 2238-2600; Nicholas 'Disable Memory Compression.bat' also sets hypervisorlaunchtype off; Latency Tweaks.reg:53-55). All BLOCKED. Ghost advertises 'up to 30 %' gain and its README admits it 'breaks kernel-level anti-cheats'; hypervisorlaunchtype off also breaks WSL2/Docker Desktop, which WinModes must protect.",
+  "dubbyOW/BCDEditTweaks and the bcdedit blocks in Batlez/Ghost/Ancel are all bcdedit (BLOCKED) and contradict each other: dubbyOW forces useplatformtick yes and calls it 'SAFE', Batlez and Nicholas delete useplatformtick/useplatformclock, Ancel sets useplatformclock No / useplatformtick No. dubbyOW calls 'nx AlwaysOff', 'nointegritychecks Yes' and hypervisor off 'safe' or 'zero security risk' (README), which is false.",
+  "Ancel (Defender block AncelsPerformanceBatch.bat:563-600, services Start=4 for WinDefend/Sense/WdNisSvc/SecurityHealthService/wscsvc) disables Defender, SmartScreen and its notifications; Batlez offers 'Complete Defender Removal'. BLOCKED.",
+  "Ancel (AncelsPerformanceBatch.bat:2266-2285) downloads a binary .pow with curl -k (certificate checks off) and deletes the Balanced, Power Saver, High Performance, Ultimate and AMD Balanced plans; Ghost (Ghost-Optimizer.bat:3074-3100, curl -k download then powercfg /import at 3097) and Batlez launch.ps1 pull remote code (irm | iex, Set-ExecutionPolicy Unrestricted). Batlez also runs powercfg -restoredefaultschemes (Batlez-Tweaks.bat:1910) which wipes the user's custom plans. Never import unknown .pow files; never delete or reset plans.",
+  "Batlez edits the machine-wide power setting definitions (HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\...\\ValueMin/ValueMax and DefaultPowerSchemeValues, Batlez-Tweaks.bat:5086-5100) and sets Services start types (AmdPPM Start=3, Ndu/NdisCap/NdisVirtualBus Start=4). All values under Services are forbidden; ValueMin/ValueMax changes affect every plan.",
+  "Everything under HKLM\\SYSTEM\\CurrentControlSet\\Services is out of bounds: MouseDataQueueSize/KeyboardDataQueueSize (Ancel 16, Ghost 64, NicholasBly 20, Batlez 100 which is the default: four different 'optimal' values and Ghost's own comment says ':: im not really sure if that actually helps', Ghost-Optimizer.bat:2102), Tcpip Tcp1323Opts/TcpAckFrequency/TCPNoDelay/TcpDelAckTicks/DefaultTTL/TcpMaxDupAcks, AFD DefaultSendWindow, Dnscache, USB DisableSelectiveSuspend, DXGKrnl Tdr*, nvlddmkm, Xbl*/XboxGipSvc Start=4 (NicholasBly reg:157-168).",
+  "Network folklore: Batlez forces CTCP congestion control (Batlez-Tweaks.bat:4147-4148, 4500-4501) which regresses Windows 11's default CUBIC (external knowledge), sets initialRto=3000 and MaxSynRetransmissions=2 (less reliable on bad links), disables all adapter offloads/RSC/USO/LSO and Wake-on-LAN, and writes dozens of driver keywords that the driver may not define. The repos disagree: NicholasBly says Interrupt Moderation Enabled, Batlez says disabled. Treat as unproven.",
+  "Placebo / invented keys with no documentation and no benchmark: CoalescingTimerInterval written into 7 different keys (Ancel 0, Ghost 1, Batlez 0); MinTimerResolution, ClockTimerResolution and TimerResolution under SystemProfile (Ghost-Optimizer.bat:1917-1918, 1896-1899); DpcWatchdogProfileOffset, DpcTimeout=0, DpcWatchdogPeriod=0, IdealDpcRate, MinimumDpcRate, MaximumDpcQueueDepth, UnlimitDpcQueue (Latency Tweaks.reg:75-92; DpcTimeout/DpcWatchdogPeriod=0 disable the DPC watchdog and so crash diagnostics); ForegroundBoost, ThreadBoostType, ThreadSchedulingModel, AdjustDpcThreshold, DeepIoCoalescingEnabled, SchedulerAssistThreadFlagOverride under PriorityControl (reg:85-93); IRQ0Priority/IRQ8Priority=1 (reg:48-50, Best Latency Tweaks.txt:164-171); DisableFGBoostDecay, PassiveIntRealTimeWorkerPriority (Ancel .bat, Batlez); Dwm FlipQueueSize, GraphicsDrivers FrameLatency, DxgKrnlLatency, HKLM\\SOFTWARE\\Microsoft\\DirectX ForceGPUPreemption (Ghost-Optimizer.bat:950,965-969,1941; Batlez 3208); Dwm key 'CursorUpdateInterval' under Input\\Settings\\ControllerProcessor\\CursorSpeed (reg:57-58); Psched TimerResolution policy (Batlez-Tweaks.bat:4164) for the QoS packet scheduler; MMCSS 'Latency Sensitive', 'Clock Rate', NoLazyMode, AlwaysOn.",
+  "The 'LatencyTolerance' family is contradictory: NicholasBly writes ExitLatency, Latency, LatencyToleranceDefault/FSVP/PerfOverride/ScreenOffIR/VSyncEnabled, RtlCapabilityCheckLatency=1 plus 20 GraphicsDrivers\\Power DefaultLatencyTolerance*=1 (reg and Untested/Latency Tweaks Enable.reg) and ships the Untested folder with the label to prove it; Ancel writes the same; Batlez DELETES most of them (Batlez-Tweaks.bat:1830-1841); Ghost comments most of them out (Ghost-Optimizer.bat:1932-1960). Do not implement.",
+  "Wrong key or wrong direction in the sources: NicholasBly writes PowerThrottlingOff under Control\\Power (reg:140) instead of Control\\Power\\PowerThrottling; Batlez writes GameDVR_FSEBehavior under HKCU\\SOFTWARE\\Microsoft\\GameBar instead of System\\GameConfigStore (Batlez-Tweaks.bat:4208); Ghost writes HwSchMode=1 as 'GPU scheduling optimized' (Ghost .bat:960, 1940), writes OverlayTestMode=5 as 'MPO enabled' (it disables MPO per NicholasBly/Batlez), and writes VisualFXSetting as REG_SZ (Ghost .bat:738); Ghost sets EnablePrefetcher/EnableSuperfetch=0 while setting the SysMain service to automatic (Ghost .bat:997-999); Batlez's desktop-plan banner promises '100 % minimum' but writes min 5 (Batlez-Tweaks.bat:1706-1707); NicholasBly sets NetworkThrottlingIndex=0xA and SystemResponsiveness=10 as if both were changes while 0xA is the default NetworkThrottlingIndex.",
+  "Memory: LargeSystemCache=1 (Ancel .bat:232, NicholasBly reg:42) is a server-oriented setting that lets the file cache take working set from applications; DisablePagingExecutive=1 (Ancel, NicholasBly, WinTune 'Disablememorypagination') only matters with abundant RAM and is not a latency fix; Batlez itself sets both back to 0 in several paths (Batlez-Tweaks.bat:5145-5146, 5275-5276, 5407). Disable-MMAgent -mc/-PageCombining and DisablePrefetchParameters are memory-compression/Prefetch toggles (compression is on the BRIEF's forbidden list; WinTune's own text says prefetch is disabled 'to increase SSD working life', not for speed). Ghost's SvcHostSplitThresholdInKB=4096000 merges services into shared svchost processes and lowers isolation.",
+  "Standby-list purging is documented as risky by the memory cleaners themselves: Mem Reduct treats Standby and Modified page lists as 'freezes' (main.h:62), excludes them from auto-clean by default (main.c:312-318) and its translations warn of a freeze of about a minute (memreduct.lng:750, 581, 973...). WinMemoryCleaner's README claims benefits but its only evidence is Resource Monitor showing Free memory increasing (that is cache being thrown away). No repo benchmark shows a gain. WinMemoryCleaner also installs a service / startup scheduled task as admin and advises Defender exclusions (README 'Troubleshooting').",
+  "Timer resolution: Batlez downloads SetTimerResolution.exe from GitHub 'latest' into C:\\BatlezTools and starts it from HKLM\\...\\Run (Batlez-Tweaks.bat:2276) without checksum; Run keys are forbidden. valleyofdoom itself says GlobalTimerResolutionRequests 'should only be used for debugging purposes'. A permanently raised timer costs power and the benefit is verified only with MeasureSleep, not with frame-time data.",
+  "Disabling Game Bar / Game DVR services and the PresenceWriter activation (Ancel .bat, Ghost-Optimizer.bat:932-940, NicholasBly 'rename the exe') breaks dual-CCD X3D scheduling: NicholasBly's TL;DR explicitly warns against it and Batlez detects such CPUs. WinModes' existing game-dvr/game-mode tweaks must not stop Game Bar services or remove the app.",
+  "NVIDIA 'Control Method Battery' driver disabling (Batlez-Tweaks.bat:1645-1665) can give Code 43 on RTX laptops (Batlez's own warning) and removes the battery icon; device disabling is out of scope. DisableDynamicPstate locked P0 raises idle power permanently (NicholasBly's own note).",
+  "Ancel zeroes SmoothMouseXCurve/YCurve (AncelsPerformanceBatch.bat:1210-1211) and NicholasBly tells the user to empty them. With 'Enhance pointer precision' off the curves are unused, but if the user turns it back on the pointer barely moves. The existing mouse-acceleration tweak (MouseSpeed 0, thresholds 0) is enough; never touch the curves, and WinModes must keep the exact bytes if it ever does.",
+  "Aggressive shutdown/UI timers in Ghost (AutoEndTasks=1, WaitToKillAppTimeout 3000, HungAppTimeout 2000, LowLevelHooksTimeout 300, WaitToKillServiceTimeout 3000, ForegroundLockTimeout 50; Ghost-Optimizer.bat:1906-1913) kill unsaved apps at logoff and can break low-level keyboard hooks used by AutoHotkey, remappers and IMEs.",
+  "Ghost sets Modern Standby off (CsEnabled=0, PlatformAoAcOverride=0), Batlez sets PlatformRole to 1/2 and Ancel disables SleepStudy, hibernation, FTH and Maintenance (MaintenanceDisabled=1): platform-level power and maintenance behaviour with no latency evidence. powercfg /h off deletes hiberfil.sys and Fast Startup together (Ancel .bat:237-241, Batlez 1858 and 2129): not exactly undoable (the file content is gone) and only saves disk space.",
+  "Process Lasso style advice that WinModes should not follow: adding gamebarpresencewriter.exe/iexplore.exe to a 'disallowed processes' kill list (Best Latency Tweaks.txt:108-111) and disabling TPM, Secure Boot, virtualization, IOMMU and C-states in BIOS (TL;DR items 6, long list lines 12-71) are firmware/security changes, not WinModes territory."
+ ],
+ "notes": "Method: read-only review of the 12 clones; no code run. No prompt-injection text addressed to an AI was found in any of the 12 repos (grep for 'ignore previous instructions', 'as an AI', 'Claude', 'ChatGPT', 'system prompt' found nothing). Batlez launch.ps1, Ghost and Ancel scripts do fetch and execute remote content (irm | iex, curl -k), which is a supply-chain danger in itself. Encoding of powercfg tweaks in 'values': path = 'powercfg <subgroup alias or GUID>', name = '<setting alias> <GUID>', value = 'AC=..;DC=..'. Aliases and meanings (SUB_PROCESSOR, PROCTHROTTLEMIN, PERFBOOSTMODE etc.) come from Microsoft's powercfg alias list; the repos give only the GUIDs, so every GUID should be verified at runtime with 'powercfg /qh' and the PowerEnumerate API before use. GUIDs seen in Batlez but not named by any repo (left out on purpose): 245d8541-3943-4422-b025-13a784f679b7 (used with SUB_NONE fea3413e-..., 'EPP/personality' unclear), 48672f38-7a9a-4bb2-8bf8-3d85be19de4e/2bfc24f9-5ea2-4801-8213-3dbae01aa39d (Batlez echo says 'PCIe Link State Off' but 501a4d13/ee12f906 is the real ASPM setting), 4b92d758-5a24-4851-a470-815d78aee119 (Processor idle demote threshold per NicholasBly's list, AC 5 / DC 30 in Batlez laptop plan), 9596fb26-9850-41fd-ac3e-f7c3c00afd4b/13d09884-..., f15576e8-..., 4faab71a-.... Windows defaults I quote that are not in the repos (SystemResponsiveness 20, Games task Priority 2 / Medium / Normal, TdrDelay 2, TdrDdiDelay 5, StickyKeys 510/126/62, HwSchMode 2=on 1=off, default Win32PrioritySeparation behaviour and CUBIC being the Windows 11 default) are from general Windows documentation and my own knowledge: confirm them against Microsoft docs before shipping, and always journal the live value. Evidence quality: only valleyofdoom (MeasureSleep sweep, a benchmark image) and Mem Reduct (freeze warning) provide verifiable technical reasoning; BoringBoredom's hub is methodology, not a settings list; the rest are anecdotal ('felt best for me') with no benchmark except Batlez' README screenshots (Fortnite FPS on an RTX 3050 Ti laptop, idle DPC 1,444 us vs 622 us) which mix dozens of changes and cannot be attributed. Already in WinModes and left out: GameDVR_Enabled/AppCaptureEnabled, AutoGameModeEnabled, MouseSpeed/Threshold1/Threshold2, HiberbootEnabled, EnableTransparency, DODownloadMode, MenuShowDelay is not covered (included above). Interesting but out of scope: NVIDIA Profile Inspector .nip profiles in four repos (driver database, not registry/powercfg), xHCI interrupt moderation via RWEverything MMIO writes (needs a kernel driver, BLOCKED), Interrupt Affinity / MSI writes (device-specific, can brick a device), ReservedCpuSets, bcdedit anything, BIOS settings, NVCleanstall/DDU driver work, hosts-file telemetry blocking. Licence note: four repos are GPL-3.0 (WinTune, TimerResolution, WinMemoryCleaner, memreduct); reuse ideas, do not copy code. MultiTool, PC-Optimization-Hub and keoy7am have no LICENSE file in the clone."
+}
