@@ -4,6 +4,8 @@ Each tweak is a list of registry values and scheduled tasks. The list of tools t
 setting comes from research/oss-optimizers/tweaks-consensus.json (code-verified survey); a tweak
 without a research id has no tool list and is never marked as recommended.
 
+tools/tweak-labels.json adds a plain-words text for each change of a tweak that has several.
+
 A second survey (research/oss-optimizers/round2-tweaks.json, from reading about forty more optimizers) adds
 settings of its own, with the projects that ship each one and where in their code it was seen.
 
@@ -198,6 +200,19 @@ TWEAKS.extend(json.loads((ROOT / "research/oss-optimizers/round3-tweaks.json").r
 
 ids = [item["id"] for item in TWEAKS]
 assert len(ids) == len(set(ids)), "duplicate tweak id"
+
+# What each change of a tweak does, in plain words (values first, then tasks), so the Optimize page can let people pick part of a
+# tweak. A tweak with several changes must have one text for each; a tweak with one change needs none.
+LABELS = json.loads((ROOT / "tools/tweak-labels.json").read_text(encoding="utf-8"))
+for item in TWEAKS:
+    parts = len(item["values"]) + len(item["tasks"])
+    labels = LABELS.get(item["id"], [])
+    assert parts < 2 or len(labels) == parts, f"{item['id']}: {len(labels)} labels for {parts} changes"
+    assert parts >= 2 or not labels, f"{item['id']} has a single change and needs no labels"
+    if labels:
+        item["partLabels"] = labels
+unknown = set(LABELS) - set(ids)
+assert not unknown, f"labels for unknown tweaks: {sorted(unknown)}"
 target = ROOT / "data" / "tweaks.json"
 target.write_text(json.dumps(TWEAKS, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 print(f"{len(TWEAKS)} tweaks written to {target}")

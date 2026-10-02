@@ -40,19 +40,36 @@ internal static class ServiceTuning
     public static HashSet<string> LoadUndoableTweaks() =>
         [.. UserTweaks.JournaledIds().Concat(new TweakJournal(AppPaths.MachineTweakJournal).Load().Select(record => record.Id))];
 
+    /// <summary>For each tweak WinModes changed: the parts it changed, which are the parts that can be put back one by one.</summary>
+    public static Dictionary<string, HashSet<int>> LoadJournaledParts()
+    {
+        var parts = new Dictionary<string, HashSet<int>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var record in new TweakJournal(UserJournalPath).Load().Concat(new TweakJournal(AppPaths.MachineTweakJournal).Load()))
+        {
+            if (Catalog.Find(record.Id) is { } tweak)
+            {
+                parts.TryAdd(record.Id, []);
+                parts[record.Id].UnionWith(record.PartsOf(tweak));
+            }
+        }
+
+        return parts;
+    }
+
     public static Task<TuningReport> RunAsync(TuneAction action, params string[] targets) => RunAsync([(action, targets)]);
 
     public static async Task<TuningReport> RunAsync(IReadOnlyList<(TuneAction Action, IReadOnlyList<string> Targets)> groups)
     {
-        var machineJournal = await Task.Run(() => new TweakJournal(AppPaths.MachineTweakJournal).Load().Select(record => record.Id).ToHashSet(StringComparer.OrdinalIgnoreCase));
+        var machineJournal = await Task.Run(() => new TweakJournal(AppPaths.MachineTweakJournal).Load().ToDictionary(record => record.Id, StringComparer.OrdinalIgnoreCase));
         var arguments = new List<string> { ChangeVerb };
         foreach (var (action, targets) in groups)
         {
-            // Only the tweaks with a machine-wide part concern the helper.
+            // Only the tweaks with a machine-wide part concern the helper. A target is "id" or "id#parts" (see TweakSelection).
             var forHelper = action switch
             {
-                TuneAction.Tweak => [.. targets.Where(id => Catalog.Find(id)?.NeedsElevation == true)],
-                TuneAction.Untweak => [.. targets.Where(machineJournal.Contains)],
+                TuneAction.Tweak => [.. targets.Where(target => TweakSelection.TryParse(target, out var selection)
+                    && Catalog.Find(selection.Id)?.NeedsElevationFor(selection.Parts) == true)],
+                TuneAction.Untweak => [.. targets.Where(target => TweakSelection.TryParse(target, out var selection) && ChangedByHelper(machineJournal, selection))],
                 _ => targets,
             };
             if (forHelper.Count > 0 || action == TuneAction.Restore)
@@ -80,19 +97,35 @@ internal static class ServiceTuning
         return new TuningReport(true, Describe(merged), merged);
     }
 
+    /// <summary>True when the machine journal holds a change of the selection, so the helper (and its permission prompt) is worth starting.</summary>
+    private static bool ChangedByHelper(Dictionary<string, TweakRecord> machineJournal, TweakSelection selection) =>
+        machineJournal.TryGetValue(selection.Id, out var record)
+        && (selection.Parts is null || Catalog.Find(selection.Id) is { } tweak && record.PartsOf(tweak).Overlaps(selection.Parts));
+
     private static List<TuneResult> ApplyUserPart(IReadOnlyList<(TuneAction Action, IReadOnlyList<string> Targets)> groups)
     {
         var results = new List<TuneResult>();
         var journaled = UserTweaks.JournaledIds().ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var (action, targets) in groups)
         {
-            if (action == TuneAction.Tweak)
+            foreach (var target in targets)
             {
-                results.AddRange(targets.Select(Catalog.Find).Where(tweak => tweak is { HasUserPart: true }).Select(tweak => UserTweaks.Apply(tweak!)));
-            }
-            else if (action == TuneAction.Untweak)
-            {
-                results.AddRange(targets.Where(journaled.Contains).Select(UserTweaks.Undo));
+                if (!TweakSelection.TryParse(target, out var selection))
+                {
+                    continue;
+                }
+
+                if (action == TuneAction.Tweak && Catalog.Find(selection.Id) is { } tweak && tweak.HasUserPartFor(selection.Parts))
+                {
+                    results.Add(UserTweaks.Apply(tweak, selection.Parts));
+                }
+                else if (action == TuneAction.Untweak && journaled.Contains(selection.Id))
+                {
+                    // Undoing a whole tweak needs only the journal, even when the catalog no longer lists the tweak.
+                    results.Add(selection.Parts is null ? UserTweaks.Undo(selection.Id)
+                        : Catalog.Find(selection.Id) is { } known ? UserTweaks.Undo(known, selection.Parts)
+                        : new TuneResult(selection.Id, action, TuneOutcome.Skipped, "Unknown tweak."));
+                }
             }
         }
 

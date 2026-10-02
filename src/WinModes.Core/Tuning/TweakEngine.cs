@@ -54,6 +54,13 @@ public sealed class TweakRecord
 
     /// <summary>Tasks that were enabled and that the tweak disabled.</summary>
     public List<string> DisabledTasks { get; init; } = [];
+
+    /// <summary>The parts of <paramref name="tweak"/> this record changed, so a single part can be undone later.</summary>
+    public IReadOnlySet<int> PartsOf(Tweak tweak)
+    {
+        ArgumentNullException.ThrowIfNull(tweak);
+        return Values.Select(tweak.PartOf).Concat(DisabledTasks.Select(tweak.PartOfTask)).OfType<int>().ToHashSet();
+    }
 }
 
 /// <summary>One JSON file of applied tweaks, saved atomically before each change.</summary>
@@ -104,10 +111,25 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
             : TweakState.Partial;
     }
 
+    /// <summary>
+    /// For each part of the tweak (in the order of <see cref="Tweak.Parts"/>): true when it is applied now, false when not, null for a
+    /// task this PC does not have. Read-only.
+    /// </summary>
+    public IReadOnlyList<bool?> GetPartStates(Tweak tweak)
+    {
+        ArgumentNullException.ThrowIfNull(tweak);
+        return
+        [
+            .. tweak.Values.Select(value => (bool?)registry.Read(value.Hive, value.Path, value.Name).Matches(value.Kind, value.Value)),
+            .. tweak.Tasks.Select(task => tasks.IsEnabled(task) is { } enabled ? !enabled : (bool?)null),
+        ];
+    }
+
     /// <summary>Ids this scope can undo.</summary>
     public IReadOnlyList<string> JournaledIds() => [.. journal.Load().Select(record => record.Id)];
 
-    public TuneResult Apply(Tweak tweak)
+    /// <param name="parts">The parts to apply (see <see cref="Tweak.Parts"/>); null applies the whole tweak.</param>
+    public TuneResult Apply(Tweak tweak, IReadOnlySet<int>? parts = null)
     {
         ArgumentNullException.ThrowIfNull(tweak);
         TuneResult Result(TuneOutcome outcome, string? detail) => new(tweak.Id, TuneAction.Tweak, outcome, detail);
@@ -118,8 +140,13 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
             return Result(TuneOutcome.Skipped, violations[0]);
         }
 
-        var values = tweak.Values.Where(InScope).ToList();
-        var taskPaths = machineScope ? tweak.Tasks : [];
+        if (HasUnknownPart(tweak, parts))
+        {
+            return Result(TuneOutcome.Skipped, "Unknown part of the tweak.");
+        }
+
+        var values = tweak.Values.Where((value, index) => InScope(value) && IsChosen(parts, index)).ToList();
+        var taskPaths = machineScope ? tweak.Tasks.Where((_, index) => IsChosen(parts, tweak.Values.Count + index)).ToList() : [];
         try
         {
             var before = values.Select(value => (Value: value, Live: registry.Read(value.Hive, value.Path, value.Name))).ToList();
@@ -211,7 +238,18 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
         }
     }
 
-    public TuneResult Undo(string tweakId)
+    public TuneResult Undo(string tweakId) => Undo(tweakId, tweak: null, parts: null);
+
+    /// <summary>Undoes only the chosen parts of a tweak that was applied; null undoes all of it.</summary>
+    public TuneResult Undo(Tweak tweak, IReadOnlySet<int>? parts)
+    {
+        ArgumentNullException.ThrowIfNull(tweak);
+        return HasUnknownPart(tweak, parts)
+            ? new TuneResult(tweak.Id, TuneAction.Untweak, TuneOutcome.Skipped, "Unknown part of the tweak.")
+            : Undo(tweak.Id, tweak, parts);
+    }
+
+    private TuneResult Undo(string tweakId, Tweak? tweak, IReadOnlySet<int>? parts)
     {
         TuneResult Result(TuneOutcome outcome, string? detail) => new(tweakId, TuneAction.Untweak, outcome, detail);
 
@@ -222,10 +260,18 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
             return Result(TuneOutcome.Skipped, "Nothing to undo.");
         }
 
+        // Which journaled changes to undo: all of them, or those of the chosen parts.
+        var values = record.Values.Where(value => parts is null || tweak?.PartOf(value) is { } part && parts.Contains(part)).ToList();
+        var disabledTasks = record.DisabledTasks.Where(task => parts is null || tweak?.PartOfTask(task) is { } part && parts.Contains(part)).ToList();
+        if (values.Count == 0 && disabledTasks.Count == 0)
+        {
+            return Result(TuneOutcome.Skipped, "Nothing to undo.");
+        }
+
         try
         {
             var leftAlone = 0;
-            foreach (var value in Enumerable.Reverse(record.Values))
+            foreach (var value in Enumerable.Reverse(values))
             {
                 // Someone else changed the value since: their choice wins.
                 if (!registry.Read(value.Hive, value.Path, value.Name).Matches(value.WrittenKind, value.Written))
@@ -242,12 +288,18 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
                 }
             }
 
-            foreach (var task in record.DisabledTasks.Where(task => tasks.IsEnabled(task) == false))
+            foreach (var task in disabledTasks.Where(task => tasks.IsEnabled(task) == false))
             {
                 tasks.SetEnabled(task, enabled: true);
             }
 
-            records.Remove(record);
+            record.Values.RemoveAll(values.Contains);
+            record.DisabledTasks.RemoveAll(disabledTasks.Contains);
+            if (record.Values.Count == 0 && record.DisabledTasks.Count == 0)
+            {
+                records.Remove(record);
+            }
+
             journal.Save(records);
             return Result(TuneOutcome.Done, leftAlone == 0 ? null : $"{leftAlone} values were changed by something else since and were left as they are.");
         }
@@ -256,6 +308,11 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
             return Result(TuneOutcome.Failed, ex.Message);
         }
     }
+
+    private static bool IsChosen(IReadOnlySet<int>? parts, int index) => parts is null || parts.Contains(index);
+
+    private static bool HasUnknownPart(Tweak tweak, IReadOnlySet<int>? parts) =>
+        parts is not null && parts.Any(index => index < 0 || index >= tweak.Parts.Count);
 
     private bool InScope(TweakValue value) => (value.Hive == TweakHive.Machine) == machineScope;
 

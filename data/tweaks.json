@@ -139,7 +139,12 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Keep the activity feed off",
+      "Do not record the apps and files you open",
+      "Do not send your activity history to Microsoft"
+    ]
   },
   {
     "id": "feedback-prompts",
@@ -185,6 +190,10 @@
     "tasks": [
       "\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator",
       "\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip"
+    ],
+    "partLabels": [
+      "Usage data collector",
+      "USB usage data collector"
     ]
   },
   {
@@ -209,6 +218,10 @@
     "tasks": [
       "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser",
       "\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater"
+    ],
+    "partLabels": [
+      "Compatibility appraiser, which scans your installed programs",
+      "Program data updater"
     ]
   },
   {
@@ -253,6 +266,10 @@
     "tasks": [
       "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient",
       "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload"
+    ],
+    "partLabels": [
+      "Feedback request task",
+      "Feedback task that runs after a download"
     ]
   },
   {
@@ -291,7 +308,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Policy: Windows does not install promoted apps",
+      "No apps installed silently in your account"
+    ]
   },
   {
     "id": "start-suggestions",
@@ -361,7 +382,17 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Suggested apps in Start",
+      "Tips and welcome suggestions",
+      "Promoted apps in the Start menu",
+      "Tips and suggestions while you use Windows",
+      "Suggested content in Settings",
+      "More suggested content in Settings",
+      "Suggested content on other Settings pages",
+      "Recommendations section of Start"
+    ]
   },
   {
     "id": "lockscreen-tips",
@@ -389,7 +420,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Fun facts and tips on the lock screen",
+      "Suggested content on the lock screen"
+    ]
   },
   {
     "id": "explorer-ads",
@@ -616,7 +651,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Background game recording",
+      "Recording from the Game Bar"
+    ]
   },
   {
     "id": "mouse-acceleration",
@@ -658,7 +697,12 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Pointer speed boost",
+      "First acceleration threshold",
+      "Second acceleration threshold"
+    ]
   },
   {
     "id": "edge-background",
@@ -689,7 +733,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Do not preload Edge when you sign in",
+      "Do not keep Edge running after its last window closes"
+    ]
   },
   {
     "id": "delivery-optimization",
@@ -906,7 +954,13 @@
         "value": "1"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "No feedback notifications",
+      "Do not send the device name with diagnostic data",
+      "Limit the diagnostic logs that are collected",
+      "Limit the crash dumps that are collected"
+    ]
   },
   {
     "id": "appcompat-telemetry-policies",
@@ -946,7 +1000,12 @@
         "value": "1"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "No application telemetry",
+      "No inventory of your installed programs",
+      "No Steps Recorder"
+    ]
   },
   {
     "id": "ceip-sqm-policy",
@@ -998,6 +1057,15 @@
       "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser Exp",
       "\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting",
       "\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticResolver"
+    ],
+    "partLabels": [
+      "Autochk proxy task",
+      "Bluetooth quality data task",
+      "Backup telemetry task",
+      "Startup apps telemetry task",
+      "Compatibility appraiser (second task)",
+      "Error report queue task",
+      "Disk diagnostic resolver task"
     ]
   },
   {
@@ -1045,7 +1113,13 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Do not collect handwriting samples",
+      "Do not collect what you type",
+      "Do not harvest your contacts for suggestions",
+      "Typing and handwriting improvement service"
+    ]
   },
   {
     "id": "language-list-optout",
@@ -1154,7 +1228,13 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Do not track the apps you launch",
+      "Do not track the files you open",
+      "Hide recent files in Quick access",
+      "Hide frequent folders in Quick access"
+    ]
   },
   {
     "id": "online-speech-recognition-off",
@@ -1214,6 +1294,12 @@
     "tasks": [
       "\\Microsoft\\Windows\\Maps\\MapsToastTask",
       "\\Microsoft\\Windows\\Maps\\MapsUpdateTask"
+    ],
+    "partLabels": [
+      "Do not download map data on its own",
+      "Do not update maps on their own",
+      "Maps notification task",
+      "Maps update task"
     ]
   },
   {
@@ -1255,7 +1341,12 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Hide the \"finish setting up your device\" screens",
+      "No account notifications in Start",
+      "No account notification pop-ups"
+    ]
   },
   {
     "id": "content-delivery-silent-installs-off",
@@ -1329,7 +1420,17 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Turn off Windows content delivery",
+      "No apps promoted by the PC maker",
+      "No pre-installed promoted apps",
+      "Forget that promoted apps were once allowed",
+      "No feature promotions",
+      "No subscribed content",
+      "No welcome page after updates",
+      "No suggestions for activities"
+    ]
   },
   {
     "id": "cloudcontent-policies-extra",
@@ -1383,7 +1484,14 @@
         "value": "1"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "No account-related content from Microsoft",
+      "No third-party suggestions",
+      "No tips after sign-in",
+      "No cloud-optimised content",
+      "No tailored experiences from diagnostic data"
+    ]
   },
   {
     "id": "online-tips-off",
@@ -1443,7 +1551,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Lock screen widgets",
+      "Widgets chosen by Microsoft for the lock screen"
+    ]
   },
   {
     "id": "share-surfaces",
@@ -1475,7 +1587,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Share tray when you drag files",
+      "Promoted apps in Share"
+    ]
   },
   {
     "id": "promo-toasts",
@@ -1515,7 +1631,12 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Suggested pop-up notifications",
+      "Backup reminders",
+      "Phone Link promotion"
+    ]
   },
   {
     "id": "explorer-home-recommended",
@@ -1548,7 +1669,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Recommended files on Explorer Home",
+      "Cloud files in Quick access"
+    ]
   },
   {
     "id": "edge-nag-policies",
@@ -1614,7 +1739,16 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Stop asking to make Edge the default browser",
+      "Skip the first-run welcome page",
+      "Hide recommendations",
+      "Turn off the shopping assistant",
+      "Hide Microsoft Rewards",
+      "Stop personalisation reporting",
+      "Turn off the feedback button"
+    ]
   },
   {
     "id": "recall-snapshots-click-to-do-off",
@@ -1647,7 +1781,11 @@
         "value": "1"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Do not save Recall snapshots",
+      "Turn off Click to Do"
+    ]
   },
   {
     "id": "click-to-do",
@@ -1709,7 +1847,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Hide the Copilot button",
+      "Hide the Copilot companion"
+    ]
   },
   {
     "id": "input-insights",
@@ -1771,7 +1913,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Do not search your Microsoft account",
+      "Do not search your work or school account"
+    ]
   },
   {
     "id": "search-device-history",
@@ -1942,7 +2088,19 @@
         "value": "1"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Hide the Edge sidebar",
+      "Turn off AI writing help",
+      "Copilot cannot read the page you view",
+      "Copilot cannot read pages through the browser protocol",
+      "Work Copilot cannot read the page you view",
+      "Hide the Microsoft 365 Copilot chat icon",
+      "No AI search in your browsing history",
+      "Do not share browsing history with Copilot search",
+      "No AI-generated themes",
+      "Do not download the local AI model"
+    ]
   },
   {
     "id": "explorer-startup-delay-zero",
@@ -2050,7 +2208,12 @@
         "value": "34"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Sticky Keys shortcut prompt",
+      "Filter Keys shortcut prompt",
+      "Toggle Keys shortcut prompt"
+    ]
   },
   {
     "id": "ui-effects-extra-off",
@@ -2089,7 +2252,12 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Taskbar animations",
+      "Shadows under icon labels",
+      "Aero Peek desktop preview"
+    ]
   },
   {
     "id": "explorer-prelaunch",
@@ -2299,7 +2467,12 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Snap layouts on the maximize button",
+      "Snap bar when you drag a window",
+      "Snap Assist suggestions"
+    ]
   },
   {
     "id": "taskbar-task-view",
@@ -2385,7 +2558,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Recently added apps in Start",
+      "Most used apps in Start"
+    ]
   },
   {
     "id": "visual-studio-telemetry-off",
@@ -2437,7 +2614,14 @@
         "value": "1"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "No feedback dialog",
+      "No email field in feedback",
+      "No screenshot in feedback",
+      "Leave the customer experience program",
+      "Turn off Visual Studio telemetry"
+    ]
   },
   {
     "id": "bing-search-user-toggle",
@@ -2486,7 +2670,12 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "No Bing results in Start search",
+      "Cortana consent off",
+      "Search does not use your location"
+    ]
   },
   {
     "id": "device-metadata-network-off",
@@ -2551,7 +2740,11 @@
         "value": "1"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Turn off Windows Error Reporting",
+      "Do not send extra data with error reports"
+    ]
   },
   {
     "id": "game-dvr-policy",
@@ -2712,7 +2905,11 @@
         "value": "0"
       }
     ],
-    "tasks": []
+    "tasks": [],
+    "partLabels": [
+      "Hide OneDrive in the navigation pane",
+      "Hide OneDrive in the navigation pane of 32-bit apps"
+    ]
   },
   {
     "id": "onedrive-sync-off",

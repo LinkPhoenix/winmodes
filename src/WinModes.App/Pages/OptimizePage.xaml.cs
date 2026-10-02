@@ -55,22 +55,24 @@ public partial class OptimizePage : Page
 
     private async Task RefreshAsync()
     {
-        var (services, changed, states, undoable) = await Task.Run(() => (
+        var (services, changed, states, journaledParts, undoable) = await Task.Run(() => (
             SystemMonitor.GetServices(),
             ServiceTuning.Store.Load(),
-            ServiceTuning.Catalog.Tweaks.ToDictionary(tweak => tweak.Id, ServiceTuning.UserTweaks.GetState),
+            ServiceTuning.Catalog.Tweaks.ToDictionary(tweak => tweak.Id, ServiceTuning.UserTweaks.GetPartStates),
+            ServiceTuning.LoadJournaledParts(),
             ServiceTuning.LoadUndoableTweaks()));
         _undoable = undoable;
         _hasChangedServices = changed.Count > 0;
 
         // Catalog order is kept: categories appear as the catalog lists them.
         _groups = [.. ServiceTuning.Catalog.Tweaks
-            .Where(tweak => states[tweak.Id] != TweakState.Unavailable)
+            // A tweak made only of tasks this PC does not have has nothing to offer.
+            .Where(tweak => states[tweak.Id].Any(state => state is not null))
             .GroupBy(tweak => tweak.Category)
             .Select(group =>
             {
                 var (glyph, color, subtitle) = Categories.GetValueOrDefault(group.Key, ("", Palette.Neutral, ""));
-                return new Group(Loc.T(group.Key), Loc.T(subtitle), glyph, color, [.. group.Select(tweak => Row.For(tweak, states[tweak.Id], undoable.Contains(tweak.Id)))]);
+                return new Group(Loc.T(group.Key), Loc.T(subtitle), glyph, color, [.. group.Select(tweak => Row.For(tweak, states[tweak.Id], journaledParts.GetValueOrDefault(tweak.Id) ?? [], OnPartChanged))]);
             })];
 
         // Services: what the knowledge base advises, then what was already changed (kept so it can be switched back).
@@ -118,7 +120,8 @@ public partial class OptimizePage : Page
                 && (search.Length == 0
                     || row.Title.Contains(search, StringComparison.CurrentCultureIgnoreCase)
                     || row.Description.Contains(search, StringComparison.CurrentCultureIgnoreCase)
-                    || row.Subtitle.Contains(search, StringComparison.CurrentCultureIgnoreCase)));
+                    || row.Subtitle.Contains(search, StringComparison.CurrentCultureIgnoreCase)
+                    || row.Parts.Any(part => part.Label.Contains(search, StringComparison.CurrentCultureIgnoreCase))));
         }
 
         // The selected category can vanish after a change (the Services group when nothing is left to advise).
@@ -163,6 +166,17 @@ public partial class OptimizePage : Page
 
     private void OnRowToggled(object sender, RoutedEventArgs e) => UpdateReview();
 
+    /// <summary>A part of a tweak was ticked or unticked: the review bar counts it.</summary>
+    private void OnPartChanged() => UpdateReview();
+
+    private void OnToggleDetails(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is Row row)
+        {
+            row.IsExpanded = !row.IsExpanded;
+        }
+    }
+
     private void UpdateReview()
     {
         var pending = Rows.Where(row => row.IsPending).ToList();
@@ -172,15 +186,15 @@ public partial class OptimizePage : Page
             return;
         }
 
-        var toApply = pending.Count(row => row.IsOn);
-        var toUndo = pending.Count - toApply;
+        var toApply = pending.Count(row => row.WillApply);
+        var toUndo = pending.Count(row => row.WillUndo);
         ReviewTitle.Text = (toApply, toUndo) switch
         {
             (_, 0) => Loc.F("{0} to apply", toApply),
             (0, _) => Loc.F("{0} to undo", toUndo),
             _ => Loc.F("{0} to apply, {1} to undo", toApply, toUndo),
         };
-        ReviewDetail.Text = pending.Any(row => row.NeedsElevation)
+        ReviewDetail.Text = pending.Any(row => row.NeedsElevationForChange)
             ? Loc.T("Nothing has changed yet. Windows will ask for administrator permission once.")
             : Loc.T("Nothing has changed yet. These settings belong to your account: no administrator permission is needed.");
         StopNow.Visibility = pending.Any(row => row is { IsService: true, IsOn: true, IsRunning: true }) ? Visibility.Visible : Visibility.Collapsed;
@@ -200,7 +214,7 @@ public partial class OptimizePage : Page
     {
         foreach (var row in Rows.Where(row => row.IsPending))
         {
-            row.IsOn = row.IsApplied;
+            row.Discard();
         }
 
         ApplyFilter();
@@ -210,13 +224,13 @@ public partial class OptimizePage : Page
     private async void OnApply(object sender, RoutedEventArgs e)
     {
         var pending = Rows.Where(row => row.IsPending).ToList();
-        var apply = pending.Where(row => row.IsOn).ToList();
-        var undo = pending.Where(row => !row.IsOn).ToList();
+        var apply = pending.Where(row => row.WillApply).ToList();
+        var undo = pending.Where(row => row.WillUndo).ToList();
         var groups = new List<(TuneAction, IReadOnlyList<string>)>
         {
-            (TuneAction.Untweak, [.. undo.Where(row => !row.IsService).Select(row => row.Id)]),
+            (TuneAction.Untweak, [.. undo.Where(row => !row.IsService).Select(row => row.Selection(apply: false))]),
             (TuneAction.Restore, [.. undo.Where(row => row.IsService).Select(row => row.Id)]),
-            (TuneAction.Tweak, [.. apply.Where(row => !row.IsService).Select(row => row.Id)]),
+            (TuneAction.Tweak, [.. apply.Where(row => !row.IsService).Select(row => row.Selection(apply: true))]),
             (TuneAction.Manual, [.. apply.Where(row => row.ServiceTarget == ServiceStartMode.Manual).Select(row => row.Id)]),
             (TuneAction.Disabled, [.. apply.Where(row => row.ServiceTarget == ServiceStartMode.Disabled).Select(row => row.Id)]),
         };
@@ -342,39 +356,41 @@ public partial class OptimizePage : Page
         public void Show(Func<Row, bool> filter) => Rows = [.. _all.Where(filter)];
     }
 
-    private sealed class Row : INotifyPropertyChanged
+    /// <summary>One change inside a tweak, with its own tick box: the user can take some of a tweak and leave the rest.</summary>
+    private sealed class PartRow : INotifyPropertyChanged
     {
+        private readonly Action _changed;
         private bool _isOn;
+
+        public PartRow(TweakPart part, bool applied, bool canUndo, bool hasChoice, Action changed)
+        {
+            Index = part.Index;
+            Label = Loc.T(part.Label);
+            Detail = part.Setting is null ? Loc.F("Disables the scheduled task {0}", part.Target) : $"{part.Target} = {part.Setting}";
+            MachineWide = part.MachineWide;
+            IsApplied = applied;
+            _isOn = applied;
+            // Applied before WinModes touched it: there is no earlier value on record to put back.
+            CanToggle = !applied || canUndo;
+            ToggleTip = applied && !canUndo ? Loc.T("Already set on this PC before WinModes changed anything, so there is no earlier value to put back.") : null;
+            HasChoice = hasChoice;
+            _changed = changed;
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public required string Id { get; init; }
-        public required string Title { get; init; }
-        public string Subtitle { get; init; } = "";
-        public string Description { get; init; } = "";
-        public string? Warning { get; init; }
-        public bool IsRecommended { get; init; }
-        public bool IsApplied { get; init; }
-        public bool IsPartial { get; init; }
-        public bool NeedsElevation { get; init; }
-        public bool IsService { get; init; }
-        public bool IsRunning { get; init; }
-        public bool CanToggle { get; init; } = true;
-        public string? ToggleTip { get; init; }
+        public int Index { get; }
+        public string Label { get; }
+        public string Detail { get; }
+        public bool MachineWide { get; }
+        public bool IsApplied { get; }
+        public bool CanToggle { get; }
+        public string? ToggleTip { get; }
+        public bool HasChoice { get; }
 
-        /// <summary>The start type to set when a service row is switched on.</summary>
-        public ServiceStartMode? ServiceTarget { get; init; }
+        /// <summary>Only a tweak with several changes lets you pick; a single change is just described.</summary>
+        public Visibility ChoiceVisibility => HasChoice ? Visibility.Visible : Visibility.Collapsed;
 
-        public required string Note { get; init; }
-        public required Brush NoteTint { get; init; }
-        public required string NoteTip { get; init; }
-        public string Tools { get; init; } = "";
-        public string ToolsTip { get; init; } = "";
-        public string Change { get; init; } = "";
-        public string Restart { get; init; } = "";
-        public string RestartTip { get; init; } = "";
-
-        /// <summary>What the user wants; differs from <see cref="IsApplied"/> while a change is pending.</summary>
         public bool IsOn
         {
             get => _isOn;
@@ -390,14 +406,124 @@ public partial class OptimizePage : Page
                 {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
                 }
+
+                _changed();
             }
         }
 
         public bool IsPending => IsOn != IsApplied;
 
-        public string Status => Loc.T(IsPending
-            ? IsOn ? "Will be applied" : "Will be undone"
-            : IsApplied ? "Applied" : IsPartial ? "Partly applied" : "Not applied");
+        public string Status => Loc.T(IsPending ? IsOn ? "Will be applied" : "Will be undone" : IsApplied ? "Applied" : "Not applied");
+
+        public Brush StatusBrush => IsPending
+            ? Palette.Apps
+            : IsApplied ? Palette.Start
+            : Application.Current.TryFindResource("TextFillColorSecondaryBrush") as Brush ?? Palette.Neutral;
+    }
+
+    private sealed class Row : INotifyPropertyChanged
+    {
+        private const string ChevronDown = "";
+        private const string ChevronUp = "";
+
+        private bool _isOn;
+        private bool _isExpanded;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public required string Id { get; init; }
+        public required string Title { get; init; }
+        public string Subtitle { get; init; } = "";
+        public string Description { get; init; } = "";
+        public string? Warning { get; init; }
+        public bool IsRecommended { get; init; }
+        public bool IsApplied { get; init; }
+        public bool IsPartial { get; init; }
+        public bool NeedsElevation { get; init; }
+        public bool IsService { get; init; }
+        public bool IsRunning { get; init; }
+        public string? ToggleTip { get; init; }
+
+        /// <summary>The tweak a row stands for; null for a service.</summary>
+        public Tweak? Tweak { get; init; }
+
+        /// <summary>The changes of a tweak that this PC can show (a task it does not have is left out). Empty for a service.</summary>
+        public List<PartRow> Parts { get; init; } = [];
+
+        /// <summary>The start type to set when a service row is switched on.</summary>
+        public ServiceStartMode? ServiceTarget { get; init; }
+
+        public required string Note { get; init; }
+        public required Brush NoteTint { get; init; }
+        public required string NoteTip { get; init; }
+        public string Tools { get; init; } = "";
+        public string ToolsTip { get; init; } = "";
+        public string Change { get; init; } = "";
+        public string Restart { get; init; } = "";
+        public string RestartTip { get; init; } = "";
+
+        /// <summary>The switch can be used when at least one change can still be put back (or has not been made).</summary>
+        public bool CanToggle => Parts.Count == 0 || Parts.Any(part => part.CanToggle);
+
+        /// <summary>What the user wants; differs from <see cref="IsApplied"/> while a change is pending. For a tweak, the switch is on when every change is.</summary>
+        public bool IsOn
+        {
+            get => Parts.Count == 0 ? _isOn : Parts.All(part => part.IsOn);
+            set
+            {
+                if (Parts.Count > 0)
+                {
+                    // Each part tells the row through the callback it was built with.
+                    foreach (var part in Parts.Where(part => part.CanToggle))
+                    {
+                        part.IsOn = value;
+                    }
+
+                    return;
+                }
+
+                if (_isOn == value)
+                {
+                    return;
+                }
+
+                _isOn = value;
+                Notify();
+            }
+        }
+
+        public bool IsPending => Parts.Count == 0 ? IsOn != IsApplied : Parts.Any(part => part.IsPending);
+
+        public bool WillApply => Parts.Count == 0 ? IsOn && !IsApplied : Parts.Any(part => part.IsOn && !part.IsApplied);
+
+        public bool WillUndo => Parts.Count == 0 ? !IsOn && IsApplied : Parts.Any(part => !part.IsOn && part.IsApplied);
+
+        /// <summary>True when what is pending reaches a machine-wide setting, so Windows asks for administrator permission.</summary>
+        public bool NeedsElevationForChange => Parts.Count == 0 ? NeedsElevation : Parts.Any(part => part.IsPending && part.MachineWide);
+
+        /// <summary>"id" for the whole tweak, or "id#parts" for the parts to apply (or to undo): what the engines are given.</summary>
+        public string Selection(bool apply) => Tweak is null
+            ? Id
+            : TweakSelection.Format(Tweak, Parts.Where(part => apply ? part.IsOn && !part.IsApplied : !part.IsOn && part.IsApplied).Select(part => part.Index));
+
+        public void Discard()
+        {
+            if (Parts.Count == 0)
+            {
+                IsOn = IsApplied;
+                return;
+            }
+
+            foreach (var part in Parts)
+            {
+                part.IsOn = part.IsApplied;
+            }
+        }
+
+        public string Status => Loc.T(
+            IsPending
+                ? WillApply && WillUndo ? "Will be changed" : WillApply ? "Will be applied" : "Will be undone"
+                : IsApplied ? "Applied" : IsPartial ? "Partly applied" : "Not applied");
 
         public Brush StatusBrush => IsPending
             ? Palette.Apps
@@ -416,7 +542,53 @@ public partial class OptimizePage : Page
         public Visibility ChangeVisibility => Visible(Change.Length > 0);
         public Visibility RestartVisibility => Visible(Restart.Length > 0);
 
-        public static Row For(Tweak tweak, TweakState state, bool canUndo)
+        /// <summary>A tweak can be opened to see, and choose among, the changes it makes.</summary>
+        public Visibility ExpanderVisibility => Visible(Parts.Count > 0);
+
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (_isExpanded == value)
+                {
+                    return;
+                }
+
+                _isExpanded = value;
+                foreach (var name in (string[])[nameof(IsExpanded), nameof(Details), nameof(DetailsVisibility), nameof(ChevronGlyph), nameof(ExpanderTip)])
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+                }
+            }
+        }
+
+        /// <summary>The row itself while it is open, null while it is closed, so the list of changes is only built when someone looks at it.</summary>
+        public Row? Details => _isExpanded ? this : null;
+
+        /// <summary>A template with no content is still drawn, so the closed state is hidden as well.</summary>
+        public Visibility DetailsVisibility => Visible(_isExpanded);
+
+        public string ChevronGlyph => _isExpanded ? ChevronUp : ChevronDown;
+
+        public string ExpanderTip => Loc.T(_isExpanded ? "Hide the details" : "Show what it changes");
+
+        public string ChoiceHint => Parts.Count > 1
+            ? Loc.T("Choose which of these changes to make. Unticking one that is applied puts its earlier value back.")
+            : "";
+
+        public Visibility ChoiceHintVisibility => Visible(Parts.Count > 1);
+
+        /// <summary>Tells the page that the switch, the status or the pending state of the row changed.</summary>
+        public void Notify()
+        {
+            foreach (var name in (string[])[nameof(IsOn), nameof(Status), nameof(StatusBrush)])
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            }
+        }
+
+        public static Row For(Tweak tweak, IReadOnlyList<bool?> partStates, HashSet<int> journaledParts, Action changed)
         {
             var (restart, restartTip) = tweak.Restart switch
             {
@@ -425,9 +597,17 @@ public partial class OptimizePage : Page
                 "restart" => (Loc.T("Shows after a restart"), Loc.T("Visible after Windows restarts.")),
                 _ => ("", ""),
             };
-            var applied = state == TweakState.Applied;
             var medium = tweak.Risk != "low";
-            return new Row
+            var shown = tweak.Parts.Where(part => partStates[part.Index] is not null).ToList();
+            Row? row = null;
+            var parts = shown.Select(part => new PartRow(part, partStates[part.Index]!.Value, journaledParts.Contains(part.Index), shown.Count > 1, () =>
+            {
+                row?.Notify();
+                changed();
+            })).ToList();
+            var applied = parts.All(part => part.IsApplied);
+
+            row = new Row
             {
                 Id = tweak.Id,
                 Title = Loc.T(tweak.Title),
@@ -435,12 +615,12 @@ public partial class OptimizePage : Page
                 Warning = string.IsNullOrEmpty(tweak.Warning) ? tweak.Warning : Loc.T(tweak.Warning),
                 IsRecommended = tweak.Recommended,
                 IsApplied = applied,
-                IsPartial = state == TweakState.Partial,
-                _isOn = applied,
+                IsPartial = !applied && parts.Any(part => part.IsApplied),
                 NeedsElevation = tweak.NeedsElevation,
-                // Applied before WinModes touched it: there is no earlier value on record to put back.
-                CanToggle = !applied || canUndo,
-                ToggleTip = applied && !canUndo ? Loc.T("Already set on this PC before WinModes changed anything, so there is no earlier value to put back.") : null,
+                Tweak = tweak,
+                Parts = parts,
+                // Every change was made before WinModes touched it: there is no earlier value to put back.
+                ToggleTip = parts.All(part => part.IsApplied && !part.CanToggle) ? parts[0].ToggleTip : null,
                 Note = Loc.T(tweak.Recommended ? "Recommended" : medium ? "Check first" : "Optional"),
                 NoteTint = Palette.Tint(tweak.Recommended ? Palette.Start : medium ? Palette.Power : Palette.Neutral),
                 NoteTip = Loc.T(tweak.Recommended
@@ -453,6 +633,7 @@ public partial class OptimizePage : Page
                 Restart = restart,
                 RestartTip = restartTip,
             };
+            return row;
         }
 
         public static Row For(ServiceRecommendation recommendation)

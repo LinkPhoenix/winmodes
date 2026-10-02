@@ -116,12 +116,13 @@ static int Change(IReadOnlyList<ChangeGroup> groups, string root, WindowsService
         switch (action)
         {
             case TuneAction.Tweak:
-                results.AddRange(names.Select(id => catalog.Find(id) is { } tweak
-                    ? tweaks.Apply(tweak)
-                    : new TuneResult(id, action, TuneOutcome.Skipped, "Unknown tweak.")));
+                // "id" or "id#0,2": a tweak, or some parts of it. Anything else, or an id the catalog does not list, does nothing.
+                results.AddRange(names.Select(name => TweakSelection.TryParse(name, out var selection) && catalog.Find(selection.Id) is { } tweak
+                    ? tweaks.Apply(tweak, selection.Parts)
+                    : new TuneResult(name, action, TuneOutcome.Skipped, "Unknown tweak.")));
                 break;
             case TuneAction.Untweak:
-                results.AddRange((names.Count == 0 ? tweaks.JournaledIds() : names).Select(tweaks.Undo));
+                results.AddRange(names.Count == 0 ? tweaks.JournaledIds().Select(tweaks.Undo) : names.Select(name => UndoTweak(name, catalog, tweaks)));
                 break;
             default:
                 results.AddRange(tuner.Apply(action, action == TuneAction.Restore && names.Count == 0 ? tuner.TweakedServices() : names));
@@ -131,4 +132,22 @@ static int Change(IReadOnlyList<ChangeGroup> groups, string root, WindowsService
 
     store.SaveLastResults(results);
     return ExitOk;
+}
+
+// An undo of a whole tweak needs only the journal; an undo of some parts needs the catalog to know which journaled change is which.
+static TuneResult UndoTweak(string name, TweakCatalog catalog, TweakEngine tweaks)
+{
+    if (!TweakSelection.TryParse(name, out var selection))
+    {
+        return new TuneResult(name, TuneAction.Untweak, TuneOutcome.Skipped, "Unknown tweak.");
+    }
+
+    if (selection.Parts is null)
+    {
+        return tweaks.Undo(selection.Id);
+    }
+
+    return catalog.Find(selection.Id) is { } tweak
+        ? tweaks.Undo(tweak, selection.Parts)
+        : new TuneResult(name, TuneAction.Untweak, TuneOutcome.Skipped, "Unknown tweak.");
 }

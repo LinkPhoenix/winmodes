@@ -176,6 +176,97 @@ public sealed class TweakEngineTests : IDisposable
         });
     }
 
+    private static Tweak ThreeUserValues() => new()
+    {
+        Id = "three",
+        Title = "Three",
+        Values =
+        [
+            new TweakValue(TweakHive.User, @"Software\Test", "A", TweakValueKind.Number, "0"),
+            new TweakValue(TweakHive.User, @"Software\Test", "B", TweakValueKind.Number, "0"),
+            new TweakValue(TweakHive.User, @"Software\Test", "C", TweakValueKind.Number, "0"),
+        ],
+    };
+
+    private IReadOnlyList<TweakRecord> JournalOf(string file) => new TweakJournal(Path.Combine(_directory, file)).Load();
+
+    [Fact]
+    public void Apply_WithChosenParts_ChangesOnlyThose()
+    {
+        var tweak = ThreeUserValues();
+
+        var result = Engine(false).Apply(tweak, new HashSet<int> { 0, 2 });
+
+        Assert.Equal(TuneOutcome.Done, result.Outcome);
+        Assert.True(_registry.Read(TweakHive.User, @"Software\Test", "A").Exists);
+        Assert.False(_registry.Read(TweakHive.User, @"Software\Test", "B").Exists);
+        Assert.True(_registry.Read(TweakHive.User, @"Software\Test", "C").Exists);
+        Assert.Equal(TweakState.Partial, Engine(false).GetState(tweak));
+        Assert.Equal<bool?>([true, false, true], Engine(false).GetPartStates(tweak));
+    }
+
+    [Fact]
+    public void Undo_OfOnePart_PutsBackOnlyThatPartAndKeepsTheRestOnRecord()
+    {
+        var tweak = ThreeUserValues();
+        _registry.Write(TweakHive.User, @"Software\Test", "A", TweakValueKind.Number, "9");
+        Engine(false).Apply(tweak);
+
+        var result = Engine(false).Undo(tweak, new HashSet<int> { 0 });
+
+        Assert.Equal(TuneOutcome.Done, result.Outcome);
+        Assert.Equal("9", _registry.Read(TweakHive.User, @"Software\Test", "A").Value);
+        Assert.Equal("0", _registry.Read(TweakHive.User, @"Software\Test", "B").Value);
+        Assert.Equal(new HashSet<int> { 1, 2 }, Assert.Single(JournalOf("user.json")).PartsOf(tweak));
+
+        // Undoing what is left removes the record.
+        Assert.Equal(TuneOutcome.Done, Engine(false).Undo(tweak, new HashSet<int> { 1, 2 }).Outcome);
+        Assert.Empty(Engine(false).JournaledIds());
+        Assert.False(_registry.Read(TweakHive.User, @"Software\Test", "C").Exists);
+    }
+
+    [Fact]
+    public void Undo_OfAPartThatWasNeverChangedByTheTweak_DoesNothing()
+    {
+        var tweak = ThreeUserValues();
+        Engine(false).Apply(tweak, new HashSet<int> { 0 });
+
+        var result = Engine(false).Undo(tweak, new HashSet<int> { 1 });
+
+        Assert.Equal(TuneOutcome.Skipped, result.Outcome);
+        Assert.Equal("0", _registry.Read(TweakHive.User, @"Software\Test", "A").Value);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(3)]
+    public void ApplyAndUndo_RefuseAPartThatDoesNotExist(int part)
+    {
+        var tweak = ThreeUserValues();
+
+        Assert.Equal(TuneOutcome.Skipped, Engine(false).Apply(tweak, new HashSet<int> { part }).Outcome);
+        Assert.Equal(TuneOutcome.Skipped, Engine(false).Undo(tweak, new HashSet<int> { part }).Outcome);
+        Assert.False(_registry.Read(TweakHive.User, @"Software\Test", "A").Exists);
+    }
+
+    [Fact]
+    public void Parts_CountTheValuesFirstAndThenTheTasks_AndTasksOnlyRunInTheMachineScope()
+    {
+        const string Task = @"\Microsoft\Windows\Feedback\Siuf\DmClient";
+        _tasks.Enabled[Task] = true;
+        var tweak = Sample(Task);
+
+        // Part 2 is the task: the user scope never touches it, the machine scope does.
+        Assert.Equal(TuneOutcome.Skipped, Engine(false).Apply(tweak, new HashSet<int> { 2 }).Outcome);
+        Assert.True(_tasks.Enabled[Task]);
+        Assert.Equal(TuneOutcome.Done, Engine(true).Apply(tweak, new HashSet<int> { 2 }).Outcome);
+        Assert.False(_tasks.Enabled[Task]);
+        Assert.False(_registry.Read(TweakHive.Machine, @"SOFTWARE\Policies\Test", "MachineValue").Exists);
+
+        Assert.Equal(TuneOutcome.Done, Engine(true).Undo(tweak, new HashSet<int> { 2 }).Outcome);
+        Assert.True(_tasks.Enabled[Task]);
+    }
+
     private sealed class FakeRegistry : IRegistryAccess
     {
         public Dictionary<(TweakHive, string, string), RegistrySnapshot> Values { get; } = [];

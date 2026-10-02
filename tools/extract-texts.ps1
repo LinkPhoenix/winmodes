@@ -58,6 +58,9 @@ foreach ($tweak in $tweaks) {
     foreach ($text in $tweak.title, $tweak.description, $tweak.warning, $tweak.category) {
         if ($text) { [void]$keys.Add($text) }
     }
+    foreach ($text in $tweak.partLabels) {
+        if ($text) { [void]$keys.Add($text) }
+    }
 }
 $apps = Get-Content -LiteralPath (Join-Path $root 'data/apps.json') -Raw | ConvertFrom-Json
 foreach ($app in $apps) {

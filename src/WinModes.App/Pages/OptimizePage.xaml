@@ -13,6 +13,65 @@
             <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
         </Style>
 
+        <!-- The arrow that opens the list of changes of a setting. -->
+        <Style x:Key="DetailsToggleStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Margin" Value="6,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Frame" CornerRadius="6" Background="Transparent">
+                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="12" Text="{Binding ChevronGlyph}" HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Frame" Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- One change of a setting: a tick box when there is a choice, the plain-words label, and the registry value or task behind it. -->
+        <DataTemplate x:Key="PartTemplate">
+            <Grid Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <CheckBox IsChecked="{Binding IsOn, Mode=TwoWay}" IsEnabled="{Binding CanToggle}" Visibility="{Binding ChoiceVisibility}"
+                          MinWidth="0" Margin="0,0,10,0" VerticalAlignment="Top" Click="OnRowToggled" ToolTip="{Binding ToggleTip}"
+                          ToolTipService.ShowOnDisabled="True" AutomationProperties.Name="{Binding Label}" />
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding Label}" FontSize="13" TextWrapping="Wrap" Visibility="{Binding ChoiceVisibility}" />
+                    <TextBlock Text="{Binding Detail}" FontSize="11" FontFamily="Consolas" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"
+                               ToolTip="{Binding Detail}" />
+                </StackPanel>
+                <TextBlock Grid.Column="2" Text="{Binding Status}" FontSize="11" FontWeight="SemiBold" Margin="16,0,0,0" VerticalAlignment="Top"
+                           Foreground="{Binding StatusBrush}" />
+            </Grid>
+        </DataTemplate>
+
+        <!-- The details of a setting, built only while it is open. -->
+        <DataTemplate x:Key="DetailsTemplate">
+            <Border Margin="46,12,0,0" Padding="14,10,14,12" CornerRadius="6" Background="{DynamicResource ControlFillColorDefaultBrush}">
+                <StackPanel>
+                    <TextBlock Text="{l:T 'What this changes'}" FontSize="11" FontWeight="SemiBold" Style="{StaticResource SecondaryTextStyle}" />
+                    <TextBlock Text="{Binding ChoiceHint}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0" Visibility="{Binding ChoiceHintVisibility}"
+                               Style="{StaticResource SecondaryTextStyle}" />
+                    <ItemsControl ItemsSource="{Binding Parts}" ItemTemplate="{StaticResource PartTemplate}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
         <!-- A category of the bar: a button whose colours follow the selection (set by the code, since they differ per category). -->
         <Style x:Key="CategoryChipStyle" TargetType="Button">
             <Setter Property="Cursor" Value="Hand" />
@@ -150,9 +209,14 @@
                                             <DataTemplate>
                                                 <Border Padding="20,12" MinHeight="56" BorderThickness="0,1,0,0" BorderBrush="{StaticResource AppCardStrokeBrush}">
                                                     <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="46" />
                                                             <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
                                                             <ColumnDefinition Width="Auto" />
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
@@ -191,6 +255,11 @@
                                                         <ui:ToggleSwitch Grid.Column="3" IsChecked="{Binding IsOn, Mode=TwoWay}" IsEnabled="{Binding CanToggle}"
                                                                          VerticalAlignment="Center" Click="OnRowToggled" ToolTip="{Binding ToggleTip}"
                                                                          ToolTipService.ShowOnDisabled="True" AutomationProperties.Name="{Binding Title}" />
+                                                        <Button Grid.Column="4" Style="{StaticResource DetailsToggleStyle}" Click="OnToggleDetails"
+                                                                Visibility="{Binding ExpanderVisibility}" ToolTip="{Binding ExpanderTip}"
+                                                                AutomationProperties.Name="{Binding ExpanderTip}" />
+                                                        <ContentControl Grid.Row="1" Grid.ColumnSpan="5" Content="{Binding Details}" ContentTemplate="{StaticResource DetailsTemplate}"
+                                                                        Visibility="{Binding DetailsVisibility}" />
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>

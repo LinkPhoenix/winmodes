@@ -10,6 +10,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Added
 
+- Optimize: every setting can be opened to see what it changes (the registry values or scheduled tasks, in plain words and with their technical names) and, when it changes several things, to pick only some of them. Unticking a change that WinModes made puts back that change alone. Searching also looks in these descriptions.
 - Optimize: a bar of categories stays at the top of the page, with the number of settings in each. A click limits the list to one category instead of scrolling for it, and the numbers follow the search, so they show where the matches are.
 - About and title bar: a beta build shows a "Beta" tag next to its version (and the full version, such as 0.9.3-beta.20261002, on the About page). A beta build looks for newer betas as well as stable versions; a stable build never hears about betas.
 - Optimize: two settings for OneDrive that remove nothing: hide it in File Explorer, or keep it from syncing and starting by policy.
