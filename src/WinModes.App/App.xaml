@@ -51,6 +51,8 @@
             <!-- A category of a bar (Optimize, Debloat): a button whose colours follow the selection, set by the code since they differ per category. -->
             <Style x:Key="CategoryChipStyle" TargetType="Button">
                 <Setter Property="Cursor" Value="Hand" />
+                <!-- Without it the title takes the system button colour, which is black on the dark theme. -->
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">

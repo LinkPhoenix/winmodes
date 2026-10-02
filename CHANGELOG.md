@@ -43,6 +43,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Fixed
 
+- Optimize and Debloat: the names of the categories in the bar at the top were black on the dark theme and hard to read; they now follow the theme.
 - Services and Processes: a program that has no icon of its own, such as the shared host of most Windows services (Application Information, AppX Deployment, Base Filtering Engine and about 300 others), showed a blank picture; it now shows the usual symbol instead.
 
 ## [0.9.2] - 2026-10-02
