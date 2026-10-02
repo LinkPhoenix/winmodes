@@ -19,6 +19,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Changed
 
+- Optimize and modes: after writing a setting, WinModes reads it back. A setting that Windows refuses without an error (a policy, or the protection of default apps) is now reported as not applied instead of shown as applied, and nothing is recorded for it.
 - Automation: a mode started automatically now stays on while any program or tool that triggers it is still open, and ends one minute after the last one closes, so going from Claude Code to Codex (or running both) no longer makes the PC go back and forth. A mode starts only after its trigger has held for 10 seconds, so a program that opens and closes at once changes nothing.
 - Automation: automatic switching never replaces or undoes a mode you chose yourself. A mode it started is remembered, so it is still undone after WinModes was restarted.
 - Automation: automatic switching waits 30 seconds after WinModes starts (Windows is still loading your programs) and stays quiet for 10 minutes after a switch that was refused or failed, instead of asking for the permission again at every check.

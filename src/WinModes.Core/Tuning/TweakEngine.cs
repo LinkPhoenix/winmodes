@@ -137,13 +137,15 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
 
             record.AppliedUtc = DateTimeOffset.UtcNow;
             var changes = 0;
+            var refused = new List<string>();
 
             foreach (var (value, live) in before.Where(pair => !pair.Live.Matches(pair.Value.Kind, pair.Value.Value)))
             {
                 // Keep the very first "before": applying twice must not overwrite it with our own value.
+                TweakValueRecord? added = null;
                 if (!record.Values.Any(existing => IsSameValue(existing, value)))
                 {
-                    record.Values.Add(new TweakValueRecord
+                    record.Values.Add(added = new TweakValueRecord
                     {
                         Hive = value.Hive,
                         Path = value.Path,
@@ -158,6 +160,20 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
 
                 journal.Save(records);
                 registry.Write(value.Hive, value.Path, value.Name, value.Kind, value.Value);
+
+                // Read it back: a policy or a protection driver of Windows can refuse a write without raising an error.
+                if (!registry.Read(value.Hive, value.Path, value.Name).Matches(value.Kind, value.Value))
+                {
+                    if (added is not null)
+                    {
+                        record.Values.Remove(added);
+                        journal.Save(records);
+                    }
+
+                    refused.Add(value.Name);
+                    continue;
+                }
+
                 changes++;
             }
 
@@ -177,6 +193,14 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
             {
                 records.Remove(record);
                 journal.Save(records);
+            }
+
+            if (refused.Count > 0)
+            {
+                var names = string.Join(", ", refused);
+                return changes == 0
+                    ? Result(TuneOutcome.Failed, $"Windows kept its own value for {names}: nothing was changed.")
+                    : Result(TuneOutcome.Done, $"Windows kept its own value for {names}; the rest was changed.");
             }
 
             return changes == 0 ? Result(TuneOutcome.Skipped, "Already applied.") : Result(TuneOutcome.Done, null);

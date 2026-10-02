@@ -32,6 +32,44 @@ public sealed class TweakEngineTests : IDisposable
     };
 
     [Fact]
+    public void Apply_ReportsAValueThatWindowsRefusedAndRecordsNothingForIt()
+    {
+        _registry.Refused.Add("UserValue");
+        var tweak = Sample();
+
+        var result = Engine(false).Apply(tweak);
+
+        // Nothing was changed, so there is nothing to undo and the page can say why instead of showing a false success.
+        Assert.Equal(TuneOutcome.Failed, result.Outcome);
+        Assert.Contains("UserValue", result.Detail, StringComparison.Ordinal);
+        Assert.Empty(Engine(false).JournaledIds());
+        Assert.False(_registry.Read(TweakHive.User, @"Software\Test", "UserValue").Exists);
+    }
+
+    [Fact]
+    public void Apply_KeepsWhatWorkedWhenOnlyOneValueOfTheTweakWasRefused()
+    {
+        _registry.Refused.Add("MachineValue");
+        var tweak = new Tweak
+        {
+            Id = "mixed",
+            Title = "Mixed",
+            Values =
+            [
+                new TweakValue(TweakHive.Machine, @"SOFTWARE\Policies\Test", "OkValue", TweakValueKind.Number, "1"),
+                new TweakValue(TweakHive.Machine, @"SOFTWARE\Policies\Test", "MachineValue", TweakValueKind.Number, "1"),
+            ],
+        };
+
+        var result = Engine(true).Apply(tweak);
+
+        Assert.Equal(TuneOutcome.Done, result.Outcome);
+        Assert.Contains("MachineValue", result.Detail, StringComparison.Ordinal);
+        Assert.Equal(TuneOutcome.Done, Engine(true).Undo("mixed").Outcome);
+        Assert.False(_registry.Read(TweakHive.Machine, @"SOFTWARE\Policies\Test", "OkValue").Exists);
+    }
+
+    [Fact]
     public void ApplyAndUndo_RestoreTheExactPreviousState()
     {
         const string Task = @"\Microsoft\Windows\Feedback\Siuf\DmClient";
@@ -142,10 +180,18 @@ public sealed class TweakEngineTests : IDisposable
     {
         public Dictionary<(TweakHive, string, string), RegistrySnapshot> Values { get; } = [];
 
+        /// <summary>Value names that Windows silently refuses to change, as a protection driver does.</summary>
+        public HashSet<string> Refused { get; } = new(StringComparer.OrdinalIgnoreCase);
+
         public RegistrySnapshot Read(TweakHive hive, string path, string name) => Values.GetValueOrDefault((hive, path, name), RegistrySnapshot.Missing);
 
-        public void Write(TweakHive hive, string path, string name, TweakValueKind kind, string value) =>
-            Values[(hive, path, name)] = new RegistrySnapshot(true, kind, value);
+        public void Write(TweakHive hive, string path, string name, TweakValueKind kind, string value)
+        {
+            if (!Refused.Contains(name))
+            {
+                Values[(hive, path, name)] = new RegistrySnapshot(true, kind, value);
+            }
+        }
 
         public void Delete(TweakHive hive, string path, string name) => Values.Remove((hive, path, name));
     }
