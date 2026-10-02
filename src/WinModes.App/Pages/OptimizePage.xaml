@@ -71,31 +71,6 @@
                 </StackPanel>
             </Border>
         </DataTemplate>
-
-        <!-- A category of the bar: a button whose colours follow the selection (set by the code, since they differ per category). -->
-        <Style x:Key="CategoryChipStyle" TargetType="Button">
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Chip" CornerRadius="16" Padding="12,6" Margin="0,0,8,8" BorderThickness="1"
-                                Background="{Binding Fill}" BorderBrush="{Binding Stroke}" Opacity="{Binding Emphasis}">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="13" Margin="0,0,8,0" Text="{Binding Glyph}" Foreground="{Binding Color}" />
-                                <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding Count}" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"
-                                           Style="{StaticResource SecondaryTextStyle}" />
-                            </StackPanel>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource TextFillColorSecondaryBrush}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Page.Resources>
 
     <!-- The page scrolls its list itself (the shell's scrolling is off) so the category bar and the review bar stay in view. -->

@@ -44,6 +44,9 @@ internal static class OneDriveService
 
     public static string? SetupProgram => OneDriveCheck.SetupProgram(File.Exists);
 
+    /// <summary>A file that carries the official OneDrive icon: the program itself while it is installed, else the setup program of Windows.</summary>
+    public static string? IconPath => new[] { LocalOneDrive, MachineOneDrive, SetupProgram }.FirstOrDefault(path => path is not null && File.Exists(path));
+
     public static Task<OneDriveState> InspectAsync() => Task.Run(Inspect);
 
     private static OneDriveState Inspect()

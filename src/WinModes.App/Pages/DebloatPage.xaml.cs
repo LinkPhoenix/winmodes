@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using WinModes.App.Controls;
 using WinModes.App.Services;
 using WinModes.Core.Apps;
 
@@ -13,8 +14,26 @@ namespace WinModes.App.Pages;
 /// </summary>
 public partial class DebloatPage : Page
 {
+    private const string AllGlyph = "";
+
+    /// <summary>Glyph and colour of each category of data/apps.json, in the order of the category bar.</summary>
+    private static readonly (string Category, string Glyph, Brush Color)[] Categories =
+    [
+        ("Search and news", "", Palette.Container),
+        ("Microsoft 365", "", Palette.Apps),
+        ("Communication", "", Palette.Start),
+        ("Utilities", "", Palette.Neutral),
+        ("Media", "", Palette.Stop),
+        ("Games", "", Palette.Power),
+        ("AI", "", Palette.Container),
+        ("Developer", "", Palette.Start),
+        ("Other", "", Palette.Neutral),
+    ];
+
     private List<AppRow> _rows = [];
+    private List<CategoryChip> _chips = [];
     private OneDriveState? _oneDrive;
+    private string? _selectedCategory;
     private bool _busy;
 
     public DebloatPage()
@@ -23,30 +42,57 @@ public partial class DebloatPage : Page
         Loaded += async (_, _) => await ReloadAsync();
     }
 
+    private static (string Glyph, Brush Color) LookUp(string category) =>
+        Categories.FirstOrDefault(item => item.Category.Equals(category, StringComparison.OrdinalIgnoreCase)) is { Glyph: not null } found
+            ? (found.Glyph, found.Color)
+            : ("", Palette.Neutral);
+
     private async Task ReloadAsync()
     {
         Headline.Text = Loc.T("Reading the apps of this PC…");
         SubHeadline.Text = "";
         var installed = await AppxService.ListAsync();
-        _rows = [.. installed
+        var byEntry = installed
             .Select(package => (Package: package, Entry: AppxService.Catalog.Find(package)))
             .Where(pair => pair.Entry is not null)
             .GroupBy(pair => pair.Entry!.Id)
-            .Select(group => new AppRow(group.Select(pair => pair.Package).ToList(), group.First().Entry!))
-            .OrderBy(row => row.Entry.Tier)
+            .ToDictionary(group => group.Key, group => group.Select(pair => pair.Package).ToList(), StringComparer.OrdinalIgnoreCase);
+
+        // What can be removed first, then what the list covers but this PC does not have.
+        _rows = [.. AppxService.Catalog.Entries
+            .Select(entry => new AppRow(entry, byEntry.GetValueOrDefault(entry.Id) ?? [], UpdateRemoveButton))
+            .OrderByDescending(row => row.IsInstalled)
+            .ThenBy(row => row.Entry.Tier)
             .ThenBy(row => row.Entry.Category, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(row => row.Title, StringComparer.CurrentCultureIgnoreCase)];
 
-        var safe = _rows.Count(row => row.Entry.Tier == AppTier.Safe);
-        Headline.Text = _rows.Count == 0 ? Loc.T("Nothing to remove") : Loc.N(_rows.Count, "1 app can be removed", "{0} apps can be removed");
-        SubHeadline.Text = _rows.Count == 0
-            ? ""
+        var present = _rows.Count(row => row.IsInstalled);
+        var safe = _rows.Count(row => row is { IsInstalled: true, Entry.Tier: AppTier.Safe });
+        Headline.Text = present == 0 ? Loc.T("Nothing to remove") : Loc.N(present, "1 app can be removed", "{0} apps can be removed");
+        SubHeadline.Text = present == 0
+            ? Loc.T("None of the apps in the list of WinModes is installed for your account.")
             : Loc.N(safe, "1 is safe for nearly everyone; the others are useful to some people, and what they do is written next to each one.",
                 "{0} are safe for nearly everyone; the others are useful to some people, and what they do is written next to each one.");
         ShowRows();
         ShowRemoved();
+        _ = LoadIconsAsync(_rows);
         _oneDrive = await OneDriveService.InspectAsync();
         ShowOneDrive();
+    }
+
+    /// <summary>Reads the logos off the UI thread and shows them as they come; until then a glyph stands in.</summary>
+    private static async Task LoadIconsAsync(IReadOnlyList<AppRow> rows)
+    {
+        var logos = await Task.Run(() => rows
+            .Where(row => row.Packages.Count == 1)
+            .Select(row => (Row: row, Path: PackageIcons.FindLogo(row.Packages[0].Package.InstallLocation)))
+            .Where(pair => pair.Path is not null)
+            .ToList());
+        await IconCache.PreloadAsync(logos.Select(pair => pair.Path));
+        foreach (var (row, path) in logos)
+        {
+            row.Icon = IconCache.Peek(path);
+        }
     }
 
     private void ShowOneDrive()
@@ -59,6 +105,8 @@ public partial class DebloatPage : Page
 
         var canRestore = !state.Installed && (OneDriveService.WasRemovedByWinModes || OneDriveService.SetupProgram is not null);
         OneDriveCard.Visibility = state.Installed || canRestore ? Visibility.Visible : Visibility.Collapsed;
+        OneDriveIcon.Source = IconCache.Get(OneDriveService.IconPath);
+        OneDriveIcon.Visibility = OneDriveIcon.Source is null ? Visibility.Collapsed : Visibility.Visible;
         OneDriveRemove.Visibility = state.Installed ? Visibility.Visible : Visibility.Collapsed;
         OneDriveRemove.IsEnabled = !_busy && state.CanUninstall;
         OneDriveRestore.Visibility = canRestore ? Visibility.Visible : Visibility.Collapsed;
@@ -145,40 +193,118 @@ public partial class DebloatPage : Page
 
     private void ShowRows()
     {
+        // Filter events fire while the page is still being built.
+        if (Rows is null || SearchBox is null || ShowAbsent is null)
+        {
+            return;
+        }
+
         var text = SearchBox.Text.Trim();
-        var shown = _rows.Where(row => text.Length == 0 || row.Title.Contains(text, StringComparison.CurrentCultureIgnoreCase)
-            || row.Entry.Category.Contains(text, StringComparison.CurrentCultureIgnoreCase)).ToList();
+        var showAbsent = ShowAbsent.IsChecked == true;
+        var matching = _rows.Where(row => (row.IsInstalled || showAbsent) && row.Matches(text)).ToList();
+
+        // The selected category can vanish after a removal (nothing of it is left on this PC).
+        if (_selectedCategory is not null && matching.All(row => row.Entry.Category != _selectedCategory) && _rows.All(row => row.Entry.Category != _selectedCategory))
+        {
+            _selectedCategory = null;
+        }
+
+        var shown = matching.Where(row => _selectedCategory is null || row.Entry.Category == _selectedCategory).ToList();
         Rows.ItemsSource = shown;
         EmptyText.Visibility = shown.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        SelectSafe.IsEnabled = !_busy && _rows.Any(row => row.Entry.Tier == AppTier.Safe);
+        SelectSafe.IsEnabled = !_busy && _rows.Any(row => row is { IsInstalled: true, Entry.Tier: AppTier.Safe });
+        ShowCategories(matching);
         UpdateRemoveButton();
+    }
+
+    /// <summary>One chip per category of the list plus "All"; the numbers follow the search, so they tell where the matches are.</summary>
+    private void ShowCategories(List<AppRow> matching)
+    {
+        var known = Categories.Select(item => item.Category).ToList();
+
+        // A category with nothing to show on this PC gets no chip, whatever the search says.
+        var showAbsent = ShowAbsent.IsChecked == true;
+        var present = _rows.Where(row => row.IsInstalled || showAbsent).Select(row => row.Entry.Category).Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(category => known.FindIndex(name => name.Equals(category, StringComparison.OrdinalIgnoreCase)) is var index and >= 0 ? index : known.Count)
+            .ToList();
+        List<(string? Key, string Title, string Glyph, Brush Color, int Count)> entries =
+            [(null, Loc.T("All"), AllGlyph, Palette.BrandBrush, matching.Count)];
+        foreach (var category in present)
+        {
+            var (glyph, color) = LookUp(category);
+            entries.Add((category, Loc.T(category), glyph, color, matching.Count(row => row.Entry.Category == category)));
+        }
+
+        _chips = CategoryChips.Sync(CategoryBar, _chips, entries, _selectedCategory);
+    }
+
+    private void OnCategoryClick(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not CategoryChip chip)
+        {
+            return;
+        }
+
+        _selectedCategory = chip.Key;
+        ShowRows();
+        ListScroll.ScrollToTop();
     }
 
     private void ShowRemoved()
     {
         var removed = AppxService.Journal.Load().OrderByDescending(app => app.RemovedUtc).ToList();
-        Removed.ItemsSource = removed.Select(app => new RemovedRow(app)).ToList();
+        var rows = removed.Select(app => new RemovedRow(app)).ToList();
+        Removed.ItemsSource = rows;
         var visible = removed.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         RemovedTitle.Visibility = visible;
         RemovedCard.Visibility = visible;
+        _ = LoadRemovedIconsAsync(rows);
+    }
+
+    private static async Task LoadRemovedIconsAsync(IReadOnlyList<RemovedRow> rows)
+    {
+        var logos = await Task.Run(() => rows.Select(row => (Row: row, Path: PackageIcons.FindLogo(row.App.InstallLocation))).Where(pair => pair.Path is not null).ToList());
+        await IconCache.PreloadAsync(logos.Select(pair => pair.Path));
+        foreach (var (row, path) in logos)
+        {
+            row.Icon = IconCache.Peek(path);
+        }
     }
 
     private void UpdateRemoveButton()
     {
+        // Rows are built before the page has its controls.
+        if (ActionBar is null)
+        {
+            return;
+        }
+
         var selected = _rows.Count(row => row.IsSelected);
+        ActionBar.Visibility = selected > 0 ? Visibility.Visible : Visibility.Collapsed;
         RemoveButton.IsEnabled = !_busy && selected > 0;
         RemoveButton.Content = selected > 0 ? Loc.F("Remove selected ({0})", selected) : Loc.T("Remove selected");
+        ActionTitle.Text = Loc.N(selected, "1 app selected", "{0} apps selected");
     }
 
     private void OnFilterChanged(object sender, TextChangedEventArgs e) => ShowRows();
 
-    private void OnSelectionChanged(object sender, RoutedEventArgs e) => UpdateRemoveButton();
+    private void OnFilterToggled(object sender, RoutedEventArgs e) => ShowRows();
 
     private void OnSelectSafe(object sender, RoutedEventArgs e)
     {
-        foreach (var row in _rows)
+        foreach (var row in _rows.Where(row => row.IsInstalled))
         {
             row.IsSelected = row.Entry.Tier == AppTier.Safe;
+        }
+
+        UpdateRemoveButton();
+    }
+
+    private void OnClearSelection(object sender, RoutedEventArgs e)
+    {
+        foreach (var row in _rows)
+        {
+            row.IsSelected = false;
         }
 
         UpdateRemoveButton();
@@ -212,7 +338,7 @@ public partial class DebloatPage : Page
         var done = 0;
         foreach (var row in chosen)
         {
-            foreach (var package in row.Packages)
+            foreach (var package in row.Packages.Select(item => item.Package))
             {
                 Headline.Text = Loc.F("Removing {0}…", row.Title);
                 if (await AppxService.RemoveAsync(package) is { } reason)
@@ -257,34 +383,109 @@ public partial class DebloatPage : Page
         }
     }
 
-    private sealed class AppRow(IReadOnlyList<InstalledPackage> packages, AppEntry entry) : INotifyPropertyChanged
+    private sealed class PackageRow(InstalledPackage package, Action changed) : INotifyPropertyChanged
     {
         private bool _isSelected;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public IReadOnlyList<InstalledPackage> Packages => packages;
-        public AppEntry Entry => entry;
-        public string Title => Loc.T(entry.Title);
-        public string Why => Loc.T(entry.Why);
-        public string? Breaks => string.IsNullOrWhiteSpace(entry.BreaksIfRemoved) ? null : Loc.F("If removed: {0}", Loc.T(entry.BreaksIfRemoved));
-        public Visibility BreaksVisibility => Breaks is null ? Visibility.Collapsed : Visibility.Visible;
-        public string TierText => Loc.T(entry.Tier == AppTier.Safe ? "Safe" : "Check first");
-        public Brush TierTint => Palette.Tint(entry.Tier == AppTier.Safe ? Palette.Start : Palette.Power);
+        public InstalledPackage Package => package;
 
         public bool IsSelected
         {
             get => _isSelected;
             set
             {
+                if (_isSelected == value)
+                {
+                    return;
+                }
+
                 _isSelected = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+                changed();
             }
         }
     }
 
-    private sealed class RemovedRow(RemovedApp app)
+    private sealed class AppRow : INotifyPropertyChanged
     {
+        private ImageSource? _icon;
+
+        public AppRow(AppEntry entry, IReadOnlyList<InstalledPackage> packages, Action changed)
+        {
+            Entry = entry;
+            Packages = [.. packages.Select(package => new PackageRow(package, () =>
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+                changed();
+            }))];
+            (Glyph, Color) = LookUp(entry.Category);
+            Tint = Palette.Tint(Color);
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public AppEntry Entry { get; }
+        public List<PackageRow> Packages { get; }
+        public string Glyph { get; }
+        public Brush Color { get; }
+        public Brush Tint { get; }
+
+        public bool IsInstalled => Packages.Count > 0;
+        public string Title => Loc.T(Entry.Title);
+        public string Why => Loc.T(Entry.Why);
+        public string? Breaks => string.IsNullOrWhiteSpace(Entry.BreaksIfRemoved) ? null : Loc.F("If removed: {0}", Loc.T(Entry.BreaksIfRemoved));
+        public Visibility BreaksVisibility => Breaks is null ? Visibility.Collapsed : Visibility.Visible;
+        public string TierText => Loc.T(!IsInstalled ? "Not installed" : Entry.Tier == AppTier.Safe ? "Safe" : "Check first");
+        public Brush TierTint => Palette.Tint(!IsInstalled ? Palette.Neutral : Entry.Tier == AppTier.Safe ? Palette.Start : Palette.Power);
+        public Visibility SelectionVisibility => IsInstalled ? Visibility.Visible : Visibility.Hidden;
+
+        /// <summary>An app this PC does not have is shown faded: it is there to show what the list covers.</summary>
+        public double Emphasis => IsInstalled ? 1 : 0.55;
+
+        public ImageSource? Icon
+        {
+            get => _icon;
+            set
+            {
+                _icon = value;
+                foreach (var name in (string[])[nameof(Icon), nameof(GlyphVisibility)])
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+                }
+            }
+        }
+
+        public Visibility GlyphVisibility => _icon is null ? Visibility.Visible : Visibility.Collapsed;
+
+        /// <summary>True when every package of the app is ticked; ticking the app ticks them all.</summary>
+        public bool IsSelected
+        {
+            get => IsInstalled && Packages.All(package => package.IsSelected);
+            set
+            {
+                foreach (var package in Packages)
+                {
+                    package.IsSelected = value;
+                }
+            }
+        }
+
+        public bool Matches(string text) =>
+            text.Length == 0
+            || Title.Contains(text, StringComparison.CurrentCultureIgnoreCase)
+            || Why.Contains(text, StringComparison.CurrentCultureIgnoreCase)
+            || Loc.T(Entry.Category).Contains(text, StringComparison.CurrentCultureIgnoreCase)
+            || Entry.Packages.Any(package => package.Contains(text, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private sealed class RemovedRow(RemovedApp app) : INotifyPropertyChanged
+    {
+        private ImageSource? _icon;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public RemovedApp App => app;
         public string Title => Loc.T(app.Title);
 
@@ -296,5 +497,20 @@ public partial class DebloatPage : Page
         private static string Date(DateTimeOffset utc) => utc.LocalDateTime.ToString("g", System.Globalization.CultureInfo.CurrentCulture);
 
         public Visibility StoreVisibility => app.Reinstall.Store is null ? Visibility.Collapsed : Visibility.Visible;
+
+        public ImageSource? Icon
+        {
+            get => _icon;
+            set
+            {
+                _icon = value;
+                foreach (var name in (string[])[nameof(Icon), nameof(GlyphVisibility)])
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+                }
+            }
+        }
+
+        public Visibility GlyphVisibility => _icon is null ? Visibility.Visible : Visibility.Collapsed;
     }
 }

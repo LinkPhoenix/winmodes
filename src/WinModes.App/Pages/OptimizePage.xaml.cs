@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using WinModes.App.Controls;
 using WinModes.App.Services;
 using WinModes.Core.Planning;
 using WinModes.Core.Tuning;
@@ -34,10 +35,10 @@ public partial class OptimizePage : Page
         ["Explorer and developer"] = ("", Palette.Neutral, "Small conveniences for File Explorer, the taskbar and development."),
     };
 
-    private const string AllGlyph = "";
+    private const string AllGlyph = "";
 
     private List<Group> _groups = [];
-    private List<Chip> _chips = [];
+    private List<CategoryChip> _chips = [];
 
     /// <summary>The category the list is limited to (its title), or null for all of them.</summary>
     private string? _selectedCategory;
@@ -139,27 +140,19 @@ public partial class OptimizePage : Page
     /// <summary>One chip per category plus "All"; the numbers follow the search, so they tell where the matches are.</summary>
     private void ShowCategories()
     {
-        if (_chips.Count != _groups.Count + 1 || _chips.Skip(1).Select(chip => chip.Title).SequenceEqual(_groups.Select(group => group.Title)) == false)
-        {
-            _chips = [new Chip(null, Loc.T("All"), AllGlyph, Palette.BrandBrush), .. _groups.Select(group => new Chip(group.Title, group.Title, group.Glyph, group.Color))];
-            CategoryBar.ItemsSource = _chips;
-        }
-
-        _chips[0].Update(_groups.Sum(group => group.Rows.Count), _selectedCategory is null);
-        for (var i = 0; i < _groups.Count; i++)
-        {
-            _chips[i + 1].Update(_groups[i].Rows.Count, _selectedCategory == _groups[i].Title);
-        }
+        List<(string? Key, string Title, string Glyph, Brush Color, int Count)> entries =
+            [(null, Loc.T("All"), AllGlyph, Palette.BrandBrush, _groups.Sum(group => group.Rows.Count)), .. _groups.Select(group => ((string?)group.Title, group.Title, group.Glyph, group.Color, group.Rows.Count))];
+        _chips = CategoryChips.Sync(CategoryBar, _chips, entries, _selectedCategory);
     }
 
     private void OnCategoryClick(object sender, RoutedEventArgs e)
     {
-        if ((sender as FrameworkElement)?.DataContext is not Chip chip)
+        if ((sender as FrameworkElement)?.DataContext is not CategoryChip chip)
         {
             return;
         }
 
-        _selectedCategory = chip.Category;
+        _selectedCategory = chip.Key;
         ApplyFilter();
         ListScroll.ScrollToTop();
     }
@@ -295,42 +288,6 @@ public partial class OptimizePage : Page
         {
             _busy = false;
             IsEnabled = true;
-        }
-    }
-
-    /// <summary>A button of the category bar. Its colours are set here because each category has its own.</summary>
-    private sealed class Chip(string? category, string title, string glyph, Brush color) : INotifyPropertyChanged
-    {
-        private const double DimmedOpacity = 0.5;
-
-        private int _rows;
-        private bool _selected;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public string? Category => category;
-        public string Title => title;
-        public string Glyph => glyph;
-        public Brush Color => color;
-        public string Count => _rows.ToString(CultureInfo.CurrentCulture);
-        public Brush Fill => _selected ? Palette.Tint(color) : Application.Current.TryFindResource("ControlFillColorDefaultBrush") as Brush ?? Palette.Tint(Palette.Neutral);
-        public Brush Stroke => _selected ? color : Application.Current.TryFindResource("AppCardStrokeBrush") as Brush ?? Palette.Neutral;
-
-        /// <summary>A category without a match stays clickable but fades.</summary>
-        public double Emphasis => _rows == 0 && !_selected ? DimmedOpacity : 1;
-
-        public void Update(int rows, bool selected)
-        {
-            if (rows == _rows && selected == _selected)
-            {
-                return;
-            }
-
-            (_rows, _selected) = (rows, selected);
-            foreach (var name in (string[])[nameof(Count), nameof(Fill), nameof(Stroke), nameof(Emphasis)])
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-            }
         }
     }
 
