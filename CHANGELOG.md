@@ -60,7 +60,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 - The shared WinModes folder in ProgramData is now restricted to administrators, and one that already exists under another owner is refused.
 - The administrator helper now refuses any command, service name, tweak id or mode name that is not in the expected form, including through the silent switch.
-- About and updates: a release can now be signed with a key only the maintainer holds. When the app carries the matching public key it checks the signature of the list of checksums before downloading an update and refuses a release that is unsigned or wrongly signed; a checksum published beside the package only proved that the download was not damaged. The key is created with `tools/new-update-key.ps1`; until then updates are checked by checksum only.
+- About and updates: a release can now be signed with a key only the maintainer holds. When the app carries the matching public key it checks the signature of the list of checksums before downloading an update and refuses a release that is unsigned or wrongly signed; a checksum published beside the package only proved that the download was not damaged. Releases are signed from this version on; earlier versions do not carry the key and keep checking by checksum only.
 
 ## [0.8.0] - 2026-10-01
 
