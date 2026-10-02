@@ -6,6 +6,84 @@
       Title="{l:T 'Debloat'}"
       ScrollViewer.CanContentScroll="False"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <Page.Resources>
+        <!-- The arrow that opens the details of an app. -->
+        <Style x:Key="DetailsToggleStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Margin" Value="10,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Frame" CornerRadius="6" Background="Transparent">
+                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="12" Text="{Binding ChevronGlyph}" HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Frame" Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- One package of an app: its logo, its name and version, and a tick box when the app has several. -->
+        <DataTemplate x:Key="PackageTemplate">
+            <Grid Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Visibility="{Binding ChoiceVisibility}" MinWidth="0" Margin="0,0,10,0"
+                          VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
+                <Image Grid.Column="1" Source="{Binding Icon}" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+                <TextBlock Grid.Column="2" Text="{Binding Name}" FontSize="12" FontFamily="Consolas" VerticalAlignment="Center" TextWrapping="Wrap" />
+                <TextBlock Grid.Column="3" Text="{Binding VersionText}" FontSize="11" Margin="16,0,0,0" VerticalAlignment="Center"
+                           Style="{StaticResource SecondaryTextStyle}" />
+            </Grid>
+        </DataTemplate>
+
+        <!-- The details of an app, built only while it is open. -->
+        <DataTemplate x:Key="AppDetailsTemplate">
+            <Border Margin="0,12,0,0" Padding="14,10,14,12" CornerRadius="6" Background="{DynamicResource ControlFillColorDefaultBrush}">
+                <StackPanel>
+                    <StackPanel Visibility="{Binding InstalledVisibility}">
+                        <TextBlock Text="{l:T 'On this PC'}" FontSize="11" FontWeight="SemiBold" Style="{StaticResource SecondaryTextStyle}" />
+                        <TextBlock Text="{l:T 'Choose which of these packages to remove.'}" FontSize="12" Margin="0,2,0,0"
+                                   Style="{StaticResource SecondaryTextStyle}" Visibility="{Binding ChoiceHintVisibility}" />
+                        <ItemsControl ItemsSource="{Binding Packages}" ItemTemplate="{StaticResource PackageTemplate}" />
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding AbsentVisibility}">
+                        <TextBlock Text="{l:T 'Not installed on this PC. WinModes looks for:'}" FontSize="11" FontWeight="SemiBold" Style="{StaticResource SecondaryTextStyle}" />
+                        <ItemsControl ItemsSource="{Binding PackagePatterns}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" FontSize="12" FontFamily="Consolas" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <TextBlock Text="{Binding TierExplanation}" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap" />
+                    <StackPanel Visibility="{Binding ReinstallVisibility}" Margin="0,12,0,0">
+                        <TextBlock Text="{l:T 'If you change your mind'}" FontSize="11" FontWeight="SemiBold" Style="{StaticResource SecondaryTextStyle}" />
+                        <TextBlock Text="{Binding ReinstallText}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap" />
+                        <ui:Button Content="{l:T 'Open in the Store'}" Icon="{ui:SymbolIcon Open24}" Margin="0,8,0,0" HorizontalAlignment="Left"
+                                   Click="OnOpenAppStore" Visibility="{Binding StoreVisibility}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
     <!-- The page scrolls its list itself (the shell's scrolling is off) so the category bar and the action bar stay in view. -->
     <Grid>
         <Grid.RowDefinitions>
@@ -97,13 +175,18 @@
                                     <Border Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                             Opacity="{Binding Emphasis}">
                                         <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Visibility="{Binding SelectionVisibility}"
+                                            <CheckBox IsChecked="{Binding SelectionState, Mode=TwoWay}" IsThreeState="True" Visibility="{Binding SelectionVisibility}"
                                                       MinWidth="0" Margin="0,0,14,0" VerticalAlignment="Center" AutomationProperties.Name="{Binding Title}" />
                                             <!-- The logo of the app; a badge with the glyph of its category when there is none to read. -->
                                             <Grid Grid.Column="1" Width="32" Height="32" Margin="0,0,14,0" VerticalAlignment="Top">
@@ -123,6 +206,10 @@
                                             <Border Grid.Column="3" Style="{StaticResource ChipStyle}" VerticalAlignment="Top" Background="{Binding TierTint}">
                                                 <TextBlock Text="{Binding TierText}" FontSize="12" FontWeight="SemiBold" />
                                             </Border>
+                                            <Button Grid.Column="4" Style="{StaticResource DetailsToggleStyle}" Click="OnToggleDetails"
+                                                    ToolTip="{Binding ExpanderTip}" AutomationProperties.Name="{Binding ExpanderTip}" />
+                                            <ContentControl Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Content="{Binding Details}"
+                                                            ContentTemplate="{StaticResource AppDetailsTemplate}" Visibility="{Binding DetailsVisibility}" />
                                         </Grid>
                                     </Border>
                                 </DataTemplate>

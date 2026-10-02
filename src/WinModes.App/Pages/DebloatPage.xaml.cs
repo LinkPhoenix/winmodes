@@ -80,18 +80,24 @@ public partial class DebloatPage : Page
         ShowOneDrive();
     }
 
-    /// <summary>Reads the logos off the UI thread and shows them as they come; until then a glyph stands in.</summary>
+    /// <summary>
+    /// Reads the logos off the UI thread and shows them as they come; until then a glyph stands in. An app takes a logo only when it stands
+    /// for a single package: a group such as the promoted games would otherwise wear the logo of one of them.
+    /// </summary>
     private static async Task LoadIconsAsync(IReadOnlyList<AppRow> rows)
     {
         var logos = await Task.Run(() => rows
-            .Where(row => row.Packages.Count == 1)
-            .Select(row => (Row: row, Path: PackageIcons.FindLogo(row.Packages[0].Package.InstallLocation)))
-            .Where(pair => pair.Path is not null)
+            .SelectMany(row => row.Packages.Select(package => (Row: row, Package: package, Path: PackageIcons.FindLogo(package.Package.InstallLocation))))
+            .Where(item => item.Path is not null)
             .ToList());
-        await IconCache.PreloadAsync(logos.Select(pair => pair.Path));
-        foreach (var (row, path) in logos)
+        await IconCache.PreloadAsync(logos.Select(item => item.Path));
+        foreach (var (row, package, path) in logos)
         {
-            row.Icon = IconCache.Peek(path);
+            package.Icon = IconCache.Peek(path);
+            if (row.Entry.Packages.Count == 1 && row.Packages.Count == 1)
+            {
+                row.Icon = package.Icon;
+            }
         }
     }
 
@@ -279,7 +285,7 @@ public partial class DebloatPage : Page
             return;
         }
 
-        var selected = _rows.Count(row => row.IsSelected);
+        var selected = _rows.Count(row => row.HasSelection);
         ActionBar.Visibility = selected > 0 ? Visibility.Visible : Visibility.Collapsed;
         RemoveButton.IsEnabled = !_busy && selected > 0;
         RemoveButton.Content = selected > 0 ? Loc.F("Remove selected ({0})", selected) : Loc.T("Remove selected");
@@ -312,13 +318,15 @@ public partial class DebloatPage : Page
 
     private async void OnRemoveClick(object sender, RoutedEventArgs e)
     {
-        var chosen = _rows.Where(row => row.IsSelected).ToList();
+        var chosen = _rows.Where(row => row.HasSelection).ToList();
         if (_busy || chosen.Count == 0)
         {
             return;
         }
 
-        var lines = chosen.Select(row => row.Breaks is null ? $"• {row.Title}" : $"• {row.Title}: {row.Breaks}");
+        // An app with several packages may be removed in part: say which.
+        var lines = chosen.Select(row => (row.IsSelected || row.Packages.Count == 1 ? $"• {row.Title}" : $"• {row.Title} ({string.Join(", ", row.SelectedPackages.Select(package => package.Name))})")
+            + (row.Breaks is null ? "" : $": {row.Breaks}"));
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
             Title = Loc.N(chosen.Count, "Remove 1 app?", "Remove {0} apps?"),
@@ -338,7 +346,7 @@ public partial class DebloatPage : Page
         var done = 0;
         foreach (var row in chosen)
         {
-            foreach (var package in row.Packages.Select(item => item.Package))
+            foreach (var package in row.SelectedPackages.Select(item => item.Package))
             {
                 Headline.Text = Loc.F("Removing {0}…", row.Title);
                 if (await AppxService.RemoveAsync(package) is { } reason)
@@ -375,6 +383,22 @@ public partial class DebloatPage : Page
         await ReloadAsync();
     }
 
+    private void OnToggleDetails(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is AppRow row)
+        {
+            row.IsExpanded = !row.IsExpanded;
+        }
+    }
+
+    private void OnOpenAppStore(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is AppRow { Entry.Reinstall.Store: { } store })
+        {
+            AppxService.OpenInStore(store);
+        }
+    }
+
     private void OnOpenStore(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.DataContext is RemovedRow { App.Reinstall.Store: { } store })
@@ -383,13 +407,29 @@ public partial class DebloatPage : Page
         }
     }
 
-    private sealed class PackageRow(InstalledPackage package, Action changed) : INotifyPropertyChanged
+    private sealed class PackageRow(InstalledPackage package, bool hasChoice, Action changed) : INotifyPropertyChanged
     {
         private bool _isSelected;
+        private ImageSource? _icon;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public InstalledPackage Package => package;
+        public string Name => package.Name;
+        public string VersionText => $"v{package.Version}";
+
+        /// <summary>Only an app made of several packages lets you pick; a single one follows the app.</summary>
+        public Visibility ChoiceVisibility => hasChoice ? Visibility.Visible : Visibility.Collapsed;
+
+        public ImageSource? Icon
+        {
+            get => _icon;
+            set
+            {
+                _icon = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Icon)));
+            }
+        }
 
         public bool IsSelected
         {
@@ -410,14 +450,22 @@ public partial class DebloatPage : Page
 
     private sealed class AppRow : INotifyPropertyChanged
     {
+        private const string ChevronDown = "";
+        private const string ChevronUp = "";
+
         private ImageSource? _icon;
+        private bool _isExpanded;
 
         public AppRow(AppEntry entry, IReadOnlyList<InstalledPackage> packages, Action changed)
         {
             Entry = entry;
-            Packages = [.. packages.Select(package => new PackageRow(package, () =>
+            Packages = [.. packages.Select(package => new PackageRow(package, packages.Count > 1, () =>
             {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+                foreach (var name in (string[])[nameof(IsSelected), nameof(SelectionState)])
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+                }
+
                 changed();
             }))];
             (Glyph, Color) = LookUp(entry.Category);
@@ -472,12 +520,73 @@ public partial class DebloatPage : Page
             }
         }
 
+        /// <summary>True when at least one package of the app is ticked, so a removal has something to do for it.</summary>
+        public bool HasSelection => Packages.Any(package => package.IsSelected);
+
+        /// <summary>All, some or none of the packages are ticked. A click never lands on "some": it ticks all or none.</summary>
+        public bool? SelectionState
+        {
+            get => IsSelected ? true : HasSelection ? null : false;
+            set => IsSelected = value == true;
+        }
+
+        public IReadOnlyList<PackageRow> SelectedPackages => [.. Packages.Where(package => package.IsSelected)];
+
+        public IEnumerable<string> PackagePatterns => Entry.Packages;
+        public Visibility InstalledVisibility => IsInstalled ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility AbsentVisibility => IsInstalled ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility ChoiceHintVisibility => Packages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
+
+        public string TierExplanation => Loc.T(Entry.Tier == AppTier.Safe
+            ? "Safe for nearly everyone: nothing else depends on it."
+            : "Useful to some people: read what stops working before you remove it.");
+
+        public Visibility ReinstallVisibility => Entry.Reinstall.Store is null && Entry.Reinstall.Winget is null ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility StoreVisibility => Entry.Reinstall.Store is null ? Visibility.Collapsed : Visibility.Visible;
+
+        public string ReinstallText => (Entry.Reinstall.Store, Entry.Reinstall.Winget) switch
+        {
+            ({ } store, { } winget) => Loc.F("Install it again from the Microsoft Store (product {0}) or with winget ({1}).", store, winget),
+            ({ } store, null) => Loc.F("Install it again from the Microsoft Store (product {0}).", store),
+            (null, { } winget) => Loc.F("Install it again with winget ({0}).", winget),
+            _ => "",
+        };
+
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (_isExpanded == value)
+                {
+                    return;
+                }
+
+                _isExpanded = value;
+                foreach (var name in (string[])[nameof(IsExpanded), nameof(Details), nameof(DetailsVisibility), nameof(ChevronGlyph), nameof(ExpanderTip)])
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+                }
+            }
+        }
+
+        /// <summary>The row itself while it is open, null while it is closed, so the details are only built when someone looks at them.</summary>
+        public AppRow? Details => _isExpanded ? this : null;
+
+        /// <summary>A template with no content is still drawn, so the closed state is hidden as well.</summary>
+        public Visibility DetailsVisibility => _isExpanded ? Visibility.Visible : Visibility.Collapsed;
+
+        public string ChevronGlyph => _isExpanded ? ChevronUp : ChevronDown;
+
+        public string ExpanderTip => Loc.T(_isExpanded ? "Hide the details" : "Show the details");
+
         public bool Matches(string text) =>
             text.Length == 0
             || Title.Contains(text, StringComparison.CurrentCultureIgnoreCase)
             || Why.Contains(text, StringComparison.CurrentCultureIgnoreCase)
             || Loc.T(Entry.Category).Contains(text, StringComparison.CurrentCultureIgnoreCase)
-            || Entry.Packages.Any(package => package.Contains(text, StringComparison.OrdinalIgnoreCase));
+            || Entry.Packages.Any(package => package.Contains(text, StringComparison.OrdinalIgnoreCase))
+            || Packages.Any(package => package.Name.Contains(text, StringComparison.OrdinalIgnoreCase));
     }
 
     private sealed class RemovedRow(RemovedApp app) : INotifyPropertyChanged

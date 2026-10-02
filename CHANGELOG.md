@@ -10,6 +10,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Added
 
+- Debloat: every app opens to show the packages it is made of (with their logos and versions) and, when there are several, to remove only some of them; it also says whether the app is safe to remove, and where to get it back from the Store or winget.
 - Debloat: a bar of categories with the number of apps in each, and a search that also reads the descriptions and the package names. A tick box shows what the list covers although this PC does not have it (the apps are then faded and cannot be selected).
 - Debloat: each app shows its own logo, and OneDrive its official icon, read from the app and from OneDrive itself. "Remove selected" moves to a bar at the bottom of the page that stays in view while the list scrolls.
 - Optimize: every setting can be opened to see what it changes (the registry values or scheduled tasks, in plain words and with their technical names) and, when it changes several things, to pick only some of them. Unticking a change that WinModes made puts back that change alone. Searching also looks in these descriptions.
