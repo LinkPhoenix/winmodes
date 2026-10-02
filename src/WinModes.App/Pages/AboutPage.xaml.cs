@@ -188,6 +188,34 @@ public partial class AboutPage : Page
 
     private const int ReportProcessCount = 15;
 
+    private async void OnCreateSupportFile(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = Loc.T("Create a WinModes support file"),
+            FileName = $"winmodes-support-{DateTime.Now:yyyyMMdd-HHmm}.zip",
+            Filter = "Zip (*.zip)|*.zip",
+        };
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Task.Run(() =>
+            {
+                using var stream = System.IO.File.Create(dialog.FileName);
+                WinModes.Core.Reports.SupportBundle.Write(stream, Services.SupportInfo.Collect(), Environment.UserName, Environment.MachineName);
+            });
+            SupportText.Text = Loc.T("Support file saved. Open it and read it before sharing it: your user name and PC name were taken out, but check that nothing else private is left.");
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or System.IO.InvalidDataException)
+        {
+            SupportText.Text = Loc.T("The support file could not be saved there. Choose another folder.");
+        }
+    }
+
     private void OnOpenRelease(object sender, RoutedEventArgs e) => Open(Services.UpdateChecker.ReleasesPage);
 
     private void OnShowGuide(object sender, RoutedEventArgs e) => (Application.Current as App)?.ShowOnboarding();

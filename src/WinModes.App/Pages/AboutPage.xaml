@@ -85,6 +85,26 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource IconBadgeStyle}" Background="#33C084FC">
+                    <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center" Foreground="#C084FC" Text="&#xE90F;" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{l:T 'Support file'}" FontWeight="SemiBold" />
+                    <TextBlock x:Name="SupportText" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"
+                               Text="{l:T 'Saves a zip to attach to a bug report: the version, facts about this PC, your settings and the error logs. Your user name, PC name, e-mail addresses and anything that looks like a key are taken out. Nothing is sent: you decide whether to share it.'}" />
+                </StackPanel>
+                <ui:Button Grid.Column="2" Content="{l:T 'Create support file'}" Icon="{ui:SymbolIcon FolderZip24}" VerticalAlignment="Center"
+                           Margin="12,0,0,0" Click="OnCreateSupportFile" />
+            </Grid>
+        </Border>
+
+        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <Border Style="{StaticResource IconBadgeStyle}" Background="#33FBBF24">
                     <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center" Foreground="#FBBF24" Text="&#xEB51;" />
                 </Border>

@@ -15,6 +15,9 @@ internal sealed record AppSettings
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinModes", "settings.json");
 
+    /// <summary>The settings file, for the support file.</summary>
+    public static string FilePath => SettingsPath;
+
     /// <summary>Start hidden in the notification area when launched at sign-in.</summary>
     public bool StartMinimized { get; init; } = true;
 
