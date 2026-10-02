@@ -10,6 +10,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Added
 
+- Modes: a switch above the mode cards turns automatic switching on or off, and says what it is doing ("Code mode is on: Claude Code is running", or the time left before it ends). A mode started automatically is labelled "ACTIVE (AUTO)", and the tray menu has the same switch. The page now shows a switch made by the tray, a hotkey or automatic switching at once instead of at its next refresh.
 - Automation: a "Coding tools" section starts a mode (Code by default) while Claude Code, Codex, Cursor, T3 Code, OpenCode, Windsurf or VS Code is open, and ends it after the last one closes. Each tool is a switch; "Open now" shows which ones are running. Claude Code is told apart from the Claude chat app, so chatting does not start Code mode. Turning automatic switching on for the first time switches on the usual coding tools.
 - Automation: a "Wait before returning to normal" setting (30 seconds to 10 minutes, one minute by default) and a line that says what automatic switching is doing now, with a countdown.
 

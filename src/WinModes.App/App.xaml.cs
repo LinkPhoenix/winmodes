@@ -551,6 +551,10 @@ public partial class App : Application, IDisposable
         undo.Click += async (_, _) => await SwitchFromTrayAsync(Loc.T("Deactivate"), AppServices.Switcher.UndoAsync);
         menu.Items.Add(undo);
 
+        var automatic = new Forms.ToolStripMenuItem(Loc.T("Switch modes automatically")) { Checked = Services.AppSettings.Load().AutoSwitch.Enabled };
+        automatic.Click += (_, _) => Services.AutoSwitchSetup.SetEnabled(!Services.AppSettings.Load().AutoSwitch.Enabled);
+        menu.Items.Add(automatic);
+
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add(Loc.T("Quit"), null, (_, _) => Shutdown());
     }
