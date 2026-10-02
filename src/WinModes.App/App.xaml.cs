@@ -136,6 +136,20 @@ public partial class App : Application, IDisposable
             }
         });
 
+        // Reading the state of every Optimize setting takes a moment: do it once the PC has settled, so the page opens with it already read.
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(45));
+            try
+            {
+                await Services.OptimizeSnapshot.TakeAsync();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.Runtime.InteropServices.COMException)
+            {
+                // Nothing is kept: the page reads it when it is opened.
+            }
+        });
+
         var autoMode = Services.AppSettings.Load().AutoActivateMode;
         if (autoMode is null || Services.ModeSwitcher.ActiveMode is not null)
         {

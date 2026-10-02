@@ -61,7 +61,7 @@
                 <ui:NavigationViewItem Content="{l:T 'Services'}" Icon="{ui:SymbolIcon Server24}"
                                        TargetPageType="{x:Type pages:ServicesPage}" />
                 <ui:NavigationViewItem Content="{l:T 'Optimize'}" Icon="{ui:SymbolIcon Wand24}"
-                                       TargetPageType="{x:Type pages:OptimizePage}" />
+                                       TargetPageType="{x:Type pages:OptimizePage}" NavigationCacheMode="Required" />
                 <ui:NavigationViewItem Content="{l:T 'Startup'}" Icon="{ui:SymbolIcon Rocket24}"
                                        TargetPageType="{x:Type pages:StartupPage}" />
                 <ui:NavigationViewItem Content="{l:T 'Debloat'}" Icon="{ui:SymbolIcon Broom24}"

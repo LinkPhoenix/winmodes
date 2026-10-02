@@ -130,7 +130,10 @@ public sealed class SystemMonitor
         }
     }
 
-    public static IReadOnlyList<ServiceInfo> GetServices()
+    public static IReadOnlyList<ServiceInfo> GetServices() => GetServices(withExecutablePaths: true);
+
+    /// <param name="withExecutablePaths">Reading the program of each service costs one registry lookup per service: leave it out when only names and states are needed.</param>
+    public static IReadOnlyList<ServiceInfo> GetServices(bool withExecutablePaths)
     {
         var services = ServiceController.GetServices();
         try
@@ -141,7 +144,7 @@ public sealed class SystemMonitor
                     service.DisplayName,
                     service.Status == ServiceControllerStatus.Running,
                     ReadStartMode(service),
-                    ReadServiceBinary(service.ServiceName)))
+                    withExecutablePaths ? ReadServiceBinary(service.ServiceName) : null))
                 .OrderBy(service => service.DisplayName, StringComparer.CurrentCultureIgnoreCase)];
         }
         finally

@@ -40,6 +40,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Automation: automatic switching never replaces or undoes a mode you chose yourself. A mode it started is remembered, so it is still undone after WinModes was restarted.
 - Automation: automatic switching waits 30 seconds after WinModes starts (Windows is still loading your programs) and stays quiet for 10 minutes after a switch that was refused or failed, instead of asking for the permission again at every check.
 - Processes and Services: the pages open about four times faster and no longer freeze for more than a second at each refresh (Services rebuilt its whole list every five seconds). Only the rows in view are drawn, the column titles stay in place while the list scrolls, and the icons appear a moment after the list.
+- Optimize: the page opens in about a third of the time and switching category is instant (it used to take up to two seconds on "All"): only the settings in view are drawn, the state of the PC is read in parallel and once at startup, and the page keeps what it showed when you come back, refreshing it in the background without moving the list or closing what you had opened.
 
 ### Fixed
 

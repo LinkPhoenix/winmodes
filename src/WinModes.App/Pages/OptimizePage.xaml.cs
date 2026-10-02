@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
@@ -40,6 +41,14 @@ public partial class OptimizePage : Page
     private List<Group> _groups = [];
     private List<CategoryChip> _chips = [];
 
+    // The list is flat (intro, score, then a title and the rows of each category, footer) so that only the rows in view are built.
+    private readonly ObservableCollection<object> _items = [];
+    private readonly IntroItem _intro = new();
+    private readonly ScoreCard _score = new();
+    private readonly ResultCard _result = new();
+    private readonly EmptyItem _empty = new();
+    private readonly FooterItem _footer = new();
+
     /// <summary>The category the list is limited to (its title), or null for all of them.</summary>
     private string? _selectedCategory;
     private HashSet<string> _undoable = new(StringComparer.OrdinalIgnoreCase);
@@ -49,19 +58,56 @@ public partial class OptimizePage : Page
     public OptimizePage()
     {
         InitializeComponent();
+        Items.ItemTemplateSelector = new ItemTemplates(
+            (typeof(IntroItem), (DataTemplate)Resources["IntroTemplate"]),
+            (typeof(ScoreCard), (DataTemplate)Resources["ScoreTemplate"]),
+            (typeof(ResultCard), (DataTemplate)Resources["ResultTemplate"]),
+            (typeof(EmptyItem), (DataTemplate)Resources["EmptyTemplate"]),
+            (typeof(Group), (DataTemplate)Resources["GroupTemplate"]),
+            (typeof(Row), (DataTemplate)Resources["RowTemplate"]),
+            (typeof(FooterItem), (DataTemplate)Resources["FooterTemplate"]));
+        Items.ItemsSource = _items;
         Loaded += async (_, _) => await RefreshAsync();
     }
 
+
     private IEnumerable<Row> Rows => _groups.SelectMany(group => group.All);
 
-    private async Task RefreshAsync()
+    /// <summary>The reading the list on screen was built from.</summary>
+    private OptimizeSnapshot? _shown;
+
+    /// <summary>
+    /// Shows what this PC looks like now. The page is kept between visits, so the last reading is shown at once and a new one replaces it only
+    /// if something changed. A switch the user has set and not applied is their work: it is left alone unless <paramref name="force"/> says the list was just changed.
+    /// </summary>
+    private async Task RefreshAsync(bool force = false)
     {
-        var (services, changed, states, journaledParts, undoable) = await Task.Run(() => (
-            SystemMonitor.GetServices(),
-            ServiceTuning.Store.Load(),
-            ServiceTuning.Catalog.Tweaks.ToDictionary(tweak => tweak.Id, ServiceTuning.UserTweaks.GetPartStates),
-            ServiceTuning.LoadJournaledParts(),
-            ServiceTuning.LoadUndoableTweaks()));
+        if (!force && Rows.Any(row => row.IsPending))
+        {
+            return;
+        }
+
+        if (_shown is null && OptimizeSnapshot.Last is { } cached)
+        {
+            Show(cached);
+        }
+
+        var snapshot = await OptimizeSnapshot.TakeAsync();
+        if (force || ((_shown is null || !snapshot.SameAs(_shown)) && !Rows.Any(row => row.IsPending)))
+        {
+            Show(snapshot);
+        }
+    }
+
+    private void Show(OptimizeSnapshot snapshot)
+    {
+        _shown = snapshot;
+        var services = snapshot.Services;
+        var changed = snapshot.ChangedServices;
+        var states = snapshot.States;
+        var journaledParts = snapshot.JournaledParts;
+        var undoable = snapshot.Undoable;
+        var expanded = Rows.Where(row => row.IsExpanded).Select(row => row.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
         _undoable = undoable;
         _hasChangedServices = changed.Count > 0;
 
@@ -87,16 +133,21 @@ public partial class OptimizePage : Page
             _groups.Add(new Group(ServicesTitle, Loc.T("Services that start with Windows although they are only needed now and then."), "", Palette.Container, serviceRows));
         }
 
+        foreach (var row in Rows.Where(row => expanded.Contains(row.Id)))
+        {
+            row.IsExpanded = true;
+        }
+
         var recommended = Rows.Where(row => row.IsRecommended || (row.IsService && row.IsApplied)).ToList();
         var applied = recommended.Count(row => row.IsApplied);
-        ScoreValue.Text = Loc.F("{0} of {1}", applied, recommended.Count);
-        ScoreBar.Value = recommended.Count == 0 ? 0 : applied * 100d / recommended.Count;
-        Summary.Text = Rows.Any()
+        _score.Value = Loc.F("{0} of {1}", applied, recommended.Count);
+        _score.Percent = recommended.Count == 0 ? 0 : applied * 100d / recommended.Count;
+        _score.Summary = Rows.Any()
             ? Loc.F("{0} more settings are optional. Recommendations come from a survey of {1} open-source Windows optimizers whose code was read, and from the service knowledge base shipped with WinModes.",
                 Rows.Count(row => !row.IsRecommended && !row.IsApplied), SurveyedTools)
             : Loc.T("The tweak catalog (data/tweaks.json) and the knowledge base (data/db) are missing from this copy of WinModes.");
-        SelectRecommendedButton.IsEnabled = recommended.Any(row => row.CanToggle && !row.IsApplied);
-        UndoAllButton.IsEnabled = _hasChangedServices || undoable.Count > 0;
+        _score.CanSelectRecommended = recommended.Any(row => row.CanToggle && !row.IsApplied);
+        _score.CanUndoAll = _hasChangedServices || undoable.Count > 0;
 
         ApplyFilter();
         UpdateReview();
@@ -107,7 +158,7 @@ public partial class OptimizePage : Page
     private void ApplyFilter()
     {
         // Filter events fire while the page is still being built.
-        if (Groups is null || SearchBox is null || HideApplied is null)
+        if (Items is null || SearchBox is null || HideApplied is null)
         {
             return;
         }
@@ -132,8 +183,29 @@ public partial class OptimizePage : Page
         }
 
         var visible = _groups.Where(group => group.Rows.Count > 0 && (_selectedCategory is null || group.Title == _selectedCategory)).ToList();
-        Groups.ItemsSource = visible;
-        EmptyText.Visibility = visible.Count == 0 && _groups.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        List<object> shown = [_intro, _score];
+        if (_result.Text.Length > 0)
+        {
+            shown.Add(_result);
+        }
+
+        if (visible.Count == 0 && _groups.Count > 0)
+        {
+            shown.Add(_empty);
+        }
+
+        foreach (var group in visible)
+        {
+            shown.Add(group);
+            shown.AddRange(group.Rows);
+            for (var i = 0; i < group.Rows.Count; i++)
+            {
+                group.Rows[i].IsLast = i == group.Rows.Count - 1;
+            }
+        }
+
+        shown.Add(_footer);
+        _items.ReconcileItems(shown);
         ShowCategories();
     }
 
@@ -154,7 +226,7 @@ public partial class OptimizePage : Page
 
         _selectedCategory = chip.Key;
         ApplyFilter();
-        ListScroll.ScrollToTop();
+        (Items.Template.FindName("ListScroll", Items) as ScrollViewer)?.ScrollToTop();
     }
 
     private void OnRowToggled(object sender, RoutedEventArgs e) => UpdateReview();
@@ -276,18 +348,63 @@ public partial class OptimizePage : Page
         try
         {
             var report = await ServiceTuning.RunAsync(groups);
-            ResultText.Text = report.Summary;
-            ResultCard.Visibility = Visibility.Visible;
+            _result.Text = report.Summary;
+            ApplyFilter();
             // A refused permission prompt changes nothing: keep the switches so the user can try again.
             if (report.Succeeded)
             {
-                await RefreshAsync();
+                await RefreshAsync(force: true);
             }
         }
         finally
         {
             _busy = false;
             IsEnabled = true;
+        }
+    }
+
+    /// <summary>Picks the template of an item of the flat list by its type.</summary>
+    private sealed class ItemTemplates(params (Type Type, DataTemplate Template)[] templates) : DataTemplateSelector
+    {
+        public override DataTemplate? SelectTemplate(object? item, DependencyObject container) =>
+            item is null ? null : templates.FirstOrDefault(entry => entry.Type == item.GetType()).Template;
+    }
+
+    private sealed class IntroItem;
+
+    private sealed class EmptyItem;
+
+    private sealed class FooterItem;
+
+    private sealed class ResultCard
+    {
+        public string Text { get; set; } = "";
+    }
+
+    /// <summary>Where this PC stands: the figures of the card at the top of the list.</summary>
+    private sealed class ScoreCard : INotifyPropertyChanged
+    {
+        private string _value = "…";
+        private double _percent;
+        private string _summary = "";
+        private bool _canSelectRecommended;
+        private bool _canUndoAll;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public string Value { get => _value; set => Set(ref _value, value); }
+        public double Percent { get => _percent; set => Set(ref _percent, value); }
+        public string Summary { get => _summary; set => Set(ref _summary, value); }
+        public bool CanSelectRecommended { get => _canSelectRecommended; set => Set(ref _canSelectRecommended, value); }
+        public bool CanUndoAll { get => _canUndoAll; set => Set(ref _canUndoAll, value); }
+
+        private void Set<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        {
+            if (!EqualityComparer<T>.Default.Equals(field, value))
+            {
+                field = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            }
         }
     }
 
@@ -385,8 +502,31 @@ public partial class OptimizePage : Page
 
         private bool _isOn;
         private bool _isExpanded;
+        private bool _isLast;
 
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        /// <summary>The last row of its category closes the card, so it gets the bottom border and the rounded corners.</summary>
+        public bool IsLast
+        {
+            get => _isLast;
+            set
+            {
+                if (_isLast == value)
+                {
+                    return;
+                }
+
+                _isLast = value;
+                foreach (var name in (string[])[nameof(Frame), nameof(Corners)])
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+                }
+            }
+        }
+
+        public Thickness Frame => _isLast ? new Thickness(1, 0, 1, 1) : new Thickness(1, 0, 1, 0);
+        public CornerRadius Corners => _isLast ? new CornerRadius(0, 0, 10, 10) : new CornerRadius(0);
 
         public required string Id { get; init; }
         public required string Title { get; init; }

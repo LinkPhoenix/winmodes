@@ -76,4 +76,47 @@ internal static class RowHolderList
             target.RemoveAt(target.Count - 1);
         }
     }
+
+    /// <summary>
+    /// Makes <paramref name="target"/> hold <paramref name="items"/> in order, comparing by reference: what is still there is kept (and so is
+    /// its visual and the scroll position), only what is new or gone is added or removed.
+    /// </summary>
+    public static void ReconcileItems<T>(this ObservableCollection<T> target, IReadOnlyList<T> items)
+        where T : class
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(items);
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (i < target.Count && ReferenceEquals(target[i], items[i]))
+            {
+                continue;
+            }
+
+            var existing = -1;
+            for (var j = i + 1; j < target.Count; j++)
+            {
+                if (ReferenceEquals(target[j], items[i]))
+                {
+                    existing = j;
+                    break;
+                }
+            }
+
+            if (existing >= 0)
+            {
+                target.Move(existing, i);
+            }
+            else
+            {
+                target.Insert(i, items[i]);
+            }
+        }
+
+        while (target.Count > items.Count)
+        {
+            target.RemoveAt(target.Count - 1);
+        }
+    }
 }
