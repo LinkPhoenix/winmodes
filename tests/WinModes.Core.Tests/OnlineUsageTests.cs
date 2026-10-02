@@ -48,6 +48,75 @@ public sealed class OnlineUsageTests : IDisposable
         Assert.Equal(Now, status.SeenAt);
     }
 
+    [Fact]
+    public void ClaudeAnswer_GivesTheWeeklyLimitOfEachModelAndTheExtraUsage()
+    {
+        var status = OnlineUsage.ParseClaude(
+            """
+            {"five_hour":{"utilization":12.0,"resets_at":"2026-10-01T15:00:00+00:00"},
+             "seven_day":{"utilization":30.5,"resets_at":"2026-10-05T08:00:00+00:00"},
+             "seven_day_opus":{"utilization":88,"resets_at":"2026-10-05T08:00:00+00:00"},
+             "seven_day_sonnet":{"utilization":19,"resets_at":null},
+             "seven_day_fable":null,
+             "extra_usage":{"is_enabled":true,"monthly_limit":5000,"used_credits":1250,"decimal_places":2,"currency":"EUR"}}
+            """,
+            "Max 5x", Now);
+
+        Assert.NotNull(status);
+        Assert.Equal(["Opus", "Sonnet"], status.ModelLimits!.Select(limit => limit.Model));
+        Assert.Equal(12, status.ModelLimits![0].Window.RemainingPercent);
+        Assert.Equal(10080, status.ModelLimits[0].Window.WindowMinutes);
+        Assert.Equal(new ExtraUsage(12.50m, 50m, "EUR"), status.Extra);
+        Assert.Equal(25, status.Extra!.UsedPercent);
+    }
+
+    [Fact]
+    public void ClaudeAnswer_GivesTheScopedWeeklyLimitsOfTheLimitsList_ForKnownModelsOnly()
+    {
+        var status = OnlineUsage.ParseClaude(
+            """
+            {"five_hour":{"utilization":1},
+             "seven_day_opus":{"utilization":40,"resets_at":"2026-10-05T08:00:00+00:00"},
+             "limits":[
+               {"kind":"session","percent":17,"resets_at":"2026-10-02T03:40:00+00:00","scope":null},
+               {"kind":"weekly_scoped","percent":55,"resets_at":"2026-10-06T01:00:00+00:00","scope":{"model":{"display_name":"Claude Sonnet 5"},"surface":null}},
+               {"kind":"weekly_scoped","percent":70,"scope":{"model":{"display_name":"Opus"}}},
+               {"kind":"weekly_scoped","percent":99,"scope":{"model":{"display_name":"<script>alert(1)</script>"}}},
+               {"kind":"weekly_all","percent":91,"scope":null}]}
+            """,
+            "Max 5x", Now);
+
+        // Opus comes from its own block (the list repeats it); Sonnet only from the list; an unknown name is not shown.
+        Assert.Equal(["Opus", "Sonnet"], status!.ModelLimits!.Select(limit => limit.Model));
+        Assert.Equal(60, status.ModelLimits![0].Window.RemainingPercent);
+        Assert.Equal(45, status.ModelLimits[1].Window.RemainingPercent);
+        Assert.Equal(new DateTimeOffset(2026, 10, 6, 1, 0, 0, TimeSpan.Zero), status.ModelLimits[1].Window.ResetsAt);
+    }
+
+    [Theory]
+    [InlineData("""{"five_hour":{"utilization":1},"extra_usage":{"is_enabled":false,"monthly_limit":5000,"used_credits":10}}""")]
+    [InlineData("""{"five_hour":{"utilization":1},"extra_usage":{"is_enabled":true,"monthly_limit":0,"used_credits":10}}""")]
+    [InlineData("""{"five_hour":{"utilization":1},"extra_usage":{"is_enabled":true}}""")]
+    [InlineData("""{"five_hour":{"utilization":1},"extra_usage":null}""")]
+    [InlineData("""{"five_hour":{"utilization":1}}""")]
+    public void ClaudeAnswer_WithoutUsableExtraUsage_GivesNone(string body)
+    {
+        var status = OnlineUsage.ParseClaude(body, "Pro", Now);
+
+        Assert.NotNull(status);
+        Assert.Null(status.Extra);
+        Assert.Null(status.ModelLimits);
+    }
+
+    [Fact]
+    public void ClaudeExtraUsage_DefaultsToDollarsAndTwoDecimals_AndNeverExceedsItsLimit()
+    {
+        var status = OnlineUsage.ParseClaude("""{"five_hour":{"utilization":1},"extra_usage":{"is_enabled":true,"monthly_limit":2000,"used_credits":9000}}""", "Pro", Now);
+
+        Assert.Equal(new ExtraUsage(90m, 20m, "USD"), status!.Extra);
+        Assert.Equal(100, status.Extra!.UsedPercent);
+    }
+
     [Theory]
     [InlineData("<html>Sign in</html>")]
     [InlineData("""{"error":{"type":"authentication_error"}}""")]

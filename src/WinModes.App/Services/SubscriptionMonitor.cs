@@ -108,7 +108,7 @@ internal static class SubscriptionMonitor
     /// <summary>The online figure unless a local record is more recent (a session wrote one since the last request).</summary>
     private static SubscriptionStatus? Newest(SubscriptionStatus? online, SubscriptionStatus? local) =>
         online is null ? local
-        : local?.Primary is not null && local.SeenAt > online.SeenAt ? local with { ResetCredits = online.ResetCredits }
+        : local?.Primary is not null && local.SeenAt > online.SeenAt ? local with { ResetCredits = online.ResetCredits, ModelLimits = online.ModelLimits, Extra = online.Extra }
         : online;
 
     private static async Task<SubscriptionStatus?> AskAsync(UsageRequest? request, Func<string, SubscriptionStatus?> parse)

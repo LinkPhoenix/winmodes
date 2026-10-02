@@ -28,10 +28,23 @@ public sealed record LimitWindow(double UsedPercent, int WindowMinutes, DateTime
     public bool HasReset(DateTimeOffset now) => ResetsAt is { } reset && reset <= now;
 }
 
+/// <summary>The weekly limit that applies to one model only (Claude counts Opus, Sonnet and Fable apart).</summary>
+public sealed record ModelLimit(string Model, LimitWindow Window);
+
+/// <summary>Money spent beyond the plan: the amounts are in the currency of the account, for the current month.</summary>
+public sealed record ExtraUsage(decimal Used, decimal Limit, string Currency)
+{
+    /// <summary>The share of the monthly limit already spent, 0 to 100.</summary>
+    public double UsedPercent => Limit <= 0 ? 0 : (double)Math.Clamp(Used / Limit * 100, 0, 100);
+}
+
 /// <summary>What is known locally about the user's plan for one AI tool.</summary>
 /// <param name="SeenAt">When the tool last recorded the limits; null when it records none.</param>
 /// <param name="ResetCredits">Limit resets the account has in reserve; known only from the online reading.</param>
-public sealed record SubscriptionStatus(string Tool, string Plan, LimitWindow? Primary, LimitWindow? Secondary, DateTimeOffset? SeenAt, int? ResetCredits = null);
+/// <param name="ModelLimits">Weekly limits of single models; known only from the online reading.</param>
+/// <param name="Extra">Extra usage billed beyond the plan, when the account turned it on; known only from the online reading.</param>
+public sealed record SubscriptionStatus(string Tool, string Plan, LimitWindow? Primary, LimitWindow? Secondary, DateTimeOffset? SeenAt, int? ResetCredits = null,
+    IReadOnlyList<ModelLimit>? ModelLimits = null, ExtraUsage? Extra = null);
 
 /// <summary>
 /// Reads the plan and the usage limits that Codex and Claude Code already keep on this PC. Nothing is asked

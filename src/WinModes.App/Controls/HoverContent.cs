@@ -120,9 +120,20 @@ internal static class HoverContent
             }
         }
 
+        // The weekly limit of each single model the answer lists (Opus, Sonnet, Fable).
+        foreach (var model in status?.ModelLimits ?? [])
+        {
+            panel.Children.Add(Limit(model.Window, now, culture, Loc.F("{0} weekly limit", model.Model)));
+        }
+
         if (status?.ResetCredits is { } credits)
         {
             panel.Children.Add(Credits(credits));
+        }
+
+        if (status?.Extra is { } extra)
+        {
+            panel.Children.Add(Extra(extra, culture));
         }
 
         if (status?.SeenAt is { } seen)
@@ -162,7 +173,7 @@ internal static class HoverContent
     }
 
     /// <summary>One limit: its name and what is left, a bar in the colour of what is left, and when it starts over.</summary>
-    private static StackPanel Limit(LimitWindow limit, DateTimeOffset now, CultureInfo culture)
+    private static StackPanel Limit(LimitWindow limit, DateTimeOffset now, CultureInfo culture, string? title = null)
     {
         const double BarHeight = 6;
 
@@ -171,7 +182,7 @@ internal static class HoverContent
         var brush = ended ? Palette.Neutral : Palette.RemainingBrush(left);
 
         var head = new Grid { Margin = new Thickness(0, 16, 0, 6) };
-        head.Children.Add(new TextBlock { Text = Subscriptions.Capitalize(Loc.F("{0} limit", limit.WindowName)), FontWeight = FontWeights.SemiBold, FontSize = 13 });
+        head.Children.Add(new TextBlock { Text = title ?? Subscriptions.Capitalize(Loc.F("{0} limit", limit.WindowName)), FontWeight = FontWeights.SemiBold, FontSize = 13 });
         head.Children.Add(new TextBlock
         {
             Text = ended ? Loc.T("reset") : Loc.In(culture, "{0:0} % left", left),
@@ -202,6 +213,22 @@ internal static class HoverContent
         }
 
         return panel;
+    }
+
+    /// <summary>What was spent beyond the plan this month, against the monthly limit the account set.</summary>
+    private static Border Extra(ExtraUsage extra, CultureInfo culture)
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal };
+        row.Children.Add(new GlyphIcon { Symbol = Glyph.Wallet24, Foreground = Palette.Power, FontSize = 16, VerticalAlignment = VerticalAlignment.Center });
+        row.Children.Add(new TextBlock
+        {
+            Text = Loc.In(culture, "Extra usage: {0:0.00} of {1:0.00} {2} this month", extra.Used, extra.Limit, extra.Currency),
+            FontSize = 12,
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(8, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        return new Border { Margin = new Thickness(0, 10, 0, 0), Padding = new Thickness(10, 7, 10, 7), CornerRadius = new CornerRadius(8), Background = Palette.Tint(Palette.Power), Child = row };
     }
 
     private static Border Credits(int credits)

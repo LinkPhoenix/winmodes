@@ -27,7 +27,7 @@ public static class OnlineUsage
     private static readonly Uri ClaudeAddress = new("https://api.anthropic.com/api/oauth/usage");
 
     // The same endpoint, also asked for the limit resets the account has in reserve and without the spend block.
-    private static readonly Uri ClaudeAddressWithResets = new("https://api.anthropic.com/api/oauth/usage?cedar_ember=1&skip_spend=1");
+    private static readonly Uri ClaudeAddressWithResets = new("https://api.anthropic.com/api/oauth/usage?cedar_ember=1");
 
     public static string DefaultCodexAuth { get; } = Path.Combine(Subscriptions.DefaultCodexHome, "auth.json");
 
@@ -148,7 +148,7 @@ public static class OnlineUsage
             var sevenDay = ClaudeWindow(root, "seven_day", SevenDayMinutes);
             return fiveHour is null && sevenDay is null
                 ? null
-                : new SubscriptionStatus(ClaudeTool, plan, fiveHour ?? sevenDay, fiveHour is null ? null : sevenDay, now, ClaudeResets(root));
+                : new SubscriptionStatus(ClaudeTool, plan, fiveHour ?? sevenDay, fiveHour is null ? null : sevenDay, now, ClaudeResets(root), ClaudeModelLimits(root), ClaudeExtra(root));
         }
         catch (Exception ex) when (ex is JsonException or FormatException or InvalidOperationException)
         {
@@ -196,6 +196,69 @@ public static class OnlineUsage
         DateTimeOffset? resetsAt = window.TryGetProperty("reset_at", out var reset) && reset.ValueKind == JsonValueKind.Number
             && reset.TryGetDouble(out var unix) ? UsageNumbers.FromUnixSeconds(unix) : null;
         return new LimitWindow(usedPercent, minutes, resetsAt);
+    }
+
+    /// <summary>
+    /// The weekly limits of single models (Opus, Sonnet, Fable), from the "seven_day_*" blocks and from the scoped entries of the
+    /// "limits" list, which is where an account that has such a limit finds it. Only these three names are accepted: the label
+    /// comes from the answer, so anything else is ignored rather than shown.
+    /// </summary>
+    private static List<ModelLimit>? ClaudeModelLimits(JsonElement root)
+    {
+        var limits = new List<ModelLimit>();
+        foreach (var (key, model) in ClaudeModelKeys)
+        {
+            if (ClaudeWindow(root, key, SevenDayMinutes) is { } window)
+            {
+                limits.Add(new ModelLimit(model, window));
+            }
+        }
+
+        if (root.TryGetProperty("limits", out var list) && list.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var entry in list.EnumerateArray())
+            {
+                if (entry.ValueKind == JsonValueKind.Object && Text(entry, "kind") == "weekly_scoped"
+                    && entry.TryGetProperty("percent", out var percent) && percent.ValueKind == JsonValueKind.Number && UsageNumbers.Percent(percent) is { } used
+                    && entry.TryGetProperty("scope", out var scope) && scope.ValueKind == JsonValueKind.Object
+                    && scope.TryGetProperty("model", out var model) && model.ValueKind == JsonValueKind.Object
+                    && ClaudeModelKeys.Select(known => known.Model).FirstOrDefault(known => (Text(model, "display_name") ?? "").Contains(known, StringComparison.OrdinalIgnoreCase)) is { } name
+                    && !limits.Any(limit => limit.Model == name))
+                {
+                    DateTimeOffset? resetsAt = Text(entry, "resets_at") is { } text
+                        && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed) ? parsed : null;
+                    limits.Add(new ModelLimit(name, new LimitWindow(used, SevenDayMinutes, resetsAt)));
+                }
+            }
+        }
+
+        return limits.Count > 0 ? limits : null;
+    }
+
+    private static readonly (string Key, string Model)[] ClaudeModelKeys = [("seven_day_opus", "Opus"), ("seven_day_sonnet", "Sonnet"), ("seven_day_fable", "Fable")];
+
+    /// <summary>
+    /// The extra usage of the account: spent and monthly limit, given in the smallest unit of the currency (cents for dollars).
+    /// Null when the block is missing, the feature is off for the account or there is no limit.
+    /// </summary>
+    private static ExtraUsage? ClaudeExtra(JsonElement root)
+    {
+        const int DefaultDecimals = 2;
+        const int MaxDecimals = 6;
+
+        if (!root.TryGetProperty("extra_usage", out var block) || block.ValueKind != JsonValueKind.Object
+            || !block.TryGetProperty("is_enabled", out var enabled) || enabled.ValueKind != JsonValueKind.True)
+        {
+            return null;
+        }
+
+        decimal? Amount(string name) => block.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out var number) && number >= 0 ? number : null;
+
+        var decimals = block.TryGetProperty("decimal_places", out var places) && places.ValueKind == JsonValueKind.Number && places.TryGetInt32(out var count) ? Math.Clamp(count, 0, MaxDecimals) : DefaultDecimals;
+        var scale = (decimal)Math.Pow(10, decimals);
+        return Amount("monthly_limit") is { } limit && limit > 0
+            ? new ExtraUsage((Amount("used_credits") ?? 0) / scale, limit / scale, Text(block, "currency") is { Length: > 0 } currency ? currency : "USD")
+            : null;
     }
 
     private static LimitWindow? ClaudeWindow(JsonElement root, string name, int minutes)
