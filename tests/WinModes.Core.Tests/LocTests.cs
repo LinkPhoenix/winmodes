@@ -45,6 +45,28 @@ public sealed partial class LocTests
         Assert.Empty(broken);
     }
 
+    [Theory]
+    [MemberData(nameof(Translated))]
+    public void EveryTranslation_CanBeFormatted(string code)
+    {
+        // A stray brace or a format specifier broken by a translation only shows when the text is shown: check them all here.
+        var culture = System.Globalization.CultureInfo.GetCultureInfo(code);
+        var broken = Loc.Load(code).Where(entry =>
+        {
+            try
+            {
+                _ = string.Format(culture, entry.Value, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5);
+                return false;
+            }
+            catch (FormatException)
+            {
+                return true;
+            }
+        }).Select(entry => entry.Key);
+
+        Assert.Empty(broken);
+    }
+
     [GeneratedRegex(@"\{\d+(:[^}]*)?\}")]
     private static partial Regex Placeholder();
 }
