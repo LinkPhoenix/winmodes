@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using WinModes.App.Controls;
 using WinModes.App.Services;
 using WinModes.Core;
 using WinModes.Core.Usage;
@@ -82,8 +83,8 @@ internal sealed class TaskbarWidgetWindow : Window
         var light = Registry.GetValue(@"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize", "SystemUsesLightTheme", 0) is 1;
         _text = light ? Brushes.Black : Brushes.White;
         _dim = Palette.Neutral;
-        _claude = new PlanCell("Claude", _text, _dim);
-        _codex = new PlanCell("Codex", _text, _dim);
+        _claude = new PlanCell("Claude", _text, _dim, () => PlanHover.Current("Claude", _settings));
+        _codex = new PlanCell("Codex", _text, _dim, () => PlanHover.Current("Codex", _settings));
 
         Title = "WinModes taskbar widget";
         WindowStyle = WindowStyle.None;
@@ -460,10 +461,12 @@ internal sealed class TaskbarWidgetWindow : Window
         private readonly TextBlock _credits;
         private readonly Row[] _rows = [new Row(), new Row()];
 
-        public PlanCell(string tool, Brush text, Brush dim)
+        public PlanCell(string tool, Brush text, Brush dim, Func<SubscriptionStatus?> current)
         {
             (_tool, _dim) = (tool, dim);
-            var grid = new Grid { Margin = new Thickness(CellMargin, 0, CellMargin, 0), VerticalAlignment = VerticalAlignment.Center };
+            // An almost invisible fill so the gaps between the bars take the mouse too: the hover card must not flicker across them.
+            var grid = new Grid { Margin = new Thickness(CellMargin, 0, CellMargin, 0), VerticalAlignment = VerticalAlignment.Center, Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)) };
+            PlanHover.Attach(grid, tool, current);
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -543,10 +546,6 @@ internal sealed class TaskbarWidgetWindow : Window
 
             _credits.Text = showCredits && status?.ResetCredits is { } credits && credits > 0 ? string.Create(culture, $"↻ {credits}") : "";
             _credits.Visibility = _credits.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
-
-            ((FrameworkElement)Root).ToolTip = status is null
-                ? Loc.T("Plan unknown")
-                : $"{status.Tool} {status.Plan}\n{Subscriptions.Describe(status, now, culture).Detail}";
         }
 
         private sealed class Row

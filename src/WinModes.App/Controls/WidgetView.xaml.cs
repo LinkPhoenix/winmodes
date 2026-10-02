@@ -124,6 +124,15 @@ public partial class WidgetView : UserControl
         }
     }
 
+    /// <summary>The card of a plan appears when the mouse rests on its row, instead of a plain tooltip.</summary>
+    private void OnPlanLoaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: PlanRow row } element)
+        {
+            PlanHover.Attach(element, row.Tool, () => PlanHover.Current(row.Tool, _settings));
+        }
+    }
+
     private sealed record PlanRow(
         string Tool, string Plan, string Value, string Detail, double Remaining, Visibility BarVisibility, ImageSource? Icon, string Short, string Resets)
     {
@@ -149,8 +158,6 @@ public partial class WidgetView : UserControl
 
         /// <summary>Limit resets in reserve, shown in the compact line; empty when not known or switched off.</summary>
         public Visibility ResetsVisibility => Resets.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
-
-        public string ToolTip => $"{Tool} {Plan}\n{Detail}";
     }
 
     /// <summary>Colours the mode label, the border and the compact dot with the colour of the active mode.</summary>

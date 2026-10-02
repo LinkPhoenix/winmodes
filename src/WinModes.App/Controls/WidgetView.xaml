@@ -25,7 +25,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="14,0,0,0" ToolTip="{Binding ToolTip}" Background="Transparent">
+                        <StackPanel Orientation="Horizontal" Margin="14,0,0,0" Background="Transparent" Loaded="OnPlanLoaded">
                             <Image Source="{Binding Icon}" Width="14" Height="14" VerticalAlignment="Center"
                                    Visibility="{Binding IconVisibility}" RenderOptions.BitmapScalingMode="HighQuality" />
                             <TextBlock Text="{Binding Tool}" FontSize="12" VerticalAlignment="Center" Visibility="{Binding NameVisibility}"
@@ -119,9 +119,9 @@
                 <ItemsControl x:Name="Plans">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Margin="0,8,0,0">
+                            <StackPanel Margin="0,8,0,0" Background="Transparent" Loaded="OnPlanLoaded">
                                 <Grid>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,70,0" ToolTip="{Binding Tool}" Background="Transparent">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,70,0">
                                         <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"
                                                Visibility="{Binding IconVisibility}" RenderOptions.BitmapScalingMode="HighQuality" />
                                         <TextBlock Text="{Binding Tool}" FontSize="12" FontWeight="SemiBold" Margin="0,0,5,0" VerticalAlignment="Center"

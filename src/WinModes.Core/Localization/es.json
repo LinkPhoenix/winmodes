@@ -63,6 +63,7 @@
   "Port {0} is used by another program (Claude Code or Codex may be signing in). Close it and try again.": "El puerto {0} lo usa otro programa (quizá Claude Code o Codex esté iniciando sesión). Ciérralo e inténtalo de nuevo.",
   "Read the Claude usage online": "Leer el uso de Claude en línea",
   "Read the Codex usage online": "Leer el uso de Codex en línea",
+  "Resets in {0} ({1})": "Se restablece en {0} ({1})",
   "Right": "Derecha",
   "Running low": "Cerca del límite",
   "Running low at": "Cerca del límite por debajo de",
