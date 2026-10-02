@@ -41,6 +41,10 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Automation: automatic switching waits 30 seconds after WinModes starts (Windows is still loading your programs) and stays quiet for 10 minutes after a switch that was refused or failed, instead of asking for the permission again at every check.
 - Processes and Services: the pages open about four times faster and no longer freeze for more than a second at each refresh (Services rebuilt its whole list every five seconds). Only the rows in view are drawn, the column titles stay in place while the list scrolls, and the icons appear a moment after the list.
 
+### Fixed
+
+- Services and Processes: a program that has no icon of its own, such as the shared host of most Windows services (Application Information, AppX Deployment, Base Filtering Engine and about 300 others), showed a blank picture; it now shows the usual symbol instead.
+
 ## [0.9.2] - 2026-10-02
 
 ### Changed
