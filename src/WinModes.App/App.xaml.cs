@@ -554,6 +554,22 @@ public partial class App : Application, IDisposable
         var automatic = new Forms.ToolStripMenuItem(Loc.T("Switch modes automatically")) { Checked = Services.AppSettings.Load().AutoSwitch.Enabled };
         automatic.Click += (_, _) => Services.AutoSwitchSetup.SetEnabled(!Services.AppSettings.Load().AutoSwitch.Enabled);
         menu.Items.Add(automatic);
+        if (_autoSwitcher is { } switcher && Services.AppSettings.Load().AutoSwitch.Enabled)
+        {
+            var pause = new Forms.ToolStripMenuItem(Loc.T(switcher.IsPaused ? "Resume automatic switching" : "Pause automatic switching for 1 hour"));
+            pause.Click += (_, _) =>
+            {
+                if (switcher.IsPaused)
+                {
+                    switcher.Resume();
+                }
+                else
+                {
+                    switcher.PauseFor(TimeSpan.FromHours(1));
+                }
+            };
+            menu.Items.Add(pause);
+        }
 
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add(Loc.T("Quit"), null, (_, _) => Shutdown());

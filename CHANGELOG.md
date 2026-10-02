@@ -10,6 +10,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Added
 
+- Modes and tray: automatic switching can be paused for an hour (and resumed) from the Modes page or the tray menu. While it is paused nothing is started or ended, and the mode that is on stays on.
 - Modes: two new modes. Focus silences the notification pop-ups (Do not disturb) and leaves the services and the dev stack alone; add the chat and social apps to close in the mode editor. Eco is for the battery: Power saver plan, WSL and Docker stopped, background services calmed and transparency off.
 - Modes: a mode can now turn on settings from the Optimize list while it is active, and puts them back when it ends. Only per-user settings that take effect at once are used, so there is no extra permission prompt, and a setting that was already on before the mode is left alone. The preview lists them under "Windows settings". Game mode now turns on Do not disturb.
 - Optimize: 51 more settings, found by reading the code of about forty more open-source Windows optimizers. They cover telemetry and error-reporting policies, promotions in Windows and Edge, Recall, Click to Do, Copilot and other AI features, Search, AutoPlay, the Sticky Keys pop-ups, the startup-app delay, File Explorer and taskbar options, and Game Bar, audio ducking and notification sounds. Each one shows how many projects ship it, can be undone exactly, and those that need care carry a note. The Recall setting now says that snapshots already saved are removed.

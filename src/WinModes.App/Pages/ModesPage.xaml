@@ -34,6 +34,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Border x:Name="AutoBadge" Style="{StaticResource IconBadgeStyle}">
                     <TextBlock x:Name="AutoGlyph" Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center" Text="&#xE895;" />
@@ -44,9 +45,11 @@
                     <TextBlock x:Name="AutoHint" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Visibility="Collapsed"
                                Style="{StaticResource SecondaryTextStyle}" />
                 </StackPanel>
-                <ui:Button Grid.Column="2" Content="{l:T 'Set up'}" Icon="{ui:SymbolIcon Settings24}" Margin="0,0,16,0" Click="OnAutoSetupClick"
+                <ui:Button x:Name="AutoPauseButton" Grid.Column="2" Icon="{ui:SymbolIcon Pause24}" Margin="0,0,8,0" Click="OnAutoPauseClick"
+                           HorizontalAlignment="Right" Visibility="Collapsed" />
+                <ui:Button Grid.Column="3" Content="{l:T 'Set up'}" Icon="{ui:SymbolIcon Settings24}" Margin="0,0,16,0" Click="OnAutoSetupClick"
                            ToolTip="{l:T 'Choose the tools and programs that start a mode, and how long a mode lasts after they close'}" />
-                <ui:ToggleSwitch x:Name="AutoToggle" Grid.Column="3" Click="OnAutoToggled"
+                <ui:ToggleSwitch x:Name="AutoToggle" Grid.Column="4" Click="OnAutoToggled"
                                  AutomationProperties.Name="{l:T 'Switch modes automatically'}" />
             </Grid>
         </Border>

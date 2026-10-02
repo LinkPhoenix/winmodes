@@ -58,6 +58,25 @@ public partial class ModesPage : Page
 
     private void OnAutoSetupClick(object sender, RoutedEventArgs e) => (Window.GetWindow(this) as MainWindow)?.NavigateTo(typeof(AutomationPage));
 
+    private void OnAutoPauseClick(object sender, RoutedEventArgs e)
+    {
+        if (AutoSwitcher.Current is not { } switcher)
+        {
+            return;
+        }
+
+        if (switcher.IsPaused)
+        {
+            switcher.Resume();
+        }
+        else
+        {
+            switcher.PauseFor(TimeSpan.FromHours(1));
+        }
+
+        ShowAutomation(withHint: false);
+    }
+
     private void OnAutoToggled(object sender, RoutedEventArgs e)
     {
         AutoSwitchSetup.SetEnabled(AutoToggle.IsChecked == true);
@@ -68,6 +87,8 @@ public partial class ModesPage : Page
     {
         var settings = Services.AppSettings.Load().AutoSwitch;
         AutoToggle.IsChecked = settings.Enabled;
+        AutoPauseButton.Visibility = settings.Enabled && settings.Rules.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        AutoPauseButton.Content = Loc.T(AutoSwitcher.Current?.IsPaused == true ? "Resume" : "Pause for 1 hour");
         AutoStatus.Text = !settings.Enabled
             ? Loc.T("Off. Turned on, Code mode starts by itself when Claude Code, Codex or another coding tool opens, and ends a little after the last one closes.")
             : settings.Rules.Count == 0

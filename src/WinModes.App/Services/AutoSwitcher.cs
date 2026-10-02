@@ -26,6 +26,7 @@ internal sealed class AutoSwitcher
     private readonly Func<string, Func<Task<SwitchReport>>, Task<bool>> _switch;
     private readonly ProcessSampler _sampler = new();
     private AutoSwitchPlanner _planner = new();
+    private DateTimeOffset? _pausedUntil;
     private bool _busy;
 
     /// <param name="switch">Runs a switch and reports it to the user; receives a title and the action, and tells whether it worked.</param>
@@ -33,6 +34,30 @@ internal sealed class AutoSwitcher
     {
         _switch = @switch;
         _timer.Tick += async (_, _) => await CheckAsync();
+        Current = this;
+    }
+
+    /// <summary>The switcher of the running app, for the pages and the tray menu.</summary>
+    public static AutoSwitcher? Current { get; private set; }
+
+    /// <summary>Until when the user paused automatic switching; null when it is not paused.</summary>
+    public DateTimeOffset? PausedUntil => _pausedUntil is { } until && until > DateTimeOffset.Now ? until : null;
+
+    public bool IsPaused => PausedUntil is not null;
+
+    /// <summary>Stops automatic switching for a while (null: until resumed). The mode that is on stays on.</summary>
+    public void PauseFor(TimeSpan? duration)
+    {
+        _pausedUntil = duration is { } span ? DateTimeOffset.Now + span : DateTimeOffset.MaxValue;
+        _planner.PauseUntil(_pausedUntil);
+        Publish(new AutoSwitchStatus(AutoSwitchState.Paused, ModeSwitcher.ActiveMode, Until: duration is null ? null : _pausedUntil));
+    }
+
+    public void Resume()
+    {
+        _pausedUntil = null;
+        _planner.PauseUntil(null);
+        StatusChanged?.Invoke();
     }
 
     /// <summary>What automatic switching is doing now; raised on the thread that made the check.</summary>
@@ -48,6 +73,7 @@ internal sealed class AutoSwitcher
             // A fresh planner: programs already open when the feature is turned on are acted on once.
             _planner = new AutoSwitchPlanner(TimingOf(settings));
             _planner.HoldUntil(AppStartedAt() + WarmUp);
+            _planner.PauseUntil(_pausedUntil);
             _timer.Start();
         }
         else if (enabled)

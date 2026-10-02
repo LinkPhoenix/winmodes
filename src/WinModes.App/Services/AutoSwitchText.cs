@@ -25,6 +25,8 @@ internal static class AutoSwitchText
             AutoSwitchState.Manual => Loc.F("{0} mode was chosen by you: automatic switching leaves it alone.", mode),
             AutoSwitchState.Declined => Loc.T("You ended the mode while its program is still open. It starts again the next time that program opens."),
             AutoSwitchState.Waiting => Loc.F("Paused for {0}: WinModes has just started, or the last switch did not work.", left),
+            AutoSwitchState.Paused when status.Until is null => Loc.T("Paused by you until you resume. The mode that is on stays on."),
+            AutoSwitchState.Paused => Loc.F("Paused by you for {0}. The mode that is on stays on.", left),
             _ => Loc.T("Waiting for a coding tool or a rule to apply."),
         };
     }

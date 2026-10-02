@@ -52,6 +52,9 @@ public enum AutoSwitchState
 
     /// <summary>Holding back, just after the app started or after a switch that did not work.</summary>
     Waiting,
+
+    /// <summary>The user paused automatic switching until <see cref="AutoSwitchStatus.Until"/> (or until they resume it).</summary>
+    Paused,
 }
 
 public sealed record AutoSwitchStatus(AutoSwitchState State, string? Mode = null, string? Trigger = null, DateTimeOffset? Until = null);
@@ -81,6 +84,7 @@ public sealed class AutoSwitchPlanner(AutoSwitchTiming? timing = null)
 
     private string? _lastOwner;
     private DateTimeOffset _holdUntil = DateTimeOffset.MinValue;
+    private DateTimeOffset? _pausedUntil;
 
     public AutoSwitchStatus Status { get; private set; } = new(AutoSwitchState.Idle);
 
@@ -109,6 +113,16 @@ public sealed class AutoSwitchPlanner(AutoSwitchTiming? timing = null)
         _waitingFor = null;
     }
 
+    /// <summary>
+    /// The user stops automatic switching for a while. Nothing is started or ended meanwhile, and the mode that is on stays on.
+    /// <see cref="DateTimeOffset.MaxValue"/> means until the user resumes; null resumes now.
+    /// </summary>
+    public void PauseUntil(DateTimeOffset? until)
+    {
+        _pausedUntil = until;
+        _waitingFor = null;
+    }
+
     /// <summary>The switch asked for did not work (permission refused, helper failed): wait before anything else is tried.</summary>
     public void SwitchFailed(DateTimeOffset now) => HoldUntil(now + Timing.FailureHold);
 
@@ -129,6 +143,13 @@ public sealed class AutoSwitchPlanner(AutoSwitchTiming? timing = null)
             .Select(rule => (Name: Normalize(rule.Process), rule.Mode))
             .Where(match => match.Name.Length > 0 && running.Contains(match.Name))
             .ToList();
+
+        if (_pausedUntil is { } paused && now < paused)
+        {
+            _waitingFor = null;
+            Status = new AutoSwitchStatus(AutoSwitchState.Paused, activeMode, Until: paused == DateTimeOffset.MaxValue ? null : paused);
+            return AutoSwitchDecision.None;
+        }
 
         if (activeMode is not null && !activeByAuto)
         {

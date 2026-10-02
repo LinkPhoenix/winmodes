@@ -296,6 +296,37 @@ public sealed class AutoSwitchPlannerTests
     }
 
     [Fact]
+    public void Pause_StopsEverythingUntilItEnds_AndTheModeThatIsOnStaysOn()
+    {
+        var (planner, _) = Activated("code", "Code");
+        planner.PauseUntil(At(600));
+
+        // Nothing triggers the mode any more, but while paused it is neither ended nor replaced.
+        Assert.Equal(AutoSwitchKind.None, planner.Evaluate(Rules, Running(), "code", true, true, At(100)).Kind);
+        Assert.Equal(AutoSwitchKind.None, planner.Evaluate(Rules, Running("cs2"), "code", true, true, At(500)).Kind);
+        Assert.Equal(new AutoSwitchStatus(AutoSwitchState.Paused, "code", Until: At(600)), planner.Status);
+
+        // Once the pause is over the grace period starts from then, not from the time the tool closed.
+        Assert.Equal(AutoSwitchKind.None, planner.Evaluate(Rules, Running(), "code", true, true, At(600)).Kind);
+        Assert.Equal(AutoSwitchKind.None, planner.Evaluate(Rules, Running(), "code", true, true, At(659)).Kind);
+        Assert.Equal(AutoSwitchKind.Revert, planner.Evaluate(Rules, Running(), "code", true, true, At(660)).Kind);
+    }
+
+    [Fact]
+    public void Pause_WithoutAnEndLastsUntilItIsResumed()
+    {
+        var planner = new AutoSwitchPlanner(Timing);
+        planner.PauseUntil(DateTimeOffset.MaxValue);
+
+        Assert.Equal(AutoSwitchKind.None, planner.Evaluate(Rules, Running("Code"), null, false, true, At(100000)).Kind);
+        Assert.Null(planner.Status.Until);
+
+        planner.PauseUntil(null);
+        planner.Evaluate(Rules, Running("Code"), null, false, true, At(100010));
+        Assert.Equal(AutoSwitchKind.Activate, planner.Evaluate(Rules, Running("Code"), null, false, true, At(100020)).Kind);
+    }
+
+    [Fact]
     public void Tool_RulesFollowTheSessionsOfAnAiTool()
     {
         AutoSwitchRule[] rules = [new(AutoSwitchConditions.Tool("claude-code"), "code"), new(AutoSwitchConditions.Tool("codex"), "code")];
