@@ -8,6 +8,10 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+### Changed
+
+- Build: the GitHub actions and the test packages used to build and check WinModes are updated to their latest versions; nothing changes in the app.
+
 ## [0.9.1] - 2026-10-02
 
 ### Fixed
