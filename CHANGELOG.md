@@ -8,6 +8,11 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+### Added
+
+- Automation: a "Coding tools" section starts a mode (Code by default) while Claude Code, Codex, Cursor, T3 Code, OpenCode, Windsurf or VS Code is open, and ends it after the last one closes. Each tool is a switch; "Open now" shows which ones are running. Claude Code is told apart from the Claude chat app, so chatting does not start Code mode. Turning automatic switching on for the first time switches on the usual coding tools.
+- Automation: a "Wait before returning to normal" setting (30 seconds to 10 minutes, one minute by default) and a line that says what automatic switching is doing now, with a countdown.
+
 ### Changed
 
 - Automation: a mode started automatically now stays on while any program or tool that triggers it is still open, and ends one minute after the last one closes, so going from Claude Code to Codex (or running both) no longer makes the PC go back and forth. A mode starts only after its trigger has held for 10 seconds, so a program that opens and closes at once changes nothing.

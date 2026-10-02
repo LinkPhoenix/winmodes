@@ -1,8 +1,10 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using WinModes.App.Services;
 using WinModes.Core.Automation;
+using WinModes.Core.Planning;
 
 namespace WinModes.App.Pages;
 
@@ -11,8 +13,13 @@ public partial class AutomationPage : Page
 {
     private const string DefaultGlyph = "";
 
+    private static readonly int[] GraceChoices = [30, 60, 120, 300, 600];
+
     private readonly IReadOnlyList<ModeCatalog.Entry> _modes = ModeCatalog.Load();
+    private readonly DispatcherTimer _countdown = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly bool _loaded;
+    private HashSet<string> _openTools = [];
+    private string? _activeMode;
 
     public AutomationPage()
     {
@@ -21,11 +28,18 @@ public partial class AutomationPage : Page
         var settings = AppSettings.Load().AutoSwitch;
         Enabled.IsChecked = settings.Enabled;
         RevertWhenClosed.IsChecked = settings.RevertWhenClosed;
-        Mode.ItemsSource = _modes.Select(entry => new ModeChoice(entry.Profile.Mode, entry.Profile.Label)).ToList();
+        var choices = _modes.Select(entry => new ModeChoice(entry.Profile.Mode, entry.Profile.Label)).ToList();
+        Mode.ItemsSource = choices;
         Mode.SelectedIndex = _modes.Count > 0 ? 0 : -1;
+        ToolMode.ItemsSource = choices;
+        ToolMode.SelectedItem = choices.FirstOrDefault(choice => choice.Mode.Equals(AutoSwitchSetup.CodingMode(settings.Rules), StringComparison.OrdinalIgnoreCase)) ?? choices.FirstOrDefault();
+        Grace.ItemsSource = GraceChoices.Select(seconds => new GraceChoice(seconds, AutoSwitchText.Remaining(TimeSpan.FromSeconds(seconds)))).ToList();
+        Grace.SelectedItem = ((IEnumerable<GraceChoice>)Grace.ItemsSource).MinBy(choice => Math.Abs(choice.Seconds - settings.GraceSeconds));
         Trigger.ItemsSource = TriggerChoices;
         Trigger.SelectedIndex = 0;
         ShowRules(settings.Rules);
+        ShowTools(settings.Rules);
+        ShowState();
 
         // Setting the initial values raises the change events; only user changes are saved.
         _loaded = true;
@@ -38,6 +52,101 @@ public partial class AutomationPage : Page
         {
             Silent.IsEnabled = false;
             SilentDetail.Text = Loc.T("Available when WinModes is installed with its setup program: a task that runs without a prompt must start from a folder only administrators can change.");
+        }
+
+        _countdown.Tick += (_, _) => ShowState();
+        Loaded += async (_, _) =>
+        {
+            _countdown.Start();
+            AutoSwitcher.StatusChanged += OnStatusChanged;
+            ModeSwitcher.Changed += OnStatusChanged;
+            await FindOpenToolsAsync();
+        };
+        Unloaded += (_, _) =>
+        {
+            _countdown.Stop();
+            AutoSwitcher.StatusChanged -= OnStatusChanged;
+            ModeSwitcher.Changed -= OnStatusChanged;
+        };
+    }
+
+    private void OnStatusChanged() => Dispatcher.BeginInvoke(ShowState);
+
+    private void ShowState()
+    {
+        var settings = AppSettings.Load().AutoSwitch;
+        _activeMode = ModeSwitcher.ActiveMode;
+        StateText.Text = !settings.Enabled
+            ? Loc.T("Automatic switching is off.")
+            : settings.Rules.Count == 0
+                ? Loc.T("No rule yet: turn on a coding tool below or add a rule.")
+                : AutoSwitchText.Describe(AutoSwitcher.Status, _activeMode, DateTimeOffset.Now);
+    }
+
+    /// <summary>Which of the coding tools have a session open now, to tell the user which ones would act.</summary>
+    private async Task FindOpenToolsAsync()
+    {
+        _openTools = await Task.Run(() => AiToolCatalog.FindSessions(new ProcessSampler().Sample()).Select(session => session.Tool.Id).ToHashSet(StringComparer.OrdinalIgnoreCase));
+        ShowTools(AppSettings.Load().AutoSwitch.Rules);
+    }
+
+    private void ShowTools(IReadOnlyList<AutoSwitchRule> rules)
+    {
+        Tools.ItemsSource = AutoSwitchConditions.CodingToolIds
+            .Select(id => AiToolCatalog.Tools.First(tool => tool.Id == id))
+            .Select(tool =>
+            {
+                var icon = ToolIcons.For(tool.Name);
+                var accent = Palette.BrandBrush;
+                return new ToolRow(
+                    tool.Id,
+                    tool.Name,
+                    icon,
+                    rules.Any(rule => rule.Process.Equals(AutoSwitchConditions.Tool(tool.Id), StringComparison.OrdinalIgnoreCase)),
+                    _openTools.Contains(tool.Id) ? Visibility.Visible : Visibility.Collapsed,
+                    icon is null ? Visibility.Visible : Visibility.Collapsed,
+                    accent,
+                    Palette.Tint(accent));
+            }).ToList();
+    }
+
+    private void OnToolToggled(object sender, RoutedEventArgs e)
+    {
+        if (!_loaded || (sender as FrameworkElement)?.DataContext is not ToolRow row || sender is not Wpf.Ui.Controls.ToggleSwitch toggle)
+        {
+            return;
+        }
+
+        var key = AutoSwitchConditions.Tool(row.Id);
+        var rules = AppSettings.Load().AutoSwitch.Rules.Where(rule => !rule.Process.Equals(key, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (toggle.IsChecked == true && ToolMode.SelectedItem is ModeChoice mode)
+        {
+            rules.Add(new AutoSwitchRule(key, mode.Mode));
+        }
+
+        Save(rules);
+        ShowTools(rules);
+        Status.Text = Loc.F(toggle.IsChecked == true ? "{0} will start a mode when it opens." : "{0} no longer starts a mode.", row.Name);
+    }
+
+    private void OnToolModeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loaded || ToolMode.SelectedItem is not ModeChoice mode)
+        {
+            return;
+        }
+
+        var rules = AppSettings.Load().AutoSwitch.Rules
+            .Select(rule => AutoSwitchConditions.TryParseTool(rule.Process, out _) ? rule with { Mode = mode.Mode } : rule)
+            .ToList();
+        Save(rules);
+    }
+
+    private void OnGraceChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loaded)
+        {
+            Save(AppSettings.Load().AutoSwitch.Rules);
         }
     }
 
@@ -57,7 +166,7 @@ public partial class AutomationPage : Page
 
     private void ShowRules(IReadOnlyList<AutoSwitchRule> rules)
     {
-        Rules.ItemsSource = rules.Select(rule =>
+        Rules.ItemsSource = rules.Where(rule => !AutoSwitchConditions.TryParseTool(rule.Process, out _)).Select(rule =>
         {
             var entry = _modes.FirstOrDefault(mode => mode.Profile.Mode.Equals(rule.Mode, StringComparison.OrdinalIgnoreCase));
             return new RuleRow(
@@ -67,15 +176,28 @@ public partial class AutomationPage : Page
                 entry?.Glyph ?? DefaultGlyph,
                 entry?.Accent ?? Palette.Neutral);
         }).ToList();
-        EmptyState.Visibility = rules.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        EmptyState.Visibility = rules.All(rule => AutoSwitchConditions.TryParseTool(rule.Process, out _)) ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void OnChanged(object sender, RoutedEventArgs e)
     {
-        if (_loaded)
+        if (!_loaded)
         {
-            Save(AppSettings.Load().AutoSwitch.Rules);
+            return;
         }
+
+        // Turned on with nothing to act on: the usual coding tools are proposed, as on the Modes page.
+        if (ReferenceEquals(sender, Enabled) && Enabled.IsChecked == true && AppSettings.Load().AutoSwitch.Rules.Count == 0)
+        {
+            AutoSwitchSetup.SetEnabled(true);
+            var seeded = AppSettings.Load().AutoSwitch.Rules;
+            ShowRules(seeded);
+            ShowTools(seeded);
+            ShowState();
+            return;
+        }
+
+        Save(AppSettings.Load().AutoSwitch.Rules);
     }
 
     private void Save(IReadOnlyList<AutoSwitchRule> rules)
@@ -87,10 +209,12 @@ public partial class AutomationPage : Page
             {
                 Enabled = Enabled.IsChecked == true,
                 RevertWhenClosed = RevertWhenClosed.IsChecked == true,
+                GraceSeconds = (Grace.SelectedItem as GraceChoice)?.Seconds ?? AutoSwitchSettings.DefaultGraceSeconds,
                 Rules = rules,
             },
         }).Save();
         ShowRules(rules);
+        ShowState();
         (Application.Current as App)?.ApplyDisplaySettings();
     }
 
@@ -198,6 +322,11 @@ public partial class AutomationPage : Page
     private sealed record TriggerChoice(TriggerKind Kind, string Label);
 
     private sealed record ModeChoice(string Mode, string Label);
+
+    private sealed record GraceChoice(int Seconds, string Label);
+
+    private sealed record ToolRow(
+        string Id, string Name, ImageSource? Icon, bool IsOn, Visibility RunningVisibility, Visibility GlyphVisibility, Brush Color, Brush Tint);
 
     private sealed record RuleRow(AutoSwitchRule Rule, string Title, string Detail, string Glyph, Brush Accent);
 }

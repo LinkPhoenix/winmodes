@@ -28,8 +28,9 @@
                     <Grid>
                         <StackPanel Margin="0,0,80,0">
                             <TextBlock Text="{l:T 'Switch modes automatically'}" FontWeight="SemiBold" />
-                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}"
+                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
                                        Text="{l:T 'WinModes checks every few seconds whether a rule below applies. Windows asks for permission at each switch unless the option below is on.'}" />
+                            <TextBlock x:Name="StateText" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0" />
                         </StackPanel>
                         <ui:ToggleSwitch x:Name="Enabled" HorizontalAlignment="Right" Checked="OnChanged" Unchecked="OnChanged"
                                          AutomationProperties.Name="{l:T 'Switch modes automatically'}" />
@@ -46,7 +47,7 @@
                                          AutomationProperties.Name="{l:T 'Switch without the Windows permission prompt'}" />
                     </Grid>
                 </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                <Border Style="{StaticResource RowStyle}">
                     <Grid>
                         <StackPanel Margin="0,0,80,0">
                             <TextBlock Text="{l:T 'Return to normal when the rule no longer applies'}" FontWeight="SemiBold" />
@@ -57,6 +58,64 @@
                                          AutomationProperties.Name="{l:T 'Return to normal when the rule no longer applies'}" />
                     </Grid>
                 </Border>
+                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                    <Grid>
+                        <StackPanel Margin="0,0,200,0">
+                            <TextBlock Text="{l:T 'Wait before returning to normal'}" FontWeight="SemiBold" />
+                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                                       Text="{l:T 'When the last program or tool that started a mode closes, the mode stays this long. Going from one tool to another, or having several open, never makes the PC go back and forth.'}" />
+                        </StackPanel>
+                        <ComboBox x:Name="Grace" HorizontalAlignment="Right" MinWidth="150" DisplayMemberPath="Label" SelectionChanged="OnGraceChanged"
+                                  AutomationProperties.Name="{l:T 'Wait before returning to normal'}" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="{l:T 'CODING TOOLS'}" Style="{StaticResource SectionTitleStyle}" />
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <StackPanel>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <StackPanel Margin="0,0,200,0">
+                            <TextBlock Text="{l:T 'Start a mode while a coding tool is open'}" FontWeight="SemiBold" />
+                            <TextBlock FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                                       Text="{l:T 'Opening any tool switched on below starts this mode, and it ends once the last one has been closed for the wait set above. Claude Code is told apart from the Claude chat app.'}" />
+                        </StackPanel>
+                        <ComboBox x:Name="ToolMode" HorizontalAlignment="Right" MinWidth="150" DisplayMemberPath="Label" SelectionChanged="OnToolModeChanged"
+                                  AutomationProperties.Name="{l:T 'Mode started by the coding tools'}" />
+                    </Grid>
+                </Border>
+                <ItemsControl x:Name="Tools">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource RowStyle}" Padding="20,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="32" Height="32" CornerRadius="8" Background="{Binding Tint}">
+                                        <Grid>
+                                            <Image Source="{Binding Icon}" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="15" HorizontalAlignment="Center" Text="&#xE943;"
+                                                       Visibility="{Binding GlyphVisibility}" Foreground="{Binding Color}" />
+                                        </Grid>
+                                    </Border>
+                                    <TextBlock Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding Name}" />
+                                    <Border Grid.Column="2" Style="{StaticResource ChipStyle}" Margin="0,0,16,0" VerticalAlignment="Center"
+                                            Visibility="{Binding RunningVisibility}" Background="{Binding Tint}">
+                                        <TextBlock Text="{l:T 'Open now'}" FontSize="12" FontWeight="SemiBold" />
+                                    </Border>
+                                    <ui:ToggleSwitch Grid.Column="3" IsChecked="{Binding IsOn, Mode=OneWay}" Click="OnToolToggled"
+                                                     AutomationProperties.Name="{Binding Name}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
         </Border>
 
@@ -64,7 +123,7 @@
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <StackPanel>
                 <TextBlock x:Name="EmptyState" Margin="20,16" Style="{StaticResource SecondaryTextStyle}"
-                           Text="{l:T 'No rule yet. Add one below, for example your game launcher with Game mode.'}" />
+                           Text="{l:T 'No other rule yet. Add one below, for example your game launcher with Game mode.'}" />
                 <ItemsControl x:Name="Rules">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
