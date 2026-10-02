@@ -193,6 +193,9 @@ for item in json.loads((ROOT / "research/oss-optimizers/round2-tweaks.json").rea
     TWEAKS.append({key: item[key] for key in (
         "id", "title", "description", "category", "risk", "recommended", "restart", "warning", "tools", "values", "tasks")})
 
+# Third survey (components): written by hand, with the evidence in research/oss-optimizers/round3/components.json.
+TWEAKS.extend(json.loads((ROOT / "research/oss-optimizers/round3-tweaks.json").read_text(encoding="utf-8")))
+
 ids = [item["id"] for item in TWEAKS]
 assert len(ids) == len(set(ids)), "duplicate tweak id"
 target = ROOT / "data" / "tweaks.json"
