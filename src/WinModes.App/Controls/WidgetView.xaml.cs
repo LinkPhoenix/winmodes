@@ -129,7 +129,7 @@ public partial class WidgetView : UserControl
     {
         if (sender is FrameworkElement { DataContext: PlanRow row } element)
         {
-            PlanHover.Attach(element, row.Tool, () => PlanHover.Current(row.Tool, _settings));
+            HoverCard.Attach(element, () => HoverContent.Plan(row.Tool, HoverContent.Current(row.Tool, _settings)));
         }
     }
 

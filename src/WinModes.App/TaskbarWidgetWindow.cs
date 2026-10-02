@@ -69,6 +69,7 @@ internal sealed class TaskbarWidgetWindow : Window
     private readonly DispatcherTimer _safety = new() { Interval = SafetyInterval };
     private readonly uint _taskbarCreated = RegisterWindowMessage("TaskbarCreated");
     private WidgetSettings _settings = new();
+    private StatsReading? _lastReading;
     private UIElement[][] _levels = [];
     private TaskbarArea? _area;
     private TaskbarSignature? _signature;
@@ -83,8 +84,8 @@ internal sealed class TaskbarWidgetWindow : Window
         var light = Registry.GetValue(@"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize", "SystemUsesLightTheme", 0) is 1;
         _text = light ? Brushes.Black : Brushes.White;
         _dim = Palette.Neutral;
-        _claude = new PlanCell("Claude", _text, _dim, () => PlanHover.Current("Claude", _settings));
-        _codex = new PlanCell("Codex", _text, _dim, () => PlanHover.Current("Codex", _settings));
+        _claude = new PlanCell("Claude", _text, _dim, () => HoverContent.Current("Claude", _settings));
+        _codex = new PlanCell("Codex", _text, _dim, () => HoverContent.Current("Codex", _settings));
 
         Title = "WinModes taskbar widget";
         WindowStyle = WindowStyle.None;
@@ -107,6 +108,9 @@ internal sealed class TaskbarWidgetWindow : Window
         // The AI total is one line: its icon and the figure, both in the AI colour.
         _aiLine = Line(Glyph.Sparkle16, _ai, 52, Palette.Apps, Palette.Apps);
         _aiCell = Cell(_aiLine);
+        // The hover card lists what each AI tool uses; the almost invisible fill makes the whole cell take the mouse.
+        _aiCell.Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0));
+        HoverCard.Attach(_aiCell, () => _lastReading is null ? null : HoverContent.Ai(_lastReading));
 
         // An almost invisible fill so the whole readout takes the mouse, not only the glyphs.
         _content = new Border { Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)), Padding = new Thickness(2, 0, 2, 0), Child = _row };
@@ -157,6 +161,7 @@ internal sealed class TaskbarWidgetWindow : Window
 
     internal void Show(StatsReading reading)
     {
+        _lastReading = reading;
         var culture = CultureInfo.CurrentCulture;
         var mode = ModeSwitcher.ActiveMode;
         _mode.Text = mode is null ? Loc.T("No mode") : culture.TextInfo.ToTitleCase(mode);
@@ -466,7 +471,7 @@ internal sealed class TaskbarWidgetWindow : Window
             (_tool, _dim) = (tool, dim);
             // An almost invisible fill so the gaps between the bars take the mouse too: the hover card must not flicker across them.
             var grid = new Grid { Margin = new Thickness(CellMargin, 0, CellMargin, 0), VerticalAlignment = VerticalAlignment.Center, Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)) };
-            PlanHover.Attach(grid, tool, current);
+            HoverCard.Attach(grid, () => HoverContent.Plan(tool, current()));
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });

@@ -1,6 +1,7 @@
 {
   ", resets in {0}": ", si azzera tra {0}",
   ".NET 10 and WPF (Microsoft, MIT licence). WPF-UI 4.3 by lepo.co (MIT licence). Icons: Segoe Fluent Icons, shipped with Windows 11.": ".NET 10 e WPF (Microsoft, licenza MIT). WPF-UI 4.3 di lepo.co (licenza MIT). Icone: Segoe Fluent Icons, incluse in Windows 11.",
+  "1 more tool": "1 strumento in più",
   "A limit is announced when less than this share is left. It applies to the 5 hour and the weekly limits of both tools.": "Un limite viene segnalato quando ne resta meno di questa quota. Vale per i limiti di 5 ore e settimanale di entrambi gli strumenti.",
   "A sign-in is available.": "È disponibile un accesso.",
   "A small panel with live figures, on your desktop or on the taskbar. Changes apply at once.": "Un piccolo pannello con dati in tempo reale, sul desktop o sulla barra delle applicazioni. Le modifiche si applicano subito.",
@@ -134,6 +135,7 @@
   "Your plan, the usage left and when the limit resets, for Claude Code and Codex. Choose what is read for each tool in the two sections below. Nothing is asked online unless you turn it on or sign in there.": "Il tuo piano, l'utilizzo rimasto e quando si azzerano i limiti, per Claude Code e Codex. Scegli cosa viene letto per ogni strumento nelle due sezioni qui sotto. Non viene chiesto nulla online a meno che tu non lo attivi o non acceda lì.",
   "{0:0.0} GB available": "{0:0.0} GB disponibili",
   "{0:0.0} GB freed": "{0:0.0} GB liberati",
+  "{0:0.0} GB, {1:0} % of your memory": "{0:0.0} GB, {1:0} % della tua memoria",
   "{0:0} % left": "{0:0} % rimanente",
   "{0:g} - {1} services": "{0:g} - {1} servizi",
   "{0} (created at the first mode switch)": "{0} (creato al primo cambio di modalità)",
@@ -143,6 +145,7 @@
   "{0} limit reached": "Limite di {0} raggiunto",
   "{0} limit: {1:0} % left.": "Limite {0}: {1:0} % rimasto.",
   "{0} limit: {1:0} % left. It resets in {2} ({3}).": "Limite {0}: {1:0} % rimasto. Si azzera tra {2} ({3}).",
+  "{0} more tools": "{0} strumenti in più",
   "{0} plan found.": "Piano {0} trovato.",
   "{0} sign-in expired": "Accesso a {0} scaduto",
   "{0} {1}, from {2} to {3}": "{0} {1}, da {2} a {3}",

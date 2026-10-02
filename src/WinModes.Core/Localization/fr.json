@@ -1,6 +1,7 @@
 {
   ", resets in {0}": ", réinitialisation dans {0}",
   ".NET 10 and WPF (Microsoft, MIT licence). WPF-UI 4.3 by lepo.co (MIT licence). Icons: Segoe Fluent Icons, shipped with Windows 11.": ".NET 10 et WPF (Microsoft, licence MIT). WPF-UI 4.3 par lepo.co (licence MIT). Icônes : Segoe Fluent Icons, fournies avec Windows 11.",
+  "1 more tool": "1 outil de plus",
   "A limit is announced when less than this share is left. It applies to the 5 hour and the weekly limits of both tools.": "Une limite est annoncée quand il en reste moins que cette part. Cela vaut pour les limites de 5 heures et hebdomadaires des deux outils.",
   "A sign-in is available.": "Une connexion est disponible.",
   "A small panel with live figures, on your desktop or on the taskbar. Changes apply at once.": "Un petit panneau de chiffres en direct, sur votre bureau ou sur la barre des tâches. Les changements s'appliquent immédiatement.",
@@ -134,6 +135,7 @@
   "Your plan, the usage left and when the limit resets, for Claude Code and Codex. Choose what is read for each tool in the two sections below. Nothing is asked online unless you turn it on or sign in there.": "Votre forfait, l'usage restant et la réinitialisation des limites, pour Claude Code et Codex. Choisissez ce qui est lu pour chaque outil dans les deux sections ci-dessous. Rien n'est demandé en ligne sans que vous l'activiez ou que vous vous connectiez ici.",
   "{0:0.0} GB available": "{0:0.0} GB disponibles",
   "{0:0.0} GB freed": "{0:0.0} GB libérés",
+  "{0:0.0} GB, {1:0} % of your memory": "{0:0.0} GB, {1:0} % de votre mémoire",
   "{0:0} % left": "{0:0} % restants",
   "{0:g} - {1} services": "{0:g} - {1} services",
   "{0} (created at the first mode switch)": "{0} (créé au premier changement de mode)",
@@ -143,6 +145,7 @@
   "{0} limit reached": "Limite de {0} atteinte",
   "{0} limit: {1:0} % left.": "Limite {0} : {1:0} % restant.",
   "{0} limit: {1:0} % left. It resets in {2} ({3}).": "Limite {0} : {1:0} % restant. Elle repart dans {2} ({3}).",
+  "{0} more tools": "{0} outils de plus",
   "{0} plan found.": "Forfait {0} trouvé.",
   "{0} sign-in expired": "Connexion {0} expirée",
   "{0} {1}, from {2} to {3}": "{0} {1}, de {2} à {3}",
