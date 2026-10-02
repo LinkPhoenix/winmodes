@@ -116,6 +116,15 @@ From the [Releases page](https://github.com/LinkPhoenix/winmodes/releases):
 
 Neither needs the .NET runtime. See the [changelog](CHANGELOG.md).
 
+### Beta releases
+
+New features are tested first in a **beta**, published as a *pre-release* named `vX.Y.Z-beta.YYYYMMDD` (with `.2`, `.3`… when several come out the same day) with the same files as a stable release. A beta wears a **Beta** tag next to its version in the title bar and on the About page.
+
+- A stable copy never sees a beta: it only follows the latest stable release.
+- A beta copy follows the newer betas and moves to the stable version of the same number when it comes out.
+- A beta installs over a stable copy and the other way round (same installer identity), and it keeps your settings and journals.
+- Betas come from the `beta` branch, stable releases from `main`. Please report what you find in the [issues](https://github.com/LinkPhoenix/winmodes/issues).
+
 ## Requirements
 
 - Windows 11 (x64)
@@ -164,12 +173,18 @@ pwsh -NoProfile -File tools/release.ps1 -Bump minor
 
 The script runs the tests, updates the version and the changelog, commits, tags and pushes. The release workflow then builds the installer and the portable zip, signs the checksums and publishes the GitHub release. Add `-DryRun` to preview without changing anything.
 
+A beta is cut from the `beta` branch with `-Beta`: it commits only the version, tags `vX.Y.Z-beta.YYYYMMDD`, pushes the branch and the tag, and the workflow publishes a pre-release. The changelog keeps its **Unreleased** section for the stable release.
+
+```bash
+pwsh -NoProfile -File tools/release.ps1 -Beta -DryRun
+```
+
 Releases are signed with an ECDSA P-256 key. The public key is committed in `src/WinModes.Core/Updates/update-public-key.pem` and built into the app; the private key is never in the repository and is read from the GitHub secret `WINMODES_UPDATE_KEY`. `tools/new-update-key.ps1` creates a pair, and `tools/package.ps1` refuses to build a release without the private key once the public key exists.
 
 To build the packages locally (the installer needs [Inno Setup](https://jrsoftware.org/isinfo.php) 6 or 7):
 
 ```bash
-pwsh -NoProfile -File tools/package.ps1 -Version 0.3.0
+pwsh -NoProfile -File tools/package.ps1 -Version 0.3.0   # or 0.9.3-beta.20261002 for a beta
 ```
 
 ## Project layout

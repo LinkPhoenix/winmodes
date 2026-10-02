@@ -22,6 +22,13 @@ if (Test-Path -LiteralPath $changelog) {
     if ($match.Success) { $notes = $match.Groups[1].Value.Trim() }
 }
 
+# A beta has no section of its own: its notes are what the stable release will list.
+$beta = $version.Contains('-beta.')
+if (-not $notes -and $beta -and (Test-Path -LiteralPath $changelog)) {
+    $unreleased = [regex]::Match((Get-Content -LiteralPath $changelog -Raw), '(?ms)^## \[Unreleased\][^\n]*\n(.*?)(?=^## \[|\z)')
+    if ($unreleased.Success) { $notes = $unreleased.Groups[1].Value.Trim() }
+}
+
 if (-not $notes) {
     $previous = git -C $Root describe --tags --abbrev=0 "$Tag^" 2>$null
     $range = $previous ? "$previous..$Tag" : $Tag
@@ -29,6 +36,7 @@ if (-not $notes) {
     $notes = "## Changes`n`n" + ($commits -join "`n")
 }
 
-$download = "Download ``WinModes-$Tag-win-x64.zip``, extract it and run ``WinModes.exe``. No installation or .NET runtime is needed."
-Set-Content -LiteralPath $OutputPath -Value "$notes`n`n---`n`n$download`n"
+$download = "Download ``WinModes-$Tag-setup-win-x64.exe`` to install, or ``WinModes-$Tag-portable-win-x64.zip``, extract it and run ``WinModes.exe``. No .NET runtime is needed."
+$banner = $beta ? "> **Beta.** This is a pre-release for testing, not the stable version. A stable copy of WinModes never offers it as an update, and a beta copy moves to the stable version when it comes out. Please report what you find in the issues.`n`n" : ''
+Set-Content -LiteralPath $OutputPath -Value "$banner$notes`n`n---`n`n$download`n"
 "Wrote $OutputPath"

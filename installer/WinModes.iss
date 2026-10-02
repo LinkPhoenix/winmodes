@@ -5,6 +5,9 @@
 #ifndef AppVersion
   #define AppVersion "0.0.0"
 #endif
+#ifndef NumericVersion
+  #define NumericVersion "0.0.0.0"
+#endif
 #ifndef SourceDir
   #define SourceDir "..\artifacts\WinModes"
 #endif
@@ -18,6 +21,7 @@
 
 [Setup]
 ; Never change AppId: it is how an update finds the previous install.
+; A beta uses the same AppId on purpose: it installs over a stable copy, and the stable version installs over it.
 AppId={{6E0B5C0E-6F0B-4B7B-9C39-5A1D0C2B7E41}
 AppName={#AppName}
 AppVersion={#AppVersion}
@@ -26,7 +30,7 @@ AppPublisher=LinkPhoenix
 AppPublisherURL={#AppUrl}
 AppSupportURL={#AppUrl}/issues
 AppUpdatesURL={#AppUrl}/releases
-VersionInfoVersion={#AppVersion}
+VersionInfoVersion={#NumericVersion}
 ; Program Files: the protected list and the elevated helper cannot be changed without administrator rights.
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
