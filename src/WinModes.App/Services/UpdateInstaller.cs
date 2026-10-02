@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using WinModes.Core.Updates;
 
@@ -10,8 +11,10 @@ namespace WinModes.App.Services;
 /// <summary>
 /// Downloads the installer of a release and starts it, after the user asked for it.
 /// Only files published on this project's GitHub releases are accepted, and the installer must match
-/// the SHA-256 listed in the release. That protects against a damaged or truncated download; it is not
-/// a signature, so Windows may still show its usual warning for an unsigned installer.
+/// the SHA-256 listed in the release. That protects against a damaged or truncated download. When this build carries the
+/// public key of the maintainer, the list of checksums must also carry a valid signature (<see cref="UpdateSignature"/>): a
+/// checksum published beside the package proves nothing about who published it. The installer itself is not code-signed, so
+/// Windows may still show its usual warning for an unsigned installer.
 /// </summary>
 internal static class UpdateInstaller
 {
@@ -58,8 +61,10 @@ internal static class UpdateInstaller
 
         try
         {
-            var (installerName, installerUrl, checksumUrl) = await FindAssetsAsync(client, tag, suffix, cancellation);
-            var expected = FindChecksum(await client.GetStringAsync(new Uri(checksumUrl), cancellation), installerName);
+            var (installerName, installerUrl, checksumUrl, signatureUrl) = await FindAssetsAsync(client, tag, suffix, cancellation);
+            var checksums = await client.GetByteArrayAsync(new Uri(checksumUrl), cancellation);
+            await VerifySignatureAsync(client, checksums, signatureUrl, cancellation);
+            var expected = FindChecksum(Encoding.UTF8.GetString(checksums), installerName);
 
             Directory.CreateDirectory(folder);
             var path = Path.Combine(folder, installerName);
@@ -86,12 +91,33 @@ internal static class UpdateInstaller
         using var process = Process.Start(new ProcessStartInfo(installerPath) { UseShellExecute = true });
     }
 
-    private static async Task<(string Name, string Url, string ChecksumUrl)> FindAssetsAsync(HttpClient client, string tag, string suffix, CancellationToken cancellation)
+    /// <summary>Nothing to check in a build without the maintainer's public key; with it, an unsigned or wrongly signed list is refused.</summary>
+    private static async Task VerifySignatureAsync(HttpClient client, byte[] checksums, string? signatureUrl, CancellationToken cancellation)
+    {
+        if (UpdateSignature.EmbeddedPublicKey() is not { } publicKey)
+        {
+            return;
+        }
+
+        if (signatureUrl is null)
+        {
+            throw new UpdateException(Loc.T("This release is not signed. Open the release page instead."));
+        }
+
+        var signature = await client.GetStringAsync(new Uri(signatureUrl), cancellation);
+        if (!UpdateSignature.Verify(checksums, signature, publicKey))
+        {
+            throw new UpdateException(Loc.T("The signature of this release is not valid, so nothing was downloaded."));
+        }
+    }
+
+    private static async Task<(string Name, string Url, string ChecksumUrl, string? SignatureUrl)> FindAssetsAsync(HttpClient client, string tag, string suffix, CancellationToken cancellation)
     {
         using var document = JsonDocument.Parse(await client.GetStringAsync(new Uri(ReleaseApi + tag), cancellation));
         string? name = null;
         string? url = null;
         string? checksumUrl = null;
+        string? signatureUrl = null;
         foreach (var asset in document.RootElement.GetProperty("assets").EnumerateArray())
         {
             var assetName = asset.GetProperty("name").GetString() ?? "";
@@ -110,11 +136,15 @@ internal static class UpdateInstaller
             {
                 checksumUrl = assetUrl;
             }
+            else if (assetName == UpdateSignature.SignatureFile)
+            {
+                signatureUrl = assetUrl;
+            }
         }
 
         return name is null || url is null || checksumUrl is null
             ? throw new UpdateException(Loc.T("This release has no such file with a checksum. Open the release page instead."))
-            : (name, url, checksumUrl);
+            : (name, url, checksumUrl, signatureUrl);
     }
 
     /// <summary>Reads "hash  file name" lines, the format of sha256sum.</summary>

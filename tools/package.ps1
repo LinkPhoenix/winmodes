@@ -8,6 +8,7 @@
       WinModes-v<version>-portable-win-x64.zip   unzip anywhere and run WinModes.exe
       WinModes-v<version>-setup-win-x64.exe      installs into Program Files (needs Inno Setup 6 or 7)
       SHA256SUMS.txt
+      SHA256SUMS.txt.sig                         its signature, when the app carries the public update key
     Used by .github/workflows/release.yml and usable locally.
 .EXAMPLE
     pwsh -NoProfile -File tools/package.ps1 -Version 0.3.0
@@ -74,6 +75,17 @@ else {
 $sums = $packages | ForEach-Object { '{0}  {1}' -f (Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash.ToLowerInvariant(), (Split-Path -Leaf $_) }
 Set-Content -LiteralPath (Join-Path $OutputDir 'SHA256SUMS.txt') -Value $sums
 
-$packages + (Join-Path $OutputDir 'SHA256SUMS.txt') | ForEach-Object {
+# Once the public key is in the repository, the apps refuse an unsigned release: do not build one by mistake.
+$publicKey = Join-Path $Root 'src/WinModes.Core/Updates/update-public-key.pem'
+$signed = @()
+if (Test-Path -LiteralPath $publicKey) {
+    if ([string]::IsNullOrWhiteSpace($env:WINMODES_UPDATE_KEY)) {
+        throw 'The app carries an update public key, so the release must be signed: set WINMODES_UPDATE_KEY (the private key, PEM) or build with the secret of the workflow.'
+    }
+    & (Join-Path $PSScriptRoot 'sign-update.ps1') -Path (Join-Path $OutputDir 'SHA256SUMS.txt') -PublicKeyPath $publicKey | Out-Null
+    $signed = @(Join-Path $OutputDir 'SHA256SUMS.txt.sig')
+}
+
+$packages + (Join-Path $OutputDir 'SHA256SUMS.txt') + $signed | ForEach-Object {
     '{0}  ({1:0.0} MB)' -f $_, ((Get-Item -LiteralPath $_).Length / 1MB)
 }

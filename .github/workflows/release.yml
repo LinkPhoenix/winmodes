@@ -45,6 +45,9 @@ jobs:
 
       - name: Package (portable zip and installer)
         shell: pwsh
+        env:
+          # The private key that signs SHA256SUMS.txt; empty until the secret is created (see tools/new-update-key.ps1).
+          WINMODES_UPDATE_KEY: ${{ secrets.WINMODES_UPDATE_KEY }}
         run: pwsh -NoProfile -File tools/package.ps1 -Version ('${{ github.ref_name }}'.TrimStart('v')) -RequireInstaller
 
       - name: Release notes

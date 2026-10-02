@@ -5,6 +5,8 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Localization\*.json" />
+    <!-- The public key that releases are signed with, added by tools/new-update-key.ps1. Without it only the checksum is checked. -->
+    <EmbeddedResource Include="Updates\update-public-key.pem" Condition="Exists('Updates\update-public-key.pem')" />
   </ItemGroup>
 
   <ItemGroup>
