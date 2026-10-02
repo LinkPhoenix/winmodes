@@ -52,7 +52,7 @@ internal static class SupportInfo
         var text = new StringBuilder();
         void Line(string label, object? value) => text.Append(label).Append(": ").Append(value).AppendLine();
 
-        Line("WinModes", $"{AppInfo.Version} ({(UpdateInstaller.IsInstalledBuild ? "installed" : "portable or development build")})");
+        Line("WinModes", $"{AppInfo.FullVersion} ({(UpdateInstaller.IsInstalledBuild ? "installed" : "portable or development build")})");
         Line("Created", DateTimeOffset.Now.ToString("u", System.Globalization.CultureInfo.InvariantCulture));
         Line("Windows", $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}");
         Line(".NET", RuntimeInformation.FrameworkDescription);

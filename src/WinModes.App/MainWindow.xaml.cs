@@ -33,6 +33,7 @@ public partial class MainWindow : FluentWindow
     {
         InitializeComponent();
         VersionText.Text = $"v{AppInfo.Version}";
+        BetaBadges.Show(BetaBadge, BetaBadgeText);
 
         var page = startPage is not null && PagesByName.TryGetValue(startPage, out var requested) ? requested : typeof(DashboardPage);
         Loaded += (_, _) =>

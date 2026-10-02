@@ -165,7 +165,7 @@ public partial class App : Application, IDisposable
         var status = await Services.UpdateChecker.CheckAsync();
         if (status.IsNewer && _notifier is not null && _ledger.UpdateTag != status.LatestTag
             && _notifier.Show(Services.NoticeKind.Update, Loc.T("WinModes update available"),
-                Loc.F("Version {0} is out (you have v{1}). Click to see it on the About page.", status.LatestTag, AppInfo.Version),
+                Loc.F("Version {0} is out (you have v{1}). Click to see it on the About page.", status.LatestTag, AppInfo.FullVersion),
                 Forms.ToolTipIcon.Info, () => OpenPage(typeof(Pages.AboutPage)), durationMs: 8000))
         {
             _ledger.UpdateTag = status.LatestTag;

@@ -34,6 +34,9 @@
                 <TextBlock Text="WinModes" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0" />
                 <TextBlock x:Name="VersionText" FontSize="12" VerticalAlignment="Center" Margin="8,1,0,0"
                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                <Border x:Name="BetaBadge" Visibility="Collapsed" CornerRadius="9" Padding="7,1,7,2" Margin="8,1,0,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="BetaBadgeText" FontSize="11" FontWeight="SemiBold" />
+                </Border>
             </StackPanel>
         </Grid>
 

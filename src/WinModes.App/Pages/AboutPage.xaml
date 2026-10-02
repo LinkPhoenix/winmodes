@@ -26,7 +26,15 @@
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="WinModes" FontSize="20" FontWeight="SemiBold" />
-                    <TextBlock x:Name="VersionText" Style="{StaticResource SecondaryTextStyle}" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="VersionText" Style="{StaticResource SecondaryTextStyle}" VerticalAlignment="Center" />
+                        <Border x:Name="BetaBadge" Visibility="Collapsed" CornerRadius="9" Padding="7,1,7,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="BetaBadgeText" FontSize="11" FontWeight="SemiBold" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock x:Name="BetaNote" Visibility="Collapsed" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"
+                               Style="{StaticResource SecondaryTextStyle}"
+                               Text="{l:T 'This is a beta build for testing: it may still contain mistakes. It follows the beta releases and moves to the stable version when it comes out.'}" />
                 </StackPanel>
             </Grid>
         </Border>

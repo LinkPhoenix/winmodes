@@ -16,7 +16,9 @@ public partial class AboutPage : Page
     {
         InitializeComponent();
 
-        VersionText.Text = Loc.F("Version {0}", AppInfo.Version);
+        VersionText.Text = Loc.F("Version {0}", AppInfo.FullVersion);
+        BetaBadges.Show(BetaBadge, BetaBadgeText);
+        BetaNote.Visibility = AppInfo.IsBeta ? Visibility.Visible : Visibility.Collapsed;
         CheckAtStartup.IsChecked = Services.AppSettings.Load().CheckForUpdates;
         _loaded = true;
         if (Services.UpdateChecker.Last is { } last)
@@ -59,8 +61,8 @@ public partial class AboutPage : Page
         UpdateText.Text = status switch
         {
             { Error: { } error } => Loc.F("{0} Try again later.", error),
-            { IsNewer: true } => Loc.F("Version {0} is available. You have v{1}.", status.LatestTag, AppInfo.Version),
-            _ => Loc.F("You have the latest version (v{0}).", AppInfo.Version),
+            { IsNewer: true } => Loc.F("Version {0} is available. You have v{1}.", status.LatestTag, AppInfo.FullVersion),
+            _ => Loc.F("You have the latest version (v{0}).", AppInfo.FullVersion),
         };
         _latestTag = status.IsNewer ? status.LatestTag : null;
         ReleasePageButton.Visibility = status.IsNewer ? Visibility.Visible : Visibility.Collapsed;
@@ -166,7 +168,7 @@ public partial class AboutPage : Page
             {
                 var snapshot = WinModes.Core.Planning.SystemSnapshot.Capture();
                 return WinModes.Core.Reports.SystemReport.Build(new WinModes.Core.Reports.SystemReportData(
-                    AppInfo.Version,
+                    AppInfo.FullVersion,
                     DateTime.Now,
                     RuntimeInformation.OSDescription,
                     Environment.ProcessorCount,
