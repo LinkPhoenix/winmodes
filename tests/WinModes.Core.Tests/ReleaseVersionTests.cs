@@ -62,6 +62,31 @@ public sealed class ReleaseVersionTests
         Assert.False(ReleaseVersion.TryParse("v0.9.3-beta.20261002", out _));
 
     [Theory]
+    [InlineData("v0.9.3-beta.20261002", 0, 9, 2, true)]
+    [InlineData("v0.9.4-beta.20260101", 0, 9, 3, true)]
+    [InlineData("v0.9.3-beta.20261002", 0, 9, 3, false)]
+    [InlineData("v0.9.3", 0, 9, 2, true)]
+    [InlineData("v0.9.3", 0, 9, 3, false)]
+    public void IsNewer_ForAStableBuildOnTheBetaChannel_OffersOnlyBetasOfAHigherVersion(string tag, int major, int minor, int build, bool expected) =>
+        Assert.Equal(expected, ReleaseVersion.IsNewer(tag, new Version(major, minor, build), null, includeBetas: true));
+
+    [Theory]
+    [InlineData("v0.9.3-beta.20261003", false)]
+    [InlineData("v0.9.4-beta.20260101", false)]
+    [InlineData("v0.9.3", true)]
+    [InlineData("v0.9.2", false)]
+    public void IsNewer_ForABetaBuildOnTheStableChannel_WaitsForTheStableVersion(string tag, bool expected) =>
+        Assert.Equal(expected, ReleaseVersion.IsNewer(tag, new Version(0, 9, 3, 0), ReleaseVersion.BetaNumber(20261002), includeBetas: false));
+
+    [Theory]
+    [InlineData("v0.9.3-beta.20261003", true)]
+    [InlineData("v0.9.3-beta.20261002", false)]
+    [InlineData("v0.9.3", true)]
+    [InlineData("v0.9.4-beta.20260101", true)]
+    public void IsNewer_ForABetaBuildOnTheBetaChannel_FollowsTheBetas(string tag, bool expected) =>
+        Assert.Equal(expected, ReleaseVersion.IsNewer(tag, new Version(0, 9, 3, 0), ReleaseVersion.BetaNumber(20261002), includeBetas: true));
+
+    [Theory]
     [InlineData("v0.9.3-beta.20261003", true)]
     [InlineData("v0.9.3-beta.20261002.2", true)]
     [InlineData("v0.9.3-beta.20261002", false)]

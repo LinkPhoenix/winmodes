@@ -56,16 +56,20 @@ public static partial class ReleaseVersion
     public static long BetaNumber(int day, int revision = 1) => (day * (long)RevisionsPerDay) + revision;
 
     /// <summary>True only when the tag is a valid stable version strictly above the current one.</summary>
-    public static bool IsNewer(string? tag, Version current) => IsNewer(tag, current, null);
+    public static bool IsNewer(string? tag, Version current) => IsNewer(tag, current, null, includeBetas: false);
+
+    /// <summary>True when the tag is newer than a build that follows the betas if it is one itself (see the overload with <c>includeBetas</c>).</summary>
+    public static bool IsNewer(string? tag, Version current, long? currentBeta) => IsNewer(tag, current, currentBeta, includeBetas: currentBeta is not null);
 
     /// <summary>
-    /// True when the tag is newer than the running build. A stable build only moves to a stable version. A beta build (the
-    /// <paramref name="currentBeta"/> number) moves to a newer beta, or to any stable version of the same number or above.
+    /// True when the tag is newer than the running build. Without <paramref name="includeBetas"/> only a stable version counts. With it,
+    /// a beta of a higher version counts too. A beta build (the <paramref name="currentBeta"/> number) moves to a newer beta of its own
+    /// version, or to the stable version of the same number or above.
     /// </summary>
-    public static bool IsNewer(string? tag, Version current, long? currentBeta)
+    public static bool IsNewer(string? tag, Version current, long? currentBeta, bool includeBetas)
     {
         ArgumentNullException.ThrowIfNull(current);
-        if (!TryParseRelease(tag, out var latest, out var latestBeta))
+        if (!TryParseRelease(tag, out var latest, out var latestBeta) || (latestBeta is not null && !includeBetas))
         {
             return false;
         }
@@ -73,7 +77,7 @@ public static partial class ReleaseVersion
         var running = new Version(current.Major, current.Minor, Math.Max(current.Build, 0));
         if (currentBeta is not { } runningBeta)
         {
-            return latestBeta is null && latest > running;
+            return latest > running;
         }
 
         if (latest != running)

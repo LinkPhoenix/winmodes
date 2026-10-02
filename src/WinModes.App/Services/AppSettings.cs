@@ -48,6 +48,19 @@ internal sealed record AppSettings
     /// <summary>Language of the interface: "en" (default), "fr", "es" or "it". Read once at startup.</summary>
     public string Language { get; init; } = WinModes.Core.Localization.Loc.DefaultLanguage;
 
+    public const string StableChannel = "stable";
+    public const string BetaChannel = "beta";
+
+    /// <summary>
+    /// Where updates come from: "stable" or "beta". Null until the user chooses: a beta build then follows the betas and a stable
+    /// build the stable releases only.
+    /// </summary>
+    public string? UpdateChannel { get; init; }
+
+    /// <summary>True when the updates offered include the beta releases.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool FollowsBetas => UpdateChannel is BetaChannel || (UpdateChannel is null && AppInfo.IsBeta);
+
     /// <summary>Ask GitHub once at startup whether a newer release exists.</summary>
     public bool CheckForUpdates { get; init; } = true;
 

@@ -34,7 +34,7 @@
                     </StackPanel>
                     <TextBlock x:Name="BetaNote" Visibility="Collapsed" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"
                                Style="{StaticResource SecondaryTextStyle}"
-                               Text="{l:T 'This is a beta build for testing: it may still contain mistakes. It follows the beta releases and moves to the stable version when it comes out.'}" />
+                               Text="{l:T 'This is a beta build for testing: it may still contain mistakes. You choose in Settings whether updates come from the beta or the stable channel.'}" />
                 </StackPanel>
             </Grid>
         </Border>

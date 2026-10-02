@@ -125,6 +125,20 @@
                                   DisplayMemberPath="Name" SelectionChanged="OnAutoModeChanged" AutomationProperties.Name="{l:T 'Language'}" />
                     </Grid>
                 </Border>
+                <Border Style="{StaticResource RowStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{l:T 'Update channel'}" FontWeight="SemiBold" />
+                            <TextBlock x:Name="UpdateChannelNote" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        </StackPanel>
+                        <ComboBox x:Name="UpdateChannelChoice" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                                  DisplayMemberPath="Label" SelectionChanged="OnUpdateChannelChanged" AutomationProperties.Name="{l:T 'Update channel'}" />
+                    </Grid>
+                </Border>
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">
                     <Grid>
                         <Grid.ColumnDefinitions>
