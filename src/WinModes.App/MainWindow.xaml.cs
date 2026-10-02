@@ -17,6 +17,7 @@ public partial class MainWindow : FluentWindow
         ["services"] = typeof(ServicesPage),
         ["optimize"] = typeof(OptimizePage),
         ["debloat"] = typeof(DebloatPage),
+        ["startup"] = typeof(StartupPage),
         ["automation"] = typeof(AutomationPage),
         ["widget"] = typeof(WidgetPage),
         ["notifications"] = typeof(NotificationsPage),
