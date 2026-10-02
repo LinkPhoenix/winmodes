@@ -42,6 +42,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Changed
 
+- Widget: when Anthropic or OpenAI fail or refuse a request, WinModes now asks that provider less and less often (up to once an hour) and waits as long as it says in its Retry-After, instead of asking again every 5 minutes; the other provider is not slowed down, and signing in or out asks again at once.
 - Settings and Widget: the AI tools memory alerts and the "warn when Claude or Codex runs low" options moved to the new Notifications page. A choice you had made for the low-usage warning is kept.
 - Widget: while WinModes is signed in to Claude or Codex, the "read the usage online" option of that tool is greyed out, since the usage is then read with its own session.
 - Widget page: every option and every section has a coloured icon, and the options are laid out as rows in cards, so the page is easier to scan.
