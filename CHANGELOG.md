@@ -10,6 +10,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Added
 
+- Optimize: a bar of categories stays at the top of the page, with the number of settings in each. A click limits the list to one category instead of scrolling for it, and the numbers follow the search, so they show where the matches are.
 - About and title bar: a beta build shows a "Beta" tag next to its version (and the full version, such as 0.9.3-beta.20261002, on the About page). A beta build looks for newer betas as well as stable versions; a stable build never hears about betas.
 - Optimize: two settings for OneDrive that remove nothing: hide it in File Explorer, or keep it from syncing and starting by policy.
 - Startup: a new page lists what starts with Windows (the Run entries of your account and of all users, and the Startup folders) and turns the items of your account on or off exactly the way Task Manager does, so nothing is deleted and each item can be reset to what it was. Security software, audio drivers, WinModes itself and the tools you rely on are shown as protected, and the items for all users, which need administrator rights, are shown but left to Task Manager.

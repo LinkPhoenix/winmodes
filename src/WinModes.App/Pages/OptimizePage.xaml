@@ -12,18 +12,71 @@
             <Setter Property="Margin" Value="0,6,6,0" />
             <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
         </Style>
+
+        <!-- A category of the bar: a button whose colours follow the selection (set by the code, since they differ per category). -->
+        <Style x:Key="CategoryChipStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chip" CornerRadius="16" Padding="12,6" Margin="0,0,8,8" BorderThickness="1"
+                                Background="{Binding Fill}" BorderBrush="{Binding Stroke}" Opacity="{Binding Emphasis}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="13" Margin="0,0,8,0" Text="{Binding Glyph}" Foreground="{Binding Color}" />
+                                <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Count}" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"
+                                           Style="{StaticResource SecondaryTextStyle}" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Page.Resources>
 
-    <!-- The page scrolls its list itself (the shell's scrolling is off) so the review bar stays in view. -->
+    <!-- The page scrolls its list itself (the shell's scrolling is off) so the category bar and the review bar stay in view. -->
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="36,24,36,24" MaxWidth="1100">
-                <TextBlock Text="{l:T 'Optimize'}" FontSize="28" FontWeight="SemiBold" />
+        <StackPanel Margin="36,24,36,4" MaxWidth="1100">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{l:T 'Optimize'}" FontSize="28" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:TextBox x:Name="SearchBox" PlaceholderText="{l:T 'Search settings'}" Icon="{ui:SymbolIcon Search24}" Width="300"
+                                TextChanged="OnFilterChanged" AutomationProperties.Name="{l:T 'Search settings'}" />
+                    <CheckBox x:Name="HideApplied" Content="{l:T 'Hide what is already applied'}" Margin="16,0,0,0"
+                              Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
+                </StackPanel>
+            </Grid>
+            <ItemsControl x:Name="CategoryBar" Margin="0,14,0,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Style="{StaticResource CategoryChipStyle}" Click="OnCategoryClick" AutomationProperties.Name="{Binding Title}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+
+        <ScrollViewer x:Name="ListScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="36,4,36,24" MaxWidth="1100">
                 <TextBlock Text="{l:T 'Windows settings worth changing, checked against this PC. Switch on what you want, review, then apply.'}"
                            Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,16" TextWrapping="Wrap" />
 
@@ -63,13 +116,6 @@
                         <TextBlock x:Name="ResultText" Grid.Column="1" TextWrapping="Wrap" />
                     </Grid>
                 </Border>
-
-                <Grid Margin="4,4,0,4">
-                    <ui:TextBox x:Name="SearchBox" PlaceholderText="{l:T 'Search settings'}" Icon="{ui:SymbolIcon Search24}" Width="320"
-                                HorizontalAlignment="Left" TextChanged="OnFilterChanged" AutomationProperties.Name="{l:T 'Search settings'}" />
-                    <CheckBox x:Name="HideApplied" Content="{l:T 'Hide what is already applied'}" HorizontalAlignment="Right"
-                              Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
-                </Grid>
 
                 <TextBlock x:Name="EmptyText" Text="{l:T 'Nothing matches.'}" Margin="4,16,0,0" Visibility="Collapsed" Style="{StaticResource SecondaryTextStyle}" />
 
@@ -162,7 +208,7 @@
         </ScrollViewer>
 
         <!-- Review bar: nothing changes until Apply. -->
-        <Border x:Name="ReviewBar" Grid.Row="1" Visibility="Collapsed" Background="{DynamicResource AppCardBrush}"
+        <Border x:Name="ReviewBar" Grid.Row="2" Visibility="Collapsed" Background="{DynamicResource AppCardBrush}"
                 BorderBrush="{DynamicResource AppCardStrokeBrush}" BorderThickness="0,1,0,0" Padding="36,12">
             <Grid MaxWidth="1100">
                 <Grid.ColumnDefinitions>
