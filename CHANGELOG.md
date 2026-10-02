@@ -8,6 +8,10 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+### Fixed
+
+- Widget page: privacy mode now hides the e-mail address of the WinModes account of Claude Code and Codex.
+
 ## [0.9.0] - 2026-10-02
 
 ### Added
