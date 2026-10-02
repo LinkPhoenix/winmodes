@@ -7,7 +7,7 @@ namespace WinModes.App;
 internal static class ModeCatalog
 {
     // Display order of the built-in modes; any other profile follows alphabetically.
-    private static readonly string[] PreferredOrder = ["code", "work", "game"];
+    private static readonly string[] PreferredOrder = ["code", "work", "game", "focus", "eco"];
 
     private const string DefaultGlyph = "";
     private static readonly Dictionary<string, string> Glyphs = new(StringComparer.OrdinalIgnoreCase)
@@ -15,6 +15,8 @@ internal static class ModeCatalog
         ["code"] = "",
         ["work"] = "",
         ["game"] = "",
+        ["focus"] = "",
+        ["eco"] = "",
     };
 
     public static IReadOnlyList<Entry> Load() =>

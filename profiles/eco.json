@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "mode": "game",
+  "mode": "eco",
   "generatedBy": "tools/build-profiles.ps1",
-  "label": "Game",
-  "intent": "Gaming on the OMEN laptop: Steam, Xbox/Game Pass, Logitech G HUB. WSL and Docker stopped, gaming services on.",
+  "label": "Eco",
+  "intent": "Longer battery life: power saver plan, WSL and Docker stopped, background services calmed, transparency off.",
   "power": {
-    "plan": "ultimate-performance",
-    "fallback": "high-performance",
-    "note": "Plug in AC power; OMEN Gaming Hub performance mode stays under the user's control."
+    "plan": "power-saver",
+    "fallback": "balanced",
+    "note": "The Power saver plan lowers the processor speed and dims the display."
   },
   "wsl": {
     "running": false,
@@ -15,80 +15,14 @@
     "docker": "quit"
   },
   "apps": {
-    "close": [
-      {
-        "id": "electron.app.Notion",
-        "process": "Notion.exe",
-        "why": "Electron app, 300-500 MB."
-      },
-      {
-        "id": "TickTick",
-        "process": "TickTick.exe",
-        "why": "Task app, not needed while gaming."
-      },
-      {
-        "id": "DeepL auto-start",
-        "process": "DeepL.exe",
-        "why": "Translator tray app."
-      },
-      {
-        "id": "PDF24",
-        "process": "pdf24.exe",
-        "why": "PDF tray tool."
-      },
-      {
-        "id": "WingetUI",
-        "process": "UniGetUI.exe",
-        "why": "Update checker; can start downloads during a game."
-      },
-      {
-        "id": "MEGAsync",
-        "process": "MEGAsync.exe",
-        "why": "Sync uses disk and network during a game; files resync when it restarts."
-      }
-    ],
-    "launch": [
-      {
-        "id": "Steam",
-        "path": "C:\\Program Files (x86)\\Steam\\steam.exe"
-      }
-    ],
-    "keepOpen": [
-      "Discord",
-      "Betterbird",
-      "Harness Control",
-      "BurnRate",
-      "LGHUB"
-    ],
+    "close": [],
+    "launch": [],
+    "keepOpen": [],
     "note": "Only apps the user listed here are closed or launched. Protected apps are never uninstalled or blocked.",
     "suggestedToClose": [
       {
-        "id": "Betterbird",
-        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: launch in Work mode; not needed in Code/Game."
-      },
-      {
-        "id": "DeepL auto-start",
-        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: Work mode."
-      },
-      {
-        "id": "electron.app.Notion",
-        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Electron app, typically hundreds of MB. Mode-driven: Work."
-      },
-      {
-        "id": "MEGAsync",
-        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Also launched by a delayed task; one launcher is enough."
-      },
-      {
-        "id": "PDF24",
-        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Launch when needed."
-      },
-      {
-        "id": "TickTick",
-        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Mode-driven: Work mode."
-      },
-      {
-        "id": "WingetUI",
-        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). .NET app; also launched by 2 delayed tasks. Launch manually when updating packages."
+        "id": "Steam",
+        "why": "Not running at inspection (2026-10-01), so RAM not measured; ramImpact estimated as low (unknown). Steam typically uses several hundred MB with webhelpers. Mode-driven: launch in Game mode only."
       }
     ]
   },
@@ -111,14 +45,6 @@
         "why": "Only needed by MakeMKV (or other tools) to read optical drives without elevation. If stopped, MakeMKV must run as administrator; nothing else depends on it."
       },
       {
-        "id": "Everything",
-        "setStartMode": "Manual",
-        "stop": true,
-        "score": 1,
-        "ramImpact": "low",
-        "why": "Measured 3 MB private bytes for Everything.exe (2026-10-01). Instant file search; cheap to keep."
-      },
-      {
         "id": "fdPHost",
         "setStartMode": "Manual",
         "stop": true,
@@ -130,9 +56,25 @@
         "id": "FDResPub",
         "setStartMode": "Manual",
         "stop": true,
-        "score": 0,
+        "score": 1,
         "ramImpact": "low",
         "why": "Publishes this PC for network discovery; only needed to share files with other PCs. RAM impact not measured (shared svchost or unknown)."
+      },
+      {
+        "id": "GameInputRedistService",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 1,
+        "ramImpact": "low",
+        "why": "Measured 23 MB private bytes (2 processes, 2026-10-01). Needed by games using GameInput API."
+      },
+      {
+        "id": "HPAppHelperCap",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 0,
+        "ramImpact": "low",
+        "why": "Used by HP apps (OMEN Gaming Hub, HP Support Assistant). Measured 4 MB private (2026-10-01)."
       },
       {
         "id": "HPDiagsCap",
@@ -146,7 +88,7 @@
         "id": "HPNetworkCap",
         "setStartMode": "Manual",
         "stop": true,
-        "score": 1,
+        "score": 0,
         "ramImpact": "low",
         "why": "No Windows networking depends on it. Measured 4 MB private (2026-10-01)."
       },
@@ -154,7 +96,7 @@
         "id": "HPSysInfoCap",
         "setStartMode": "Manual",
         "stop": true,
-        "score": 1,
+        "score": 0,
         "ramImpact": "high",
         "why": "HP support telemetry helper; nothing breaks for daily use. Measured ~200 MB private. Measured 204 MB private (2026-10-01)."
       },
@@ -197,6 +139,14 @@
         "score": 0,
         "ramImpact": "low",
         "why": "Client for NFS (optional feature installed here, set to Auto). Only needed to mount NFS shares; unknown whether the user relies on it. Measured working set about 1.9 MB (own process)."
+      },
+      {
+        "id": "NvContainerLocalSystem",
+        "setStartMode": "Manual",
+        "stop": true,
+        "score": 0,
+        "ramImpact": "medium",
+        "why": "Measured 92 MB private bytes across 3 nvcontainer processes (2026-10-01). Not required for the driver; needed for NVIDIA App overlay/ShadowPlay/optimization. Can be Manual outside Game mode."
       },
       {
         "id": "PcaSvc",
@@ -245,14 +195,6 @@
         "score": 1,
         "ramImpact": "low",
         "why": "SSDP discovery (UPnP devices, DLNA, casting). Demand-start. RAM impact not measured (shared svchost or unknown)."
-      },
-      {
-        "id": "ssh-agent",
-        "setStartMode": "Manual",
-        "stop": true,
-        "score": 1,
-        "ramImpact": "low",
-        "why": "OpenSSH Authentication Agent; holds SSH keys for git/ssh. Set to Auto on this PC. Measured working set about 2.5 MB (own process)."
       },
       {
         "id": "StiSvc",
@@ -311,43 +253,10 @@
         "why": "Hosts Windows AI workloads (Copilot, Recall, Click to Do, AI search in Settings). A Microsoft Q&A moderator suggests Manual as a workaround when those features are not used; other users report about 5 GB RAM in idle WorkloadsSessionHost.exe on 25H2 (not measured here; the service process itself measured about 1.9 MB). Stopping it disables those AI features only; Office, apps and Windows Update are unaffected per the same thread."
       }
     ],
-    "ensureRunning": [
-      {
-        "id": "XblAuthManager",
-        "start": true,
-        "why": "Xbox Live Auth Manager; required for Xbox app/Game Pass sign-in. Demand-start so it idles outside gaming. Not running at inventory time."
-      },
-      {
-        "id": "XblGameSave",
-        "start": true,
-        "why": "Xbox Live Game Save (cloud saves for Game Pass/PC titles). Demand-start. Not running at inventory time."
-      }
-    ]
+    "ensureRunning": []
   },
-  "tweaks": [
-    {
-      "id": "reg-bgapps",
-      "type": "registry",
-      "target": "HKCU\\...\\BackgroundAccessApplications\\GlobalUserDisabled",
-      "value": "1",
-      "risk": "medium"
-    },
-    {
-      "id": "reg-gamemode",
-      "type": "registry",
-      "target": "HKCU\\Software\\Microsoft\\GameBar\\AutoGameModeEnabled",
-      "value": "1",
-      "risk": "low"
-    },
-    {
-      "id": "power-ultimate",
-      "type": "powercfg",
-      "target": "powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61",
-      "value": "activate",
-      "risk": "low"
-    }
-  ],
+  "tweaks": [],
   "tweakIds": [
-    "toast-notifications-global-off"
+    "transparency"
   ]
 }

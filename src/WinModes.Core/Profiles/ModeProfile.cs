@@ -10,6 +10,12 @@ public sealed record ModeProfile
     public WslSettings Wsl { get; init; } = new();
     public AppSettings Apps { get; init; } = new();
     public ServiceSettings Services { get; init; } = new();
+
+    /// <summary>
+    /// Ids of settings of the Optimize catalog (data/tweaks.json) that the mode turns on while it is active and puts back when it ends.
+    /// Only per-user settings that take effect at once are applied: see <see cref="ModeTweaks"/>.
+    /// </summary>
+    public IReadOnlyList<string> TweakIds { get; init; } = [];
 }
 
 public sealed record PowerSettings

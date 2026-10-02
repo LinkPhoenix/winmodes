@@ -382,6 +382,7 @@ public partial class ModesPage : Page
             ChangeKind.LaunchApp => (Loc.T("Launch"), "", Palette.Start),
             ChangeKind.ShutdownWsl => (Loc.T("Stop"), "", Palette.Stop),
             ChangeKind.StartDocker => (Loc.T("Start"), "", Palette.Start),
+            ChangeKind.ApplyTweak => (Loc.T("Set"), "", Palette.Apps),
             ChangeKind.SetPowerPlan => (Loc.T("Switch"), "", Palette.Power),
             _ => (change.Kind.ToString(), "", Palette.Neutral),
         };
@@ -395,7 +396,8 @@ public partial class ModesPage : Page
         ChangeKind.StopService or ChangeKind.StartService => (0, Loc.T("Services"), "", Palette.Start),
         ChangeKind.CloseApp or ChangeKind.LaunchApp => (1, Loc.T("Apps"), "", Palette.Apps),
         ChangeKind.ShutdownWsl or ChangeKind.StartDocker => (2, Loc.T("WSL and Docker"), "", Palette.Container),
-        _ => (3, Loc.T("Power"), "", Palette.Power),
+        ChangeKind.ApplyTweak => (3, Loc.T("Windows settings"), "", Palette.Apps),
+        _ => (4, Loc.T("Power"), "", Palette.Power),
     };
 
 

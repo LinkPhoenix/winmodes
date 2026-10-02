@@ -11,6 +11,7 @@ Reverted
 RevertSkipped
 Pending
 Leave unchanged
+Power saver
 Balanced
 High performance
 Ultimate performance

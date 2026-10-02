@@ -59,7 +59,7 @@ foreach ($tweak in $tweaks) {
         if ($text) { [void]$keys.Add($text) }
     }
 }
-foreach ($mode in 'code', 'work', 'game') {
+foreach ($mode in 'code', 'work', 'game', 'focus', 'eco') {
     $profile = Get-Content -LiteralPath (Join-Path $root "profiles/$mode.json") -Raw | ConvertFrom-Json
     if ($profile.intent) { [void]$keys.Add($profile.intent) }
 }

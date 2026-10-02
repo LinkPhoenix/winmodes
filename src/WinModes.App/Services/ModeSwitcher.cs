@@ -8,6 +8,7 @@ using WinModes.Core.Engine;
 using WinModes.Core.Planning;
 using WinModes.Core.Profiles;
 using WinModes.Core.Protection;
+using WinModes.Core.Tuning;
 
 namespace WinModes.App.Services;
 
@@ -32,6 +33,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
 
     private static readonly Dictionary<string, string> PowerSchemes = new(StringComparer.OrdinalIgnoreCase)
     {
+        ["power-saver"] = "a1841308-3541-4fab-bc81-f71556f20b4a",
         ["balanced"] = "381b4222-f694-41f0-9685-ff5bb260df2e",
         ["high-performance"] = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c",
         ["ultimate-performance"] = "e9a42b02-d5df-448d-aa00-03f14749eb61",
@@ -105,8 +107,11 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         lines.AddRange(LaunchApps(profile.Apps.Launch));
         lines.AddRange(await ApplyWslAsync(profile.Wsl));
 
+        var (tweakLines, ownedTweaks) = await ApplyTweaksAsync(previous?.TweakIds ?? [], profile.TweakIds);
+        lines.AddRange(tweakLines);
+
         var source = automatic ? AutomaticSource : null;
-        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Source: source));
+        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Source: source, TweakIds: ownedTweaks));
 
         // Stopped services and closed apps release their memory over a few seconds.
         await Task.Delay(MemorySettleDelay);
@@ -115,7 +120,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
         var outcome = freedGb >= MinFreedGbToReport ? Loc.F("{0:0.0} GB freed", freedGb) : Loc.T("no measurable change");
         lines.Insert(0, Loc.F("Memory in use: {0:0.0} GB before, {1:0.0} GB after ({2}).", usedBeforeGb, usedAfterGb, outcome));
         // Kept for the summary shown when the mode is deactivated.
-        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Math.Max(freedGb, 0), source));
+        WriteUserState(new UserState(profile.Mode, originalScheme, DateTimeOffset.UtcNow, Math.Max(freedGb, 0), source, ownedTweaks));
         return new SwitchReport(true, lines);
     }
 
@@ -141,6 +146,11 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
             lines.Add(Loc.T(result.ExitCode == 0 ? "Power plan restored." : "The previous power plan could not be restored."));
         }
 
+        if (state?.TweakIds is { Count: > 0 } owned)
+        {
+            lines.AddRange(await Task.Run(() => owned.Select(UndoTweak).OfType<string>().ToList()));
+        }
+
         lines.Add(Loc.T("Apps that were closed, WSL and Docker are not restarted automatically."));
         if (state is not null)
         {
@@ -149,6 +159,41 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
 
         DeleteUserState();
         return new SwitchReport(true, lines);
+    }
+
+    /// <summary>
+    /// Applies the settings of the new mode and puts back the ones only the previous mode had set. Only a setting that this switch
+    /// really changed is remembered as the mode's own: one already set before (by the user, or on the Optimize page) is left alone.
+    /// </summary>
+    private static Task<(List<string> Lines, List<string> Owned)> ApplyTweaksAsync(IReadOnlyList<string> ownedByPrevious, IReadOnlyList<string> wanted) =>
+        Task.Run(() =>
+        {
+            var lines = new List<string>();
+            var (undo, apply) = ModeTweaks.Diff(ownedByPrevious, wanted);
+            lines.AddRange(undo.Select(UndoTweak).OfType<string>());
+            var owned = ownedByPrevious.Except(undo, StringComparer.OrdinalIgnoreCase).ToList();
+            foreach (var id in apply)
+            {
+                if (ServiceTuning.Catalog.Find(id) is not { } tweak || tweak.NeedsElevation || !tweak.Restart.Equals("none", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var result = ServiceTuning.UserTweaks.Apply(tweak);
+                if (result.Outcome == TuneOutcome.Done)
+                {
+                    owned.Add(tweak.Id);
+                    lines.Add(Loc.F("Setting: {0}.", Loc.T(tweak.Title)));
+                }
+            }
+
+            return (lines, owned);
+        });
+
+    private static string? UndoTweak(string id)
+    {
+        var result = ServiceTuning.UserTweaks.Undo(id);
+        return result.Outcome == TuneOutcome.Done && ServiceTuning.Catalog.Find(id) is { } tweak ? Loc.F("Setting put back: {0}.", Loc.T(tweak.Title)) : null;
     }
 
     private static string DescribeSession(UserState state)
@@ -390,5 +435,7 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     [GeneratedRegex("[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}")]
     private static partial Regex GuidPattern();
 
-    private sealed record UserState(string Mode, string? PreviousPowerScheme, DateTimeOffset SwitchedUtc, double FreedGb = 0, string? Source = null);
+    /// <param name="TweakIds">Settings of the Optimize catalog that this mode set and will put back; null in a file written before modes had settings.</param>
+    private sealed record UserState(
+        string Mode, string? PreviousPowerScheme, DateTimeOffset SwitchedUtc, double FreedGb = 0, string? Source = null, IReadOnlyList<string>? TweakIds = null);
 }

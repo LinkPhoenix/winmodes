@@ -4,7 +4,7 @@ using WinModes.Core.Protection;
 
 namespace WinModes.Core.Planning;
 
-public enum ChangeKind { StopService, StartService, CloseApp, LaunchApp, ShutdownWsl, StartDocker, SetPowerPlan }
+public enum ChangeKind { StopService, StartService, CloseApp, LaunchApp, ShutdownWsl, StartDocker, SetPowerPlan, ApplyTweak }
 
 /// <summary>One change the engine would make, with the live value it would replace.</summary>
 public sealed record PlannedChange(ChangeKind Kind, string Target, string From, string To, string Reason);
@@ -15,7 +15,7 @@ public sealed record ModePlan(string Mode, IReadOnlyList<PlannedChange> Changes,
 /// Compares a profile with the live machine and lists only the changes that would have an effect.
 /// Planning is read-only; applying a plan is a separate, journaled step.
 /// </summary>
-public sealed class ModePlanner(ISystemProbe probe, ProtectionPolicy policy)
+public sealed class ModePlanner(ISystemProbe probe, ProtectionPolicy policy, ITweakProbe? tweaks = null)
 {
     public ModePlan Plan(ModeProfile profile)
     {
@@ -35,6 +35,7 @@ public sealed class ModePlanner(ISystemProbe probe, ProtectionPolicy policy)
         PlanServiceStarts(profile, changes, skipped);
         PlanApps(profile, changes);
         PlanWsl(profile, changes);
+        PlanTweaks(profile, changes, skipped);
 
         if (!string.IsNullOrEmpty(profile.Power.Plan))
         {
@@ -105,6 +106,26 @@ public sealed class ModePlanner(ISystemProbe probe, ProtectionPolicy policy)
         changes.AddRange(profile.Apps.Launch
             .Where(app => !probe.IsProcessRunning(Path.GetFileName(app.Path)))
             .Select(app => new PlannedChange(ChangeKind.LaunchApp, app.Id, Loc.T("not running"), Loc.T("running"), Loc.T("Launched by this mode"))));
+    }
+
+    private void PlanTweaks(ModeProfile profile, List<PlannedChange> changes, List<string> skipped)
+    {
+        foreach (var id in profile.TweakIds)
+        {
+            var info = tweaks?.Find(id);
+            if (info is null || !ModeTweaks.CanBeApplied(info))
+            {
+                skipped.Add($"{id}: not available in a mode");
+            }
+            else if (info.IsApplied)
+            {
+                skipped.Add($"{id}: already applied");
+            }
+            else
+            {
+                changes.Add(new PlannedChange(ChangeKind.ApplyTweak, Loc.T(info.Title), Loc.T("not set"), Loc.T("set"), Loc.T("Windows setting of this mode")));
+            }
+        }
     }
 
     private void PlanWsl(ModeProfile profile, List<PlannedChange> changes)

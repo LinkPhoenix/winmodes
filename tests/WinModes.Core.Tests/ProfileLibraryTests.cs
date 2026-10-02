@@ -52,13 +52,21 @@ public sealed class ProfileLibraryTests : IDisposable
     [Fact]
     public void Delete_RefusesBuiltInModesAndRemovesCustomOnes()
     {
-        _library.Duplicate("code", "focus", "Focus");
+        _library.Duplicate("code", "scratch", "Scratch");
 
         Assert.Throws<ProfileException>(() => _library.Delete("code"));
-        _library.Delete("focus");
+        _library.Delete("scratch");
 
-        Assert.False(File.Exists(Path.Combine(_directory, "focus.json")));
+        Assert.False(File.Exists(Path.Combine(_directory, "scratch.json")));
     }
+
+    [Theory]
+    [InlineData("code")]
+    [InlineData("work")]
+    [InlineData("game")]
+    [InlineData("focus")]
+    [InlineData("eco")]
+    public void TheModesShippedWithTheApp_AreBuiltIn(string mode) => Assert.True(ProfileLibrary.IsBuiltIn(mode));
 
     [Fact]
     public void Import_DoesNotOverwriteAnExistingMode()

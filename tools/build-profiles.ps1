@@ -13,7 +13,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$Modes = @('code', 'work', 'game')
+$Modes = @('code', 'work', 'game', 'focus', 'eco')
 $ExcludedRisks = @('never-touch', 'high')
 $ExcludedTweakRisks = @('never', 'high')
 # Only tweaks that take effect without reboot or reinstall belong in a switchable mode.
@@ -113,18 +113,20 @@ $baseline = [ordered]@{
 $baseline | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $profilesDir 'baseline.json')
 
 foreach ($mode in $Modes) {
-    $eligible = @($knowledge | Where-Object { Test-Eligible $_ })
-    $stop = @($eligible | Where-Object { $_.modes.$mode -le $StopScoreMax -and (Test-StopHasEffect $_) } | Sort-Object id | ForEach-Object {
-            [ordered]@{ id = $_.id; setStartMode = 'Manual'; stop = $true; score = $_.modes.$mode; ramImpact = $_.ramImpact; why = $_.why }
+    # A mode without scores of its own borrows the services of another one, or leaves the services alone ('none').
+    $scoreMode = if ($manual.$mode.servicesFrom) { $manual.$mode.servicesFrom } else { $mode }
+    $eligible = if ($scoreMode -eq 'none') { @() } else { @($knowledge | Where-Object { Test-Eligible $_ }) }
+    $stop = @($eligible | Where-Object { $_.modes.$scoreMode -le $StopScoreMax -and (Test-StopHasEffect $_) } | Sort-Object id | ForEach-Object {
+            [ordered]@{ id = $_.id; setStartMode = 'Manual'; stop = $true; score = $_.modes.$scoreMode; ramImpact = $_.ramImpact; why = $_.why }
         })
-    $ensure = @($eligible | Where-Object { $_.modes.$mode -ge $EnsureRunningScore -and $_.currentStartMode -eq 'Manual' } | Sort-Object id | ForEach-Object {
+    $ensure = @($eligible | Where-Object { $_.modes.$scoreMode -ge $EnsureRunningScore -and $_.currentStartMode -eq 'Manual' } | Sort-Object id | ForEach-Object {
             [ordered]@{ id = $_.id; start = $true; why = $_.why }
         })
-    $modeTweaks = @($allowedTweaks | Where-Object { $_.id -notin $baselineIds -and $_.relevance.$mode -ge 3 } | ForEach-Object {
+    $modeTweaks = @($allowedTweaks | Where-Object { $_.id -notin $baselineIds -and $_.relevance.$scoreMode -ge 3 } | ForEach-Object {
             [ordered]@{ id = $_.id; type = $_.type; target = $_.target; value = $_.value; risk = $_.risk }
         })
     $startupCandidates = @($knowledge | Where-Object {
-            $_.kind -eq 'startup-app' -and $_.modes.$mode -eq 0 -and $_.risk -notin $ExcludedRisks -and -not (Test-ProtectedStartup $_)
+            $scoreMode -ne 'none' -and $_.kind -eq 'startup-app' -and $_.modes.$scoreMode -eq 0 -and $_.risk -notin $ExcludedRisks -and -not (Test-ProtectedStartup $_)
         } | Sort-Object id | ForEach-Object { [ordered]@{ id = $_.id; why = $_.why } })
 
     $modeProfile = [ordered]@{
@@ -144,6 +146,7 @@ foreach ($mode in $Modes) {
         }
         services      = [ordered]@{ stop = $stop; ensureRunning = $ensure }
         tweaks        = $modeTweaks
+        tweakIds      = @($manual.$mode.tweakIds | Where-Object { $_ })
     }
     $modeProfile | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $profilesDir "$mode.json")
     '{0,-5} stop={1,3} ensure={2,2} tweaks={3,2} suggestedApps={4,2}' -f $mode, $stop.Count, $ensure.Count, $modeTweaks.Count, $startupCandidates.Count

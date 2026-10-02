@@ -11,7 +11,7 @@ namespace WinModes.Core.Profiles;
 /// </summary>
 public sealed partial class ProfileLibrary(string profilesDirectory, ProtectionPolicy policy)
 {
-    private static readonly string[] BuiltInModes = ["code", "work", "game"];
+    private static readonly string[] BuiltInModes = ["code", "work", "game", "focus", "eco"];
     private static readonly string[] ReservedNames = ["baseline", "modes.manual"];
     private static readonly JsonSerializerOptions ReadOptions = new() { PropertyNameCaseInsensitive = true };
     private static readonly JsonSerializerOptions WriteOptions = new() { WriteIndented = true };

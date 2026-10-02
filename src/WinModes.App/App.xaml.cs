@@ -66,7 +66,7 @@ public partial class App : Application, IDisposable
 
         var store = new ProfileStore(Path.Combine(root, "profiles"));
         var policy = ProtectionPolicy.Load(Path.Combine(root, "data", "protected.json"));
-        var planner = new ModePlanner(new WindowsSystemProbe(), policy);
+        var planner = new ModePlanner(new WindowsSystemProbe(), policy, new Services.CatalogTweakProbe());
 
         AppServices.Initialize(store, planner, policy, Path.Combine(root, "profiles"));
 
