@@ -38,6 +38,13 @@ internal static partial class AppxService
         return exitCode == 0 ? PackageCommands.ParseList(output) : [];
     }
 
+    /// <summary>The name Windows shows for each packaged app of the Start menu, by package family. Empty when PowerShell could not answer.</summary>
+    public static async Task<IReadOnlyDictionary<string, string>> StartAppNamesAsync()
+    {
+        var (exitCode, output) = await RunAsync(PackageCommands.StartAppsScript);
+        return exitCode == 0 ? PackageCommands.ParseStartApps(output) : new Dictionary<string, string>();
+    }
+
     /// <summary>Removes one app for the current user. Returns null on success, or the reason it was not done.</summary>
     public static async Task<string?> RemoveAsync(InstalledPackage package)
     {

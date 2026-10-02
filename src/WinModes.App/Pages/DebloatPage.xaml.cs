@@ -16,6 +16,9 @@ public partial class DebloatPage : Page
 {
     private const string AllGlyph = "";
 
+    /// <summary>The category of the apps that are on the PC but not in the list of WinModes: shown, never removed.</summary>
+    private const string OthersCategory = "Your other apps";
+
     /// <summary>Glyph and colour of each category of data/apps.json, in the order of the category bar.</summary>
     private static readonly (string Category, string Glyph, Brush Color)[] Categories =
     [
@@ -28,9 +31,11 @@ public partial class DebloatPage : Page
         ("AI", "", Palette.Container),
         ("Developer", "", Palette.Start),
         ("Other", "", Palette.Neutral),
+        (OthersCategory, "", Palette.Neutral),
     ];
 
     private List<AppRow> _rows = [];
+    private List<AppRow> _others = [];
     private List<CategoryChip> _chips = [];
     private OneDriveState? _oneDrive;
     private string? _selectedCategory;
@@ -52,6 +57,7 @@ public partial class DebloatPage : Page
         Headline.Text = Loc.T("Reading the apps of this PC…");
         SubHeadline.Text = "";
         var installed = await AppxService.ListAsync();
+        var startNames = await AppxService.StartAppNamesAsync();
         var byEntry = installed
             .Select(package => (Package: package, Entry: AppxService.Catalog.Find(package)))
             .Where(pair => pair.Entry is not null)
@@ -66,6 +72,16 @@ public partial class DebloatPage : Page
             .ThenBy(row => row.Entry.Category, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(row => row.Title, StringComparer.CurrentCultureIgnoreCase)];
 
+        // The apps of the Start menu that the list does not cover, so everything on the PC can be seen (and is left alone).
+        var listed = byEntry.Values.SelectMany(packages => packages.Select(package => package.FullName)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _others = [.. installed
+            .Where(package => !package.IsFramework && !listed.Contains(package.FullName) && startNames.ContainsKey(package.Family))
+            .GroupBy(package => package.Family, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new AppRow(
+                new AppEntry { Id = $"other:{group.Key}", Title = startNames[group.Key], Packages = [group.First().Name], Category = OthersCategory },
+                [.. group], UpdateRemoveButton, isOther: true, isProtected: group.Any(AppGuard.IsProtected)))
+            .OrderBy(row => row.Title, StringComparer.CurrentCultureIgnoreCase)];
+
         var present = _rows.Count(row => row.IsInstalled);
         var safe = _rows.Count(row => row is { IsInstalled: true, Entry.Tier: AppTier.Safe });
         Headline.Text = present == 0 ? Loc.T("Nothing to remove") : Loc.N(present, "1 app can be removed", "{0} apps can be removed");
@@ -75,7 +91,7 @@ public partial class DebloatPage : Page
                 "{0} are safe for nearly everyone; the others are useful to some people, and what they do is written next to each one.");
         ShowRows();
         ShowRemoved();
-        _ = LoadIconsAsync(_rows);
+        _ = LoadIconsAsync([.. _rows, .. _others]);
         _oneDrive = await OneDriveService.InspectAsync();
         ShowOneDrive();
     }
@@ -208,23 +224,32 @@ public partial class DebloatPage : Page
         var text = SearchBox.Text.Trim();
         var showAbsent = ShowAbsent.IsChecked == true;
         var matching = _rows.Where(row => (row.IsInstalled || showAbsent) && row.Matches(text)).ToList();
+        var matchingOthers = _others.Where(row => row.Matches(text)).ToList();
 
         // The selected category can vanish after a removal (nothing of it is left on this PC).
-        if (_selectedCategory is not null && matching.All(row => row.Entry.Category != _selectedCategory) && _rows.All(row => row.Entry.Category != _selectedCategory))
+        if (_selectedCategory is not null && matching.All(row => row.Entry.Category != _selectedCategory) && _rows.All(row => row.Entry.Category != _selectedCategory)
+            && !(_selectedCategory == OthersCategory && _others.Count > 0))
         {
             _selectedCategory = null;
         }
 
-        var shown = matching.Where(row => _selectedCategory is null || row.Entry.Category == _selectedCategory).ToList();
-        Rows.ItemsSource = shown;
-        EmptyText.Visibility = shown.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        // The other apps are listed under their own chip, and under "All" only when something is searched for.
+        IEnumerable<AppRow> shown = _selectedCategory switch
+        {
+            null => text.Length > 0 ? [.. matching, .. matchingOthers] : matching,
+            OthersCategory => matchingOthers,
+            _ => matching.Where(row => row.Entry.Category == _selectedCategory),
+        };
+        var shownRows = shown.ToList();
+        Rows.ItemsSource = shownRows;
+        EmptyText.Visibility = shownRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         SelectSafe.IsEnabled = !_busy && _rows.Any(row => row is { IsInstalled: true, Entry.Tier: AppTier.Safe });
-        ShowCategories(matching);
+        ShowCategories(matching, matchingOthers);
         UpdateRemoveButton();
     }
 
     /// <summary>One chip per category of the list plus "All"; the numbers follow the search, so they tell where the matches are.</summary>
-    private void ShowCategories(List<AppRow> matching)
+    private void ShowCategories(List<AppRow> matching, List<AppRow> matchingOthers)
     {
         var known = Categories.Select(item => item.Category).ToList();
 
@@ -239,6 +264,12 @@ public partial class DebloatPage : Page
         {
             var (glyph, color) = LookUp(category);
             entries.Add((category, Loc.T(category), glyph, color, matching.Count(row => row.Entry.Category == category)));
+        }
+
+        if (_others.Count > 0)
+        {
+            var (glyph, color) = LookUp(OthersCategory);
+            entries.Add((OthersCategory, Loc.T("Your other apps"), glyph, color, matchingOthers.Count));
         }
 
         _chips = CategoryChips.Sync(CategoryBar, _chips, entries, _selectedCategory);
@@ -391,6 +422,12 @@ public partial class DebloatPage : Page
         }
     }
 
+    private void OnOpenSettings(object sender, RoutedEventArgs e)
+    {
+        // The page of installed apps of Windows Settings, where an app is uninstalled the usual way.
+        using var started = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ms-settings:appsfeatures") { UseShellExecute = true });
+    }
+
     private void OnOpenAppStore(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.DataContext is AppRow { Entry.Reinstall.Store: { } store })
@@ -456,9 +493,11 @@ public partial class DebloatPage : Page
         private ImageSource? _icon;
         private bool _isExpanded;
 
-        public AppRow(AppEntry entry, IReadOnlyList<InstalledPackage> packages, Action changed)
+        public AppRow(AppEntry entry, IReadOnlyList<InstalledPackage> packages, Action changed, bool isOther = false, bool isProtected = false)
         {
             Entry = entry;
+            IsOther = isOther;
+            IsProtected = isProtected;
             Packages = [.. packages.Select(package => new PackageRow(package, packages.Count > 1, () =>
             {
                 foreach (var name in (string[])[nameof(IsSelected), nameof(SelectionState)])
@@ -480,14 +519,23 @@ public partial class DebloatPage : Page
         public Brush Color { get; }
         public Brush Tint { get; }
 
+        /// <summary>An app of the PC that the list does not cover: shown so that everything can be seen, never offered for removal.</summary>
+        public bool IsOther { get; }
+
+        /// <summary>One of the apps WinModes never removes (the Store, winget, the system).</summary>
+        public bool IsProtected { get; }
+
         public bool IsInstalled => Packages.Count > 0;
         public string Title => Loc.T(Entry.Title);
         public string Why => Loc.T(Entry.Why);
+        public Visibility WhyVisibility => Entry.Why.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
         public string? Breaks => string.IsNullOrWhiteSpace(Entry.BreaksIfRemoved) ? null : Loc.F("If removed: {0}", Loc.T(Entry.BreaksIfRemoved));
         public Visibility BreaksVisibility => Breaks is null ? Visibility.Collapsed : Visibility.Visible;
-        public string TierText => Loc.T(!IsInstalled ? "Not installed" : Entry.Tier == AppTier.Safe ? "Safe" : "Check first");
-        public Brush TierTint => Palette.Tint(!IsInstalled ? Palette.Neutral : Entry.Tier == AppTier.Safe ? Palette.Start : Palette.Power);
-        public Visibility SelectionVisibility => IsInstalled ? Visibility.Visible : Visibility.Hidden;
+        public string TierText => Loc.T(IsOther ? IsProtected ? "Protected" : "Not in the list" : !IsInstalled ? "Not installed" : Entry.Tier == AppTier.Safe ? "Safe" : "Check first");
+
+        public Brush TierTint => Palette.Tint(IsOther ? IsProtected ? Palette.Apps : Palette.Neutral : !IsInstalled ? Palette.Neutral : Entry.Tier == AppTier.Safe ? Palette.Start : Palette.Power);
+
+        public Visibility SelectionVisibility => IsInstalled && !IsOther ? Visibility.Visible : Visibility.Hidden;
 
         /// <summary>An app this PC does not have is shown faded: it is there to show what the list covers.</summary>
         public double Emphasis => IsInstalled ? 1 : 0.55;
@@ -537,9 +585,15 @@ public partial class DebloatPage : Page
         public Visibility AbsentVisibility => IsInstalled ? Visibility.Collapsed : Visibility.Visible;
         public Visibility ChoiceHintVisibility => Packages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
 
-        public string TierExplanation => Loc.T(Entry.Tier == AppTier.Safe
-            ? "Safe for nearly everyone: nothing else depends on it."
-            : "Useful to some people: read what stops working before you remove it.");
+        public string TierExplanation => Loc.T(IsOther
+            ? IsProtected
+                ? "Protected: WinModes never removes it, so the apps and tools that depend on it keep working."
+                : "WinModes only removes the apps of its own list, so it leaves this one alone. To uninstall it, use Windows Settings."
+            : Entry.Tier == AppTier.Safe
+                ? "Safe for nearly everyone: nothing else depends on it."
+                : "Useful to some people: read what stops working before you remove it.");
+
+        public Visibility SettingsVisibility => IsOther && !IsProtected ? Visibility.Visible : Visibility.Collapsed;
 
         public Visibility ReinstallVisibility => Entry.Reinstall.Store is null && Entry.Reinstall.Winget is null ? Visibility.Collapsed : Visibility.Visible;
         public Visibility StoreVisibility => Entry.Reinstall.Store is null ? Visibility.Collapsed : Visibility.Visible;

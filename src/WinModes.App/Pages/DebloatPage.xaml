@@ -73,6 +73,8 @@
                         </ItemsControl>
                     </StackPanel>
                     <TextBlock Text="{Binding TierExplanation}" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap" />
+                    <ui:Button Content="{l:T 'Open Windows Settings'}" Icon="{ui:SymbolIcon Settings24}" Margin="0,8,0,0" HorizontalAlignment="Left"
+                               Click="OnOpenSettings" Visibility="{Binding SettingsVisibility}" />
                     <StackPanel Visibility="{Binding ReinstallVisibility}" Margin="0,12,0,0">
                         <TextBlock Text="{l:T 'If you change your mind'}" FontSize="11" FontWeight="SemiBold" Style="{StaticResource SecondaryTextStyle}" />
                         <TextBlock Text="{Binding ReinstallText}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap" />
@@ -199,7 +201,8 @@
                                             </Grid>
                                             <StackPanel Grid.Column="2">
                                                 <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding Why}" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}" />
+                                                <TextBlock Text="{Binding Why}" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"
+                                                           Visibility="{Binding WhyVisibility}" />
                                                 <TextBlock Text="{Binding Breaks}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"
                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" Visibility="{Binding BreaksVisibility}" />
                                             </StackPanel>

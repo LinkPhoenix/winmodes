@@ -41,6 +41,30 @@ public sealed class AppRemovalTests : IDisposable
     public void AnOrdinaryInboxApp_IsNotProtected(string name) => Assert.False(AppGuard.IsProtected(Package(name)));
 
     [Fact]
+    public void ParseStartApps_MapsEachPackageFamilyToTheNameWindowsShows()
+    {
+        const string Json = """
+            [{"Name":"WhatsApp","AppId":"5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App"},
+             {"Name":"Second","AppId":"5319275A.WhatsAppDesktop_cv1g1gvanyjgm!Other"},
+             {"Name":"Notepad","AppId":"Microsoft.WindowsNotepad_8wekyb3d8bbwe!App"},
+             {"Name":"","AppId":"Empty.Name_abc!App"},
+             {"Name":"Not a family","AppId":"bad id with spaces!App"}]
+            """;
+
+        var names = PackageCommands.ParseStartApps(Json);
+
+        Assert.Equal(2, names.Count);
+        Assert.Equal("WhatsApp", names["5319275A.WhatsAppDesktop_cv1g1gvanyjgm"]);
+        Assert.Equal("Notepad", names["microsoft.windowsnotepad_8wekyb3d8bbwe"]);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not json")]
+    [InlineData("""{"Name": 3}""")]
+    public void ParseStartApps_GivesNothingForAnUnreadableAnswer(string json) => Assert.Empty(PackageCommands.ParseStartApps(json));
+
+    [Fact]
     public void AFrameworkAndAPackageWindowsCallsNonRemovable_AreProtectedWhateverTheirName()
     {
         Assert.True(AppGuard.IsProtected(Package("Contoso.Helper", framework: true)));

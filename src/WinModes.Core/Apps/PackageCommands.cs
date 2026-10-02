@@ -22,6 +22,50 @@ public static class PackageCommands
         ConvertTo-Json -InputObject $packages -Compress
         """;
 
+    /// <summary>The apps of the Start menu with the name Windows shows for them; the app id starts with the package family.</summary>
+    public const string StartAppsScript = """
+        $ErrorActionPreference = 'Stop'
+        $apps = @(Get-StartApps | Where-Object { $_.AppID -like '*!*' } | ForEach-Object { [pscustomobject]@{ Name = $_.Name; AppId = $_.AppID } })
+        ConvertTo-Json -InputObject $apps -Compress
+        """;
+
+    private const int MaxStartAppNameLength = 120;
+
+    /// <summary>The name of each packaged app of the Start menu, by package family. Empty when the text cannot be read.</summary>
+    public static IReadOnlyDictionary<string, string> ParseStartApps(string json)
+    {
+        ArgumentNullException.ThrowIfNull(json);
+        var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return names;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            var items = document.RootElement.ValueKind == JsonValueKind.Array ? document.RootElement.EnumerateArray().ToList() : [document.RootElement];
+            foreach (var item in items.Where(item => item.ValueKind == JsonValueKind.Object))
+            {
+                var name = item.TryGetProperty("Name", out var nameValue) && nameValue.ValueKind == JsonValueKind.String ? nameValue.GetString()?.Trim() : null;
+                var appId = item.TryGetProperty("AppId", out var idValue) && idValue.ValueKind == JsonValueKind.String ? idValue.GetString() : null;
+                var family = appId?.Split('!')[0];
+
+                // The first entry of a family wins; the family has to look like one, since it is compared with package names only.
+                if (!string.IsNullOrWhiteSpace(name) && name.Length <= MaxStartAppNameLength && !string.IsNullOrWhiteSpace(family) && AppGuard.IsValidFullName(family))
+                {
+                    names.TryAdd(family, name);
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            names.Clear();
+        }
+
+        return names;
+    }
+
     public static IReadOnlyList<InstalledPackage> ParseList(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
