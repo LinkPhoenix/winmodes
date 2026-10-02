@@ -8,6 +8,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-02
+
 ### Added
 
 - Widget: it can sit on the taskbar, on the desktop or on both ("Where it appears"). It fills the free room next to the app icons whether they are centred or on the left, reads that room again within a fraction of a second when you change the alignment or open or close an app, and shows less (network, then mode and CPU, then AI) when there is little room. You choose the side (automatic, left or right). Windows icons in colour and the tools' own icons (kept after the tool is closed) replace the text labels, the AI total is one line, and the limit resets you have in reserve ("↻ 2") are shown next to each plan.
@@ -196,7 +198,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Protection: blocklist for security, WSL, Docker, winget, the Microsoft Store, Edge and developer tools.
 - Pages: Dashboard, Services, History, Protection and About.
 
-[Unreleased]: https://github.com/LinkPhoenix/winmodes/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/LinkPhoenix/winmodes/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.5.0...v0.6.0
