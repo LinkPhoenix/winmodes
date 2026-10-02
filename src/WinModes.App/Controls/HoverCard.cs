@@ -53,7 +53,15 @@ internal static class HoverCard
         target.MouseLeave += (_, _) => Close(target);
         // A click or a right-click is an action on the widget: the card gets out of its way.
         target.PreviewMouseDown += (_, _) => Close(target);
-        target.IsVisibleChanged += (_, _) => Close(target);
+        // The taskbar widget measures every level of detail on each refresh and so hides and shows its cells within one call:
+        // only a cell that is still hidden once that call is over takes its card away.
+        target.IsVisibleChanged += (_, _) => target.Dispatcher.BeginInvoke(() =>
+        {
+            if (!target.IsVisible)
+            {
+                Close(target);
+            }
+        }, DispatcherPriority.Background);
         target.Unloaded += (_, _) => Close(target);
     }
 

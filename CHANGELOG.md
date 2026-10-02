@@ -10,6 +10,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Fixed
 
+- Taskbar widget: the card of the AI tools memory now stays open when you rest the mouse on it, instead of being closed by each refresh of the widget.
 - Widget page: privacy mode now hides the e-mail address of the WinModes account of Claude Code and Codex.
 
 ## [0.9.0] - 2026-10-02
