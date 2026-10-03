@@ -10,6 +10,20 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Added
 
+- Optimize: policy badges, blocked-setting filters, and a local policy diagnostic with reviewed, journaled recovery for supported registry policy values and an undo of each recovery.
+- Optimize: refresh with check time and read errors, live technical values, and a detailed review before applying or restoring changes.
+- Optimize: per-setting outcomes and a summary of saved changes that require sign-out, Explorer refresh or a Windows restart.
+- Configuration: prepare, import and export catalog settings without applying them; unsupported entries are shown and choices are staged for review in Optimize.
+- History: search and filter mode journals, optimization recovery records and removed apps together, with refresh status and recovery-page links.
+- Operations: keep the latest operation visible across pages, refuse overlapping actions and wait for completion before quitting.
+- Support: a title-bar heart and About button open a centered donation window for Emilio LECERF, with the official blue PayPal logo and his PayPal.me link.
+- Debloat: persistent badges for installation, removal guidance, recovery options and pending removal; a scrollable review lists consequences and recovery for every selected app.
+- Debloat: refresh with detection source and check time, selection of visible results, hidden-selection counts, and an expanded four-column layout on large windows.
+
+- Optimize: filter recommendations, precautions, applied settings, administrator requirements and pending changes, with a visible result count.
+- Debloat: separate installation and removal guidance in every view, status filters, result counts, and sorting by name or category.
+- Navigation: Ctrl+1 through Ctrl+9 open the main pages; view controls use accessible icons with tooltips and a keyboard focus indicator.
+
 - About: an "Update channel" choice in the Updates section, Stable or Beta. On Beta, WinModes also offers the test versions (and the stable version when it comes out); on Stable it only offers finished versions, even if you run a beta build. Until you choose, a beta build follows the betas and a stable build the stable releases, as before.
 - Debloat: the list also covers the old Feedback and Reading List apps, Connect (wireless display), the promoted travel and note apps (Booking.com, Expedia, Priceline, Evernote) and the Acer, ASUS and Samsung tools, plus a few names that other optimizers list (older games, Instagram Beta, LinkedIn, XING, Yandex, Fresh Paint, Drawboard PDF, Cortana, the old Wallet). Nothing new is offered that the protected list covers.
 - Debloat: a "Your other apps" view lists every other app of your Start menu with its real name and logo, so everything on the PC can be seen. WinModes never removes them: the protected ones say so (the Store, winget, Windows, your AI tools), and a button opens Windows Settings to uninstall one the usual way.
@@ -35,6 +49,10 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Changed
 
+- Optimize: starts with recommendations, explains choose/review/apply, separates advice, warnings, current state and scope with accessible badges, and keeps technical provenance in details.
+- Optimize: quick preparation includes readable low-risk recommendations without warnings, leaves services to individual choices, and offers Clear filters and Ctrl+F search.
+- Window: remembers normal size, position and maximized state and offers accessible interface zoom controls with Ctrl +/−/0.
+- Window: opens at 1360 × 900 with more room for content, fitting smaller screens at their display scale.
 - Services: the service knowledge base now also knows MMCSS, the Edge update services, the WSL and Hyper-V services, the Defender sensors and a few others that optimizers tend to disable, and marks them never to touch; Diagnostic Policy, IP Helper, Font Cache and Themes are now never to touch too, since other tools break Windows by switching them off. No mode stopped any of them.
 - Optimize and modes: after writing a setting, WinModes reads it back. A setting that Windows refuses without an error (a policy, or the protection of default apps) is now reported as not applied instead of shown as applied, and nothing is recorded for it.
 - Automation: a mode started automatically now stays on while any program or tool that triggers it is still open, and ends one minute after the last one closes, so going from Claude Code to Codex (or running both) no longer makes the PC go back and forth. A mode starts only after its trigger has held for 10 seconds, so a program that opens and closes at once changes nothing.
@@ -47,6 +65,14 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Automation: the page is laid out like the others, with the coding tools listed under the mode they start and the rules on battery or hours in a section of their own. A game outranks every other program, so a game opened next to Claude Code gets Game mode, and a program that only says "I am working" never hides another trigger.
 
 ### Fixed
+
+- Optimize: warning filters include recommended settings with consequences, and summary/category counts match their recommendation and visible-row scope.
+- Window: zoom, configuration and support buttons in the header now receive mouse clicks instead of dragging the window.
+- Settings: language selection confirms the saved choice, preserves the pending choice when returning to the page and saves without changing the Windows startup entry.
+
+- Debloat: failed or incomplete inventory reads keep the last valid reading and pause removal; details now open in Compact view and unavailable local restores are explained.
+
+- Optimize, Processes and Services: pages open correctly with the shared search field; search uses the matching text event handler.
 
 - Optimize and Debloat: the names of the categories in the bar at the top were black on the dark theme and hard to read; they now follow the theme.
 - Services and Processes: a program that has no icon of its own, such as the shared host of most Windows services (Application Information, AppX Deployment, Base Filtering Engine and about 300 others), showed a blank picture; it now shows the usual symbol instead.
