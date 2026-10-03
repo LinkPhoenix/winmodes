@@ -51,9 +51,27 @@ public sealed class WindowsRegistryAccess : IRegistryAccess
 }
 
 /// <summary>Scheduled tasks through the Task Scheduler COM service, so no command line is ever built.</summary>
-public sealed class WindowsTaskControl : ITaskControl
+public sealed class WindowsTaskControl : ITaskControl, ITaskObservation
 {
     private const string SchedulerProgId = "Schedule.Service";
+
+    public TweakPartObservation Observe(string path, int index)
+    {
+        try
+        {
+            var enabled = Use(path, task => (bool)task.Enabled);
+            return new(index, !enabled, enabled ? "Enabled" : "Disabled", "Disabled", true);
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException
+            || ex is COMException com && (com.HResult == unchecked((int)0x80070002) || com.HResult == unchecked((int)0x80070003)))
+        {
+            return new(index, null, "Task absent", "Disabled", false);
+        }
+        catch (Exception ex) when (ex is COMException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            return new(index, null, "Unreadable", "Disabled", true, ex.Message);
+        }
+    }
 
     public bool? IsEnabled(string taskPath)
     {

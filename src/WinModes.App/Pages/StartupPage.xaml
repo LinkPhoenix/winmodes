@@ -1,0 +1,73 @@
+<Page x:Class="WinModes.App.Pages.StartupPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:l="clr-namespace:WinModes.App.Localization"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
+      Title="{l:T 'Startup'}"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <StackPanel Margin="36,24,36,36" MaxWidth="1100">
+        <controls:PageHeader Title="{l:T 'Startup'}" Icon="Rocket24" Accent="{x:Static app:Palette.Power}" Margin="0,0,0,12">
+            <TextBlock x:Name="Summary" Text="{l:T 'Reading what starts with Windows…'}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+        </controls:PageHeader>
+        <TextBlock Style="{StaticResource SecondaryTextStyle}" FontSize="12" Margin="0,0,0,16" TextWrapping="Wrap"
+                   Text="{l:T 'Turning an item off here is the same as turning it off in Task Manager: nothing is deleted, and you can turn it back on at any time.'}" />
+
+        <controls:SearchField x:Name="SearchBox" PlaceholderText="{l:T 'Search startup items'}" Margin="0,0,0,12"
+                              TextChanged="OnFilterChanged" AutomationProperties.Name="{l:T 'Search startup items'}" />
+
+        <Border x:Name="ResultCard" Style="{StaticResource CardBorderStyle}" Padding="16,12" Margin="0,0,0,12" Visibility="Collapsed">
+            <TextBlock x:Name="ResultText" TextWrapping="Wrap" />
+        </Border>
+
+        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+            <StackPanel>
+                <controls:EmptyState x:Name="EmptyText" Visibility="Collapsed" Glyph="&#xE7C4;"
+                                     Title="{l:T 'Nothing starts with Windows.'}" Hint="{l:T 'Nothing matches the search.'}" />
+                <ItemsControl x:Name="Rows">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="20,10" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="36" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Width="24" Height="24" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="16" Text="&#xE7C4;" Visibility="{Binding GlyphVisibility}"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                                        <Image Source="{Binding Icon}" Width="24" Height="24" />
+                                    </Grid>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{Binding Detail}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Detail}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
+                                        <Border Style="{StaticResource ChipStyle}" Margin="0,0,8,0" Background="{DynamicResource ControlFillColorDefaultBrush}">
+                                            <TextBlock Text="{Binding SourceText}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                        </Border>
+                                        <Border Style="{StaticResource ChipStyle}" Margin="0,0,8,0" Background="#337C5CFC" Visibility="{Binding ProtectedVisibility}"
+                                                ToolTip="{l:T 'Protected: security software, audio drivers, WinModes itself and your own tools stay as they are.'}">
+                                            <TextBlock Text="{l:T 'Protected'}" FontSize="12" FontWeight="SemiBold" />
+                                        </Border>
+                                        <ui:Button Content="{l:T 'Reset'}" Click="OnResetClick" Visibility="{Binding ResetVisibility}"
+                                                   ToolTip="{l:T 'Put it back to what it was before WinModes changed it'}" />
+                                    </StackPanel>
+                                    <ui:ToggleSwitch Grid.Column="3" IsChecked="{Binding IsOn, Mode=OneWay}" Click="OnToggleClick" Visibility="{Binding ToggleVisibility}"
+                                                     VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
+                                    <Border Grid.Column="3" Style="{StaticResource ChipStyle}" VerticalAlignment="Center" Visibility="{Binding StateVisibility}"
+                                            Background="{Binding StateTint}" ToolTip="{Binding ToggleTip}" MinWidth="64">
+                                        <TextBlock Text="{Binding StateText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</Page>

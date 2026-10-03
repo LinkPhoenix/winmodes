@@ -24,6 +24,12 @@ internal sealed record AppSettings
     /// <summary>The close button hides the window and keeps the app in the notification area.</summary>
     public bool CloseToTray { get; init; } = true;
 
+    /// <summary>Last normal window bounds and whether it was maximized; not the minimized tray state.</summary>
+    public WindowPreferences? MainWindowPlacement { get; init; }
+
+    /// <summary>Application content scale, independent of Windows display scaling.</summary>
+    public int UiZoomPercent { get; init; } = 100;
+
     /// <summary>Ask before activating a mode.</summary>
     public bool ConfirmBeforeActivate { get; init; } = true;
 
@@ -47,6 +53,19 @@ internal sealed record AppSettings
 
     /// <summary>Language of the interface: "en" (default), "fr", "es" or "it". Read once at startup.</summary>
     public string Language { get; init; } = WinModes.Core.Localization.Loc.DefaultLanguage;
+
+    public const string StableChannel = "stable";
+    public const string BetaChannel = "beta";
+
+    /// <summary>
+    /// Where updates come from: "stable" or "beta". Null until the user chooses: a beta build then follows the betas and a stable
+    /// build the stable releases only.
+    /// </summary>
+    public string? UpdateChannel { get; init; }
+
+    /// <summary>True when the updates offered include the beta releases.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool FollowsBetas => UpdateChannel is BetaChannel || (UpdateChannel is null && AppInfo.IsBeta);
 
     /// <summary>Ask GitHub once at startup whether a newer release exists.</summary>
     public bool CheckForUpdates { get; init; } = true;
@@ -76,6 +95,9 @@ internal sealed record AppSettings
 
     /// <summary>Look and content of the desktop widget.</summary>
     public WidgetSettings Widget { get; init; } = new();
+
+    /// <summary>Per-page list presentation choices; missing keys use the page's default.</summary>
+    public Dictionary<string, string> PageViewModes { get; init; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Which notifications are shown, edited on the Notifications page.</summary>
     public NotificationSettings Notifications { get; init; } = new();
@@ -118,7 +140,12 @@ internal sealed record AppSettings
         }
     }
 
-    public void Save()
+    public void Save() => Save(syncStartupEntry: true);
+
+    /// <summary>Writes a UI-only preference without rewriting the Windows startup entry.</summary>
+    public void SaveUiPreference() => Save(syncStartupEntry: false);
+
+    private void Save(bool syncStartupEntry)
     {
         lock (CacheGate)
         {
@@ -127,7 +154,7 @@ internal sealed record AppSettings
         }
 
         // The Run entry carries the minimized flag, so keep it in step with the setting.
-        if (StartsWithWindows)
+        if (syncStartupEntry && StartsWithWindows)
         {
             SetStartWithWindows(true, StartMinimized);
         }
@@ -175,10 +202,19 @@ internal sealed record AutoSwitchSettings
 {
     public bool Enabled { get; init; }
 
-    /// <summary>Undo an automatically activated mode once its program has exited.</summary>
+    /// <summary>Undo an automatically activated mode once nothing triggers it any more.</summary>
     public bool RevertWhenClosed { get; init; } = true;
 
+    /// <summary>How long a mode stays on after its last trigger is gone, so switching from one tool to another changes nothing.</summary>
+    public int GraceSeconds { get; init; } = DefaultGraceSeconds;
+
+    public const int DefaultGraceSeconds = 60;
+
     public IReadOnlyList<WinModes.Core.Automation.AutoSwitchRule> Rules { get; init; } = [];
+
+    /// <summary>True when at least one rule can act (a rule switched off stays in the list but does nothing).</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool HasActiveRules => Rules.Any(rule => rule.Enabled);
 }
 
 /// <summary>Where the widget is shown.</summary>

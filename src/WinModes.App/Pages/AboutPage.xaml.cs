@@ -9,15 +9,20 @@ namespace WinModes.App.Pages;
 /// <summary>Version, where data is stored and third-party notices.</summary>
 public partial class AboutPage : Page
 {
-    private const string CoffeeUrl = "https://buymeacoffee.com/vckh76t96fh";
     private const string SourceUrl = "https://github.com/LinkPhoenix/winmodes";
 
     public AboutPage()
     {
         InitializeComponent();
 
-        VersionText.Text = Loc.F("Version {0}", AppInfo.Version);
-        CheckAtStartup.IsChecked = Services.AppSettings.Load().CheckForUpdates;
+        VersionText.Text = Loc.F("Version {0}", AppInfo.FullVersion);
+        BetaBadges.Show(BetaBadge, BetaBadgeText);
+        BetaNote.Visibility = AppInfo.IsBeta ? Visibility.Visible : Visibility.Collapsed;
+        var settings = Services.AppSettings.Load();
+        CheckAtStartup.IsChecked = settings.CheckForUpdates;
+        UpdateChannelChoice.ItemsSource = ChannelChoices;
+        UpdateChannelChoice.SelectedItem = ChannelChoices.First(choice => choice.Channel == (settings.FollowsBetas ? Services.AppSettings.BetaChannel : Services.AppSettings.StableChannel));
+        ShowChannelNote(settings.FollowsBetas);
         _loaded = true;
         if (Services.UpdateChecker.Last is { } last)
         {
@@ -34,7 +39,7 @@ public partial class AboutPage : Page
         };
     }
 
-    private void OnBuyCoffee(object sender, RoutedEventArgs e) => Open(CoffeeUrl);
+    private void OnSupport(object sender, RoutedEventArgs e) => new SupportWindow { Owner = Window.GetWindow(this) }.ShowDialog();
 
     private readonly bool _loaded;
 
@@ -46,6 +51,25 @@ public partial class AboutPage : Page
         }
     }
 
+    /// <summary>Saves the channel on its own: the other settings are written from a whole page, which would turn "not chosen yet" into a choice.</summary>
+    private void OnUpdateChannelChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loaded || UpdateChannelChoice.SelectedItem is not ChannelChoice { Channel: var channel })
+        {
+            return;
+        }
+
+        (Services.AppSettings.Load() with { UpdateChannel = channel }).Save();
+        ShowChannelNote(channel == Services.AppSettings.BetaChannel);
+
+        // The answer shown above belongs to the previous channel: ask again.
+        OnCheckUpdates(sender, e);
+    }
+
+    private void ShowChannelNote(bool betas) => UpdateChannelNote.Text = betas
+        ? Loc.T("Test versions come first, and the stable version when it is out. They may still contain mistakes.")
+        : Loc.T("Only finished versions. Choose Beta to try new features early.");
+
     private async void OnCheckUpdates(object sender, RoutedEventArgs e)
     {
         CheckButton.IsEnabled = false;
@@ -54,13 +78,21 @@ public partial class AboutPage : Page
         CheckButton.IsEnabled = true;
     }
 
+    private sealed record ChannelChoice(string Channel, string Label);
+
+    private static IReadOnlyList<ChannelChoice> ChannelChoices { get; } =
+    [
+        new(Services.AppSettings.StableChannel, Loc.T("Stable")),
+        new(Services.AppSettings.BetaChannel, Loc.T("Beta")),
+    ];
+
     private void ShowUpdate(Services.UpdateStatus status)
     {
         UpdateText.Text = status switch
         {
             { Error: { } error } => Loc.F("{0} Try again later.", error),
-            { IsNewer: true } => Loc.F("Version {0} is available. You have v{1}.", status.LatestTag, AppInfo.Version),
-            _ => Loc.F("You have the latest version (v{0}).", AppInfo.Version),
+            { IsNewer: true } => Loc.F("Version {0} is available. You have v{1}.", status.LatestTag, AppInfo.FullVersion),
+            _ => Loc.F("You have the latest version (v{0}).", AppInfo.FullVersion),
         };
         _latestTag = status.IsNewer ? status.LatestTag : null;
         ReleasePageButton.Visibility = status.IsNewer ? Visibility.Visible : Visibility.Collapsed;
@@ -166,7 +198,7 @@ public partial class AboutPage : Page
             {
                 var snapshot = WinModes.Core.Planning.SystemSnapshot.Capture();
                 return WinModes.Core.Reports.SystemReport.Build(new WinModes.Core.Reports.SystemReportData(
-                    AppInfo.Version,
+                    AppInfo.FullVersion,
                     DateTime.Now,
                     RuntimeInformation.OSDescription,
                     Environment.ProcessorCount,

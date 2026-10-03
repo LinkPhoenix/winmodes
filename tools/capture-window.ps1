@@ -8,6 +8,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$OutputPath,
+    [int]$ProcessId,
+    [string]$WindowNamed,
     [string]$InvokeButtonNamed,
     [int]$ButtonIndex = 0,
     [int]$WaitAfterInvokeSeconds = 3
@@ -25,27 +27,51 @@ public struct RECT { public int L, T, R, B; }
 $PrintWindowRenderFullContent = 2
 
 [WinModesTools.Native]::SetProcessDPIAware() | Out-Null
-$process = Get-Process -Name WinModes | Where-Object MainWindowHandle -ne 0 | Select-Object -First 1
+$process = if ($ProcessId) {
+    Get-Process -Id $ProcessId | Where-Object { $_.ProcessName -eq 'WinModes' -and $_.MainWindowHandle -ne 0 }
+} else {
+    Get-Process -Name WinModes | Where-Object MainWindowHandle -ne 0 | Select-Object -First 1
+}
 if (-not $process) { throw 'WinModes is not running or has no visible window.' }
 
+$captureHandle = $process.MainWindowHandle
+if ($WindowNamed) {
+    $mainRoot = [System.Windows.Automation.AutomationElement]::FromHandle($captureHandle)
+    $windowCondition = [System.Windows.Automation.AndCondition]::new(
+        [System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Window),
+        [System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::NameProperty, $WindowNamed))
+    $ownedWindow = $mainRoot.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $windowCondition)
+    if (-not $ownedWindow) { throw "Owned window '$WindowNamed' not found." }
+    $captureHandle = [IntPtr]$ownedWindow.Current.NativeWindowHandle
+}
+
 if ($InvokeButtonNamed) {
-    $root = [System.Windows.Automation.AutomationElement]::FromHandle($process.MainWindowHandle)
+    $root = [System.Windows.Automation.AutomationElement]::FromHandle($captureHandle)
     # Navigation items are not buttons, so match by name and keep only invokable elements.
     $condition = [System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::NameProperty, $InvokeButtonNamed)
     $buttons = @($root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condition) |
-        Where-Object { $_.GetSupportedPatterns() -contains [System.Windows.Automation.InvokePattern]::Pattern })
+        Where-Object { $_.GetSupportedPatterns() -contains [System.Windows.Automation.InvokePattern]::Pattern -or
+            $_.GetSupportedPatterns() -contains [System.Windows.Automation.SelectionItemPattern]::Pattern })
     if ($buttons.Count -le $ButtonIndex) { throw "Invokable element '$InvokeButtonNamed' #$ButtonIndex not found ($($buttons.Count) match)." }
-    $buttons[$ButtonIndex].GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    if ($buttons[$ButtonIndex].GetSupportedPatterns() -contains [System.Windows.Automation.InvokePattern]::Pattern) {
+        $buttons[$ButtonIndex].GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    } else {
+        $buttons[$ButtonIndex].GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+    }
     Start-Sleep -Seconds $WaitAfterInvokeSeconds
 }
 
 $rect = New-Object WinModesTools.Native+RECT
-[WinModesTools.Native]::GetWindowRect($process.MainWindowHandle, [ref]$rect) | Out-Null
+if (-not [WinModesTools.Native]::GetWindowRect($captureHandle, [ref]$rect)) {
+    # Closing an owned dialog returns the capture to its main window.
+    $captureHandle = $process.MainWindowHandle
+    if (-not [WinModesTools.Native]::GetWindowRect($captureHandle, [ref]$rect)) { throw 'The capture window is no longer visible.' }
+}
 $bitmap = [System.Drawing.Bitmap]::new($rect.R - $rect.L, $rect.B - $rect.T)
 $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
 try {
     $dc = $graphics.GetHdc()
-    [WinModesTools.Native]::PrintWindow($process.MainWindowHandle, $dc, $PrintWindowRenderFullContent) | Out-Null
+    [WinModesTools.Native]::PrintWindow($captureHandle, $dc, $PrintWindowRenderFullContent) | Out-Null
     $graphics.ReleaseHdc($dc)
     $bitmap.Save($OutputPath)
 }

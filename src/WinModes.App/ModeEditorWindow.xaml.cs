@@ -17,6 +17,7 @@ public partial class ModeEditorWindow : FluentWindow
     private static readonly (string Value, string Label)[] PowerPlans =
     [
         ("", "Leave unchanged"),
+        ("power-saver", "Power saver"),
         ("balanced", "Balanced"),
         ("high-performance", "High performance"),
         ("ultimate-performance", "Ultimate performance"),

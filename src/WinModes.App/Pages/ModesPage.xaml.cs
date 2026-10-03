@@ -17,6 +17,10 @@ public partial class ModesPage : Page
 
     private List<ModeCard> _cards = [];
     private readonly DispatcherTimer _timer = new() { Interval = RefreshInterval };
+
+    // The countdown of automatic switching moves every second; the rest of the page only every few.
+    private readonly DispatcherTimer _countdown = new() { Interval = TimeSpan.FromSeconds(1) };
+    private string? _activeMode;
     private bool _isBusy;
 
     public ModesPage()
@@ -24,14 +28,82 @@ public partial class ModesPage : Page
         InitializeComponent();
 
         ReloadCards();
+        AutoBadge.Background = Palette.Tint(Palette.BrandBrush);
+        AutoGlyph.Foreground = Palette.BrandBrush;
+        ShowAutomation(withHint: true);
 
         _timer.Tick += async (_, _) => await RefreshAsync();
+        _countdown.Tick += (_, _) => ShowAutomation(withHint: false);
         Loaded += async (_, _) =>
         {
             _timer.Start();
+            _countdown.Start();
+            ModeSwitcher.Changed += OnModeChanged;
+            AutoSwitcher.StatusChanged += OnAutoStatusChanged;
             await RefreshAsync();
         };
-        Unloaded += (_, _) => _timer.Stop();
+        Unloaded += (_, _) =>
+        {
+            _timer.Stop();
+            _countdown.Stop();
+            ModeSwitcher.Changed -= OnModeChanged;
+            AutoSwitcher.StatusChanged -= OnAutoStatusChanged;
+        };
+    }
+
+    // A switch made by the tray, a hotkey or automatic switching shows here at once instead of at the next refresh.
+    private void OnModeChanged() => Dispatcher.BeginInvoke(async () => await RefreshAsync());
+
+    private void OnAutoStatusChanged() => Dispatcher.BeginInvoke(() => ShowAutomation(withHint: false));
+
+    private void OnAutoSetupClick(object sender, RoutedEventArgs e) => (Window.GetWindow(this) as MainWindow)?.NavigateTo(typeof(AutomationPage));
+
+    private void OnAutoPauseClick(object sender, RoutedEventArgs e)
+    {
+        if (AutoSwitcher.Current is not { } switcher)
+        {
+            return;
+        }
+
+        if (switcher.IsPaused)
+        {
+            switcher.Resume();
+        }
+        else
+        {
+            switcher.PauseFor(TimeSpan.FromHours(1));
+        }
+
+        ShowAutomation(withHint: false);
+    }
+
+    private void OnAutoToggled(object sender, RoutedEventArgs e)
+    {
+        AutoSwitchSetup.SetEnabled(AutoToggle.IsChecked == true);
+        ShowAutomation(withHint: true);
+    }
+
+    private void ShowAutomation(bool withHint)
+    {
+        var settings = Services.AppSettings.Load().AutoSwitch;
+        AutoToggle.IsChecked = settings.Enabled;
+        AutoPauseButton.Visibility = settings.Enabled && settings.HasActiveRules ? Visibility.Visible : Visibility.Collapsed;
+        AutoPauseButton.Content = Loc.T(AutoSwitcher.Current?.IsPaused == true ? "Resume" : "Pause for 1 hour");
+        AutoStatus.Text = !settings.Enabled
+            ? Loc.T("Off. Turned on, Code mode starts by itself when Claude Code, Codex or another coding tool opens, and ends a little after the last one closes.")
+            : !settings.HasActiveRules
+                ? Loc.T("No rule yet. Open Set up to choose the tools and programs that start a mode.")
+                : AutoSwitchText.Describe(AutoSwitcher.Status, _activeMode, DateTimeOffset.Now);
+
+        if (withHint)
+        {
+            // Asking Windows whether the silent-switch task exists is not done every second.
+            var asks = settings.Enabled && !ModeSwitcher.SwitchesSilently;
+            AutoHint.Visibility = asks ? Visibility.Visible : Visibility.Collapsed;
+            AutoHint.Text = ModeSwitcher.CanSwitchSilently
+                ? Loc.T("Windows asks for permission at each switch. Turn on the switch without a prompt in Set up to stop that.")
+                : Loc.T("Windows asks for permission at each switch. Without a prompt is possible once WinModes is installed with its setup program.");
+        }
     }
 
     private void ReloadCards()
@@ -168,16 +240,20 @@ public partial class ModesPage : Page
     private void ShowActiveMode()
     {
         var active = ModeSwitcher.ActiveMode;
+        _activeMode = active;
+        var automatic = active is not null && ModeSwitcher.ActiveModeIsAutomatic;
         foreach (var card in _cards)
         {
             card.IsActive = card.Profile.Mode.Equals(active, StringComparison.OrdinalIgnoreCase);
+            card.IsAutomatic = card.IsActive && automatic;
         }
 
         var activeCard = _cards.FirstOrDefault(card => card.IsActive);
         StatusText.Text = activeCard is null
             ? Loc.T("No mode is active. Windows is in its normal state.")
-            : Loc.F("{0} mode is active.", activeCard.Label);
+            : Loc.F(automatic ? "{0} mode is active, started automatically." : "{0} mode is active.", activeCard.Label);
         UndoButton.Visibility = activeCard is null ? Visibility.Collapsed : Visibility.Visible;
+        ShowAutomation(withHint: false);
     }
 
     private async void OnActivateClick(object sender, RoutedEventArgs e)
@@ -327,6 +403,7 @@ public partial class ModesPage : Page
             ChangeKind.LaunchApp => (Loc.T("Launch"), "", Palette.Start),
             ChangeKind.ShutdownWsl => (Loc.T("Stop"), "", Palette.Stop),
             ChangeKind.StartDocker => (Loc.T("Start"), "", Palette.Start),
+            ChangeKind.ApplyTweak => (Loc.T("Set"), "", Palette.Apps),
             ChangeKind.SetPowerPlan => (Loc.T("Switch"), "", Palette.Power),
             _ => (change.Kind.ToString(), "", Palette.Neutral),
         };
@@ -340,7 +417,8 @@ public partial class ModesPage : Page
         ChangeKind.StopService or ChangeKind.StartService => (0, Loc.T("Services"), "", Palette.Start),
         ChangeKind.CloseApp or ChangeKind.LaunchApp => (1, Loc.T("Apps"), "", Palette.Apps),
         ChangeKind.ShutdownWsl or ChangeKind.StartDocker => (2, Loc.T("WSL and Docker"), "", Palette.Container),
-        _ => (3, Loc.T("Power"), "", Palette.Power),
+        ChangeKind.ApplyTweak => (3, Loc.T("Windows settings"), "", Palette.Apps),
+        _ => (4, Loc.T("Power"), "", Palette.Power),
     };
 
 
@@ -348,6 +426,7 @@ public partial class ModesPage : Page
     {
         private bool _isSelected;
         private bool _isActive;
+        private bool _isAutomatic;
         private bool _canActivate = true;
         private string _changeCount = "…";
         private string _changeCaption = Loc.T("checking this PC");
@@ -364,7 +443,7 @@ public partial class ModesPage : Page
         public string AccessibleName => Loc.F("{0} mode", Label) + $", {ChangeCount} {ChangeCaption}";
 
         public bool IsHighlighted => _isSelected || _isActive;
-        public string PillText => Loc.T(_isActive ? "ACTIVE" : "PREVIEWING");
+        public string PillText => Loc.T(_isActive ? (_isAutomatic ? "ACTIVE (AUTO)" : "ACTIVE") : "PREVIEWING");
         public string ActionText => Loc.T(_isActive ? "Deactivate" : "Activate");
         public bool CanDelete => !ProfileLibrary.IsBuiltIn(Profile.Mode);
 
@@ -385,6 +464,17 @@ public partial class ModesPage : Page
             {
                 _isActive = value;
                 NotifyHighlight();
+            }
+        }
+
+        /// <summary>The mode is on because automatic switching started it.</summary>
+        public bool IsAutomatic
+        {
+            get => _isAutomatic;
+            set
+            {
+                _isAutomatic = value;
+                Notify(nameof(PillText));
             }
         }
 

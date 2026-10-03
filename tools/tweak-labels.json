@@ -1,0 +1,199 @@
+{
+  "activity-history": [
+    "Keep the activity feed off",
+    "Do not record the apps and files you open",
+    "Do not send your activity history to Microsoft"
+  ],
+  "task-ceip": [
+    "Usage data collector",
+    "USB usage data collector"
+  ],
+  "task-appcompat": [
+    "Compatibility appraiser, which scans your installed programs",
+    "Program data updater"
+  ],
+  "task-feedback": [
+    "Feedback request task",
+    "Feedback task that runs after a download"
+  ],
+  "consumer-features": [
+    "Policy: Windows does not install promoted apps",
+    "No apps installed silently in your account"
+  ],
+  "start-suggestions": [
+    "Suggested apps in Start",
+    "Tips and welcome suggestions",
+    "Promoted apps in the Start menu",
+    "Tips and suggestions while you use Windows",
+    "Suggested content in Settings",
+    "More suggested content in Settings",
+    "Suggested content on other Settings pages",
+    "Recommendations section of Start"
+  ],
+  "lockscreen-tips": [
+    "Fun facts and tips on the lock screen",
+    "Suggested content on the lock screen"
+  ],
+  "game-dvr": [
+    "Background game recording",
+    "Recording from the Game Bar"
+  ],
+  "mouse-acceleration": [
+    "Pointer speed boost",
+    "First acceleration threshold",
+    "Second acceleration threshold"
+  ],
+  "edge-background": [
+    "Do not preload Edge when you sign in",
+    "Do not keep Edge running after its last window closes"
+  ],
+  "telemetry-policy-extras": [
+    "No feedback notifications",
+    "Do not send the device name with diagnostic data",
+    "Limit the diagnostic logs that are collected",
+    "Limit the crash dumps that are collected"
+  ],
+  "appcompat-telemetry-policies": [
+    "No application telemetry",
+    "No inventory of your installed programs",
+    "No Steps Recorder"
+  ],
+  "telemetry-tasks-extra": [
+    "Autochk proxy task",
+    "Bluetooth quality data task",
+    "Backup telemetry task",
+    "Startup apps telemetry task",
+    "Compatibility appraiser (second task)",
+    "Error report queue task",
+    "Disk diagnostic resolver task"
+  ],
+  "input-personalization-off": [
+    "Do not collect handwriting samples",
+    "Do not collect what you type",
+    "Do not harvest your contacts for suggestions",
+    "Typing and handwriting improvement service"
+  ],
+  "explorer-recent-tracking-off": [
+    "Do not track the apps you launch",
+    "Do not track the files you open",
+    "Hide recent files in Quick access",
+    "Hide frequent folders in Quick access"
+  ],
+  "maps-updates-off": [
+    "Do not download map data on its own",
+    "Do not update maps on their own",
+    "Maps notification task",
+    "Maps update task"
+  ],
+  "whats-new-nags-off": [
+    "Hide the \"finish setting up your device\" screens",
+    "No account notifications in Start",
+    "No account notification pop-ups"
+  ],
+  "content-delivery-silent-installs-off": [
+    "Turn off Windows content delivery",
+    "No apps promoted by the PC maker",
+    "No pre-installed promoted apps",
+    "Forget that promoted apps were once allowed",
+    "No feature promotions",
+    "No subscribed content",
+    "No welcome page after updates",
+    "No suggestions for activities"
+  ],
+  "cloudcontent-policies-extra": [
+    "No account-related content from Microsoft",
+    "No third-party suggestions",
+    "No tips after sign-in",
+    "No cloud-optimised content",
+    "No tailored experiences from diagnostic data"
+  ],
+  "lockscreen-widgets": [
+    "Lock screen widgets",
+    "Widgets chosen by Microsoft for the lock screen"
+  ],
+  "share-surfaces": [
+    "Share tray when you drag files",
+    "Promoted apps in Share"
+  ],
+  "promo-toasts": [
+    "Suggested pop-up notifications",
+    "Backup reminders",
+    "Phone Link promotion"
+  ],
+  "explorer-home-recommended": [
+    "Recommended files on Explorer Home",
+    "Cloud files in Quick access"
+  ],
+  "edge-nag-policies": [
+    "Stop asking to make Edge the default browser",
+    "Skip the first-run welcome page",
+    "Hide recommendations",
+    "Turn off the shopping assistant",
+    "Hide Microsoft Rewards",
+    "Stop personalisation reporting",
+    "Turn off the feedback button"
+  ],
+  "recall-snapshots-click-to-do-off": [
+    "Do not save Recall snapshots",
+    "Turn off Click to Do"
+  ],
+  "copilot-taskbar-button": [
+    "Hide the Copilot button",
+    "Hide the Copilot companion"
+  ],
+  "search-cloud-accounts": [
+    "Do not search your Microsoft account",
+    "Do not search your work or school account"
+  ],
+  "edge-ai-features-off": [
+    "Hide the Edge sidebar",
+    "Turn off AI writing help",
+    "Copilot cannot read the page you view",
+    "Copilot cannot read pages through the browser protocol",
+    "Work Copilot cannot read the page you view",
+    "Hide the Microsoft 365 Copilot chat icon",
+    "No AI search in your browsing history",
+    "Do not share browsing history with Copilot search",
+    "No AI-generated themes",
+    "Do not download the local AI model"
+  ],
+  "accessibility-hotkey-prompts-off": [
+    "Sticky Keys shortcut prompt",
+    "Filter Keys shortcut prompt",
+    "Toggle Keys shortcut prompt"
+  ],
+  "ui-effects-extra-off": [
+    "Taskbar animations",
+    "Shadows under icon labels",
+    "Aero Peek desktop preview"
+  ],
+  "snap-popups": [
+    "Snap layouts on the maximize button",
+    "Snap bar when you drag a window",
+    "Snap Assist suggestions"
+  ],
+  "start-app-lists": [
+    "Recently added apps in Start",
+    "Most used apps in Start"
+  ],
+  "visual-studio-telemetry-off": [
+    "No feedback dialog",
+    "No email field in feedback",
+    "No screenshot in feedback",
+    "Leave the customer experience program",
+    "Turn off Visual Studio telemetry"
+  ],
+  "bing-search-user-toggle": [
+    "No Bing results in Start search",
+    "Cortana consent off",
+    "Search does not use your location"
+  ],
+  "wer-reporting-off": [
+    "Turn off Windows Error Reporting",
+    "Do not send extra data with error reports"
+  ],
+  "onedrive-hide-nav-pane": [
+    "Hide OneDrive in the navigation pane",
+    "Hide OneDrive in the navigation pane of 32-bit apps"
+  ]
+}

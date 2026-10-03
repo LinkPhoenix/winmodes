@@ -8,6 +8,76 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+### Added
+
+- Optimize: policy badges, blocked-setting filters, and a local policy diagnostic with reviewed, journaled recovery for supported registry policy values and an undo of each recovery.
+- Optimize: refresh with check time and read errors, live technical values, and a detailed review before applying or restoring changes.
+- Optimize: per-setting outcomes and a summary of saved changes that require sign-out, Explorer refresh or a Windows restart.
+- Configuration: prepare, import and export catalog settings without applying them; unsupported entries are shown and choices are staged for review in Optimize.
+- History: search and filter mode journals, optimization recovery records and removed apps together, with refresh status and recovery-page links.
+- Operations: keep the latest operation visible across pages, refuse overlapping actions and wait for completion before quitting.
+- Support: a title-bar heart and About button open a centered donation window for Emilio LECERF, with the official blue PayPal logo and his PayPal.me link.
+- Debloat: persistent badges for installation, removal guidance, recovery options and pending removal; a scrollable review lists consequences and recovery for every selected app.
+- Debloat: refresh with detection source and check time, selection of visible results, hidden-selection counts, and an expanded four-column layout on large windows.
+
+- Optimize: filter recommendations, precautions, applied settings, administrator requirements and pending changes, with a visible result count.
+- Debloat: separate installation and removal guidance in every view, status filters, result counts, and sorting by name or category.
+- Navigation: Ctrl+1 through Ctrl+9 open the main pages; view controls use accessible icons with tooltips and a keyboard focus indicator.
+
+- About: an "Update channel" choice in the Updates section, Stable or Beta. On Beta, WinModes also offers the test versions (and the stable version when it comes out); on Stable it only offers finished versions, even if you run a beta build. Until you choose, a beta build follows the betas and a stable build the stable releases, as before.
+- Debloat: the list also covers the old Feedback and Reading List apps, Connect (wireless display), the promoted travel and note apps (Booking.com, Expedia, Priceline, Evernote) and the Acer, ASUS and Samsung tools, plus a few names that other optimizers list (older games, Instagram Beta, LinkedIn, XING, Yandex, Fresh Paint, Drawboard PDF, Cortana, the old Wallet). Nothing new is offered that the protected list covers.
+- Debloat: a "Your other apps" view lists every other app of your Start menu with its real name and logo, so everything on the PC can be seen. WinModes never removes them: the protected ones say so (the Store, winget, Windows, your AI tools), and a button opens Windows Settings to uninstall one the usual way.
+- Debloat: every app opens to show the packages it is made of (with their logos and versions) and, when there are several, to remove only some of them; it also says whether the app is safe to remove, and where to get it back from the Store or winget.
+- Debloat: a bar of categories with the number of apps in each, and a search that also reads the descriptions and the package names. A tick box shows what the list covers although this PC does not have it (the apps are then faded and cannot be selected).
+- Debloat: each app shows its own logo, and OneDrive its official icon, read from the app and from OneDrive itself. "Remove selected" moves to a bar at the bottom of the page that stays in view while the list scrolls.
+- Optimize: every setting can be opened to see what it changes (the registry values or scheduled tasks, in plain words and with their technical names) and, when it changes several things, to pick only some of them. Unticking a change that WinModes made puts back that change alone. Searching also looks in these descriptions.
+- Optimize: a bar of categories stays at the top of the page, with the number of settings in each. A click limits the list to one category instead of scrolling for it, and the numbers follow the search, so they show where the matches are.
+- About and title bar: a beta build shows a "Beta" tag next to its version (and the full version, such as 0.9.3-beta.20261002, on the About page). A beta build looks for newer betas as well as stable versions, unless you choose the Stable update channel on the About page; a stable build only hears about betas if you choose the Beta channel.
+- Optimize: two settings for OneDrive that remove nothing: hide it in File Explorer, or keep it from syncing and starting by policy.
+- Startup: a new page lists what starts with Windows (the Run entries of your account and of all users, and the Startup folders) and turns the items of your account on or off exactly the way Task Manager does, so nothing is deleted and each item can be reset to what it was. Security software, audio drivers, WinModes itself and the tools you rely on are shown as protected, and the items for all users, which need administrator rights, are shown but left to Task Manager.
+- Debloat: a new page lists the preinstalled apps of your account (Clipchamp, News, Solitaire, Teams, Copilot, the promoted games and apps, Xbox pieces, Phone Link, and about sixty more, found by comparing what the well-known optimizers remove) and removes the ones you tick, for your account only. Each app is "Safe" or "Check first", and the ones to check say what stops working without them. Everything removed is listed on the page and Restore registers it again from the files that stay on the PC. The Microsoft Store, App Installer (winget), Edge, WebView2, the framework packages, Windows Security, the shell, Windows Terminal, the image and video codecs, the Xbox identity pieces and the apps of your daily tools are never offered, whatever the list says.
+- Debloat: OneDrive can be uninstalled from the page. WinModes refuses while Desktop, Documents, Pictures, Music, Videos or Downloads live inside OneDrive, warns when an account is signed in or files exist only online, keeps every file that is on the PC and never touches the OneDrive setup program of Windows, so "Install OneDrive again" is always there.
+- Modes: a mode can change power values (when the display turns off, sleep and hibernation, disk, processor speed, USB suspend) without ever editing your power plans: it makes a copy of the plan, changes the copy and uses it, then deletes the copy and goes back to your plan when it ends. A copy left by a crash is removed at the next start, and a plan you pick yourself meanwhile is kept.
+- Modes and tray: automatic switching can be paused for an hour (and resumed) from the Modes page or the tray menu. While it is paused nothing is started or ended, and the mode that is on stays on.
+- Modes: two new modes. Focus silences the notification pop-ups (Do not disturb), keeps the screen and the PC awake on mains power, and leaves the services and the dev stack alone; add the chat and social apps to close in the mode editor. Eco is for the battery: Power saver plan, WSL and Docker stopped, background services calmed and transparency off.
+- Modes: a mode can now turn on settings from the Optimize list while it is active, and puts them back when it ends. Only per-user settings that take effect at once are used, so there is no extra permission prompt, and a setting that was already on before the mode is left alone. The preview lists them under "Windows settings". Game mode now turns on Do not disturb.
+- Optimize: 51 more settings, found by reading the code of about forty more open-source Windows optimizers. They cover telemetry and error-reporting policies, promotions in Windows and Edge, Recall, Click to Do, Copilot and other AI features, Search, AutoPlay, the Sticky Keys pop-ups, the startup-app delay, File Explorer and taskbar options, and Game Bar, audio ducking and notification sounds. Each one shows how many projects ship it, can be undone exactly, and those that need care carry a note. The Recall setting now says that snapshots already saved are removed.
+- Modes: a switch above the mode cards turns automatic switching on or off, and says what it is doing ("Code mode is on: Claude Code is running", or the time left before it ends). A mode started automatically is labelled "ACTIVE (AUTO)", and the tray menu has the same switch. The page now shows a switch made by the tray, a hotkey or automatic switching at once instead of at its next refresh.
+- Automation: a "Coding tools" section starts a mode (Code by default) while Claude Code, Codex, Cursor, T3 Code, OpenCode, Windsurf or VS Code is open, and ends it after the last one closes. Each tool is a switch; "Open now" shows which ones are running. Claude Code is told apart from the Claude chat app, so chatting does not start Code mode. Turning automatic switching on for the first time switches on the usual coding tools.
+- Automation: a "Wait before returning to normal" setting (30 seconds to 10 minutes, one minute by default) and a line that says what automatic switching is doing now, with a countdown.
+- Automation: each mode (Code, Work, Game, Focus, Eco) has its own list of the programs that start it. Add a program by typing its name, by picking it among the programs that are open (with its icon), or by browsing to its file; switch one off without losing it, and see which ones are open now. This is how a game starts Game mode, or Outlook or Teams start Work mode.
+
+### Changed
+
+- Optimize: starts with recommendations, explains choose/review/apply, separates advice, warnings, current state and scope with accessible badges, and keeps technical provenance in details.
+- Optimize: quick preparation includes readable low-risk recommendations without warnings, leaves services to individual choices, and offers Clear filters and Ctrl+F search.
+- Window: remembers normal size, position and maximized state and offers accessible interface zoom controls with Ctrl +/−/0.
+- Window: opens at 1360 × 900 with more room for content, fitting smaller screens at their display scale.
+- Services: the service knowledge base now also knows MMCSS, the Edge update services, the WSL and Hyper-V services, the Defender sensors and a few others that optimizers tend to disable, and marks them never to touch; Diagnostic Policy, IP Helper, Font Cache and Themes are now never to touch too, since other tools break Windows by switching them off. No mode stopped any of them.
+- Optimize and modes: after writing a setting, WinModes reads it back. A setting that Windows refuses without an error (a policy, or the protection of default apps) is now reported as not applied instead of shown as applied, and nothing is recorded for it.
+- Automation: a mode started automatically now stays on while any program or tool that triggers it is still open, and ends one minute after the last one closes, so going from Claude Code to Codex (or running both) no longer makes the PC go back and forth. A mode starts only after its trigger has held for 10 seconds, so a program that opens and closes at once changes nothing.
+- Automation: automatic switching never replaces or undoes a mode you chose yourself. A mode it started is remembered, so it is still undone after WinModes was restarted.
+- Automation: automatic switching waits 30 seconds after WinModes starts (Windows is still loading your programs) and stays quiet for 10 minutes after a switch that was refused or failed, instead of asking for the permission again at every check.
+- Processes and Services: the pages open about four times faster and no longer freeze for more than a second at each refresh (Services rebuilt its whole list every five seconds). Only the rows in view are drawn, the column titles stay in place while the list scrolls, and the icons appear a moment after the list.
+- Optimize: the page opens in about a third of the time and switching category is instant (it used to take up to two seconds on "All"): only the settings in view are drawn, the state of the PC is read in parallel and once at startup, and the page keeps what it showed when you come back, refreshing it in the background without moving the list or closing what you had opened.
+
+- Debloat: the page shows its list in about half the time (the two PowerShell readings of the apps now run side by side, and the logos are found in parallel and remembered), shows what it knew at once when you come back, and the list is read once more shortly after WinModes starts. Nothing you ticked is lost when you leave the page and return.
+- Automation: the page is laid out like the others, with the coding tools listed under the mode they start and the rules on battery or hours in a section of their own. A game outranks every other program, so a game opened next to Claude Code gets Game mode, and a program that only says "I am working" never hides another trigger.
+
+### Fixed
+
+- Optimize: warning filters include recommended settings with consequences, and summary/category counts match their recommendation and visible-row scope.
+- Window: zoom, configuration and support buttons in the header now receive mouse clicks instead of dragging the window.
+- Settings: language selection confirms the saved choice, preserves the pending choice when returning to the page and saves without changing the Windows startup entry.
+- Interface: new Help and no-results messages now appear in French, Spanish and Italian, along with the operation-in-progress prompt.
+
+- Debloat: failed or incomplete inventory reads keep the last valid reading and pause removal; details now open in Compact view and unavailable local restores are explained.
+
+- Optimize, Processes and Services: pages open correctly with the shared search field; search uses the matching text event handler.
+
+- Optimize and Debloat: the names of the categories in the bar at the top were black on the dark theme and hard to read; they now follow the theme.
+- Services and Processes: a program that has no icon of its own, such as the shared host of most Windows services (Application Information, AppX Deployment, Base Filtering Engine and about 300 others), showed a blank picture; it now shows the usual symbol instead.
+
 ## [0.9.2] - 2026-10-02
 
 ### Changed

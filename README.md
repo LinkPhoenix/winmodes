@@ -2,7 +2,7 @@
 
 Reversible Windows 11 modes for coding, work and gaming.
 
-WinModes switches your PC between modes (Code, Work, Game) to free memory and cut background load, without the usual damage of "debloat" tools: nothing is uninstalled, no security feature is weakened, and every switch can be undone.
+WinModes switches your PC between modes (Code, Work, Game, Focus, Eco) to free memory and cut background load, without the usual damage of "debloat" tools: nothing is uninstalled, no security feature is weakened, and every switch can be undone.
 
 It also watches the AI coding tools you run: what each one costs in memory, how much of your Claude Code and Codex plans is left, and how many tokens they used.
 
@@ -14,18 +14,20 @@ It also watches the AI coding tools you run: what each one costs in memory, how 
 
 ## What it does
 
-- **Modes**: each mode stops the services it does not need, closes or launches apps, sets the power plan and starts or stops WSL and Docker Desktop.
+- **Modes**: each mode stops the services it does not need, closes or launches apps, sets the power plan and starts or stops WSL and Docker Desktop. Five come with the app: **Code** (dev stack up, performance plan), **Work** (WSL and Docker stopped), **Game** (best performance plan, notifications off), **Focus** (notifications silenced, screen and PC kept awake on mains power, the dev stack left alone) and **Eco** (Power saver plan for the battery). A mode can also turn on Windows settings and change power values such as when the display turns off; it does so on a copy of your power plan, so your own plans are never edited. You can edit, duplicate, export and import modes.
 - **Preview before anything changes**: every mode shows exactly what it would change on your PC, compared with its current state.
 - **Undo**: the state of each service is recorded before it is touched, and "Deactivate" restores it.
 - **Dashboard**: CPU and memory gauges, 60-second history graphs for CPU, memory, GPU and disk, what each AI tool uses at a glance, top memory consumers.
 - **Processes page**: process tree with child processes, PID, CPU, memory, threads and command line; search, sort, and a right-click menu (end task, end process tree, open file location, copy).
 - **AI tools page**: every running session of Claude Code, Claude desktop, Codex, Cursor, VS Code and others, with the project folder it works in and all the processes it started.
 - **Services page**: search, filters, real app icons, and a lock on everything that is protected; a right-click starts, stops or changes the start type of a service that is not protected.
-- **Optimize page**: 28 Windows settings by category (privacy and telemetry, ads and suggestions, search and AI, gaming, background, Explorer) and the services worth starting only when needed. Each row shows whether it is already applied on your PC and how many of 12 surveyed open-source optimizers ship the same setting. You choose what to apply; WinModes records the current value first and Undo puts it back. Settings that weaken security or updates are not in the catalog and are refused by the engine. Nothing is uninstalled or deleted.
+- **Optimize page**: 81 Windows settings by category (privacy and telemetry, ads and suggestions, search and AI, gaming, background, Explorer), found by reading the code of more than forty open-source Windows optimizers, and the services worth starting only when needed. Each row shows whether it is already applied on your PC and how many of those optimizers ship the same setting. After each write WinModes reads the value back, so a setting that Windows refuses is reported instead of shown as applied. A bar of categories keeps the list short, and every setting opens to show the exact registry values or scheduled tasks it changes, with a tick box for each when there are several, so you can take part of a setting and leave the rest. You choose what to apply; WinModes records the current value first and Undo puts it back, whole or one change at a time. Settings that weaken security or updates are not in the catalog and are refused by the engine. Nothing is uninstalled or deleted.
+- **Debloat page**: lists, with their logos and a search, the apps Windows installed for you by category, and removes the ones you pick (Clipchamp, News, Solitaire, Teams, Copilot, the promoted games and apps, Phone Link and more), for your account only. The list comes from comparing what the well-known optimizers remove and what they break by going too far, so each app is marked *Safe* or *Check first* with what stops working without it. Every removal is recorded and *Restore* brings an app back from the files that stay on the PC. The Microsoft Store, App Installer (winget), Edge, WebView2, the framework packages, Windows Security, the shell, Windows Terminal, the image and video codecs and the apps of your daily tools are never offered. OneDrive can be uninstalled from the same page, after checks on redirected folders, sign-in and files that exist only online.
+- **Startup page**: lists what starts with Windows and turns items on or off the way Task Manager does (nothing is deleted, each item can be reset). Security software, audio drivers and your own tools are protected.
 - **Usage page** (optional, off by default): the **tokens** Claude Code and Codex used (total, new input, output, cache, per day, per model and per project) and how much **memory** each AI tool held per project, over the last day, week or month. The tokens are counted from the usage figures in the logs of the two tools, never from the text of a conversation; everything stays on your PC.
 - **MCP servers in double**: the AI tools page shows the MCP servers that several sessions each started, and the memory they hold together.
 - **Idle sessions**: flagged after 30 minutes without CPU use; end them by hand, or let WinModes do it after a delay you choose (off by default).
-- **Automation** (optional, off by default): rules such as "when `cs2.exe` runs, activate Game mode", "on battery, activate Work mode" or "from 09:00 to 18:00, activate Code mode", undone when the rule no longer applies.
+- **Automatic switching** (optional, off by default; one switch on the Modes page, in the tray menu and on the Automation page): Code mode starts by itself when Claude Code, Codex, Cursor, T3 Code, OpenCode, Windsurf or VS Code opens, and ends after the last of them has been closed for a minute (the wait is yours to choose), so going from one tool to another, or running several, never makes the PC go back and forth. Claude Code is told apart from the Claude chat app. You can add rules of your own, such as "when `cs2.exe` runs, activate Game mode", "on battery, activate Work mode" or "from 09:00 to 18:00, activate Code mode". A mode you chose yourself is never replaced or undone, and nothing is switched during the first 30 seconds after WinModes starts.
 - **Taskbar and desktop widget** (both optional): a small panel next to your app icons (or on the desktop) shows the active mode, CPU, memory, network, the memory used by AI tools and the **plan usage of Claude Code and Codex**: 5 hour and weekly limits, the weekly limit of a model that has its own, and the limit resets kept in reserve. It uses the free room of the taskbar whether the icons are centred or on the left, shows less when there is little room, follows an auto-hide taskbar and can hide during full-screen apps. The notification-area icon can also show the memory used by AI tools.
 - **Hover cards**: rest the mouse on Claude, Codex or the AI tools figure and a card opens after a moment with each limit, a coloured bar and the time it resets, or with what each AI tool uses. It never takes the mouse or the focus.
 - **Plan usage, read reliably**: from the status line of Claude Code and the files of Codex, or online. Signing in to a "WinModes account" in your browser gives a session of its own, renewed by itself, that never touches the sign-in of the tools. If the usage does not appear, the *Check Claude Code* and *Check Codex* buttons say what is missing.
@@ -66,6 +68,10 @@ It also watches the AI coding tools you run: what each one costs in memory, how 
 | Settings | About |
 |---|---|
 | ![Settings](images/settings.png) | ![About](images/about.png) |
+
+| Debloat | Startup |
+|---|---|
+| ![Debloat](images/debloat.png) | ![Startup](images/startup.png) |
 
 | Welcome guide |
 |---|
@@ -109,6 +115,14 @@ From the [Releases page](https://github.com/LinkPhoenix/winmodes/releases):
 | `SHA256SUMS.txt.sig` | Signature of the checksums, checked by the app before it installs an update. |
 
 Neither needs the .NET runtime. See the [changelog](CHANGELOG.md).
+
+### Beta releases
+
+New features are tested first in a **beta**, published as a *pre-release* named `vX.Y.Z-beta.YYYYMMDD` (with `.2`, `.3`… when several come out the same day) with the same files as a stable release. A beta wears a **Beta** tag next to its version in the title bar and on the About page.
+
+- You choose the **update channel** on the About page, in the Updates section. On *Stable* (the default of a stable copy) WinModes only offers the latest stable release. On *Beta* (the default of a beta copy) it also offers the newer betas, and the stable version of the same number when it comes out. Going back to Stable never downgrades: a beta waits for the next stable version.
+- A beta installs over a stable copy and the other way round (same installer identity), and it keeps your settings and journals.
+- Betas come from the `beta` branch, stable releases from `main`. Please report what you find in the [issues](https://github.com/LinkPhoenix/winmodes/issues).
 
 ## Requirements
 
@@ -158,12 +172,18 @@ pwsh -NoProfile -File tools/release.ps1 -Bump minor
 
 The script runs the tests, updates the version and the changelog, commits, tags and pushes. The release workflow then builds the installer and the portable zip, signs the checksums and publishes the GitHub release. Add `-DryRun` to preview without changing anything.
 
+A beta is cut from the `beta` branch with `-Beta`: it commits only the version, tags `vX.Y.Z-beta.YYYYMMDD`, pushes the branch and the tag, and the workflow publishes a pre-release. The changelog keeps its **Unreleased** section for the stable release.
+
+```bash
+pwsh -NoProfile -File tools/release.ps1 -Beta -DryRun
+```
+
 Releases are signed with an ECDSA P-256 key. The public key is committed in `src/WinModes.Core/Updates/update-public-key.pem` and built into the app; the private key is never in the repository and is read from the GitHub secret `WINMODES_UPDATE_KEY`. `tools/new-update-key.ps1` creates a pair, and `tools/package.ps1` refuses to build a release without the private key once the public key exists.
 
 To build the packages locally (the installer needs [Inno Setup](https://jrsoftware.org/isinfo.php) 6 or 7):
 
 ```bash
-pwsh -NoProfile -File tools/package.ps1 -Version 0.3.0
+pwsh -NoProfile -File tools/package.ps1 -Version 0.3.0   # or 0.9.3-beta.20261002 for a beta
 ```
 
 ## Project layout

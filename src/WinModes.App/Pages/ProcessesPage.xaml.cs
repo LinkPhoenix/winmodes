@@ -1,11 +1,12 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using WinModes.App.Controls;
 using WinModes.App.Services;
+using WinModes.Core;
 using WinModes.Core.Planning;
 
 namespace WinModes.App.Pages;
@@ -34,7 +35,7 @@ public partial class ProcessesPage : Page
 
     private readonly DispatcherTimer _timer = new() { Interval = RefreshInterval };
     private readonly HashSet<int> _expanded = [];
-    private readonly ObservableCollection<RowHolder> _rows = [];
+    private readonly ObservableCollection<RowHolder<Row>> _rows = [];
     private IReadOnlyList<ProcessNode> _nodes = [];
     private string _sortColumn = "Memory";
     private bool _sortDescending = true;
@@ -65,24 +66,22 @@ public partial class ProcessesPage : Page
         _refreshing = true;
         try
         {
-            _nodes = await Task.Run(() =>
-            {
-                var nodes = ProcessActions.Sample();
-                // Extract icons off the UI thread; the cache keeps later refreshes cheap.
-                foreach (var path in nodes.Select(node => node.ExecutablePath).Distinct())
-                {
-                    IconCache.Get(path);
-                }
-
-                return nodes;
-            });
+            _nodes = await Task.Run(ProcessActions.Sample);
             ShowRows();
+
+            // Rows first, icons when they are read: reading them is most of the time the page took to appear.
+            if (await IconCache.PreloadAsync(_nodes.Select(node => node.ExecutablePath)))
+            {
+                ShowRows();
+            }
         }
         finally
         {
             _refreshing = false;
         }
     }
+
+    private void OnSearchChanged(object sender, TextChangedEventArgs e) => ShowRows();
 
     private void OnFilterChanged(object sender, RoutedEventArgs e) => ShowRows();
 
@@ -126,7 +125,7 @@ public partial class ProcessesPage : Page
         var children = ProcessSampler.BuildChildren(_nodes);
         var totals = new Dictionary<int, Totals>();
         var rows = new List<Row>();
-        var search = SearchBox.Text.Trim();
+        var search = SearchMatcher.Terms(SearchBox.Text);
 
         if (search.Length > 0 || ProtectedOnly.IsChecked == true)
         {
@@ -147,7 +146,9 @@ public partial class ProcessesPage : Page
             }
         }
 
-        Reconcile(rows);
+        _rows.Reconcile(rows, row => row.Pid);
+        EmptyState.Visibility = _nodes.Count > 0 && rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        EmptyState.Hint = Loc.T("Try another search or clear filters.");
         SortName.Content = Loc.T("Name") + Arrow("Name");
         SortPid.Content = "PID" + Arrow("Pid");
         SortCpu.Content = "CPU" + Arrow("Cpu");
@@ -156,48 +157,6 @@ public partial class ProcessesPage : Page
 
         var totalGb = _nodes.Sum(node => node.PrivateMemoryMb) / MbPerGb;
         Summary.Text = Loc.F("{0} processes use {1:0.0} GB of private memory. Showing {2}. Right-click a row for actions.", _nodes.Count, totalGb, rows.Count);
-    }
-
-    /// <summary>
-    /// Updates the displayed rows in place. Replacing the whole list would rebuild every row's visuals
-    /// on each refresh, which is what made the page stutter.
-    /// </summary>
-    private void Reconcile(List<Row> rows)
-    {
-        for (var i = 0; i < rows.Count; i++)
-        {
-            var row = rows[i];
-            if (i < _rows.Count && _rows[i].Pid == row.Pid)
-            {
-                _rows[i].Data = row;
-                continue;
-            }
-
-            var existing = -1;
-            for (var j = i + 1; j < _rows.Count; j++)
-            {
-                if (_rows[j].Pid == row.Pid)
-                {
-                    existing = j;
-                    break;
-                }
-            }
-
-            if (existing >= 0)
-            {
-                _rows.Move(existing, i);
-                _rows[i].Data = row;
-            }
-            else
-            {
-                _rows.Insert(i, new RowHolder(row));
-            }
-        }
-
-        while (_rows.Count > rows.Count)
-        {
-            _rows.RemoveAt(_rows.Count - 1);
-        }
     }
 
     private void AddTree(ProcessNode node, int level, ILookup<int, ProcessNode> children, Dictionary<int, Totals> totals, List<Row> rows, CultureInfo culture)
@@ -258,7 +217,7 @@ public partial class ProcessesPage : Page
     private Row ToRow(ProcessNode node, int level, Totals shown, bool hasChildren, CultureInfo culture)
     {
         var isProtected = AppServices.Policy.IsProtectedProcess(node.Name);
-        var icon = IconCache.Get(node.ExecutablePath);
+        var icon = IconCache.Peek(node.ExecutablePath);
         return new Row(
             node.Pid,
             node.Name,
@@ -280,14 +239,24 @@ public partial class ProcessesPage : Page
             node.WorkingDirectory);
     }
 
-    private static bool Matches(ProcessNode node, string search, CultureInfo culture) =>
-        node.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
-        || node.Pid.ToString(culture) == search
-        || node.CommandLine?.Contains(search, StringComparison.OrdinalIgnoreCase) == true;
+    private static bool Matches(ProcessNode node, IReadOnlyList<string> search, CultureInfo culture) =>
+        SearchMatcher.MatchesTerms(search, node.Name, node.Pid.ToString(culture), node.CommandLine);
 
     private string Arrow(string column) => column != _sortColumn ? "" : _sortDescending ? Descending : Ascending;
 
-    private void OnMenuOpening(object sender, ContextMenuEventArgs e) => _menuOpen = true;
+    private void OnMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        // The menu belongs to the list: point it at the row under the pointer, or show nothing between rows.
+        var row = (e.OriginalSource as DependencyObject)?.FindAncestor<ContentPresenter>()?.Content as RowHolder<Row>;
+        if (row is null)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        Rows.ContextMenu!.DataContext = row.Data;
+        _menuOpen = true;
+    }
 
     private void OnMenuClosing(object sender, ContextMenuEventArgs e) => _menuOpen = false;
 
@@ -331,29 +300,6 @@ public partial class ProcessesPage : Page
         ProcessActions.Copy(RowOf(sender)?.Pid.ToString(CultureInfo.InvariantCulture));
 
     private void OnCopyCommand(object sender, RoutedEventArgs e) => ProcessActions.Copy(RowOf(sender)?.Command);
-
-    /// <summary>Stable item for one process; swapping <see cref="Data"/> refreshes the row without recreating it.</summary>
-    private sealed class RowHolder(Row data) : INotifyPropertyChanged
-    {
-        private Row _data = data;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public int Pid => _data.Pid;
-
-        public Row Data
-        {
-            get => _data;
-            set
-            {
-                if (_data != value)
-                {
-                    _data = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Data)));
-                }
-            }
-        }
-    }
 
     private sealed record Totals(double MemoryMb, double Cpu, int Threads, int Descendants);
 

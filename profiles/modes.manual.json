@@ -8,12 +8,18 @@
     ]
   },
   "baseline": {
-    "required": ["reg-copilot", "reg-recall"],
+    "required": [
+      "reg-copilot",
+      "reg-recall"
+    ],
     "optInDefault": true
   },
   "keepServices": {
     "note": "User overrides: never stopped by any mode, whatever the knowledge-base score.",
-    "ids": ["LGHUBUpdaterService", "WinFsp.Launcher"],
+    "ids": [
+      "LGHUBUpdaterService",
+      "WinFsp.Launcher"
+    ],
     "why": {
       "LGHUBUpdaterService": "Logitech documents that G HUB depends on it; peripherals are used in every mode.",
       "WinFsp.Launcher": "Filesystem driver launcher used by mount tools; stopping it can break mounted drives."
@@ -22,47 +28,185 @@
   "code": {
     "label": "Code",
     "intent": "AI coding: Claude Code, Codex, T3 Code, Cursor, Node, WSL2, Docker, PostgreSQL. Max RAM for the dev stack, no gaming services.",
-    "power": { "plan": "high-performance", "note": "Keeps CPU clocks up for builds and tests; Ultimate Performance is optional." },
-    "wsl": { "running": true, "wslconfig": { "memory": "12GB", "processors": 8, "swap": "4GB", "autoMemoryReclaim": "dropCache" }, "docker": "start" },
+    "power": {
+      "plan": "high-performance",
+      "note": "Keeps CPU clocks up for builds and tests; Ultimate Performance is optional."
+    },
+    "wsl": {
+      "running": true,
+      "wslconfig": {
+        "memory": "12GB",
+        "processors": 8,
+        "swap": "4GB",
+        "autoMemoryReclaim": "dropCache"
+      },
+      "docker": "start"
+    },
     "apps": {
       "close": [
-        { "id": "Steam", "process": "steam.exe", "why": "Steam client and its web helpers use 300-600 MB and update games in the background." }
+        {
+          "id": "Steam",
+          "process": "steam.exe",
+          "why": "Steam client and its web helpers use 300-600 MB and update games in the background."
+        }
       ],
       "launch": [],
-      "keepOpen": ["Discord", "Claude", "Codex", "Harness Control", "BurnRate", "OpenCodexTray"]
+      "keepOpen": [
+        "Discord",
+        "Claude",
+        "Codex",
+        "Harness Control",
+        "BurnRate",
+        "OpenCodexTray"
+      ]
     }
   },
   "work": {
     "label": "Work",
     "intent": "Office work, communication and browsing. WSL and Docker stopped to free their VM memory.",
-    "power": { "plan": "balanced" },
-    "wsl": { "running": false, "action": "wsl --shutdown after quitting Docker Desktop", "docker": "quit" },
+    "power": {
+      "plan": "balanced"
+    },
+    "wsl": {
+      "running": false,
+      "action": "wsl --shutdown after quitting Docker Desktop",
+      "docker": "quit"
+    },
     "apps": {
       "close": [
-        { "id": "Steam", "process": "steam.exe", "why": "Not needed for work." }
+        {
+          "id": "Steam",
+          "process": "steam.exe",
+          "why": "Not needed for work."
+        }
       ],
       "launch": [],
-      "keepOpen": ["Discord", "Claude", "Codex", "Harness Control", "BurnRate", "OpenCodexTray"]
+      "keepOpen": [
+        "Discord",
+        "Claude",
+        "Codex",
+        "Harness Control",
+        "BurnRate",
+        "OpenCodexTray"
+      ]
     }
   },
   "game": {
     "label": "Game",
     "intent": "Gaming on the OMEN laptop: Steam, Xbox/Game Pass, Logitech G HUB. WSL and Docker stopped, gaming services on.",
-    "power": { "plan": "ultimate-performance", "fallback": "high-performance", "note": "Plug in AC power; OMEN Gaming Hub performance mode stays under the user's control." },
-    "wsl": { "running": false, "action": "wsl --shutdown after quitting Docker Desktop", "docker": "quit" },
+    "power": {
+      "plan": "ultimate-performance",
+      "fallback": "high-performance",
+      "note": "Plug in AC power; OMEN Gaming Hub performance mode stays under the user's control."
+    },
+    "wsl": {
+      "running": false,
+      "action": "wsl --shutdown after quitting Docker Desktop",
+      "docker": "quit"
+    },
     "apps": {
       "close": [
-        { "id": "electron.app.Notion", "process": "Notion.exe", "why": "Electron app, 300-500 MB." },
-        { "id": "TickTick", "process": "TickTick.exe", "why": "Task app, not needed while gaming." },
-        { "id": "DeepL auto-start", "process": "DeepL.exe", "why": "Translator tray app." },
-        { "id": "PDF24", "process": "pdf24.exe", "why": "PDF tray tool." },
-        { "id": "WingetUI", "process": "UniGetUI.exe", "why": "Update checker; can start downloads during a game." },
-        { "id": "MEGAsync", "process": "MEGAsync.exe", "why": "Sync uses disk and network during a game; files resync when it restarts." }
+        {
+          "id": "electron.app.Notion",
+          "process": "Notion.exe",
+          "why": "Electron app, 300-500 MB."
+        },
+        {
+          "id": "TickTick",
+          "process": "TickTick.exe",
+          "why": "Task app, not needed while gaming."
+        },
+        {
+          "id": "DeepL auto-start",
+          "process": "DeepL.exe",
+          "why": "Translator tray app."
+        },
+        {
+          "id": "PDF24",
+          "process": "pdf24.exe",
+          "why": "PDF tray tool."
+        },
+        {
+          "id": "WingetUI",
+          "process": "UniGetUI.exe",
+          "why": "Update checker; can start downloads during a game."
+        },
+        {
+          "id": "MEGAsync",
+          "process": "MEGAsync.exe",
+          "why": "Sync uses disk and network during a game; files resync when it restarts."
+        }
       ],
       "launch": [
-        { "id": "Steam", "path": "C:\\Program Files (x86)\\Steam\\steam.exe" }
+        {
+          "id": "Steam",
+          "path": "C:\\Program Files (x86)\\Steam\\steam.exe"
+        }
       ],
-      "keepOpen": ["Discord", "Betterbird", "Harness Control", "BurnRate", "LGHUB"]
-    }
+      "keepOpen": [
+        "Discord",
+        "Betterbird",
+        "Harness Control",
+        "BurnRate",
+        "LGHUB"
+      ]
+    },
+    "tweakIds": [
+      "toast-notifications-global-off"
+    ]
+  },
+  "focus": {
+    "label": "Focus",
+    "intent": "Distraction-free work or a presentation: notifications silenced, the screen and the PC stay awake on mains power, the dev stack left as it is. Add the chat and social apps to close in the mode editor.",
+    "servicesFrom": "none",
+    "power": {
+      "plan": "balanced",
+      "values": [
+        {
+          "setting": "display-off",
+          "ac": 0
+        },
+        {
+          "setting": "sleep-after",
+          "ac": 0
+        }
+      ],
+      "note": "The values are set on a copy of the plan, deleted when the mode ends."
+    },
+    "wsl": {
+      "running": true,
+      "docker": null
+    },
+    "apps": {
+      "close": [],
+      "launch": [],
+      "keepOpen": []
+    },
+    "tweakIds": [
+      "toast-notifications-global-off"
+    ]
+  },
+  "eco": {
+    "label": "Eco",
+    "intent": "Longer battery life: power saver plan, WSL and Docker stopped, background services calmed, transparency off.",
+    "servicesFrom": "work",
+    "power": {
+      "plan": "power-saver",
+      "fallback": "balanced",
+      "note": "The Power saver plan lowers the processor speed and dims the display."
+    },
+    "wsl": {
+      "running": false,
+      "action": "wsl --shutdown after quitting Docker Desktop",
+      "docker": "quit"
+    },
+    "apps": {
+      "close": [],
+      "launch": [],
+      "keepOpen": []
+    },
+    "tweakIds": [
+      "transparency"
+    ]
   }
 }

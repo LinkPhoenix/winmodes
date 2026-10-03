@@ -346,5 +346,8 @@
       "value": "activate",
       "risk": "low"
     }
+  ],
+  "tweakIds": [
+    "toast-notifications-global-off"
   ]
 }

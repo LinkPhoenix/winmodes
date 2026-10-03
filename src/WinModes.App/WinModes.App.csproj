@@ -3,18 +3,20 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- WinForms is used only for the notification-area icon (WPF has none). -->
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>WinModes</AssemblyName>
     <RootNamespace>WinModes.App</RootNamespace>
     <ApplicationIcon>Assets\winmodes.ico</ApplicationIcon>
-    <Version>0.9.2</Version>
+    <Version>0.9.3-beta.20261003</Version>
     <!-- WPF0001: the Fluent ThemeMode API is still marked experimental in .NET 10. -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Resource Include="Assets\winmodes.ico" />
+    <Resource Include="Assets\paypal-logo-blue.jpg" />
   </ItemGroup>
 
   <ItemGroup>

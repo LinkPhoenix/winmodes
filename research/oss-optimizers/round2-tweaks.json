@@ -1,0 +1,2082 @@
+[
+  {
+    "id": "telemetry-policy-extras",
+    "title": "Stop feedback prompts and extra diagnostic data",
+    "description": "Stops feedback pop-ups and keeps the device name, diagnostic logs and crash dumps out of the diagnostic data.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "GTweak",
+      "optimizerDuck",
+      "RyTuneX",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+        "name": "DoNotShowFeedbackNotifications",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+        "name": "AllowDeviceNameInTelemetry",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+        "name": "LimitDiagnosticLogCollection",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+        "name": "LimitDumpCollection",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:60-74",
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:732-749",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:347-362",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1407-1418"
+    ]
+  },
+  {
+    "id": "appcompat-telemetry-policies",
+    "title": "Turn off application telemetry by policy",
+    "description": "Turns off the application-impact collectors by policy, so an update that re-enables their scheduled tasks does not bring them back.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "ET-Optimizer",
+      "GTweak",
+      "optimizerDuck",
+      "RyTuneX"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat",
+        "name": "AITEnable",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat",
+        "name": "DisableInventory",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat",
+        "name": "DisableUAR",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:86-95",
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:698-711",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:194-235",
+      "semazurek_ET-Optimizer/ET/Form1.cs:7041-7045"
+    ]
+  },
+  {
+    "id": "ceip-sqm-policy",
+    "title": "Turn off the Customer Experience program",
+    "description": "Turns off the Customer Experience Improvement Program by policy.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "ET-Optimizer",
+      "GTweak",
+      "RyTuneX"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\SQMClient\\Windows",
+        "name": "CEIPEnable",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:716",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:260-275"
+    ]
+  },
+  {
+    "id": "telemetry-tasks-extra",
+    "title": "Turn off more telemetry tasks",
+    "description": "Turns off more telemetry scheduled tasks (compatibility backup, startup-app tracking, error-report queue, Bluetooth and disk diagnostics).",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": "Windows can switch some of them back on after a feature update; WinModes only changes the ones that exist on this PC.",
+    "tools": [
+      "ET-Optimizer",
+      "GTweak",
+      "optimizerDuck",
+      "RyTuneX",
+      "SophiApp"
+    ],
+    "values": [],
+    "tasks": [
+      "\\Microsoft\\Windows\\Autochk\\Proxy",
+      "\\Microsoft\\Windows\\Customer Experience Improvement Program\\BthSQM",
+      "\\Microsoft\\Windows\\Application Experience\\MareBackup",
+      "\\Microsoft\\Windows\\Application Experience\\StartupAppTask",
+      "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser Exp",
+      "\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting",
+      "\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticResolver"
+    ],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:153-164,212-218",
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:769-785",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Storage/TaskStorage.cs:8-44",
+      "Sophia-Community_SophiApp/src/SophiApp/Customizations/Accessors.cs:86-100"
+    ]
+  },
+  {
+    "id": "input-personalization-off",
+    "title": "Stop learning from typing and handwriting",
+    "description": "Windows stops learning from what you type or write and stops reading your contacts for suggestions.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": "Predictive text and handwriting suggestions become less personal.",
+    "tools": [
+      "ET-Optimizer",
+      "GTweak",
+      "optimizerDuck",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "SOFTWARE\\Microsoft\\InputPersonalization",
+        "name": "RestrictImplicitInkCollection",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "User",
+        "path": "SOFTWARE\\Microsoft\\InputPersonalization",
+        "name": "RestrictImplicitTextCollection",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "User",
+        "path": "SOFTWARE\\Microsoft\\InputPersonalization\\TrainedDataStore",
+        "name": "HarvestContacts",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Input\\TIPC",
+        "name": "Enabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:289-303",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:237-258",
+      "semazurek_ET-Optimizer/ET/Form1.cs:7139-7150",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs (id privacy-inking-typing-dictionary)"
+    ]
+  },
+  {
+    "id": "language-list-optout",
+    "title": "Do not share the language list with websites",
+    "description": "Websites no longer receive your list of installed languages.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": "On a multilingual PC some sites may show only the first language.",
+    "tools": [
+      "ET-Optimizer",
+      "optimizerDuck",
+      "SophiApp",
+      "TairikuOokami",
+      "Win10BloatRemover",
+      "win11tweak",
+      "WindowsMize",
+      "Winhance",
+      "Winrift",
+      "winscript",
+      "WinSlap",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Control Panel\\International\\User Profile",
+        "name": "HttpAcceptLanguageOptOut",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:304-308",
+      "semazurek_ET-Optimizer/ET/Form1.cs:5999",
+      "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:215-222",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:939"
+    ]
+  },
+  {
+    "id": "cloud-clipboard-sync-off",
+    "title": "Do not sync the clipboard across devices",
+    "description": "The clipboard history stays on this PC instead of syncing to your other devices. Win+V keeps working locally.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "RyTuneX",
+      "TairikuOokami",
+      "Win10BloatRemover",
+      "WindowsMize",
+      "WinSlap",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "AllowCrossDeviceClipboard",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1725-1728"
+    ]
+  },
+  {
+    "id": "explorer-recent-tracking-off",
+    "title": "Stop keeping recent apps and files",
+    "description": "Stops Windows keeping lists of recent apps, documents and frequent folders.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": "Quick Access, Jump Lists and Start lose their \"recent\" entries.",
+    "tools": [
+      "ET-Optimizer",
+      "GTweak",
+      "optimizerDuck",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "Start_TrackProgs",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "Start_TrackDocs",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+        "name": "ShowRecent",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+        "name": "ShowFrequent",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:111-115",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:449-473",
+      "semazurek_ET-Optimizer/ET/Form1.cs:5952,7517",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Customize/Models/StartMenuCustomizations.cs:360"
+    ]
+  },
+  {
+    "id": "online-speech-recognition-off",
+    "title": "Turn off online speech recognition",
+    "description": "Audio is no longer sent to Microsoft for online speech recognition.",
+    "category": "Privacy and telemetry",
+    "risk": "medium",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Voice typing (Win+H) and Voice Access stop working online.",
+    "tools": [
+      "optimizerDuck",
+      "RyTuneX",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Speech_OneCore\\Settings\\OnlineSpeechPrivacy",
+        "name": "HasAccepted",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:106-110",
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1769-1772",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1066"
+    ]
+  },
+  {
+    "id": "maps-updates-off",
+    "title": "Stop map downloads and updates",
+    "description": "Stops offline-map downloads and the Maps update tasks.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Offline maps are no longer updated.",
+    "tools": [
+      "GTweak",
+      "optimizerDuck",
+      "SophiApp"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Maps",
+        "name": "AutoDownloadAndUpdateMapData",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SYSTEM\\Maps",
+        "name": "AutoUpdateEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [
+      "\\Microsoft\\Windows\\Maps\\MapsToastTask",
+      "\\Microsoft\\Windows\\Maps\\MapsUpdateTask"
+    ],
+    "evidence": [
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:540-565",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Storage/TaskStorage.cs:53-55",
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:442,480-483",
+      "Sophia-Community_SophiApp/src/SophiApp/Customizations/Accessors.cs:86-100"
+    ]
+  },
+  {
+    "id": "whats-new-nags-off",
+    "title": "Hide the \"finish setting up your device\" prompts",
+    "description": "Hides \"Let's finish setting up your device\" and the Microsoft-account prompts in Start and Settings.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "ET-Optimizer",
+      "GTweak",
+      "optimizerDuck",
+      "SophiApp",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\UserProfileEngagement",
+        "name": "ScoobeSystemSettingEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "Start_AccountNotifications",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SystemSettings\\AccountNotifications",
+        "name": "EnableAccountNotifications",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:284-288",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/InterfaceTweaks.cs:626-631",
+      "semazurek_ET-Optimizer/ET/Form1.cs:6357",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/NotificationOptimizations.cs:210"
+    ]
+  },
+  {
+    "id": "content-delivery-silent-installs-off",
+    "title": "Block promoted apps and welcome pages",
+    "description": "Stops Windows delivering promoted apps and \"welcome\" pages after updates. Apps already installed stay.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "ET-Optimizer",
+      "optimizerDuck",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "ContentDeliveryAllowed",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "OemPreInstalledAppsEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "PreInstalledAppsEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "PreInstalledAppsEverEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "FeatureManagementEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContentEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-310093Enabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-353698Enabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/BloatwareAndServices.cs:29-62",
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:668-711",
+      "semazurek_ET-Optimizer/ET/Form1.cs:6362-6396",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:532-660"
+    ]
+  },
+  {
+    "id": "cloudcontent-policies-extra",
+    "title": "Block Windows promotions by policy",
+    "description": "Turns off the remaining Windows cloud-content promotions by policy: Settings home, third-party suggestions and tailored experiences.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": "Some of these policies are honoured only on Enterprise and Education editions; on Pro they are harmless.",
+    "tools": [
+      "ET-Optimizer",
+      "optimizerDuck",
+      "RyTuneX",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+        "name": "DisableConsumerAccountStateContent",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+        "name": "DisableThirdPartySuggestions",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+        "name": "DisableSoftLanding",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+        "name": "DisableCloudOptimizedContent",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+        "name": "DisableTailoredExperiencesWithDiagnosticData",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:254-283",
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/UserExperience.cs:144-162",
+      "semazurek_ET-Optimizer/ET/Form1.cs:6357-6396",
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1674-1677"
+    ]
+  },
+  {
+    "id": "online-tips-off",
+    "title": "Do not fetch online tips",
+    "description": "Settings and Explorer no longer fetch online tips and Microsoft help content.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Batlez-Tweaks",
+      "ET-Optimizer",
+      "GTweak",
+      "RyTuneX",
+      "TairikuOokami",
+      "Win10BloatRemover",
+      "WindowsMize"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+        "name": "AllowOnlineTips",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/InterfaceTweaks.cs:904-943",
+      "semazurek_ET-Optimizer/ET/Form1.cs:6427",
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:2045"
+    ]
+  },
+  {
+    "id": "lockscreen-widgets",
+    "title": "Turn off lock screen widgets",
+    "description": "Removes the news and weather widgets from the lock screen.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "WindowsMize",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Lock Screen",
+        "name": "LockScreenWidgetsEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Lock Screen",
+        "name": "LockScreenWidgetsSystemCurationEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/lock_screen/Set-LockScreenWidgets.ps1:37-45 and Set-LockScreenWidgetsSuggestion.ps1:28-36 (on: 1 default | off: 0)",
+      "zoicware_ZOICWARE/src/RegTweaks.txt:304-306 (LockScreenWidgetsEnabled=0, AutoSelectWidgetsOnLockScreen=0)"
+    ]
+  },
+  {
+    "id": "share-surfaces",
+    "title": "Turn off the Share tray and its promotions",
+    "description": "Stops the Share tray that pops up while you drag files, and the promoted apps in the Share dialog.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Win11Debloat",
+      "WindowsMize",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\CDP",
+        "name": "DragTrayEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\CDP",
+        "name": "EnablePromotionalAppsForShare",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Raphire_Win11Debloat/Regfiles/Disable_Share_Drag_Tray.reg and Undo/Enable_Share_Drag_Tray.reg",
+      "agadiffe_WindowsMize/src/modules/settings_app/system/private/multitasking/Set-MultitaskingDropTray.ps1:28-36",
+      "agadiffe_WindowsMize/src/modules/settings_app/system/private/share/Set-ShareShowSuggestedApps.ps1:28-36",
+      "zoicware_ZOICWARE/src/RegTweaks.txt:1129-1131"
+    ]
+  },
+  {
+    "id": "promo-toasts",
+    "title": "Block advertising notifications",
+    "description": "Blocks the advertising notifications (suggestions, backup reminders, Phone Link) without turning off the other notifications.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Win11Debloat",
+      "WindowsMize",
+      "winutil",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings\\Windows.SystemToast.Suggested",
+        "name": "Enabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings\\Windows.SystemToast.BackupReminder",
+        "name": "Enabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Mobility",
+        "name": "OptedIn",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Raphire_Win11Debloat/Regfiles/Disable_Windows_Suggestions.reg (Windows.SystemToast.Suggested, BackupReminder, Mobility OptedIn)",
+      "Raphire_Win11Debloat/Regfiles/Undo/Enable_Windows_Suggestions.reg (all three restored to 1)",
+      "zoicware_ZOICWARE/src/RegTweaks.txt:685-690"
+    ]
+  },
+  {
+    "id": "explorer-home-recommended",
+    "title": "Hide recommended files in Explorer Home",
+    "description": "Hides the recommended and cloud files from File Explorer Home.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "TairikuOokami",
+      "WindowsDeveloperConfig",
+      "WindowsMize",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+        "name": "ShowRecommendations",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+        "name": "ShowCloudFilesInQuickAccess",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "microsoft_WindowsDeveloperConfig/windows-dev-config/steps/registry-explorer.ps1:132-136 (ShowCloudFilesInQuickAccess=0, 'recommended/cloud files')",
+      "agadiffe_WindowsMize/src/modules/file_explorer/private/general/Set-FileExplorerShowRecommendedSection.ps1:5,30-32 and Set-FileExplorerShowCloudFiles.ps1:30-32 (on: 1 default; Recommended requires CloudFiles)",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Customize/Models/ExplorerCustomizations.cs (ShowRecommendations, ShowCloudFilesInQuickAccess)"
+    ]
+  },
+  {
+    "id": "edge-nag-policies",
+    "title": "Microsoft Edge: stop the promotions",
+    "description": "Microsoft Edge: no default-browser campaign, first-run page, shopping assistant, rewards or recommendations.",
+    "category": "Ads and suggestions",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Edge shows \"managed by your organization\", and these options can no longer be changed in edge://settings.",
+    "tools": [
+      "ET-Optimizer",
+      "GTweak"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "DefaultBrowserSettingsCampaignEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "HideFirstRunExperience",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "ShowRecommendationsEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "EdgeShoppingAssistantEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "ShowMicrosoftRewards",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "PersonalizationReportingEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "UserFeedbackAllowed",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "semazurek_ET-Optimizer/ET/Form1.cs:6010-6052",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/InterfaceTweaks.cs:649-651"
+    ]
+  },
+  {
+    "id": "recall-snapshots-click-to-do-off",
+    "title": "Block Recall snapshots by policy",
+    "description": "Turns off Recall snapshots by policy, in addition to the Recall setting above.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": "Snapshots that Recall already saved are removed when the policy takes effect.",
+    "tools": [
+      "ET-Optimizer",
+      "optimizerDuck",
+      "RyTuneX",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+        "name": "TurnOffSavingSnapshots",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+        "name": "DisableClickToDo",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/AI.cs:30-103",
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:249-252",
+      "semazurek_ET-Optimizer/ET/Form1.cs:7245-7280",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1907,1932"
+    ]
+  },
+  {
+    "id": "click-to-do",
+    "title": "Turn off Click to Do",
+    "description": "Turns off Click to Do, the AI overlay on the screen.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": true,
+    "restart": "sign-out",
+    "warning": null,
+    "tools": [
+      "Batlez-Tweaks",
+      "optimizerDuck",
+      "RemoveWindowsAI",
+      "Win11Debloat",
+      "WindowsMize"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\Shell\\ClickToDo",
+        "name": "DisableClickToDo",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "agadiffe_WindowsMize/src/modules/settings_app/privacy_&_security/private/windows_permissions/ai/Set-WinPermissionsClickToDo.ps1:37-45 (HKCU toggle: off = 1, on = 0 default)",
+      "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:940 (same HKCU key set to 1)",
+      "Raphire_Win11Debloat/Regfiles/Disable_Click_to_Do.reg (policy form under Policies\\Microsoft\\Windows\\WindowsAI, HKCU and HKLM)",
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/AI.cs:DisableClickToDo (policy form)"
+    ]
+  },
+  {
+    "id": "copilot-taskbar-button",
+    "title": "Hide the Copilot button on the taskbar",
+    "description": "Hides the Copilot button and the Ask Copilot entry on the taskbar.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": true,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "RemoveWindowsAI",
+      "TairikuOokami",
+      "Win11Debloat",
+      "WindowsMize",
+      "Winhance",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "ShowCopilotButton",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "TaskbarCompanion",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Raphire_Win11Debloat/Regfiles/Disable_Copilot.reg (ShowCopilotButton=0)",
+      "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:938 and :1094 (ShowCopilotButton, TaskbarCompanion)",
+      "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/taskbar/items_&_tray_icons/Set-TaskbarAskCopilot.ps1:30-50",
+      "TairikuOokami_Windows/Windows Tweaks.bat:2736 (comment: Copilot / 0 - Off / 1 - On)"
+    ]
+  },
+  {
+    "id": "input-insights",
+    "title": "Turn off typing insights",
+    "description": "Turns off typing insights, the AI suggestions in the input panel.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "ET-Optimizer",
+      "RemoveWindowsAI",
+      "RyTuneX",
+      "TairikuOokami",
+      "Winhance",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\input\\Settings",
+        "name": "InsightsEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "zoicware_ZOICWARE/src/RegTweaks.txt:122-124 (comment: Disable AI insights)",
+      "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:939",
+      "TairikuOokami_Windows/Windows Tweaks.bat:2356",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:2391-2396 (Enabled 1 / Disabled 0)"
+    ]
+  },
+  {
+    "id": "search-cloud-accounts",
+    "title": "Keep Windows Search off your online accounts",
+    "description": "Windows Search stops querying your Microsoft and work accounts and stays on this PC.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "You can no longer find cloud-only mail or files from the Start menu.",
+    "tools": [
+      "Batlez-Tweaks",
+      "TairikuOokami",
+      "WindowsMize",
+      "Winhance",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+        "name": "IsMSACloudSearchEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+        "name": "IsAADCloudSearchEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "agadiffe_WindowsMize/src/modules/settings_app/privacy_&_security/private/windows_permissions/search/Set-WinPermissionsCloudSearch.ps1:43-69 (on: 1 default | off: 0)",
+      "zoicware_ZOICWARE/src/RegTweaks.txt:635-641",
+      "TairikuOokami_Windows/Windows Tweaks.bat:3090"
+    ]
+  },
+  {
+    "id": "search-device-history",
+    "title": "Do not keep a search history",
+    "description": "Start search stops keeping a history of what you searched on this device.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Existing history is not deleted by this setting.",
+    "tools": [
+      "Batlez-Tweaks",
+      "TairikuOokami",
+      "Win11Debloat",
+      "WindowsMize",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+        "name": "IsDeviceSearchHistoryEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Raphire_Win11Debloat/Regfiles/Disable_Search_History.reg",
+      "Raphire_Win11Debloat/Regfiles/Undo/Enable_Search_History.reg (restores 1)",
+      "agadiffe_WindowsMize/src/modules/settings_app/privacy_&_security/private/windows_permissions/search/Set-WinPermissionsSearchHistory.ps1:28-36"
+    ]
+  },
+  {
+    "id": "settings-ai-agent",
+    "title": "Turn off the AI agent in Settings",
+    "description": "Keeps Settings search a plain keyword search by turning off its AI agent.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "May only be honoured on some editions of Windows 11.",
+    "tools": [
+      "chemo",
+      "RemoveWindowsAI",
+      "WindowsMize",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+        "name": "DisableSettingsAgent",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "agadiffe_WindowsMize/src/modules/tweaks/public/user_interface_and_experience/Set-WindowsSettingsSearchAgent.ps1:28-39",
+      "zoicware_RemoveWindowsAI/RemoveWindowsAi.ps1:879 (value list in Disable-Registry-Keys)",
+      "t-richards_chemo/src/Treatment/CopilotAI/RemoveWindowsAI.cs (comment: only Enterprise and Education let you turn it off)"
+    ]
+  },
+  {
+    "id": "notepad-ai-off",
+    "title": "Turn off AI in Notepad",
+    "description": "Removes the AI buttons (Rewrite, Summarize, Write) from Notepad without uninstalling anything.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "chemo",
+      "ET-Optimizer",
+      "RemoveWindowsAI",
+      "RyTuneX",
+      "Win11Debloat",
+      "winutil",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\WindowsNotepad",
+        "name": "DisableAIFeatures",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:38",
+      "semazurek_ET-Optimizer/ET/Form1.cs:7218"
+    ]
+  },
+  {
+    "id": "edge-ai-features-off",
+    "title": "Microsoft Edge: turn off the AI features",
+    "description": "Microsoft Edge: no Copilot sidebar, no page sharing with Copilot, no AI themes and no local AI model download. Edge and WebView2 keep working.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Edge shows \"managed by your organization\".",
+    "tools": [
+      "ET-Optimizer",
+      "GTweak",
+      "RyTuneX",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "HubsSidebarEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "ComposeInlineEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "CopilotPageContext",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "CopilotCDPPageContext",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "EdgeEntraCopilotPageContext",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "Microsoft365CopilotChatIconEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "EdgeHistoryAISearchEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "ShareBrowsingHistoryWithCopilotSearchAllowed",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "AIGenThemesEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "GenAILocalFoundationalModelSettings",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:2468-2732",
+      "semazurek_ET-Optimizer/ET/Form1.cs:7284-7300",
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:43-45",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/InterfaceTweaks.cs:649-655"
+    ]
+  },
+  {
+    "id": "explorer-startup-delay-zero",
+    "title": "Start the startup apps without delay",
+    "description": "Removes the built-in delay of about ten seconds before the startup apps launch after you sign in.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": false,
+    "restart": "sign-out",
+    "warning": "All startup apps then compete for the CPU and disk at once, so the desktop can feel slower for the first seconds.",
+    "tools": [
+      "GTweak",
+      "MajorGeeks-Windows-Tweaks",
+      "optimizerDuck",
+      "TairikuOokami",
+      "WindowsMize",
+      "Winhance",
+      "Winrift",
+      "WinSlap"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize",
+        "name": "StartupDelayInMSec",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/UserExperience.cs:31-50",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:434-447",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:125-143"
+    ]
+  },
+  {
+    "id": "autoplay-off",
+    "title": "Turn off AutoPlay",
+    "description": "Stops Windows launching something by itself when you plug in a USB drive or insert a disc.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "GTweak",
+      "SophiApp",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\AutoplayHandlers",
+        "name": "DisableAutoplay",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:1277-1283",
+      "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:476-479",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Customize/Models/ExplorerCustomizations.cs:3381"
+    ]
+  },
+  {
+    "id": "accessibility-hotkey-prompts-off",
+    "title": "Stop the Sticky Keys pop-ups",
+    "description": "Stops the Sticky Keys, Filter Keys and Toggle Keys pop-ups that appear when Shift is pressed five times or held.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": false,
+    "restart": "sign-out",
+    "warning": "Leave it off if you rely on these accessibility shortcuts. Takes effect at the next sign-in.",
+    "tools": [
+      "Ancels-Performance-Batch",
+      "chemo",
+      "ET-Optimizer",
+      "Ghost-Optimizer",
+      "GTweak",
+      "optimizerDuck",
+      "Project-Ronin",
+      "SophiApp",
+      "TairikuOokami",
+      "win11tweak",
+      "Windows11-Optimizer-Debloater",
+      "WindowsMize",
+      "Winhance",
+      "Winrift",
+      "winscript",
+      "WinSlap",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Control Panel\\Accessibility\\StickyKeys",
+        "name": "Flags",
+        "kind": "Text",
+        "value": "506"
+      },
+      {
+        "hive": "User",
+        "path": "Control Panel\\Accessibility\\Keyboard Response",
+        "name": "Flags",
+        "kind": "Text",
+        "value": "2"
+      },
+      {
+        "hive": "User",
+        "path": "Control Panel\\Accessibility\\ToggleKeys",
+        "name": "Flags",
+        "kind": "Text",
+        "value": "34"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:1268-1271",
+      "semazurek_ET-Optimizer/ET/Form1.cs:5974-5977",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:4012-4080",
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/Performance.cs:227-256"
+    ]
+  },
+  {
+    "id": "ui-effects-extra-off",
+    "title": "Turn off more interface animations",
+    "description": "Switches off the taskbar animations, the shadows in lists and Aero Peek.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": "Aero Peek off also removes the preview when you hover a taskbar thumbnail.",
+    "tools": [
+      "ET-Optimizer",
+      "optimizerDuck",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "TaskbarAnimations",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "ListviewShadow",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\DWM",
+        "name": "EnableAeroPeek",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/UserExperience.cs:57-86",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:3461 (taskbar-animations)",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:3495 (enable-peek)",
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:3954 (drop-shadows)"
+    ]
+  },
+  {
+    "id": "explorer-prelaunch",
+    "title": "Do not preload File Explorer",
+    "description": "Windows no longer keeps File Explorer loaded in the background.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": false,
+    "restart": "sign-out",
+    "warning": "The first Explorer window can open a moment later.",
+    "tools": [
+      "TairikuOokami",
+      "WindowsMize",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "ShouldPrelaunchFileExplorer",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "agadiffe_WindowsMize/src/modules/file_explorer/private/view/files_and_folders/Set-FileExplorerPrelaunch.ps1:25-33 (on: 1 default | off: 0)",
+      "TairikuOokami_Windows/Windows Tweaks.bat:650-651 (0 disables preloading)",
+      "zoicware_ZOICWARE/src/RegTweaks.txt:1122-1123 (sets 1: the opposite choice)"
+    ]
+  },
+  {
+    "id": "explorer-show-hidden-files",
+    "title": "Show hidden files and folders",
+    "description": "Shows hidden files and folders (.git, .env, .vscode, AppData).",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "chemo",
+      "SophiApp",
+      "TairikuOokami",
+      "Win11Debloat",
+      "Windows11-Optimizer-Debloater",
+      "WindowsDeveloperConfig",
+      "WindowsMize",
+      "Winrift",
+      "winutil",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "Hidden",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-explorer.ps1:94-101 (Hidden=1, ResetValue=2)",
+      "ChrisTitusTech_winutil/config/tweaks.json:1377-1402 (WPFToggleHiddenFiles: Value 1, OriginalValue 0)",
+      "Raphire_Win11Debloat/Regfiles/Show_Hidden_Folders.reg (Hidden=1)",
+      "zoicware_ZOICWARE/src/RegTweaks.txt:814-816"
+    ]
+  },
+  {
+    "id": "explorer-launch-to-this-pc",
+    "title": "Open File Explorer on This PC",
+    "description": "Opens File Explorer on This PC instead of Home, with the drives one click away.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "chemo",
+      "equk",
+      "Project-Ronin",
+      "SophiApp",
+      "TairikuOokami",
+      "Win11Debloat",
+      "win11tweak",
+      "windows-dev-box-setup-scripts",
+      "WindowsDeveloperConfig",
+      "WindowsMize",
+      "Winrift",
+      "winscript",
+      "WinSlap",
+      "winutil"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "LaunchTo",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-explorer.ps1:110-116 (LaunchTo=1)",
+      "microsoft_windows-dev-box-setup-scripts/scripts/FileExplorerSettings.ps1:11-12 (LaunchTo=1, 'opens PC to This PC, not quick access')",
+      "Raphire_Win11Debloat/Regfiles/Launch_File_Explorer_To_This_PC.reg (1) and Launch_File_Explorer_To_Home.reg (2); Launch_File_Explorer_To_Downloads.reg and ..._OneDrive.reg exist as other values"
+    ]
+  },
+  {
+    "id": "explorer-full-path-in-title",
+    "title": "Show the full path in the Explorer title",
+    "description": "Shows the full folder path in the title bar of File Explorer.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "optimizerDuck",
+      "WindowsDeveloperConfig",
+      "WindowsMize",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\CabinetState",
+        "name": "FullPath",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-explorer.ps1:102-109 (FullPath=1, ResetValue=0)",
+      "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-explorer.ps1:9-78 (on uninstall it resets through the shell32 ReadCabinetState/WriteCabinetState API instead of the registry)"
+    ]
+  },
+  {
+    "id": "explorer-compact-view",
+    "title": "Use compact spacing in File Explorer",
+    "description": "Uses compact spacing in File Explorer lists, so more items fit.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "Batlez-Tweaks",
+      "optimizerDuck",
+      "SophiApp",
+      "WindowsMize",
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "UseCompactMode",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:428-431",
+      "agadiffe_WindowsMize/src/modules/file_explorer/private/view/files_and_folders/Set-FileExplorerCompactView.ps1:28-31 (on: 1 | off: 0 default)"
+    ]
+  },
+  {
+    "id": "alt-tab-no-edge-tabs",
+    "title": "Alt+Tab without browser tabs",
+    "description": "Alt+Tab lists windows only, not the tabs of Edge.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Win11Debloat",
+      "WindowsMize",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "MultiTaskingAltTabFilter",
+        "kind": "Number",
+        "value": "3"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Raphire_Win11Debloat/Regfiles/Hide_Tabs_In_Alt_Tab.reg (3); Show_3_Tabs_In_Alt_Tab.reg (2, labelled Default in Config/Features.json:304); Show_5_Tabs_In_Alt_Tab.reg (1); Show_20_Tabs_In_Alt_Tab.reg (0)",
+      "Raphire_Win11Debloat/Config/Features.json:291-321 (ShowTabsInAltTab group) and :921-929 (MinVersion 22000)"
+    ]
+  },
+  {
+    "id": "snap-popups",
+    "title": "Turn off the snap layout pop-ups",
+    "description": "Turns off the snap suggestions and the layout pop-up when you hover the maximize button.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "Win11Debloat",
+      "WindowsMize",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "EnableSnapAssistFlyout",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "EnableSnapBar",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "SnapAssist",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Raphire_Win11Debloat/Regfiles/Disable_Snap_Layouts.reg and Disable_Snap_Assist.reg",
+      "agadiffe_WindowsMize/src/modules/settings_app/system/private/multitasking/Set-SnapShowLayoutOnTopScreen.ps1:30-37, Set-SnapShowLayoutOnMaxButtonHover.ps1:30-37, Set-SnapSuggestions.ps1:30-37 (all on: 1 default)"
+    ]
+  },
+  {
+    "id": "taskbar-task-view",
+    "title": "Hide the Task View button",
+    "description": "Hides the Task View button on the taskbar.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "optimizerDuck",
+      "Win11Debloat",
+      "Winhance",
+      "winutil",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "ShowTaskViewButton",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Raphire_Win11Debloat/Regfiles/Hide_Taskview_Taskbar.reg",
+      "Raphire_Win11Debloat/Regfiles/Undo/Show_Taskview_Taskbar.reg (restores 1)",
+      "ChrisTitusTech_winutil/config/tweaks.json:1814-1830"
+    ]
+  },
+  {
+    "id": "taskbar-search-box",
+    "title": "Shrink the taskbar search box",
+    "description": "Shrinks the taskbar search box to an icon.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "Win11Debloat",
+      "WindowsMize",
+      "Winhance",
+      "winutil",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+        "name": "SearchboxTaskbarMode",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/taskbar/items_&_tray_icons/Set-TaskbarSearchBox.ps1:37-45 (hide 0 | icon 1 | box 2 default | icon+label 3)",
+      "Raphire_Win11Debloat/Regfiles/Hide_Search_Taskbar.reg, Show_Search_Icon.reg, Show_Search_Box.reg, Show_Search_Icon_And_Label.reg"
+    ]
+  },
+  {
+    "id": "start-app-lists",
+    "title": "Hide the app lists in Start",
+    "description": "Hides the \"Recently added\" and \"Most used\" app lists in Start.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": null,
+    "tools": [
+      "WindowsMize",
+      "Winhance",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Start",
+        "name": "ShowRecentList",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Start",
+        "name": "ShowFrequentList",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "agadiffe_WindowsMize/src/modules/settings_app/personnalization/private/start/all_apps/Set-StartShowMostUsedApps.ps1:39-47 and Set-StartShowRecentAddedApps.ps1:37-45 (on: 1 default | off: 0)",
+      "zoicware_ZOICWARE/src/RegTweaks.txt:107-110"
+    ]
+  },
+  {
+    "id": "visual-studio-telemetry-off",
+    "title": "Visual Studio: turn off the telemetry",
+    "description": "Visual Studio: turns off the feedback dialogs and the telemetry by policy. Visual Studio itself behaves the same.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "ET-Optimizer",
+      "RyTuneX"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\VisualStudio\\Feedback",
+        "name": "DisableFeedbackDialog",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\VisualStudio\\Feedback",
+        "name": "DisableEmailInput",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\VisualStudio\\Feedback",
+        "name": "DisableScreenshotCapture",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\VisualStudio\\SQM",
+        "name": "OptIn",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Microsoft\\VisualStudio\\Telemetry",
+        "name": "TurnOffSwitch",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:2494-2516",
+      "semazurek_ET-Optimizer/ET/Form1.cs:6959-6965"
+    ]
+  },
+  {
+    "id": "bing-search-user-toggle",
+    "title": "Turn off the Bing and Cortana search switches",
+    "description": "Turns off the user-level Bing, Cortana-consent and search-location switches of Windows Search.",
+    "category": "Search and AI",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": "On recent Windows 11 builds the web results are controlled by other switches too; this one is the legacy switch.",
+    "tools": [
+      "chemo",
+      "equk",
+      "Project-Ronin",
+      "sparkle",
+      "TairikuOokami",
+      "win11tweak",
+      "Windows-On-Reins",
+      "Windows11-Optimizer-Debloater",
+      "WindowsMize",
+      "Winrift",
+      "winscript",
+      "WinSlap",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+        "name": "BingSearchEnabled",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+        "name": "CortanaConsent",
+        "kind": "Number",
+        "value": "0"
+      },
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+        "name": "AllowSearchToUseLocation",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "t-richards_chemo/src/Treatment/Start/DisableInternetSearchResults.cs:19-21",
+      "svenmauch_WinSlap/WinSlap/Slapper.cs:486-487",
+      "emylfy_Winrift/modules/security/Privacy.ps1:244 and 256",
+      "agadiffe_WindowsMize/src/modules/settings_app/privacy_&_security/private/windows_permissions/search/Set-WinPermissionsStartMenuSearchWebSuggestions3.ps1:50 (Start Menu Bing Search, on 1 default); same author also sets IsWebSuggestionsEnabled (…Suggestions.ps1:34) and IsGlobalWebSearchProviderToggleEnabled (…Suggestions2.ps1)"
+    ]
+  },
+  {
+    "id": "device-metadata-network-off",
+    "title": "Do not download device apps and icons",
+    "description": "Plugging in a mouse, keyboard or monitor no longer downloads apps and icons from the device maker.",
+    "category": "System and background",
+    "risk": "low",
+    "recommended": true,
+    "restart": "none",
+    "warning": "Install the companion app of a device yourself when you want it.",
+    "tools": [
+      "chemo",
+      "Project-Ronin",
+      "Windows-On-Reins",
+      "Windows11-Optimizer-Debloater",
+      "WindowsMize",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Device Metadata",
+        "name": "PreventDeviceMetadataFromNetwork",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "t-richards_chemo/src/Treatment/Devices/PreventDeviceCompanionApps.cs:15",
+      "agadiffe_WindowsMize/src/modules/system_properties/public/Set-ManufacturerAppsAutoDownload.ps1:59",
+      "gordonbay_Windows-On-Reins/wor.ps1:1722",
+      "zoicware_ZOICWARE/src/RegTweaks.txt:1224"
+    ]
+  },
+  {
+    "id": "wer-reporting-off",
+    "title": "Turn off Windows Error Reporting",
+    "description": "Stops Windows Error Reporting uploading crash data, and turns off its queue task.",
+    "category": "Privacy and telemetry",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Check that local crash dumps still work if you rely on them for debugging.",
+    "tools": [
+      "TairikuOokami",
+      "Win10BloatRemover",
+      "Windows11-Optimizer-Debloater",
+      "WindowsMize",
+      "Winrift",
+      "winscript",
+      "WinSlap",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting",
+        "name": "Disabled",
+        "kind": "Number",
+        "value": "1"
+      },
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting",
+        "name": "DontSendAdditionalData",
+        "kind": "Number",
+        "value": "1"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "agadiffe_WindowsMize/src/modules/telemetry/public/Set-ErrorReporting.ps1:56 and header comment (Disabled and DontSendAdditionalData, not configured default)",
+      "Fs00_Win10BloatRemover/src/Operations/ErrorReportingDisabler.cs:10 (QueueReporting task)",
+      "flick9000_winscript/app/src/assets/js/scripts.js:198-199 and 219",
+      "emylfy_Winrift/modules/security/Privacy.ps1:423 and 159"
+    ]
+  },
+  {
+    "id": "game-dvr-policy",
+    "title": "Block Game Bar recording by policy",
+    "description": "Blocks Game Bar recording and broadcasting by policy, even if a game or the Game Bar switches the per-user flags back on.",
+    "category": "Gaming",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Win+Alt+R clip recording stops working. Do not turn it on if you record clips.",
+    "tools": [
+      "Project-Ronin",
+      "TairikuOokami",
+      "Win10BloatRemover",
+      "win11tweak",
+      "Windows11-Optimizer-Debloater",
+      "WindowsMize",
+      "Winrift",
+      "winscript",
+      "WinSlap",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "Machine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR",
+        "name": "AllowGameDVR",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "flick9000_winscript/app/src/assets/js/scripts.js:619",
+      "agadiffe_WindowsMize/src/modules/settings_app/gaming/private/captures/Set-GameRecording.ps1:84 (GPO: not configured default, off 0)",
+      "emylfy_Winrift/modules/security/Privacy.ps1:28",
+      "kyaulabs_win11tweak/Modules/apps.ps1:82"
+    ]
+  },
+  {
+    "id": "audio-ducking-do-nothing",
+    "title": "Keep the game sound during calls",
+    "description": "Windows no longer lowers the game sound when Discord, Teams or a call app opens a voice stream.",
+    "category": "Gaming",
+    "risk": "low",
+    "recommended": false,
+    "restart": "sign-out",
+    "warning": "The voice and the game then play at the same loudness. Applies at the next sign-in.",
+    "tools": [
+      "chemo",
+      "TairikuOokami",
+      "Windows11-Optimizer-Debloater",
+      "WindowsMize",
+      "Winhance",
+      "ZOICWARE"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Multimedia\\Audio",
+        "name": "UserDuckingPreference",
+        "kind": "Number",
+        "value": "3"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/SoundOptimizations.cs:53-98"
+    ]
+  },
+  {
+    "id": "notification-sounds-off",
+    "title": "Mute the notification sounds",
+    "description": "Mutes the notification sound but keeps the pop-ups.",
+    "category": "Gaming",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Winhance"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings",
+        "name": "NOC_GLOBAL_SETTING_ALLOW_NOTIFICATION_SOUND",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/NotificationOptimizations.cs:44-62"
+    ]
+  },
+  {
+    "id": "game-bar-controller-button",
+    "title": "Stop the controller button opening Game Bar",
+    "description": "A controller button no longer opens the Game Bar.",
+    "category": "Gaming",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": null,
+    "tools": [
+      "Win11Debloat"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "SOFTWARE\\Microsoft\\GameBar",
+        "name": "UseNexusForGameBarEnabled",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "Raphire_Win11Debloat/Regfiles/Disable_Game_Bar_Integration.reg (UseNexusForGameBarEnabled=0, plus HKCR ms-gamebar protocol overrides)"
+    ]
+  },
+  {
+    "id": "toast-notifications-global-off",
+    "title": "Do not disturb",
+    "description": "Do not disturb: no notification pop-ups at all, for example over a game or a presentation.",
+    "category": "Gaming",
+    "risk": "low",
+    "recommended": false,
+    "restart": "none",
+    "warning": "Also silences the notifications of your AI tools until you turn it off again.",
+    "tools": [
+      "Win11Debloat",
+      "WindowsDeveloperConfig"
+    ],
+    "values": [
+      {
+        "hive": "User",
+        "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings",
+        "name": "NOC_GLOBAL_SETTING_TOASTS_ENABLED",
+        "kind": "Number",
+        "value": "0"
+      }
+    ],
+    "tasks": [],
+    "evidence": [
+      "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-taskbar-search.ps1:14-19 (NOC_GLOBAL_SETTING_TOASTS_ENABLED=0 'Enable Do Not Disturb')",
+      "Raphire_Win11Debloat/Regfiles/Disable_Notifications.reg (different key: PushNotifications\\ToastEnabled=0)"
+    ]
+  }
+]

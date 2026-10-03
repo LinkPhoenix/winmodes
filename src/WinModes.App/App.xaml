@@ -11,6 +11,7 @@
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
                 <ResourceDictionary Source="Controls/SettingControls.xaml" />
+                <ResourceDictionary Source="Controls/PageControls.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Dark surfaces by default: near-black so the mode colours carry the interface. The light theme replaces these four at startup. -->
@@ -46,6 +47,33 @@
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="CornerRadius" Value="10" />
                 <Setter Property="Padding" Value="20" />
+            </Style>
+
+            <!-- A category of a bar (Optimize, Debloat): a button whose colours follow the selection, set by the code since they differ per category. -->
+            <Style x:Key="CategoryChipStyle" TargetType="Button">
+                <Setter Property="Cursor" Value="Hand" />
+                <!-- Without it the title takes the system button colour, which is black on the dark theme. -->
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Chip" CornerRadius="16" Padding="12,6" Margin="0,0,8,8" BorderThickness="1"
+                                    Background="{Binding Fill}" BorderBrush="{Binding Stroke}" Opacity="{Binding Emphasis}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="13" Margin="0,0,8,0" Text="{Binding Glyph}" Foreground="{Binding Color}" />
+                                    <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding Count}" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"
+                                               Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
 
             <Style x:Key="IconBadgeStyle" TargetType="Border">

@@ -1,0 +1,688 @@
+{
+ "theme": "dev-setup",
+ "repos": [
+  {
+   "repo": "microsoft/WindowsDeveloperConfig",
+   "what": "Signed PowerShell engine that sets up a Windows 11 developer box: Sudo, Developer Mode, long paths, Explorer/Start/Taskbar HKCU tweaks, WSL install, Windows Terminal fragments; each step is Check/Apply/verify with an uninstall path.",
+   "licence": "MIT",
+   "relevance": "high"
+  },
+  {
+   "repo": "samypr100/setup-dev-drive",
+   "what": "GitHub Action that creates a VHDX-backed ReFS Dev Drive; shows the exact fsutil devdrv commands (AV filter disallow, trust) and env-var relocation of CARGO_HOME/RUSTUP_HOME onto the drive.",
+   "licence": "MIT",
+   "relevance": "high"
+  },
+  {
+   "repo": "ChrisTitusTech/winutil",
+   "what": "Large tweak catalogue (config/tweaks.json, feature.json); developer-relevant parts are long paths, hidden files/extensions, folder auto-discovery, End Task, WSL/Hyper-V/Sandbox feature toggles. Several tweaks are on the BLOCKED list.",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "Raphire/Win11Debloat",
+   "what": "Regfile-based tweaks with Undo/ regfiles; the Explorer/taskbar/Alt-Tab ones are clean HKCU single-value changes with a documented undo.",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "zoicware/ZOICWARE",
+   "what": "Aggressive all-in-one optimizer; useful only for RegTweaks.txt (folder type, last-access, long paths). Mostly a catalogue of things WinModes must not do (Defender off, update off, task removal, appx removal).",
+   "licence": "MIT",
+   "relevance": "low"
+  },
+  {
+   "repo": "microsoft/windows-dev-box-setup-scripts",
+   "what": "Old Boxstarter/Chocolatey scripts: Explorer options, Developer Mode flag, enabling Hyper-V/WSL/containers features, Disable-UAC during setup. Little reusable beyond three Explorer values.",
+   "licence": "MIT",
+   "relevance": "low"
+  },
+  {
+   "repo": "agadiffe/WindowsMize",
+   "what": "Cross-reference only (outside my assignment): Set-NtfsLastAccessTime.ps1 documents the exact fsutil DisableLastAccess value table and its Windows default.",
+   "licence": "MIT",
+   "relevance": "low"
+  }
+ ],
+ "tweaks": [
+  {
+   "id": "explorer-folder-type-not-specified",
+   "title": "Stop Explorer guessing folder types (faster big folders such as node_modules)",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "SOFTWARE\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\Shell\\Bags\\AllFolders\\Shell",
+     "name": "FolderType",
+     "kind": "Text",
+     "value": "NotSpecified",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 10/11 (any)",
+   "projects": [
+    "ChrisTitusTech/winutil",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "ChrisTitusTech_winutil/config/tweaks.json:1208-1262 (WPFTweaksDisableExplorerAutoDiscovery: sets FolderType=NotSpecified under Bags\\AllFolders\\Shell)",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:869-871 (same key and value, comment 'Disable Windows automatic folder type')"
+   ],
+   "benefit": "Explorer no longer scans folder contents to pick a Documents/Pictures/Music template, which makes opening folders with thousands of files noticeably quicker. The sources give no measured number.",
+   "caveat": "Both sources also run Remove-Item -Recurse on the Bags and BagMRU keys (tweaks.json:1213-1224), which wipes every saved per-folder view (sort, columns, size) and cannot be restored from a single recorded value. WinModes should write only the one value (new folders pick it up; already-cached folders keep their detected type) or export the Bags key to the journal first. Disables column grouping for all folders (winutil warns about it).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "windows-sudo-inline",
+   "title": "Enable Windows sudo (inline mode) in the terminal",
+   "category": "Dev",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Sudo",
+     "name": "Enabled",
+     "kind": "Number",
+     "value": "3",
+     "default": "absent (sudo off)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "Windows 11 24H2+ (sudo ships from build 26052)",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-system.ps1:12-18 (Enabled=3, ResetValue=0, 'Enable Sudo in inline mode')",
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/README.md:212 (table row)"
+   ],
+   "benefit": "Run an elevated command from a normal terminal tab without opening a new admin window (useful for AI coding agents that need one elevated command).",
+   "caveat": "HKLM, so it goes through the elevated helper. Adds an elevation path for anything running as the user; each use still shows a UAC prompt. Keep opt-in, never part of a mode, and record the live value (0/1/2/3 are different modes; do not assume the previous value is 0). The value meaning (3 = inline) comes from the repo comment, not from a Microsoft page I read.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "developer-mode-flag",
+   "title": "Developer Mode flag (symlinks without admin, sideload dev apps)",
+   "category": "Dev",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock",
+     "name": "AllowDevelopmentWithoutDevLicense",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent / 0"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "Windows 10 1703+ / Windows 11",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig",
+    "microsoft/windows-dev-box-setup-scripts"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-system.ps1:19-25 (AllowDevelopmentWithoutDevLicense=1, ResetValue=0)",
+    "microsoft_windows-dev-box-setup-scripts/scripts/SystemConfiguration.ps1:4 (same key, Value 1)"
+   ],
+   "benefit": "Lets git, npm, pnpm and similar tools create symbolic links without an elevated shell (fixes 'EPERM: operation not permitted, symlink' on Windows).",
+   "caveat": "Only the registry flag is set by these scripts. The Settings toggle also installs the Developer Mode capability package, so a flag-only change may not give every Developer Mode feature (device portal). Also allows sideloading unsigned apps, which widens the attack surface; opt-in only. Record the live value; Windows normally has it absent.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-launch-to-this-pc",
+   "title": "Open File Explorer on This PC instead of Home",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "LaunchTo",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (Explorer opens Home on current Windows 11 builds)"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig",
+    "microsoft/windows-dev-box-setup-scripts",
+    "Raphire/Win11Debloat"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-explorer.ps1:110-116 (LaunchTo=1)",
+    "microsoft_windows-dev-box-setup-scripts/scripts/FileExplorerSettings.ps1:11-12 (LaunchTo=1, 'opens PC to This PC, not quick access')",
+    "Raphire_Win11Debloat/Regfiles/Launch_File_Explorer_To_This_PC.reg (1) and Launch_File_Explorer_To_Home.reg (2); Launch_File_Explorer_To_Downloads.reg and ..._OneDrive.reg exist as other values"
+   ],
+   "benefit": "Drive letters and WSL/network locations one click away; no recommended-files list.",
+   "caveat": "Preference only. Other documented values: 2 = Home, and Win11Debloat has Downloads and OneDrive variants (values not re-checked). Restore by recording the live value, absent is a valid previous state.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-show-hidden-files",
+   "title": "Show hidden files and folders (.git, .env, .vscode, AppData)",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "Hidden",
+     "kind": "Number",
+     "value": "1",
+     "default": "2"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig",
+    "ChrisTitusTech/winutil",
+    "Raphire/Win11Debloat",
+    "zoicware/ZOICWARE"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-explorer.ps1:94-101 (Hidden=1, ResetValue=2)",
+    "ChrisTitusTech_winutil/config/tweaks.json:1377-1402 (WPFToggleHiddenFiles: Value 1, OriginalValue 0)",
+    "Raphire_Win11Debloat/Regfiles/Show_Hidden_Folders.reg (Hidden=1)",
+    "zoicware_ZOICWARE/src/RegTweaks.txt:814-816"
+   ],
+   "benefit": "Dotfiles and tool folders become visible in Explorer.",
+   "caveat": "DIRECTION TRAP: winutil lists the OriginalValue as 0 but Windows default is 2 (1 = show, 2 = do not show); the Microsoft repo is the correct one (ResetValue=2). Restore the recorded live value, never a hard-coded one. Do not add ShowSuperHidden (protected OS files): dev-box-setup does it with -EnableShowProtectedOSFiles (FileExplorerSettings.ps1:4) but that invites accidental deletion of system files.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-full-path-in-title",
+   "title": "Show the full folder path in the Explorer title bar",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\CabinetState",
+     "name": "FullPath",
+     "kind": "Number",
+     "value": "1",
+     "default": "0 or absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-explorer.ps1:102-109 (FullPath=1, ResetValue=0)",
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-explorer.ps1:9-78 (on uninstall it resets through the shell32 ReadCabinetState/WriteCabinetState API instead of the registry)"
+   ],
+   "benefit": "Always see which repo/worktree folder an Explorer window is in.",
+   "caveat": "The Microsoft script reads and writes this setting through the shell32 CabinetState API on reset, which suggests Explorer keeps a second copy of it (binary blob). Test on the user's build that the DWORD alone takes effect before shipping; if it does not, skip this tweak.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-nav-pane-expand-current",
+   "title": "Navigation pane follows the current folder and shows all folders",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "NavPaneExpandToCurrentFolder",
+     "kind": "Number",
+     "value": "1",
+     "default": "0 or absent"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "NavPaneShowAllFolders",
+     "kind": "Number",
+     "value": "1",
+     "default": "0 or absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "microsoft/windows-dev-box-setup-scripts"
+   ],
+   "evidence": [
+    "microsoft_windows-dev-box-setup-scripts/scripts/FileExplorerSettings.ps1:6-10"
+   ],
+   "benefit": "In a deep repo tree the left pane expands to where you are; Recycle Bin and Control Panel appear again.",
+   "caveat": "Single source and an old script (Boxstarter era); confirm both values still do something on Windows 11 24H2/25H2 before adding. Preference only.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-classic-context-menu",
+   "title": "Full classic right-click menu in Explorer (no 'Show more options')",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32",
+     "name": "(Default)",
+     "kind": "Text",
+     "value": "",
+     "default": "absent (the whole CLSID key does not exist)"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11 (any)",
+   "projects": [
+    "Raphire/Win11Debloat",
+    "ChrisTitusTech/winutil"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Show_More_Options_Context_Menu.reg (creates the CLSID\\InprocServer32 key with an empty default value)",
+    "ChrisTitusTech_winutil/config/tweaks.json:1088 (WPFTweaksRightClickMenu, in the Advanced preset of config/preset.json)"
+   ],
+   "benefit": "Git/VS Code/Open in Terminal/7-Zip entries are on the first menu level.",
+   "caveat": "Needs 'create key, undo by deleting key' support in the journal (previous state is 'key absent'), which the current tweak model may not have. Win11Debloat names the file 'Disable_Show_More_Options' although it enables the old menu: do not trust the file name, trust the key. Undo: delete the CLSID key only if WinModes created it.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "taskbar-last-active-click",
+   "title": "Taskbar button click cycles the app's windows (many terminals/editors)",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "LastActiveClick",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11",
+   "projects": [
+    "Raphire/Win11Debloat"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Enable_Last_Active_Click.reg (LastActiveClick=1)",
+    "Raphire_Win11Debloat/Regfiles/Undo/Disable_Last_Active_Click.reg (value deleted)"
+   ],
+   "benefit": "One click focuses the app's last active window instead of opening the thumbnail picker; hover still shows the picker.",
+   "caveat": "Behaviour change only; undo is 'delete the value'. Single source.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "alt-tab-no-edge-tabs",
+   "title": "Alt+Tab shows windows only, not Edge tabs",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "MultiTaskingAltTabFilter",
+     "kind": "Number",
+     "value": "3",
+     "default": "absent (shows 3 most recent tabs)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11 22000+ (Win11Debloat MinVersion 22000)",
+   "projects": [
+    "Raphire/Win11Debloat"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Hide_Tabs_In_Alt_Tab.reg (3); Show_3_Tabs_In_Alt_Tab.reg (2, labelled Default in Config/Features.json:304); Show_5_Tabs_In_Alt_Tab.reg (1); Show_20_Tabs_In_Alt_Tab.reg (0)",
+    "Raphire_Win11Debloat/Config/Features.json:291-321 (ShowTabsInAltTab group) and :921-929 (MinVersion 22000)"
+   ],
+   "benefit": "Alt+Tab stays usable when a browser holds dozens of tabs next to terminals and editors.",
+   "caveat": "Four-state setting: record the live value (absent is the default and equals 2 per Win11Debloat). Takes effect on the next Alt+Tab, no Explorer restart needed in practice (not verified).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "ntfs-last-access-disable",
+   "title": "Stop NTFS writing a last-access timestamp on every file read",
+   "category": "Dev",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\FileSystem",
+     "name": "NtfsDisableLastAccessUpdate",
+     "kind": "Number",
+     "value": "1 (fsutil behavior set DisableLastAccess 1)",
+     "default": "fsutil value 2 = system managed, updates enabled (stored with the high bit set; read the live DWORD and restore it exactly)"
+    }
+   ],
+   "tasks": [],
+   "restart": "restart",
+   "risk": "low",
+   "buildRange": "any (NTFS only; has no effect on ReFS Dev Drives)",
+   "projects": [
+    "zoicware/ZOICWARE",
+    "agadiffe/WindowsMize"
+   ],
+   "evidence": [
+    "zoicware_ZOICWARE/src/RegTweaks.txt:878-879 (NtfsDisableLastAccessUpdate=1)",
+    "agadiffe_WindowsMize/src/modules/tweaks/public/system_and_performance/Set-NtfsLastAccessTime.ps1:30-50 (0 user/enabled, 1 user/disabled, 2 system/enabled = default, 3 system/disabled)"
+   ],
+   "benefit": "Fewer metadata writes during git status, builds and indexing over large trees. Small on NVMe; no number in either source.",
+   "caveat": "Not a mode tweak: it is a machine-wide, restart-bound file-system setting. Breaks tools that read atime (some backup, cleanup and forensic tools). ZOICWARE writes plain 1 while the fsutil table shows the default is 2; WinModes must journal the raw DWORD and write through fsutil or an exact DWORD. Gain is marginal; rank last among dev items.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "powershell-execution-policy-currentuser",
+   "title": "Windows PowerShell 5.1 execution policy RemoteSigned for the current user (status check first)",
+   "category": "Dev",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\PowerShell\\1\\ShellIds\\Microsoft.PowerShell",
+     "name": "ExecutionPolicy",
+     "kind": "Text",
+     "value": "RemoteSigned",
+     "default": "absent (Windows client default: Restricted)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "any (Windows PowerShell 5.1 only; PowerShell 7 reads its own powershell.config.json and defaults to RemoteSigned)",
+   "projects": [
+    "zoicware/ZOICWARE",
+    "microsoft/WindowsDeveloperConfig"
+   ],
+   "evidence": [
+    "zoicware_ZOICWARE/src/ZOICWARE.ps1:515-516 (writes the HKLM variant of this exact key and value name)",
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/README.md:352-356 (Set-ExecutionPolicy -Scope CurrentUser; policy survives reboot, Group Policy wins)",
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/README.md:405 (production flow only uses process-scoped RemoteSigned, never changes saved policy)"
+   ],
+   "benefit": "Local .ps1 scripts (build helpers, harness scripts) run from Windows PowerShell 5.1 without 'running scripts is disabled' errors.",
+   "caveat": "The HKCU path is derived by analogy with ZOICWARE's HKLM write; no clone writes the HKCU key. Verify with Get-ExecutionPolicy -List on the user's machine before implementing. It weakens a (weak) safeguard, so WinModes should only DISPLAY the effective policy and offer the CurrentUser change as an explicit opt-in; never write HKLM and never use Bypass. Group Policy overrides it.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "game-bar-controller-button",
+   "title": "Controller button no longer opens Game Bar",
+   "category": "Gaming",
+   "hive": "User",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\GameBar",
+     "name": "UseNexusForGameBarEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (enabled)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10/11",
+   "projects": [
+    "Raphire/Win11Debloat"
+   ],
+   "evidence": [
+    "Raphire_Win11Debloat/Regfiles/Disable_Game_Bar_Integration.reg (UseNexusForGameBarEnabled=0, plus HKCR ms-gamebar protocol overrides)"
+   ],
+   "benefit": "Removes stray Game Bar popups on a dev box with a controller or a Stream Deck driver attached (the existing game-dvr tweak does not cover this).",
+   "caveat": "Take only the HKCU value. The same regfile also rewrites HKEY_CLASSES_ROOT ms-gamebar and ms-gamebarservices handlers to systray.exe; that is a machine-wide protocol change and should not be copied. Do not apply in Game mode.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "toast-notifications-global-off",
+   "title": "Do not disturb: global toast notifications off",
+   "category": "System and background",
+   "hive": "User",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings",
+     "name": "NOC_GLOBAL_SETTING_TOASTS_ENABLED",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent / 1 (toasts on)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig",
+    "Raphire/Win11Debloat"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-taskbar-search.ps1:14-19 (NOC_GLOBAL_SETTING_TOASTS_ENABLED=0 'Enable Do Not Disturb')",
+    "Raphire_Win11Debloat/Regfiles/Disable_Notifications.reg (different key: PushNotifications\\ToastEnabled=0)"
+   ],
+   "benefit": "Focus: no toast popups over a full-screen game or a presentation.",
+   "caveat": "Two different keys are used by two projects for the same idea; test which one the Settings 'Do not disturb' switch actually flips on this build. Silences Claude/Codex/CI toasts too, so it must be a Game/Focus-mode action, never default in Code mode. The Microsoft uninstall also rewrites an HKLM QuietHours profile (registry-taskbar-search.ps1:301-309); do not copy that part.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "dev-cache-env-on-dev-drive",
+   "title": "Point Rust (and other toolchain) home folders at the Dev Drive",
+   "category": "Dev",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Environment",
+     "name": "CARGO_HOME",
+     "kind": "Text",
+     "value": "<DevDrive>\\.cargo",
+     "default": "absent (tool default is %USERPROFILE%\\.cargo)"
+    },
+    {
+     "path": "Environment",
+     "name": "RUSTUP_HOME",
+     "kind": "Text",
+     "value": "<DevDrive>\\.rustup",
+     "default": "absent (tool default is %USERPROFILE%\\.rustup)"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "medium",
+   "buildRange": "any (needs an existing Dev Drive or other fast volume)",
+   "projects": [
+    "samypr100/setup-dev-drive"
+   ],
+   "evidence": [
+    "samypr100_setup-dev-drive/README.md:190-230 (CARGO_HOME and RUSTUP_HOME mapped onto DEV_DRIVE)",
+    "samypr100_setup-dev-drive/.github/workflows/main.yml:392,407 (the mapped variable is asserted)"
+   ],
+   "benefit": "Package caches and build dependencies are the high-IO part of a build; on a Dev Drive the source reports about 25% faster build/test workloads (README.md:24-26, Microsoft figure quoted by the repo).",
+   "caveat": "Only the Rust pair is in the evidence; npm/NuGet/pip/Go equivalents are not in any clone, so do not generalise from here. Setting the variable does not move existing data; the toolchain would re-download. Existing installs break if the old folder is the only copy. Needs the user to name the drive; validate the path exists and is not a root. Opt-in and advisory only.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-quick-access-no-recent",
+   "title": "Quick Access without frequent folders, recent files and cloud files",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+     "name": "ShowFrequent",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (shown)"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+     "name": "ShowRecent",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (shown)"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+     "name": "ShowCloudFilesInQuickAccess",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (shown)"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11",
+   "projects": [
+    "microsoft/WindowsDeveloperConfig"
+   ],
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-explorer.ps1:117-137"
+   ],
+   "benefit": "Cleaner Explorer home and less personal data on screen when sharing the screen.",
+   "caveat": "Cosmetic/privacy, not speed. The Microsoft 'Partial' tier skips ShowCloudFilesInQuickAccess (registry-explorer.ps1:155-157), a hint that it is the most intrusive of the three. Low priority.",
+   "alreadyInWinModes": false
+  }
+ ],
+ "modeIdeas": [
+  {
+   "title": "Dev drive advisor: detect, explain, never configure the antivirus side",
+   "kind": "safety",
+   "how": "What a Dev Drive is, as shown in code: a ReFS volume created with Format-Volume -DevDrive (vhd-commands.ts:147-151), only when Windows >= 10.0.22621 (constants.ts:40). Two optional extra steps exist and both touch the antivirus: 'fsutil devdrv enable /disallowAv' (vhd-commands.ts:287-291) stops antivirus filter drivers attaching to Dev Drives at all, and 'fsutil devdrv clearFiltersAllowed' + 'fsutil devdrv trust /f <vol>' (vhd-commands.ts:297-306) marks the volume trusted, which is the state in which Defender uses its lighter (asynchronous) scanning on that volume. The repo's own README only says trust 'may help' performance (README.md:174-179) and that Dev Drive workloads are about 25% faster (README.md:24-26). The 'asynchronous scanning' wording is Microsoft documentation knowledge, not stated in these files.",
+   "evidence": [
+    "samypr100_setup-dev-drive/src/vhd-commands.ts:147-151,194-203,287-306",
+    "samypr100_setup-dev-drive/src/constants.ts:40",
+    "samypr100_setup-dev-drive/README.md:24-26,174-179"
+   ],
+   "applicableToWinModes": "BLOCKED for WinModes to change: 'enable /disallowAv', 'trust', 'clearFiltersAllowed' and any Defender exclusion are antivirus configuration. Also do not create or format volumes. The permitted part is read-only: through ISystemProbe list volumes (FileSystem = ReFS), and call the read-only 'fsutil devdrv query [vol]' (used by the repo for logging, vhd-commands.ts:291,306) to show 'Is this drive a Dev Drive / trusted?'. Then on the Code page show: 'Your repos live on C: (NTFS). A Dev Drive is the supported way to make builds faster without touching Defender; here is Microsoft's guide' and, if the user has one, check that active repo paths (from the AI tools page) are on it. Advisory text only."
+  },
+  {
+   "title": "New 'Dev' mode definition (what to keep, stop, launch, limit)",
+   "kind": "new-mode",
+   "how": "No clone defines a mode; this is a synthesis from the evidence. KEEP RUNNING: the WSL/Hyper-V stack (WinModes must never stop 'vmcompute', which Microsoft's own script uses as the 'WSL features active' test, wsl.ps1:50-53), Docker Desktop, the IDE, terminals, the user's AI coding tools, Windows Search (Explorer/IDE file lookup). STOP or set Manual (reversible, already how profiles/code.json works): game launchers, Xbox services, Phone Link/CDP, print spooler if unused, vendor RGB/peripheral hubs. LAUNCH/WARM: start Docker Desktop only after WSL is up; list distros with 'wsl --list --quiet' (env WSL_UTF8=1, strip NUL characters, 120 s timeout, wsl.ps1:126-146) before deciding to start or skip. LIMITS (Microsoft WSL docs, not in any clone): .wslconfig [wsl2] memory about 50-60% of RAM (documented default 50%), processors = logical cores minus 2, swap 4GB, autoMemoryReclaim=dropCache (already used), plus candidates not yet in WinModes: vmIdleTimeout (ms before the VM is shut when idle) and sparseVhd=true (shrinks ext4.vhdx). Docker Desktop on the WSL2 backend takes its memory and CPU from .wslconfig, so one file controls both; do not edit Docker's own settings store.",
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/wsl.ps1:50-53,126-146",
+    "microsoft_WindowsDeveloperConfig/src/future/cmdpal/QuickWingetSetup/QuickWingetSetup/Services/WslDetectionService.cs:11-66 (NoWsl / NoDistro / Available classification)",
+    "dulaiduwang003_Pavise-Game/src/Core/GameMode.Whitelist.cs:280 and SystemProcessCatalog.cs:22 (vmmem, vmmemwsl, wslservice treated as system processes that a mode must not kill)"
+   ],
+   "applicableToWinModes": "WinModes already ships Code mode with these pieces; the new items are: (1) Dev vs Code naming: a 'Dev' preset can simply be Code without the AI-tool rules for people who do not run agents. (2) Add vmIdleTimeout and sparseVhd as optional .wslconfig keys, written through the existing journaled .wslconfig path (record the live file, restore it byte for byte). sparseVhd only affects newly created/converted disks and 'wsl --manage --set-sparse' is a separate, partly irreversible action: do not run it automatically. (3) Compute the memory/processor suggestions from the machine instead of fixed 12GB/8: ask ISystemProbe for total RAM and logical cores. (4) Add vmmem/vmmemWSL/vmcompute/WslService/LxssManager/com.docker.* to the never-stop list if not there. Re-check each .wslconfig key against the current Microsoft WSL documentation before coding."
+  },
+  {
+   "title": "Elevated helper must refuse inputs from a user-writable tree",
+   "kind": "safety",
+   "how": "Assert-DevConfigProtectedPath refuses to run when the setup directory or any ancestor is a junction/symlink (ReparsePoint check), when the owner is not SYSTEM / Administrators (/ TrustedInstaller for ancestors), when the DACL is empty, or when any Allow rule for another principal grants Delete, DeleteSubdirectoriesAndFiles, ChangePermissions, TakeOwnership, GenericAll or (for the tree itself) Write. Assert-DevConfigProtectedTree walks the parents. The signing pipeline and a CI guard (signed-copy-guard.yml, check-signed-drift.ps1) keep the signed copy identical to src apart from the signature block.",
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/_security.ps1:9-60",
+    "microsoft_WindowsDeveloperConfig/.github/workflows/signed-copy-guard.yml",
+    "microsoft_WindowsDeveloperConfig/src/tools/check-signed-drift.ps1"
+   ],
+   "applicableToWinModes": "Directly addresses the known limitation in AGENTS.md (the elevated helper reads profiles/ and data/protected.json from the user-writable repo in a development build). Implement the same ACL test in WinModes.Elevated before it loads profiles/protected.json/tweaks.json: owner in {SYSTEM, Administrators, TrustedInstaller}, no non-admin Allow rule with write/delete/ChangePermissions/TakeOwnership, no reparse points on the path chain; otherwise refuse to apply and say why. In an installed build (Program Files) it passes, in a dev build it fails closed with a clear message. Note the Microsoft script itself runs the check at the top of every elevated launch."
+  },
+  {
+   "title": "Verify after every machine-level write; treat 'Windows protects this policy' as a result, not a crash",
+   "kind": "restore-logic",
+   "how": "Each step is a pair Check/Apply: the runner first runs Check (already done: skip), then Apply, then Check again and marks the step unverified if it still fails (_step-runner.ps1:242,285). Steps can be BestEffort. The Widgets policy is flagged BestEffort with the comment 'Windows may protect the Widgets policy even from an administrator' (registry-taskbar-search.ps1:284-292).",
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/_step-runner.ps1:140,242,285",
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-taskbar-search.ps1:284-292"
+   ],
+   "applicableToWinModes": "In TweakEngine, after each HKLM or policy write read the value back; if Windows or a policy owner reverted it, journal the step as 'not applied (protected)' and show it in the History page instead of failing the whole switch. Do not retry in a loop. The brief-level rule 'record the live value first' stays; this adds 'confirm the new value stuck'. The Widgets policy (AllowNewsAndInterests) is already in WinModes tweaks.json, so this is the case to test with."
+  },
+  {
+   "title": "Risk tiers like 'Full' and 'Partial' for developer settings",
+   "kind": "ui",
+   "how": "The Microsoft engine has two setup actions: Full, and Partial which skips Sudo, Developer Mode, Remote Desktop, Edge policies, Explorer recommended/cloud files, global notifications and the Bluetooth tray icon, and keeps only long paths, End Task and Start recommendations of the system/taskbar groups (registry-system.ps1:213-215; registry-taskbar-search.ps1:295-297; README.md:69-73).",
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/README.md:69-73",
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-system.ps1:213-215"
+   ],
+   "applicableToWinModes": "On the Optimize/Tweaks page add a 'Developer comfort' group with two levels. Level 1 (user hive, no admin, low risk): file extensions, hidden files, launch to This PC, full path, End Task, folder type. Level 2 (needs the helper, security-relevant, off by default with a one-line risk text): sudo, Developer Mode, long paths. Remote Desktop (fDenyTSConnections) appears in the Microsoft script but is a posture change and should not be offered."
+  },
+  {
+   "title": "Windows Terminal profile through a settings fragment, not by editing settings.json",
+   "kind": "ui",
+   "how": "Both Microsoft flows drop a JSON fragment into %LOCALAPPDATA%\\Microsoft\\Windows Terminal\\Fragments\\<Name> so a new profile appears in the dropdown without touching the user's settings.json (_terminal.ps1:90; wsl-comfort/install.ps1:571). The scripts then 'touch' settings.json so Terminal hot-reloads and re-scans the fragments (copilot.ps1:57; install.ps1:636). Where they must edit settings.json they copy it to settings.json.bak first (_terminal.ps1:170) and use the profile name when no GUID is available (_terminal.ps1:12).",
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/_terminal.ps1:12,90,170",
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/copilot.ps1:57",
+    "microsoft_WindowsDeveloperConfig/src/wsl-comfort/install.ps1:571,636"
+   ],
+   "applicableToWinModes": "Optional Code-mode feature: write a fragment file owned by WinModes that adds a 'WinModes Code' profile (starting directory = active repo, WSL distro). Undo = delete that one file, which is an exact reverse and needs no JSON parsing of the user's settings. Do not copy the 'touch settings.json' step (it changes a user file's timestamp for no recorded benefit; Terminal also watches the fragments folder on restart). Do not change defaultProfile."
+  },
+  {
+   "title": "Bounded, exit-code-based wsl.exe calls",
+   "kind": "process-handling",
+   "how": "Microsoft's wsl.ps1 never parses localized text: it relies on exit codes ('wsl --version' returning 0 means the current WSL package, otherwise the inbox WSL; wsl.ps1:45-48), runs wsl.exe with redirected output and a timeout (Get-DevConfigWslExitCode, :23-43), sets WSL_UTF8=1 and strips NUL characters when it must read 'wsl --list --quiet' (:126-146), and treats a listing failure as 'no distro' instead of an error. 3010/1641 mean 'restart required' (:84). The Command Palette extension classifies state as NoWsl / NoDistro / Available (WslDetectionService.cs:11-66).",
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/wsl.ps1:23-48,84,126-146",
+    "microsoft_WindowsDeveloperConfig/src/future/cmdpal/QuickWingetSetup/QuickWingetSetup/Services/WslDetectionService.cs:11-66"
+   ],
+   "applicableToWinModes": "Use the same pattern in ModeSwitcher before 'wsl --shutdown': a 20-30 s timeout, exit-code checks only, WSL_UTF8=1 for any listing, and a planned 'WSL not installed / no distro / running' status shown in the plan so the CLI 'plan code' output says exactly what will happen. Never fail a mode switch because wsl.exe hangs; skip and journal 'skipped'."
+  },
+  {
+   "title": "Pending-restart check before applying machine-level changes",
+   "kind": "safety",
+   "how": "Test-DevConfigServicingRebootPending looks at HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending and ignores the App Installer restart flags (wsl.ps1:17-20).",
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/wsl.ps1:17-20"
+   ],
+   "applicableToWinModes": "Read-only probe through ISystemProbe. If a component-servicing reboot is pending, the plan screen warns 'Windows has a restart pending; WSL and service changes may not behave as expected until you restart' and does not apply HKLM tweaks that need a restart (ntfs last-access). WinModes should not restart the machine itself."
+  },
+  {
+   "title": "Validate user-supplied path templates before turning them into environment values",
+   "kind": "safety",
+   "how": "env-mapping.ts accepts a variable name only if it matches ^[a-zA-Z_]+[a-zA-Z0-9_]*$ (:8), accepts a template only if it starts with one of three known placeholders (:10-11), compiles it with Handlebars in strict mode with knownHelpersOnly and data disabled (:41-49) and warns instead of failing on a bad entry. The README warns that no path canonicalisation is done (README.md:220-221).",
+   "evidence": [
+    "samypr100_setup-dev-drive/src/env-mapping.ts:8-60",
+    "samypr100_setup-dev-drive/README.md:220-221"
+   ],
+   "applicableToWinModes": "If WinModes ever lets users name a Dev Drive or cache folder, accept only an existing local fixed volume, canonicalise (GetFullPath), reject roots, reparse points and UNC paths, and validate the variable name with the same regex. Write only HKCU\\Environment and broadcast WM_SETTINGCHANGE; journal the live value. No templating engine needed."
+  },
+  {
+   "title": "Do-not-disturb during Game and Focus switches",
+   "kind": "notification",
+   "how": "Microsoft's developer flow turns toasts off with HKCU\\...\\Notifications\\Settings\\NOC_GLOBAL_SETTING_TOASTS_ENABLED=0 (registry-taskbar-search.ps1:14-19) and, only on uninstall, selects the 'Unrestricted' QuietHours profile in HKLM (:301-309). Win11Debloat uses a different key (PushNotifications\\ToastEnabled=0).",
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-taskbar-search.ps1:14-19,301-309",
+    "Raphire_Win11Debloat/Regfiles/Disable_Notifications.reg"
+   ],
+   "applicableToWinModes": "Per-mode switch: ON in Game (and a future Focus mode), OFF in Code (agents and CI notify through toasts). Journal the live value and restore it at mode end. Check on this machine which key the Settings page reads before choosing one; do not touch the HKLM QuietHours profile."
+  },
+  {
+   "title": "Offer 'Reset to Windows default' separately from 'Undo this mode'",
+   "kind": "restore-logic",
+   "how": "The Microsoft uninstall restores hard-coded factory values (ResetValue per setting) or deletes the value when no ResetValue is given (registry-system.ps1 ResetValue fields; _registry.ps1:73-91), for example Sudo back to 0 and Developer Mode back to 0 even if the user had them on before the tool ran. That is the weaker design compared with WinModes' journal.",
+   "evidence": [
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/_registry.ps1:70-100",
+    "microsoft_WindowsDeveloperConfig/src/windows-dev-config/steps/registry-system.ps1:12-34"
+   ],
+   "applicableToWinModes": "Keep WinModes' exact restore as the only undo. If a 'Reset to Windows default' action is ever added to the Optimize page, make it a separate, confirmed button listing each value it will overwrite, and journal the live values first so even a reset can be undone."
+  }
+ ],
+ "dangers": [
+  "ZOICWARE adds Microsoft Defender path exclusions for its own folder (zoicware_ZOICWARE/src/ZOICWARE.ps1:212-226) and has a 'Disable Defender' and 'Disable Updates' feature (features.md:76-81). Also GTweak adds a Defender exclusion for every fixed and removable drive root (Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/Defender/DefenderTweaks.cs:427-433) and for itself (RunGuard.cs:97). All BLOCKED in WinModes; also the exact opposite of Dev Drive's design, which gives one trusted volume a lighter scan path instead of exclusions.",
+  "ZOICWARE disables memory compression on machines with more than 8 GB (zoicware_ZOICWARE/src/zFunctions.psm1:5988-5991, Disable-MMAgent -MemoryCompression). BLOCKED (memory compression). Builds that spike RAM page to disk instead of compressing.",
+  "ZOICWARE removes all scheduled tasks except two (features.md Remove Scheduled Tasks section) and disables the Defrag service among its disabled services (features.md Services Disabled list). Task removal is not restorable by a recorded value; the Defrag service performs SSD retrim. Do not copy.",
+  "ZOICWARE launches itself with -ExecutionPolicy Bypass (ZOICWARE.ps1:2) and writes the machine-wide HKLM PowerShell ExecutionPolicy value to RemoteSigned afterwards (ZOICWARE.ps1:515-523), overwriting whatever the machine had. WinModes should never persist a machine-wide execution policy and never launch scripts with Bypass.",
+  "ZOICWARE disables the Windows Fault Tolerant Heap (RegTweaks.txt:884, HKLM\\SOFTWARE\\Microsoft\\FTH Enabled=0). This removes an automatic crash mitigation for misbehaving apps; do not offer.",
+  "winutil 'Services - Set to Manual' disables SharedAccess (Internet Connection Sharing) and CscService, and DiagTrack, and sets SvcHostSplitThresholdInKB to the RAM size (ChrisTitusTech_winutil/config/tweaks.json:146-183). Services are under HKLM\\SYSTEM\\CurrentControlSet\\Services (BLOCKED for registry writes, only ServiceTuner may change start types). SharedAccess is, to my knowledge, used by the Hyper-V 'Default Switch' NAT and Windows mobile hotspot; this is not shown in any clone, so verify against Microsoft documentation before ever touching it on a WSL/Hyper-V machine. SvcHostSplitThresholdInKB merges services into fewer svchost processes (less isolation, restart needed) and is already judged 'not for modes' in the consensus file.",
+  "winutil 'Visual Effects - Best Performance' overwrites HKCU\\Control Panel\\Desktop\\UserPreferencesMask with a fixed 8-byte value and on undo deletes the value (tweaks.json:716-813). Win11Debloat writes a different 8-byte value (0x90,0x12,0x07,0x80,... in Disable_Animations.reg, versus 144,18,3,128 = 0x90,0x12,0x03,0x80 in winutil). The mask is a bitfield containing unrelated user choices (font smoothing, drop shadow); WinModes must journal the full previous binary and never write a fixed one.",
+  "winutil 'Date & Time - Set Time to UTC' (RealTimeIsUniversal, tweaks.json:626-639) is only correct for dual boot and shifts the clock by the UTC offset on a single-OS machine. Do not offer outside an explicit dual-boot case.",
+  "winutil S0-sleep network toggle writes HKCU\\SOFTWARE\\Policies\\Microsoft\\Power\\PowerSettings\\f15576e8-... ACSettingIndex=1 (tweaks.json:1599-1618) while Win11Debloat writes HKLM\\SOFTWARE\\Policies\\Microsoft\\Power\\PowerSettings\\f15576e8-... AC and DC = 0 (Disable_Modern_Standby_Networking.reg): opposite values and different hives for the same GUID. Do not copy either without testing 'powercfg /qh' on the machine; direction and hive are unverified.",
+  "winutil 'Disable Reserved Storage' runs DISM /Online /Set-ReservedStorageState and warns it must be re-enabled before feature updates (tweaks.json:815-827): a Windows servicing setting, not a recorded registry value. Skip.",
+  "winutil and Win11Debloat WSL/Hyper-V/Sandbox buttons turn on optional Windows features (feature.json:24-60,118-127; dev-box HyperV.ps1:1, WSL.ps1:20-21,51). Enabling or disabling features is forbidden for WinModes; at most detect them.",
+  "microsoft/windows-dev-box-setup-scripts calls Disable-UAC at the top of every dev script and Enable-UAC at the end (dev_web_nodejs.ps1:5,43 and nine other scripts). If the script aborts in between, UAC stays off. BLOCKED (EnableLUA).",
+  "TairikuOokami_Windows (outside my assignment, noticed while grepping) writes Image File Execution Options 'Debugger=Blocked' for wsl.exe, wslconfig.exe and wslhost.exe (TairikuOokami_Windows/Windows Tweaks.bat:1069-1071). That breaks WSL completely and is exactly what WinModes must never do. Any IFEO import has to be rejected by TweakGuard.",
+  "WindowsDeveloperConfig enables Remote Desktop (fDenyTSConnections=0) in the Full setup (registry-system.ps1:203-210), and Developer Mode and Sudo widen the local attack surface. Not defects in that project, but do not turn them on silently.",
+  "WindowsDeveloperConfig's uninstall resets to factory values (e.g. Sudo 0, Developer Mode 0, light theme) rather than to what the user had before (registry-system.ps1; README.md:536). A user who already had Developer Mode on ends up with it off. WinModes' journal avoids this; do not add a 'reset' that skips the journal.",
+  "NTFS 8.3 short names: WindowsMize documents that 'fsutil 8dot3name strip' removes existing short names and is not reversible (agadiffe_WindowsMize/src/modules/tweaks/public/system_and_performance/Set-Short8Dot3FileName.ps1:31,94). Even the plain 'set' command only affects new files. Keep it out of WinModes.",
+  "Win11Debloat Prevent_Auto_Reboot writes the Windows Update policy NoAutoRebootWithLoggedOnUsers (Regfiles/Prevent_Auto_Reboot.reg) and Disable_Update_ASAP writes WindowsUpdate\\UX\\Settings. Windows Update policy is BLOCKED."
+ ],
+ "notes": "Method: read-only reading of the seven clones; nothing was executed. No file in the reviewed repositories addressed an AI agent; no prompt-injection attempt was seen. Win11Debloat .reg files are UTF-16 (I decoded them with iconv); the values quoted come from those decoded files. Several winutil JSON files contain raw newline characters inside strings and are not valid JSON (jq refuses them), so I read them as text.\n\nWHAT WAS NOT FOUND IN THE ASSIGNED CLONES (so deliberately not listed as tweaks): Defender performance mode/exclusion recipes for developer folders (no clone sets them for a good reason; ZOICWARE and GTweak add exclusions for themselves or whole drives), search-index exclusions for repos (the only hits are IFEO priority and 'net stop SearchIndexer' in other clones, both outside WinModes' rules), Git/Node/npm/pip/NuGet cache relocation (only CARGO_HOME/RUSTUP_HOME in samypr100), Windows Terminal defaults beyond fragments, a user-scope execution policy write, and any .wslconfig writer (the previous research already noted this gap). Microsoft's WSL and Dev Drive documentation would be the source for those, and I did not fetch it.\n\nDEV DRIVE EXPLAINED (for the WinModes documentation, with the part that is evidenced marked): (a) evidenced: it is a ReFS volume created with Format-Volume -DevDrive, supported from build 10.0.22621 (vhd-commands.ts:147-151, constants.ts:40); the repo wraps it in a VHDX (Fixed gives a 'notable performance boost', README.md:111-118); source claims about 25% faster high-IO workloads (README.md:24-26). (b) evidenced: antivirus-related controls are 'fsutil devdrv enable /disallowAv' (stop AV filters), 'fsutil devdrv setfiltersallowed'/'clearFiltersAllowed' (filter allow list), and 'fsutil devdrv trust /f <vol>' (mark trusted), plus 'fsutil devdrv query'. (c) from Microsoft docs, not in the clones: a trusted Dev Drive lets Defender scan in performance mode (asynchronously), which is where most of the speed-up over a normal NTFS volume comes from; ReFS itself, copy-on-write and the different filter stack also contribute. Therefore WinModes may only detect and advise.\n\nTOP RANKING for WinModes (user value vs risk): 1) elevated-helper trusted-path check (modeIdeas), 2) folder-type NotSpecified, 3) Developer Mode + sudo + long paths as an opt-in 'Developer system' group (long paths is already in WinModes), 4) Dev drive advisor (read-only), 5) Explorer comfort values (hidden files, This PC, full path, classic context menu). NTFS last-access and PowerShell execution policy are last because the gain is marginal or the safeguard is weakened.\n\nALREADY IN WINMODES, so not repeated: long-paths, file-extensions, taskbar-end-task, game-mode, game-dvr, fast-startup, transparency, and the whole telemetry/ads set. Known consensus items I rechecked and left out on purpose: svchost split threshold (not for modes), hibernate off (laptop), visual effects (cosmetic), 8.3 names (not reversible).\n\nOther file-level findings: winutil's preset.json 'Standard' and 'Advanced' presets include the folder auto-discovery tweak and End Task, but no dev-specific tweak; no clone toggles Windows Search, Dev Drive or .wslconfig. The QuickWingetSetup Command Palette extension (microsoft_WindowsDeveloperConfig/src/future/cmdpal) is out of scope (it only lists winget configurations). The directory D:\\tmp\\oss\\microsoft_WindowsDeveloperConfig\\windows-dev-config is the signed copy of src/windows-dev-config (their guard enforces identical content apart from the Authenticode signature block); I cited src/ paths."
+}

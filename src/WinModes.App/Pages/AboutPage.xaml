@@ -3,11 +3,14 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
       Title="{l:T 'About'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <TextBlock Text="{l:T 'About'}" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock Text="{l:T 'Reversible Windows 11 modes for coding, work and gaming.'}" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,24" />
+        <controls:PageHeader Title="{l:T 'About'}" Icon="Info24" Accent="{x:Static app:Palette.Container}" Margin="0,0,0,24">
+            <TextBlock Text="{l:T 'Reversible Windows 11 modes for coding, work and gaming.'}" Style="{StaticResource SecondaryTextStyle}" />
+        </controls:PageHeader>
 
         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
             <Grid>
@@ -26,7 +29,15 @@
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="WinModes" FontSize="20" FontWeight="SemiBold" />
-                    <TextBlock x:Name="VersionText" Style="{StaticResource SecondaryTextStyle}" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="VersionText" Style="{StaticResource SecondaryTextStyle}" VerticalAlignment="Center" />
+                        <Border x:Name="BetaBadge" Visibility="Collapsed" CornerRadius="9" Padding="7,1,7,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="BetaBadgeText" FontSize="11" FontWeight="SemiBold" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock x:Name="BetaNote" Visibility="Collapsed" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"
+                               Style="{StaticResource SecondaryTextStyle}"
+                               Text="{l:T 'This is a beta build for testing: it may still contain mistakes. You choose below, under Updates, whether updates come from the beta or the stable channel.'}" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -47,6 +58,12 @@
                                Text="{l:T 'WinModes can ask GitHub whether a newer release exists. Nothing is downloaded or installed by itself.'}" />
                     <CheckBox x:Name="CheckAtStartup" Content="{l:T 'Check once when WinModes starts'}" Margin="0,6,0,0"
                               Checked="OnCheckAtStartupChanged" Unchecked="OnCheckAtStartupChanged" />
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <TextBlock Text="{l:T 'Update channel'}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <ComboBox x:Name="UpdateChannelChoice" MinWidth="150" DisplayMemberPath="Label"
+                                  SelectionChanged="OnUpdateChannelChanged" AutomationProperties.Name="{l:T 'Update channel'}" />
+                    </StackPanel>
+                    <TextBlock x:Name="UpdateChannelNote" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Style="{StaticResource SecondaryTextStyle}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button x:Name="CheckButton" Content="{l:T 'Check now'}" Icon="{ui:SymbolIcon ArrowSync24}" Click="OnCheckUpdates" />
@@ -110,13 +127,13 @@
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="{l:T 'Support the project'}" FontWeight="SemiBold" />
-                    <TextBlock Text="{l:T 'WinModes is free for noncommercial use. If it helps you, you can buy the author a coffee.'}"
+                    <TextBlock Text="{l:T 'If WinModes helps you, you can support its development with a voluntary donation.'}"
                                FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button Content="{l:T 'Welcome guide'}" Icon="{ui:SymbolIcon Lightbulb24}" Margin="0,0,8,0" Click="OnShowGuide" />
                     <ui:Button Content="{l:T 'Source code'}" Icon="{ui:SymbolIcon Code24}" Margin="0,0,8,0" Click="OnOpenSource" />
-                    <ui:Button Content="{l:T 'Buy me a coffee'}" Icon="{ui:SymbolIcon DrinkCoffee24}" Appearance="Primary" Click="OnBuyCoffee" />
+                    <ui:Button Content="{l:T 'Support WinModes'}" Icon="{ui:SymbolIcon Heart24}" Appearance="Primary" Click="OnSupport" />
                 </StackPanel>
             </Grid>
         </Border>

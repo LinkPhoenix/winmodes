@@ -8,7 +8,7 @@ using WinModes.Core.Protection;
 namespace WinModes.Core.Tuning;
 
 /// <summary>The first six act on a service; Tweak and Untweak apply or undo a catalog tweak.</summary>
-public enum TuneAction { Automatic, Manual, Disabled, Start, Stop, Restore, Tweak, Untweak }
+public enum TuneAction { Automatic, Manual, Disabled, Start, Stop, Restore, Tweak, Untweak, ReleasePolicy }
 
 public enum TuneOutcome { Done, Skipped, Failed }
 

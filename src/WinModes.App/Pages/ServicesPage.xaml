@@ -2,12 +2,22 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       Title="{l:T 'Services'}"
+      ScrollViewer.CanContentScroll="False"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-    <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <TextBlock Text="{l:T 'Services'}" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock x:Name="Summary" Text="{l:T 'Reading services…'}" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,16" TextWrapping="Wrap" />
+    <!-- The page scrolls its list itself (the shell's scrolling is off): only the rows in view are built. -->
+    <Grid Margin="36,24,36,24" MaxWidth="1100">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel>
+        <controls:PageHeader Title="{l:T 'Services'}" Icon="Server24" Accent="{x:Static app:Palette.Container}" Margin="0,0,0,16">
+            <TextBlock x:Name="Summary" Text="{l:T 'Reading services…'}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+        </controls:PageHeader>
 
         <Grid Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
@@ -15,8 +25,8 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ui:TextBox x:Name="SearchBox" PlaceholderText="{l:T 'Search by name'}" Icon="{ui:SymbolIcon Search24}"
-                        TextChanged="OnFilterChanged" AutomationProperties.Name="{l:T 'Search services'}" />
+            <controls:SearchField x:Name="SearchBox" PlaceholderText="{l:T 'Search by name'}"
+                                  TextChanged="OnSearchChanged" AutomationProperties.Name="{l:T 'Search services'}" />
             <CheckBox x:Name="RunningOnly" Grid.Column="1" Content="{l:T 'Running only'}" IsChecked="True" Margin="16,0,0,0"
                       Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
             <CheckBox x:Name="ProtectedOnly" Grid.Column="2" Content="{l:T 'Protected only'}" Margin="8,0,0,0"
@@ -26,31 +36,47 @@
         <Border x:Name="ResultCard" Style="{StaticResource CardBorderStyle}" Padding="16,12" Margin="0,0,0,12" Visibility="Collapsed">
             <TextBlock x:Name="ResultText" TextWrapping="Wrap" />
         </Border>
+        </StackPanel>
 
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <ItemsControl x:Name="Rows" ContextMenuOpening="OnMenuOpening" ContextMenuClosing="OnMenuClosing">
+        <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="0">
+            <Grid>
+            <!-- One menu for the whole list, filled for the row under the pointer when it opens: a menu per row made the page slow to build. -->
+            <ItemsControl x:Name="Rows" ContextMenuOpening="OnMenuOpening" ContextMenuClosing="OnMenuClosing"
+                          VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.ScrollUnit="Pixel" ScrollViewer.CanContentScroll="True">
+                <ItemsControl.Template>
+                    <ControlTemplate TargetType="ItemsControl">
+                        <ScrollViewer Focusable="False" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                            <ItemsPresenter />
+                        </ScrollViewer>
+                    </ControlTemplate>
+                </ItemsControl.Template>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="{l:T 'Protected: WinModes never changes this service'}" IsEnabled="False"
+                                  Visibility="{Binding ProtectedVisibility}" />
+                        <MenuItem Header="{l:T 'Start'}" Tag="Start" Click="OnMenuAction" IsEnabled="{Binding CanStart}" />
+                        <MenuItem Header="{l:T 'Stop'}" Tag="Stop" Click="OnMenuAction" IsEnabled="{Binding CanStop}" />
+                        <Separator />
+                        <MenuItem Header="{l:T 'Start type'}" IsEnabled="{Binding CanChange}">
+                            <MenuItem Header="{l:T 'Automatic'}" Tag="Automatic" Click="OnMenuAction" IsChecked="{Binding IsAutomatic, Mode=OneWay}" />
+                            <MenuItem Header="{l:T 'Manual (start when needed)'}" Tag="Manual" Click="OnMenuAction" IsChecked="{Binding IsManual, Mode=OneWay}" />
+                            <MenuItem Header="{l:T 'Disabled'}" Tag="Disabled" Click="OnMenuAction" IsChecked="{Binding IsDisabled, Mode=OneWay}" />
+                        </MenuItem>
+                        <MenuItem Header="{Binding RestoreHeader}" Tag="Restore" Click="OnMenuAction" IsEnabled="{Binding CanRestore}" />
+                        <Separator />
+                        <MenuItem Header="{l:T 'Copy name'}" Click="OnCopyName" />
+                    </ContextMenu>
+                </ItemsControl.ContextMenu>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <!-- Transparent so a right-click anywhere on the row opens the menu. -->
                         <Border Padding="20,10" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                Background="Transparent" ToolTip="{Binding Description}">
-                            <Border.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="{l:T 'Protected: WinModes never changes this service'}" IsEnabled="False"
-                                              Visibility="{Binding ProtectedVisibility}" />
-                                    <MenuItem Header="{l:T 'Start'}" Tag="Start" Click="OnMenuAction" IsEnabled="{Binding CanStart}" />
-                                    <MenuItem Header="{l:T 'Stop'}" Tag="Stop" Click="OnMenuAction" IsEnabled="{Binding CanStop}" />
-                                    <Separator />
-                                    <MenuItem Header="{l:T 'Start type'}" IsEnabled="{Binding CanChange}">
-                                        <MenuItem Header="{l:T 'Automatic'}" Tag="Automatic" Click="OnMenuAction" IsChecked="{Binding IsAutomatic, Mode=OneWay}" />
-                                        <MenuItem Header="{l:T 'Manual (start when needed)'}" Tag="Manual" Click="OnMenuAction" IsChecked="{Binding IsManual, Mode=OneWay}" />
-                                        <MenuItem Header="{l:T 'Disabled'}" Tag="Disabled" Click="OnMenuAction" IsChecked="{Binding IsDisabled, Mode=OneWay}" />
-                                    </MenuItem>
-                                    <MenuItem Header="{Binding RestoreHeader}" Tag="Restore" Click="OnMenuAction" IsEnabled="{Binding CanRestore}" />
-                                    <Separator />
-                                    <MenuItem Header="{l:T 'Copy name'}" Click="OnCopyName" />
-                                </ContextMenu>
-                            </Border.ContextMenu>
+                                Background="Transparent" DataContext="{Binding Data}" ToolTip="{Binding Description}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="36" />
@@ -89,6 +115,9 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+                <controls:EmptyState x:Name="EmptyState" Glyph="&#xE721;" Title="{l:T 'Nothing matches.'}"
+                                     Hint="{l:T 'Try another search or clear filters.'}" Visibility="Collapsed" />
+            </Grid>
         </Border>
-    </StackPanel>
+    </Grid>
 </Page>

@@ -1,0 +1,418 @@
+<Page x:Class="WinModes.App.Pages.DebloatPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:l="clr-namespace:WinModes.App.Localization"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="{l:T 'Debloat'}"
+      ScrollViewer.CanContentScroll="False"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <Page.Resources>
+        <DataTemplate x:Key="AppBadgesTemplate">
+            <WrapPanel Margin="0,8,0,0">
+                <controls:StatusBadge Text="{Binding InstallationText}" Glyph="{Binding InstallationGlyph}" Tone="{Binding InstallationTone}"
+                                      ToolTip="{Binding InstallationTip}" />
+                <controls:StatusBadge Text="{Binding TierText}" Glyph="{Binding TierGlyph}" Tone="{Binding TierTone}"
+                                      ToolTip="{Binding TierExplanation}" />
+                <controls:StatusBadge Text="{Binding RecoveryText}" Glyph="{Binding RecoveryGlyph}" Tone="{Binding RecoveryTone}"
+                                      ToolTip="{Binding RecoveryTip}" Visibility="{Binding RecoveryVisibility}" />
+                <controls:StatusBadge Text="{l:T 'To remove'}" Glyph="&#xE74D;" Tone="{x:Static app:Palette.Stop}"
+                                      ToolTip="{l:T 'Selected for review. Nothing has been removed.'}" Visibility="{Binding PendingVisibility}" />
+            </WrapPanel>
+        </DataTemplate>
+        <!-- The arrow that opens the details of an app. -->
+        <Style x:Key="DetailsToggleStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Margin" Value="10,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Frame" CornerRadius="6" Background="Transparent">
+                            <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="12" Text="{Binding ChevronGlyph}" HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Frame" Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- One package of an app: its logo, its name and version, and a tick box when the app has several. -->
+        <DataTemplate x:Key="PackageTemplate">
+            <Grid Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanSelect}" Visibility="{Binding ChoiceVisibility}" MinWidth="0" Margin="0,0,10,0"
+                          VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
+                <Image Grid.Column="1" Source="{Binding Icon}" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+                <TextBlock Grid.Column="2" Text="{Binding Name}" FontSize="12" FontFamily="Consolas" VerticalAlignment="Center" TextWrapping="Wrap" />
+                <TextBlock Grid.Column="3" Text="{Binding VersionText}" FontSize="11" Margin="16,0,0,0" VerticalAlignment="Center"
+                           Style="{StaticResource SecondaryTextStyle}" />
+            </Grid>
+        </DataTemplate>
+
+        <!-- The details of an app, built only while it is open. -->
+        <DataTemplate x:Key="AppDetailsTemplate">
+            <Border Margin="0,12,0,0" Padding="14,10,14,12" CornerRadius="6" Background="{DynamicResource ControlFillColorDefaultBrush}">
+                <StackPanel>
+                    <StackPanel Visibility="{Binding InstalledVisibility}">
+                        <TextBlock Text="{l:T 'On this PC'}" FontSize="11" FontWeight="SemiBold" Style="{StaticResource SecondaryTextStyle}" />
+                        <TextBlock Text="{l:T 'Choose which of these packages to remove.'}" FontSize="12" Margin="0,2,0,0"
+                                   Style="{StaticResource SecondaryTextStyle}" Visibility="{Binding ChoiceHintVisibility}" />
+                        <ItemsControl ItemsSource="{Binding Packages}" ItemTemplate="{StaticResource PackageTemplate}" />
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding AbsentVisibility}">
+                        <TextBlock Text="{l:T 'Not installed on this PC. WinModes looks for:'}" FontSize="11" FontWeight="SemiBold" Style="{StaticResource SecondaryTextStyle}" />
+                        <ItemsControl ItemsSource="{Binding PackagePatterns}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" FontSize="12" FontFamily="Consolas" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <TextBlock Text="{Binding TierExplanation}" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap" />
+                    <ui:Button Content="{l:T 'Open Windows Settings'}" Icon="{ui:SymbolIcon Settings24}" Margin="0,8,0,0" HorizontalAlignment="Left"
+                               Click="OnOpenSettings" Visibility="{Binding SettingsVisibility}" />
+                    <StackPanel Visibility="{Binding ReinstallVisibility}" Margin="0,12,0,0">
+                        <TextBlock Text="{l:T 'If you change your mind'}" FontSize="11" FontWeight="SemiBold" Style="{StaticResource SecondaryTextStyle}" />
+                        <TextBlock Text="{Binding ReinstallText}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap" />
+                        <ui:Button Content="{l:T 'Open in the Store'}" Icon="{ui:SymbolIcon Open24}" Margin="0,8,0,0" HorizontalAlignment="Left"
+                                   Click="OnOpenAppStore" Visibility="{Binding StoreVisibility}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
+    <!-- The page scrolls its list itself (the shell's scrolling is off) so the category bar and the action bar stay in view. -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Margin="36,24,36,4" MaxWidth="1600">
+            <controls:PageHeader Title="{l:T 'Debloat'}" Icon="Broom24" Accent="{x:Static app:Palette.Stop}" Margin="0">
+                <controls:PageHeader.Actions>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:Button x:Name="RefreshButton" Content="{l:T 'Refresh'}" Icon="{ui:SymbolIcon ArrowClockwise24}" Click="OnRefresh" />
+                        <ui:Button Content="{l:T 'Help'}" Icon="{ui:SymbolIcon QuestionCircle24}" Click="OnHelp" Margin="8,0,0,0" />
+                    </StackPanel>
+                </controls:PageHeader.Actions>
+            </controls:PageHeader>
+            <TextBlock Text="{l:T 'Review installed apps, removal consequences and recovery options for your account.'}"
+                       Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" Margin="0,8,0,0" />
+            <WrapPanel Margin="0,14,0,0">
+                <controls:SearchField x:Name="SearchBox" PlaceholderText="{l:T 'Search apps'}" Width="240" Margin="0,0,16,8"
+                                      TextChanged="OnFilterChanged" AutomationProperties.Name="{l:T 'Search apps'}" />
+                <TextBlock Text="{l:T 'Show'}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <ComboBox x:Name="StatusFilter" Width="160" SelectedIndex="0" SelectionChanged="OnCatalogFilterChanged" AutomationProperties.Name="{l:T 'App status'}">
+                    <ComboBoxItem Content="{l:T 'All'}" />
+                    <ComboBoxItem Content="{l:T 'Installed'}" />
+                    <ComboBoxItem Content="{l:T 'Not installed'}" />
+                    <ComboBoxItem Content="{l:T 'Safe to remove'}" />
+                    <ComboBoxItem Content="{l:T 'Check first'}" />
+                    <ComboBoxItem Content="{l:T 'Protected'}" />
+                    <ComboBoxItem Content="{l:T 'Selected'}" />
+                </ComboBox>
+                <TextBlock Text="{l:T 'Sort'}" VerticalAlignment="Center" Margin="20,0,8,0" />
+                <ComboBox x:Name="SortOrder" Width="175" SelectedIndex="0" SelectionChanged="OnCatalogFilterChanged" AutomationProperties.Name="{l:T 'Sort apps'}">
+                    <ComboBoxItem Content="{l:T 'Installed first'}" />
+                    <ComboBoxItem Content="{l:T 'Name A–Z'}" />
+                    <ComboBoxItem Content="{l:T 'Name Z–A'}" />
+                    <ComboBoxItem Content="{l:T 'Category'}" />
+                </ComboBox>
+                <TextBlock x:Name="VisibleCount" VerticalAlignment="Center" Margin="20,0,0,0" Style="{StaticResource SecondaryTextStyle}" />
+            </WrapPanel>
+            <CheckBox x:Name="ShowAbsent" Content="{l:T 'Also show what is not installed'}" Margin="0,4,0,0"
+                      Checked="OnFilterToggled" Unchecked="OnFilterToggled"
+                      ToolTip="{l:T 'The apps WinModes knows about that this PC does not have, so you can see everything the list covers.'}" />
+            <Grid Margin="0,14,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ItemsControl x:Name="CategoryBar">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Style="{StaticResource CategoryChipStyle}" Click="OnCategoryClick" AutomationProperties.Name="{Binding Title}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <controls:ViewModeSwitcher x:Name="ViewMode" Grid.Column="1" Margin="12,0,0,0"
+                                           ModeChanged="OnViewModeChanged" VerticalAlignment="Top" />
+            </Grid>
+            <TextBlock x:Name="ReadStatus" Style="{StaticResource SecondaryTextStyle}" FontSize="11" Margin="0,4,0,4" TextWrapping="Wrap" />
+            <ui:InfoBar x:Name="ReadWarning" Severity="Warning" IsOpen="False" IsClosable="False" Margin="0,4,0,8" />
+        </StackPanel>
+
+        <ScrollViewer x:Name="ListScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="36,4,36,24" MaxWidth="1600">
+                <Border Style="{StaticResource CardBorderStyle}" Padding="16,12" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="Headline" FontSize="16" FontWeight="SemiBold" Text="{l:T 'Reading the apps of this PC…'}" />
+                            <TextBlock x:Name="SubHeadline" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <WrapPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center">
+                            <ui:Button x:Name="SelectSafe" Content="{l:T 'Select safe results'}" Icon="{ui:SymbolIcon CheckboxChecked24}"
+                                       Click="OnSelectSafe" IsEnabled="False" Margin="0,0,8,0" />
+                            <ui:Button x:Name="SelectVisible" Content="{l:T 'Select visible'}" Click="OnSelectVisible" IsEnabled="False" />
+                        </WrapPanel>
+                    </Grid>
+                </Border>
+
+                <Border x:Name="ResultCard" Style="{StaticResource CardBorderStyle}" Padding="16,12" Margin="0,0,0,12" Visibility="Collapsed">
+                    <TextBlock x:Name="ResultText" TextWrapping="Wrap" />
+                </Border>
+
+                <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                    <StackPanel>
+                        <controls:EmptyState x:Name="EmptyText" Glyph="&#xE721;" Title="{l:T 'Nothing matches.'}"
+                                              Hint="{l:T 'Try another search or clear filters.'}" Visibility="Collapsed" />
+                        <ItemsControl x:Name="RowsList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                            Opacity="{Binding Emphasis}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox IsChecked="{Binding SelectionState, Mode=TwoWay}" IsEnabled="{Binding SelectionAllowed}" IsThreeState="True" Visibility="{Binding SelectionVisibility}"
+                                                      MinWidth="0" Margin="0,0,14,0" VerticalAlignment="Center" AutomationProperties.Name="{Binding Title}" />
+                                            <!-- The logo of the app; a badge with the glyph of its category when there is none to read. -->
+                                            <Grid Grid.Column="1" Width="32" Height="32" Margin="0,0,14,0" VerticalAlignment="Top">
+                                                <Border Style="{StaticResource IconBadgeStyle}" Width="32" Height="32" Background="{Binding Tint}"
+                                                        Visibility="{Binding GlyphVisibility}">
+                                                    <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="15" HorizontalAlignment="Center"
+                                                               Foreground="{Binding Color}" Text="{Binding Glyph}" />
+                                                </Border>
+                                                <Image Source="{Binding Icon}" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality" />
+                                            </Grid>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Why}" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"
+                                                           Visibility="{Binding WhyVisibility}" />
+                                                <TextBlock Text="{Binding Breaks}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" Visibility="{Binding BreaksVisibility}" />
+                                                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource AppBadgesTemplate}" />
+                                            </StackPanel>
+                                            <Button Grid.Column="4" Style="{StaticResource DetailsToggleStyle}" Click="OnToggleDetails"
+                                                    ToolTip="{Binding ExpanderTip}" AutomationProperties.Name="{Binding ExpanderTip}" />
+                                            <ContentControl Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Content="{Binding Details}"
+                                                            ContentTemplate="{StaticResource AppDetailsTemplate}" Visibility="{Binding DetailsVisibility}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl x:Name="RowsCards" Visibility="Collapsed">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:AdaptiveCardGrid MinItemWidth="300" MaxColumns="4" Spacing="12" MinItemHeight="168" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource CardBorderStyle}" Padding="14" Opacity="{Binding Emphasis}">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <CheckBox IsChecked="{Binding SelectionState, Mode=TwoWay}" IsEnabled="{Binding SelectionAllowed}" IsThreeState="True" Visibility="{Binding SelectionVisibility}"
+                                                          MinWidth="0" Margin="0,0,10,0" VerticalAlignment="Top" AutomationProperties.Name="{Binding Title}" />
+                                                <Grid Grid.Column="1" Width="32" Height="32" Margin="0,0,12,0" VerticalAlignment="Top">
+                                                    <Border Style="{StaticResource IconBadgeStyle}" Width="32" Height="32" Background="{Binding Tint}"
+                                                            Visibility="{Binding GlyphVisibility}">
+                                                        <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="15" HorizontalAlignment="Center"
+                                                                   Foreground="{Binding Color}" Text="{Binding Glyph}" />
+                                                    </Border>
+                                                    <Image Source="{Binding Icon}" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality" />
+                                                </Grid>
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding Why}" FontSize="12" TextWrapping="Wrap" MaxHeight="36" ToolTip="{Binding Why}"
+                                                               Style="{StaticResource SecondaryTextStyle}" Visibility="{Binding WhyVisibility}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="3" Style="{StaticResource DetailsToggleStyle}" Click="OnToggleDetails"
+                                                        ToolTip="{Binding ExpanderTip}" AutomationProperties.Name="{Binding ExpanderTip}" />
+                                            </Grid>
+                                            <ContentControl Content="{Binding}" ContentTemplate="{StaticResource AppBadgesTemplate}" />
+                                            <TextBlock Text="{Binding Breaks}" FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" Visibility="{Binding BreaksVisibility}" />
+                                            <ContentControl Content="{Binding Details}" ContentTemplate="{StaticResource AppDetailsTemplate}"
+                                                            Visibility="{Binding DetailsVisibility}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl x:Name="RowsCompact" Visibility="Collapsed">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="12,6" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                            Opacity="{Binding Emphasis}">
+                                        <Grid MinHeight="32">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox IsChecked="{Binding SelectionState, Mode=TwoWay}" IsEnabled="{Binding SelectionAllowed}" IsThreeState="True" Visibility="{Binding SelectionVisibility}"
+                                                      MinWidth="0" Margin="0,0,8,0" VerticalAlignment="Center" AutomationProperties.Name="{Binding Title}" />
+                                            <Grid Grid.Column="1" Width="24" Height="24" Margin="0,0,8,0" VerticalAlignment="Center">
+                                                <Border Style="{StaticResource IconBadgeStyle}" Width="24" Height="24" Background="{Binding Tint}"
+                                                        Visibility="{Binding GlyphVisibility}">
+                                                    <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="12" HorizontalAlignment="Center"
+                                                               Foreground="{Binding Color}" Text="{Binding Glyph}" />
+                                                </Border>
+                                                <Image Source="{Binding Icon}" Width="24" Height="24" RenderOptions.BitmapScalingMode="HighQuality" />
+                                            </Grid>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Why}" />
+                                                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource AppBadgesTemplate}" />
+                                            </StackPanel>
+                                            <Button Grid.Column="4" Style="{StaticResource DetailsToggleStyle}" Click="OnToggleDetails"
+                                                    ToolTip="{Binding ExpanderTip}" AutomationProperties.Name="{Binding ExpanderTip}" />
+                                            <ContentControl Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Content="{Binding Details}"
+                                                            ContentTemplate="{StaticResource AppDetailsTemplate}" Visibility="{Binding DetailsVisibility}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border x:Name="OneDriveCard" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <!-- The icon is read from OneDrive's own program, so it is the official one. -->
+                        <Image x:Name="OneDriveIcon" Width="32" Height="32" Margin="0,0,16,0" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock Text="OneDrive" FontWeight="SemiBold" FontSize="16" />
+                            <TextBlock x:Name="OneDriveText" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:Button x:Name="OneDriveRestore" Content="{l:T 'Install OneDrive again'}" Icon="{ui:SymbolIcon ArrowUndo24}" Click="OnOneDriveRestore" Visibility="Collapsed" />
+                            <ui:Button x:Name="OneDriveRemove" Content="{l:T 'Uninstall OneDrive'}" Icon="{ui:SymbolIcon Delete24}" Click="OnOneDriveRemove" Visibility="Collapsed" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <TextBlock x:Name="RemovedTitle" Text="{l:T 'REMOVED BY WINMODES'}" Style="{StaticResource CardCaptionStyle}" Margin="4,24,0,8" Visibility="Collapsed" />
+                <Border x:Name="RemovedCard" Style="{StaticResource CardBorderStyle}" Padding="0" Visibility="Collapsed">
+                    <ItemsControl x:Name="Removed">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid Width="32" Height="32" Margin="0,0,14,0" VerticalAlignment="Center">
+                                            <Border Style="{StaticResource IconBadgeStyle}" Width="32" Height="32" Background="#337C5CFC" Visibility="{Binding GlyphVisibility}">
+                                                <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="15" HorizontalAlignment="Center" Foreground="#A78BFA" Text="&#xE74D;" />
+                                            </Border>
+                                            <Image Source="{Binding Icon}" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality" />
+                                        </Grid>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Detail}" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <ui:Button Content="{l:T 'Open in the Store'}" Icon="{ui:SymbolIcon Open24}" Margin="0,0,8,0" Click="OnOpenStore"
+                                                       Visibility="{Binding StoreVisibility}" />
+                                            <ui:Button Content="{l:T 'Restore'}" Icon="{ui:SymbolIcon ArrowUndo24}" Click="OnRestoreClick"
+                                                       IsEnabled="{Binding CanRestore}" ToolTip="{Binding RestoreTip}" ToolTipService.ShowOnDisabled="True" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+
+                <TextBlock Margin="4,16,0,0" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap"
+                           Text="{l:T 'Local restore needs the original package files. A Windows update or cleanup can remove them. Check recovery options before removal; some apps can return after a Windows update.'}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Action bar: nothing is removed until Remove. -->
+        <Border x:Name="ActionBar" Grid.Row="2" Visibility="Collapsed" Background="{DynamicResource AppCardBrush}"
+                BorderBrush="{DynamicResource AppCardStrokeBrush}" BorderThickness="0,1,0,0" Padding="36,12">
+            <Grid MaxWidth="1600">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource IconBadgeStyle}" Width="32" Height="32" Background="#337C5CFC">
+                    <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="15" HorizontalAlignment="Center" Foreground="#A78BFA" Text="&#xE74D;" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="ActionTitle" FontWeight="SemiBold" />
+                    <TextBlock x:Name="ActionSummary" FontSize="12"
+                               Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <ui:Button x:Name="ShowSelection" Content="{l:T 'Show selection'}" Click="OnShowSelection" Margin="0,0,8,0" Visibility="Collapsed" />
+                    <ui:Button Content="{l:T 'Clear selection'}" Click="OnClearSelection" />
+                    <ui:Button x:Name="RemoveButton" Content="{l:T 'Review removal'}" Icon="{ui:SymbolIcon Delete24}" Appearance="Primary" Margin="8,0,0,0"
+                               Click="OnRemoveClick" IsEnabled="False" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

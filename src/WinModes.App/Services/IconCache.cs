@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -15,6 +16,21 @@ internal static class IconCache
 
     public static ImageSource? Get(string? executablePath) =>
         string.IsNullOrEmpty(executablePath) ? null : Cache.GetOrAdd(executablePath, Load);
+
+    /// <summary>The icon when it was already read, without reading it now.</summary>
+    public static ImageSource? Peek(string? executablePath) =>
+        !string.IsNullOrEmpty(executablePath) && Cache.TryGetValue(executablePath, out var icon) ? icon : null;
+
+    /// <summary>Reads the icons that are not cached yet, several at a time. True when something new was read, so a list can be redrawn.</summary>
+    public static Task<bool> PreloadAsync(IEnumerable<string?> executablePaths) => Task.Run(() =>
+    {
+        var missing = executablePaths
+            .Where(path => !string.IsNullOrEmpty(path) && !Cache.ContainsKey(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        Parallel.ForEach(missing, path => Cache.GetOrAdd(path!, Load));
+        return missing.Count > 0;
+    });
 
     private static ImageSource? Load(string path)
     {
@@ -33,6 +49,13 @@ internal static class IconCache
                 return picture;
             }
 
+            // A program with no icon of its own (svchost.exe, which hosts most Windows services) would get the shell's
+            // blank-window icon, which is not null and so hides the page's fallback glyph.
+            if (path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && CountIcons(path) == 0)
+            {
+                return null;
+            }
+
             using var icon = System.Drawing.Icon.ExtractAssociatedIcon(path);
             if (icon is null)
             {
@@ -49,4 +72,11 @@ internal static class IconCache
             return null;
         }
     }
+
+    /// <summary>Number of icons stored in a file; the call fails with a huge value, which counts as "has some".</summary>
+    private static uint CountIcons(string path) => ExtractIconEx(path, -1, null, null, 0);
+
+    [DllImport("shell32.dll", EntryPoint = "ExtractIconExW", CharSet = CharSet.Unicode)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern uint ExtractIconEx(string file, int index, IntPtr[]? large, IntPtr[]? small, uint icons);
 }

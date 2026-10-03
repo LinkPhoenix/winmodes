@@ -9,9 +9,10 @@
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
 
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <TextBlock Text="{l:T 'Notifications'}" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock Text="{l:T 'Choose what WinModes tells you about. Each notification is sent once and is not repeated when the app restarts. Changes are saved as you make them.'}"
-                   Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" TextWrapping="Wrap" />
+        <controls:PageHeader Title="{l:T 'Notifications'}" Icon="Alert24" Accent="{x:Static app:Palette.Apps}" Margin="0,0,0,4">
+            <TextBlock Text="{l:T 'Choose what WinModes tells you about. Each notification is sent once and is not repeated when the app restarts. Changes are saved as you make them.'}"
+                       Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+        </controls:PageHeader>
 
         <controls:SettingSection Header="{l:T 'GENERAL'}" Icon="AlertOn24" Accent="{x:Static app:Palette.BrandBrush}">
             <StackPanel>

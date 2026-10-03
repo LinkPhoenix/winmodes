@@ -5,7 +5,7 @@
 .DESCRIPTION
     Publishes the app self-contained for win-x64 (no .NET install needed), adds the data the app and the
     elevated helper read next to the executable, then writes into the output folder:
-      WinModes-v<version>-portable-win-x64.zip   unzip anywhere and run WinModes.exe
+      WinModes-v<version>-portable-win-x64.zip   unzip anywhere and run WinModes.exe (<version> is X.Y.Z-beta.YYYYMMDD for a beta)
       WinModes-v<version>-setup-win-x64.exe      installs into Program Files (needs Inno Setup 6 or 7)
       SHA256SUMS.txt
       SHA256SUMS.txt.sig                         its signature, when the app carries the public update key
@@ -15,7 +15,8 @@
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version,
+    # X.Y.Z, or X.Y.Z-beta.YYYYMMDD (with .N when several betas come out the same day) for a beta.
+    [Parameter(Mandatory)][ValidatePattern('^\d+\.\d+\.\d+(-beta\.\d{8}(\.\d{1,2})?)?$')][string]$Version,
     [string]$Root = (Split-Path -Parent $PSScriptRoot),
     [string]$OutputDir = (Join-Path (Split-Path -Parent $PSScriptRoot) 'artifacts'),
     # Fail instead of skipping the installer when Inno Setup is missing.
@@ -39,13 +40,15 @@ New-Item -ItemType Directory -Force -Path (Join-Path $appDir 'data') | Out-Null
 Copy-Item -LiteralPath (Join-Path $Root 'data/protected.json') -Destination (Join-Path $appDir 'data')
 # Knowledge base and tweak catalog read by the Optimize page (the helper reads the catalog too).
 Copy-Item -LiteralPath (Join-Path $Root 'data/tweaks.json') -Destination (Join-Path $appDir 'data')
+# Catalog of the preinstalled apps the Debloat page may remove.
+Copy-Item -LiteralPath (Join-Path $Root 'data/apps.json') -Destination (Join-Path $appDir 'data')
 Copy-Item -LiteralPath (Join-Path $Root 'data/db') -Destination (Join-Path $appDir 'data/db') -Recurse
 Copy-Item -LiteralPath (Join-Path $Root 'profiles') -Destination (Join-Path $appDir 'profiles') -Recurse
 foreach ($document in 'LICENSE.md', 'README.md', 'CHANGELOG.md') {
     Copy-Item -LiteralPath (Join-Path $Root $document) -Destination $appDir
 }
 
-foreach ($required in 'WinModes.exe', 'WinModes.Elevated.exe', 'WinModes.StatusLine.exe', 'data/protected.json', 'data/tweaks.json', 'data/db/windows-services.json', 'profiles/code.json') {
+foreach ($required in 'WinModes.exe', 'WinModes.Elevated.exe', 'WinModes.StatusLine.exe', 'data/protected.json', 'data/tweaks.json', 'data/apps.json', 'data/db/windows-services.json', 'profiles/code.json') {
     if (-not (Test-Path -LiteralPath (Join-Path $appDir $required))) { throw "The package is missing $required." }
 }
 
@@ -61,7 +64,9 @@ $compiler = @(
 ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
 
 if ($compiler) {
-    & $compiler /Qp "/DAppVersion=$Version" "/DSourceDir=$appDir" "/DOutputDir=$OutputDir" (Join-Path $Root 'installer/WinModes.iss')
+    # The numeric file version of the installer cannot carry the beta suffix.
+    $numericVersion = ($Version -replace '-.*$', '') + '.0'
+    & $compiler /Qp "/DAppVersion=$Version" "/DNumericVersion=$numericVersion" "/DSourceDir=$appDir" "/DOutputDir=$OutputDir" (Join-Path $Root 'installer/WinModes.iss')
     if ($LASTEXITCODE -ne 0) { throw 'The installer could not be compiled.' }
     $packages += Join-Path $OutputDir "WinModes-v$Version-setup-win-x64.exe"
 }

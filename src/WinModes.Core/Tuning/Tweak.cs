@@ -10,6 +10,17 @@ public enum TweakValueKind { Number, Text }
 /// <summary>One registry value a tweak sets. Number values (DWORD) are written as a decimal number.</summary>
 public sealed record TweakValue(TweakHive Hive, string Path, string Name, TweakValueKind Kind, string Value);
 
+public enum TweakPartKind { Value, Task }
+
+/// <summary>
+/// One change inside a tweak: a registry value or a scheduled task. A tweak applies all its parts, or only those the user picks.
+/// <see cref="Index"/> counts the values first, then the tasks, and is what the elevated helper is given.
+/// </summary>
+/// <param name="Label">What this part does, in plain words (the value name when the catalog has no text for it).</param>
+/// <param name="Target">Where it acts: the registry key and value, or the task path.</param>
+/// <param name="Setting">The value that is written ("0", or a quoted text); null for a task, which is disabled.</param>
+public sealed record TweakPart(int Index, TweakPartKind Kind, string Label, string Target, string? Setting, bool MachineWide);
+
 /// <summary>
 /// One entry of data/tweaks.json: registry values and scheduled tasks that together turn one Windows behaviour off or on.
 /// A tweak is data only; it never carries a command.
@@ -33,6 +44,79 @@ public sealed class Tweak
 
     /// <summary>Full paths of scheduled tasks to disable.</summary>
     public IReadOnlyList<string> Tasks { get; init; } = [];
+
+    /// <summary>What each part does, one text per value and then one per task. Optional: a part without a text shows its technical name.</summary>
+    public IReadOnlyList<string> PartLabels { get; init; } = [];
+
+    private IReadOnlyList<TweakPart>? _parts;
+
+    /// <summary>Every value and task of the tweak, in the order the helper numbers them.</summary>
+    [JsonIgnore]
+    public IReadOnlyList<TweakPart> Parts => _parts ??= BuildParts();
+
+    private List<TweakPart> BuildParts()
+    {
+        string Label(int index, string fallback) => index < PartLabels.Count && !string.IsNullOrWhiteSpace(PartLabels[index]) ? PartLabels[index] : fallback;
+
+        var parts = new List<TweakPart>(Values.Count + Tasks.Count);
+        foreach (var value in Values)
+        {
+            var hive = value.Hive == TweakHive.Machine ? "HKLM" : "HKCU";
+            parts.Add(new TweakPart(
+                parts.Count,
+                TweakPartKind.Value,
+                Label(parts.Count, value.Name),
+                $@"{hive}\{value.Path}\{value.Name}",
+                value.Kind == TweakValueKind.Text ? $"\"{value.Value}\"" : value.Value,
+                value.Hive == TweakHive.Machine));
+        }
+
+        foreach (var task in Tasks)
+        {
+            parts.Add(new TweakPart(parts.Count, TweakPartKind.Task, Label(parts.Count, task[(task.LastIndexOf('\\') + 1)..]), task, null, MachineWide: true));
+        }
+
+        return parts;
+    }
+
+    /// <summary>The part a journaled value belongs to, or null when the tweak no longer lists it.</summary>
+    public int? PartOf(TweakValueRecord record)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        for (var i = 0; i < Values.Count; i++)
+        {
+            var value = Values[i];
+            if (value.Hive == record.Hive && value.Path.Equals(record.Path, StringComparison.OrdinalIgnoreCase)
+                && value.Name.Equals(record.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>The part a journaled task belongs to, or null.</summary>
+    public int? PartOfTask(string taskPath)
+    {
+        for (var i = 0; i < Tasks.Count; i++)
+        {
+            if (Tasks[i].Equals(taskPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return Values.Count + i;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>True when one of the chosen parts (all of them when null) is machine-wide and must go through the elevated helper.</summary>
+    public bool NeedsElevationFor(IReadOnlySet<int>? parts) =>
+        parts is null ? NeedsElevation : Parts.Any(part => part.MachineWide && parts.Contains(part.Index));
+
+    /// <summary>True when one of the chosen parts (all of them when null) is a value of the user's own hive.</summary>
+    public bool HasUserPartFor(IReadOnlySet<int>? parts) =>
+        parts is null ? HasUserPart : Parts.Any(part => !part.MachineWide && parts.Contains(part.Index));
 
     /// <summary>True when part of the tweak is machine-wide and must go through the elevated helper.</summary>
     [JsonIgnore]

@@ -1,0 +1,2156 @@
+{
+ "theme": "csharp-gui-optimizers",
+ "repos": [
+  {
+   "repo": "itsfatduck/optimizerDuck",
+   "what": ".NET WPF optimizer with a real per-step revert journal (atomic JSON, LIFO, read-back verify), live Customize toggles with registry watcher, Safe/Moderate/Risky + tag flags, USB power and power-plan providers, startup manager.",
+   "licence": "GPL-3.0",
+   "relevance": "high"
+  },
+  {
+   "repo": "rayenghanmi/RyTuneX",
+   "what": "WinUI 3 optimizer: DetectState per tweak, 'Intelligent' scan/recommend/preview/apply/verify/rollback pipeline, Policies override scanner, many privacy/AI tweaks; undo by opposite hard-coded action; contains destructive AI and Edge removal code.",
+   "licence": "AGPL-3.0",
+   "relevance": "medium"
+  },
+  {
+   "repo": "Sophia-Community/SophiApp",
+   "what": "C# WinUI front end for the Sophia ruleset: Accessor/Mutator pairs driven by UIMarkup.json per edition, 15-step pre-flight requirement checks (foreign tweakers, pending reboot, Controlled Folder Access), LGPO policy-cache clearing.",
+   "licence": "MIT",
+   "relevance": "medium"
+  },
+  {
+   "repo": "semazurek/ET-Optimizer",
+   "what": "WinForms (.NET 4.8) one-click optimizer built around one 9,800-line switch; first-write-wins registry backup text file; disables Defender/SmartScreen/mitigations, edits hosts and IFEO. Mostly a source of anti-patterns.",
+   "licence": "GPL-3.0",
+   "relevance": "low"
+  },
+  {
+   "repo": "Greedeks/GTweak",
+   "what": "WPF tweaker with Check/Apply lambdas per toggle, JSON export/import with signature, restore-point helper, task-scheduler manager; uses TrustedInstaller to rename system files, adds itself to Defender exclusions.",
+   "licence": "BSD-3-Clause",
+   "relevance": "medium"
+  },
+  {
+   "repo": "nyxiereal/XToolbox",
+   "what": "Dart/Flutter (not C#) app catalogue and installer launcher for debloat tools and AME/Atlas/ReviOS playbooks; no tweak definitions. End of life.",
+   "licence": "GPL-2.0",
+   "relevance": "low"
+  },
+  {
+   "repo": "nezhatweaks/nztsapp",
+   "what": "WPF 'FPS booster': table-driven registry tweaks with hand-written defaults, per-game IFEO PerfOptions, MSI mode, MMCSS and bundled power plans; includes a Defender remover and a process-priority loop.",
+   "licence": "GPL-3.0 (bundles CC BY-NC Defender Remover)",
+   "relevance": "low"
+  },
+  {
+   "repo": "memstechtips/Winhance",
+   "what": "Already surveyed; re-read only for settings absent from WinModes/consensus (AI policies, Paint/Edge AI, search cloud, ducking, notification sound, accessibility hotkeys, OneDrive KFM) and for the SettingDefinition/RegistrySetting/config-diff model.",
+   "licence": "PolyForm Shield 1.0.0",
+   "relevance": "medium"
+  }
+ ],
+ "tweaks": [
+  {
+   "id": "accessibility-hotkey-prompts-off",
+   "title": "Stop the Sticky Keys / Filter Keys / Toggle Keys shortcut popups (Shift x5, hold Shift 8 s)",
+   "category": "Input and latency",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Control Panel\\Accessibility\\StickyKeys",
+     "name": "Flags",
+     "kind": "Text",
+     "value": "506",
+     "default": "510"
+    },
+    {
+     "path": "Control Panel\\Accessibility\\Keyboard Response",
+     "name": "Flags",
+     "kind": "Text",
+     "value": "2",
+     "default": "126"
+    },
+    {
+     "path": "Control Panel\\Accessibility\\ToggleKeys",
+     "name": "Flags",
+     "kind": "Text",
+     "value": "34",
+     "default": "62 (Winhance) or 58 (GTweak, optimizerDuck): journal the live value"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "Sophia-Community/SophiApp",
+    "semazurek/ET-Optimizer",
+    "memstechtips/Winhance",
+    "itsfatduck/optimizerDuck",
+    "Greedeks/GTweak"
+   ],
+   "evidence": [
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:1268-1271",
+    "semazurek_ET-Optimizer/ET/Form1.cs:5974-5977",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:4012-4080",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/Performance.cs:227-256",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:176-186"
+   ],
+   "benefit": "No focus-stealing accessibility dialog in the middle of a game or an IDE session when Shift is held or tapped five times.",
+   "caveat": "Accessibility users who rely on these hotkeys must not get it. StickyKeys 506 only clears the hotkey bit (510 minus 4), which is the value Sophia uses; Winhance and optimizerDuck write coarser values (2 / 26). Sources disagree on the Windows default of ToggleKeys (62 vs 58), so only the journaled live value is reliable.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "keyboard-repeat-delay-minimum",
+   "title": "Shortest keyboard repeat delay (250 ms) at the fastest repeat rate",
+   "category": "Input and latency",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Control Panel\\Keyboard",
+     "name": "KeyboardDelay",
+     "kind": "Text",
+     "value": "0",
+     "default": "1"
+    },
+    {
+     "path": "Control Panel\\Keyboard",
+     "name": "KeyboardSpeed",
+     "kind": "Text",
+     "value": "31",
+     "default": "31"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "rayenghanmi/RyTuneX",
+    "Greedeks/GTweak"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/Performance.cs:204-220",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:378-384",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:144-153"
+   ],
+   "benefit": "Held keys repeat sooner (cursor movement, backspace, vim/IDE navigation).",
+   "caveat": "Easy to double-type for slow typists. RyTuneX also writes HKEY_USERS\\.DEFAULT (applies to the sign-in screen); WinModes should only touch HKCU. Windows reads it at sign-in; a live SystemParametersInfo call avoids the sign-out.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-startup-delay-zero",
+   "title": "Remove the built-in delay before startup apps launch after sign-in",
+   "category": "System and background",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize",
+     "name": "StartupDelayInMSec",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (Windows then waits about 10 s)"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "Greedeks/GTweak",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/UserExperience.cs:31-50",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:434-447",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:125-143"
+   ],
+   "benefit": "Startup apps and tray items appear immediately instead of about 10 s after the desktop.",
+   "caveat": "The Serialize key does not exist by default, so the tweak creates it and the undo must delete the key it created. All apps compete for CPU/disk at sign-in, so the desktop can feel slower for the first minute. Winhance labels 10000 as 'delay on' and 0 as default, i.e. it disagrees with the other two on the meaning of the absent value; the direction (0 = no delay) is the same in all three.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "window-shake-off",
+   "title": "Disable 'shake a window to minimise all others' (Aero Shake)",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "DisallowShaking",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "rayenghanmi/RyTuneX",
+    "Sophia-Community/SophiApp",
+    "itsfatduck/optimizerDuck"
+   ],
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:436-439",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:758-765",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Customize/Categories/Preferences.cs:405-417"
+   ],
+   "benefit": "Dragging a window around while gaming or screen sharing no longer minimises everything else by accident.",
+   "caveat": "None noteworthy. Sophia also deletes the NoWindowMinimizingShortcuts policy so the setting is visible in the UI.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "autoplay-off",
+   "title": "Turn AutoPlay off for removable media",
+   "category": "System and background",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\AutoplayHandlers",
+     "name": "DisableAutoplay",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "Sophia-Community/SophiApp",
+    "Greedeks/GTweak",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:1277-1283",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:476-479",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Customize/Models/ExplorerCustomizations.cs:3381"
+   ],
+   "benefit": "No automatic launch from USB sticks and discs (small hardening and fewer popups).",
+   "caveat": "Winhance additionally writes the machine policy NoDriveTypeAutoRun=255; keep that out (policy path, harder to undo exactly).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "explorer-recent-tracking-off",
+   "title": "Stop tracking recent apps, documents and frequent folders",
+   "category": "Privacy and telemetry",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "Start_TrackProgs",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "Start_TrackDocs",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+     "name": "ShowRecent",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+     "name": "ShowFrequent",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "Greedeks/GTweak",
+    "semazurek/ET-Optimizer",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:111-115",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:449-473",
+    "semazurek_ET-Optimizer/ET/Form1.cs:5952,7517",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Customize/Models/StartMenuCustomizations.cs:360"
+   ],
+   "benefit": "Fewer usage records and an empty 'Recent' list in Quick Access/Start/Jump Lists.",
+   "caveat": "Developers lose 'recent folders/files' convenience, and the Start Recommended list stays empty. WinModes already covers Start_IrisRecommendations only.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "whats-new-nags-off",
+   "title": "Hide the 'finish setting up your device', account and Settings account nags",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\UserProfileEngagement",
+     "name": "ScoobeSystemSettingEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "Start_AccountNotifications",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SystemSettings\\AccountNotifications",
+     "name": "EnableAccountNotifications",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "Greedeks/GTweak",
+    "semazurek/ET-Optimizer",
+    "memstechtips/Winhance",
+    "Sophia-Community/SophiApp"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:284-288",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/InterfaceTweaks.cs:626-631",
+    "semazurek_ET-Optimizer/ET/Form1.cs:6357",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/NotificationOptimizations.cs:210",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1043",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:345-354",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Customize/Models/StartMenuCustomizations.cs:473"
+   ],
+   "benefit": "Removes the recurring 'Let's finish setting up your device' screens and Microsoft-account prompts in Start and Settings.",
+   "caveat": "Do not copy Sophia's C# value names: its port writes 'ScoobeSystemSettingEnable' (missing 'd') at Mutators.cs:292, which does nothing. The correct name is ScoobeSystemSettingEnabled.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "content-delivery-silent-installs-off",
+   "title": "Block preinstalled/OEM promoted apps and remaining ContentDeliveryManager promotions",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "ContentDeliveryAllowed",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent/1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "OemPreInstalledAppsEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent/1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "PreInstalledAppsEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent/1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "PreInstalledAppsEverEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent/1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "FeatureManagementEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent/1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "SubscribedContentEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent/1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "SubscribedContent-310093Enabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent/1"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+     "name": "SubscribedContent-353698Enabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent/1"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "semazurek/ET-Optimizer",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/BloatwareAndServices.cs:29-62",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:668-711",
+    "semazurek_ET-Optimizer/ET/Form1.cs:6362-6396",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:532-660"
+   ],
+   "benefit": "Stops Windows re-seeding promoted app tiles and 'welcome after update' pages. Complements start-suggestions / consumer-features already in WinModes (which cover SilentInstalledApps, SystemPaneSuggestions, SoftLanding, 338388/338389/338393, 353694/353696, 338387).",
+   "caveat": "Only affects new content; already-installed promoted apps stay. Values were seen as 0 in all three sources.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "spotlight-policies-user",
+   "title": "Windows Spotlight: switch off lock-screen, Settings and Action Center suggestions via user policy",
+   "category": "Ads and suggestions",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "ConfigureWindowsSpotlight",
+     "kind": "Number",
+     "value": "2",
+     "default": "absent"
+    },
+    {
+     "path": "Software\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableThirdPartySuggestions",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "Software\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableWindowsSpotlightFeatures",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "Software\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableWindowsSpotlightOnActionCenter",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "Software\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableWindowsSpotlightOnSettings",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "Software\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableWindowsSpotlightWindowsWelcomeExperience",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11 (several policies are honoured only on Enterprise/Education editions)",
+   "projects": [
+    "rayenghanmi/RyTuneX"
+   ],
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1637-1665"
+   ],
+   "benefit": "Removes Spotlight promotional content from lock screen, Settings and the welcome page after updates.",
+   "caveat": "Single source. On Pro some of these policies are ignored (harmless). Policy values make Settings show 'managed by your organization' for the affected pages. RyTuneX also mirrors the values into HKEY_USERS\\.DEFAULT, which WinModes should not do.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "search-cloud-content-off",
+   "title": "Windows Search: no Microsoft-account/work-account cloud results and no device search history",
+   "category": "Search and AI",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+     "name": "IsMSACloudSearchEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (on)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+     "name": "IsAADCloudSearchEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (on)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+     "name": "IsDeviceSearchHistoryEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (on)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 2004+ and Windows 11",
+   "projects": [
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1520",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1565",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1587"
+   ],
+   "benefit": "Start/Search stops querying Outlook/OneDrive cloud content and stops keeping a local search history.",
+   "caveat": "Search no longer finds cloud-only mail/files. Single source (Winhance, code-verified). WinModes already has search-highlights and bing-search.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "input-personalization-off",
+   "title": "Stop ink/typing personalisation and contact harvesting",
+   "category": "Privacy and telemetry",
+   "hive": "User",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\InputPersonalization",
+     "name": "RestrictImplicitInkCollection",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0)"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\InputPersonalization",
+     "name": "RestrictImplicitTextCollection",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0)"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\InputPersonalization\\TrainedDataStore",
+     "name": "HarvestContacts",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    },
+    {
+     "path": "Software\\Microsoft\\Input\\TIPC",
+     "name": "Enabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "Greedeks/GTweak",
+    "semazurek/ET-Optimizer",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:289-303",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:237-258",
+    "semazurek_ET-Optimizer/ET/Form1.cs:7139-7150",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs (id privacy-inking-typing-dictionary)"
+   ],
+   "benefit": "Windows stops learning from what you type/write and stops reading your contacts for suggestions.",
+   "caveat": "Predictive text and handwriting suggestions get less personal.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "language-list-optout",
+   "title": "Do not let websites read the Windows language list",
+   "category": "Privacy and telemetry",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Control Panel\\International\\User Profile",
+     "name": "HttpAcceptLanguageOptOut",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "semazurek/ET-Optimizer",
+    "Sophia-Community/SophiApp",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:304-308",
+    "semazurek_ET-Optimizer/ET/Form1.cs:5999",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:215-222",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:939"
+   ],
+   "benefit": "Apps no longer receive your installed language list in Accept-Language.",
+   "caveat": "Multilingual users may see sites in the first browser language only. Trivial to undo.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "online-speech-recognition-off",
+   "title": "Turn off online speech recognition",
+   "category": "Privacy and telemetry",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Speech_OneCore\\Settings\\OnlineSpeechPrivacy",
+     "name": "HasAccepted",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1 once the user accepted)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "rayenghanmi/RyTuneX",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:106-110",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1769-1772",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1066"
+   ],
+   "benefit": "Audio is no longer sent to Microsoft for speech recognition.",
+   "caveat": "Breaks Win+H voice typing and Voice Access online recognition (accessibility). Do not put it in a default profile.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "notification-sounds-off",
+   "title": "Silence notification sounds but keep the toasts",
+   "category": "Gaming",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings",
+     "name": "NOC_GLOBAL_SETTING_ALLOW_NOTIFICATION_SOUND",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/NotificationOptimizations.cs:44-62"
+   ],
+   "benefit": "A Game/Focus mode can mute the 'ding' without disabling notifications (ToastEnabled in the consensus list kills toasts completely).",
+   "caveat": "Winhance lists the same pane's NOC_GLOBAL_SETTING_ALLOW_TOASTS_ABOVE_LOCK (lock-screen toasts, NotificationOptimizations.cs:89) and ALLOW_CRITICAL_TOASTS_ABOVE_LOCK; those can be added the same way. Single source.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "audio-ducking-do-nothing",
+   "title": "Windows communications ducking: do nothing when a call starts",
+   "category": "Gaming",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Multimedia\\Audio",
+     "name": "UserDuckingPreference",
+     "kind": "Number",
+     "value": "3",
+     "default": "absent (behaves as 1 = reduce other sounds by 80%)"
+    }
+   ],
+   "tasks": [],
+   "restart": "sign-out",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/SoundOptimizations.cs:53-98"
+   ],
+   "benefit": "Game audio is no longer silenced or lowered when Discord/Teams/Windows detects a communication stream. Mapping from Winhance: 0 mute all, 1 reduce 80% (default), 2 reduce 50%, 3 do nothing.",
+   "caveat": "Voice-call loudness competes with the game. Applied by the audio engine when the next stream opens; some apps need a restart. Single source, subjective preference: opt-in per profile.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "classic-context-menu",
+   "title": "Windows 11 classic (full) right-click menu",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32",
+     "name": "(Default)",
+     "kind": "Text",
+     "value": "",
+     "default": "key absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 11",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "rayenghanmi/RyTuneX"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Customize/Categories/Preferences.cs:499-531",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1058-1062",
+    "rayenghanmi_RyTuneX/Helpers/SystemStateDetector.cs:184-185"
+   ],
+   "benefit": "Shows all shell extensions (VS Code, Git, 7-Zip) directly instead of behind 'Show more options'.",
+   "caveat": "The switch is the existence of the key; undo must delete the CLSID key only if the tweak created it (optimizerDuck does DeleteSubKeyTree on the CLSID base). Needs an Explorer restart. RyTuneX creates the key without a default value (reg add ... /f), optimizerDuck writes an empty default string; both work.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "f1-help-off",
+   "title": "Disable the F1 'Get Help' (Bing) page in Explorer and legacy apps",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Classes\\Typelib\\{8cec5860-07a1-11d9-b15e-000d56bfe6ee}\\1.0\\0\\win64",
+     "name": "(Default)",
+     "kind": "Text",
+     "value": "",
+     "default": "key absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "Sophia-Community/SophiApp"
+   ],
+   "evidence": [
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:1225-1235"
+   ],
+   "benefit": "Pressing F1 by mistake no longer opens a browser tab.",
+   "caveat": "Single source. Creates a four-level key chain, so the journal needs 'created keys' tracking (cf. optimizerDuck RegistryRevertStep.CreatedSubKeys). Apps with their own F1 help are unaffected.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "ui-effects-extra-off",
+   "title": "Switch off taskbar animations, list-view shadows and Aero Peek",
+   "category": "Explorer and developer",
+   "hive": "User",
+   "values": [
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "TaskbarAnimations",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+     "name": "ListviewShadow",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    },
+    {
+     "path": "Software\\Microsoft\\Windows\\DWM",
+     "name": "EnableAeroPeek",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    }
+   ],
+   "tasks": [],
+   "restart": "explorer",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "memstechtips/Winhance",
+    "semazurek/ET-Optimizer"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/UserExperience.cs:57-86",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:3461 (taskbar-animations)",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:3495 (enable-peek)",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:3954 (drop-shadows)",
+    "semazurek_ET-Optimizer/ET/Form1.cs:7491 (Disable Windows Animations)"
+   ],
+   "benefit": "Slightly snappier shell on weak GPUs/remote sessions. Complements the transparency tweak and the consensus VisualFXSetting entry (MinAnimate, MenuShowDelay, DragFullWindows).",
+   "caveat": "Cosmetic. Aero Peek off also removes taskbar thumbnail 'peek'.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "telemetry-policy-extras",
+   "title": "Telemetry policy extras: no feedback notifications, no device name, limited logs and dumps",
+   "category": "Privacy and telemetry",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+     "name": "DoNotShowFeedbackNotifications",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+     "name": "AllowDeviceNameInTelemetry",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+     "name": "LimitDiagnosticLogCollection",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+     "name": "LimitDumpCollection",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 1709+ and Windows 11",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "rayenghanmi/RyTuneX",
+    "Greedeks/GTweak",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:60-74",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:732-749",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:347-362",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1407-1418"
+   ],
+   "benefit": "Less diagnostic data leaves the machine and Windows stops asking for feedback. Adds to the existing telemetry-required-only (AllowTelemetry=1) tweak without changing its level.",
+   "caveat": "Settings shows 'some settings are managed by your organization' (already true for telemetry-required-only). Reduces data Microsoft support can read after a crash.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "appcompat-telemetry-policies",
+   "title": "App-compat telemetry off: Application Impact Telemetry, Inventory Collector, Steps Recorder",
+   "category": "Privacy and telemetry",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat",
+     "name": "AITEnable",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat",
+     "name": "DisableInventory",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat",
+     "name": "DisableUAR",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "rayenghanmi/RyTuneX",
+    "Greedeks/GTweak",
+    "semazurek/ET-Optimizer"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:86-95",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:698-711",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:194-235",
+    "semazurek_ET-Optimizer/ET/Form1.cs:7041-7045"
+   ],
+   "benefit": "Pairs with the existing task-appcompat (Appraiser) tweak: the policy keeps the collectors off even if a task is re-enabled by an update.",
+   "caveat": "Deliberately excluded from this tweak: DisableEngine and DisablePCA (RyTuneX writes them at OptimizeSystemHelper.cs:699-700). DisableEngine switches off the whole shim engine (breaks legacy-app compatibility); DisablePCA removes the compatibility assistant popups.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "ceip-sqm-policy",
+   "title": "Customer Experience Improvement Program off by policy",
+   "category": "Privacy and telemetry",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\SQMClient\\Windows",
+     "name": "CEIPEnable",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "rayenghanmi/RyTuneX",
+    "Greedeks/GTweak",
+    "semazurek/ET-Optimizer"
+   ],
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:716",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:260-275"
+   ],
+   "benefit": "Policy counterpart of the existing task-ceip tasks.",
+   "caveat": "GTweak undoes it with DeleteFolderTree on SOFTWARE\\Policies\\Microsoft\\SQMClient (ConfidentialityTweaks.cs:266): WinModes must delete only its own value.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "cloudcontent-policies-extra",
+   "title": "Cloud content policies: no Settings-home promotions, third-party suggestions, soft landing or cloud-optimised content",
+   "category": "Ads and suggestions",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableConsumerAccountStateContent",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableThirdPartySuggestions",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableSoftLanding",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableCloudOptimizedContent",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+     "name": "DisableTailoredExperiencesWithDiagnosticData",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 1607+ and Windows 11 (some policies honoured only on Enterprise/Education)",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "semazurek/ET-Optimizer",
+    "rayenghanmi/RyTuneX",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:254-283",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/UserExperience.cs:144-162",
+    "semazurek_ET-Optimizer/ET/Form1.cs:6357-6396",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1674-1677",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1372,2441"
+   ],
+   "benefit": "Extends the existing consumer-features policy (DisableWindowsConsumerFeatures) with the other CloudContent policies; also removes the Microsoft 365 ad on the Settings home page.",
+   "caveat": "Harmless on Pro (ignored when unsupported). WinModes' existing tailored-experiences tweak writes the HKCU value; this is the HKLM policy.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "online-tips-off",
+   "title": "Do not fetch online tips and Microsoft help content for Settings and Explorer",
+   "category": "Ads and suggestions",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+     "name": "AllowOnlineTips",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "Greedeks/GTweak",
+    "semazurek/ET-Optimizer",
+    "rayenghanmi/RyTuneX"
+   ],
+   "evidence": [
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/InterfaceTweaks.cs:904-943",
+    "semazurek_ET-Optimizer/ET/Form1.cs:6427",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:2045"
+   ],
+   "benefit": "No online tip banners in Settings.",
+   "caveat": "None noteworthy.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "notepad-ai-off",
+   "title": "Notepad: turn off AI features (Rewrite, Summarize, Write)",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\WindowsNotepad",
+     "name": "DisableAIFeatures",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11 with a Notepad build that reads the policy",
+   "projects": [
+    "rayenghanmi/RyTuneX",
+    "semazurek/ET-Optimizer"
+   ],
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:38",
+    "semazurek_ET-Optimizer/ET/Form1.cs:7218"
+   ],
+   "benefit": "Removes the AI buttons from Notepad without uninstalling anything.",
+   "caveat": "Notepad is a Store app and the policy is read by the app; no restart of Windows needed.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "paint-ai-off",
+   "title": "Paint: turn off Cocreator, Image Creator, Generative Fill/Erase and Remove Background",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Paint",
+     "name": "DisableImageCreator",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Paint",
+     "name": "DisableCocreator",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Paint",
+     "name": "DisableGenerativeFill",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Paint",
+     "name": "DisableGenerativeErase",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Paint",
+     "name": "DisableRemoveBackground",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11 (Paint with AI features)",
+   "projects": [
+    "memstechtips/Winhance",
+    "semazurek/ET-Optimizer",
+    "rayenghanmi/RyTuneX"
+   ],
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:2262-2345",
+    "semazurek_ET-Optimizer/ET/Form1.cs:7382-7396",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:40-41"
+   ],
+   "benefit": "Removes AI sign-in prompts and buttons from Paint.",
+   "caveat": "PATH UNVERIFIED: Winhance uses HKLM\\SOFTWARE\\Policies\\Microsoft\\Paint, ET and RyTuneX use HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Paint. Check Microsoft's current Paint policy documentation before shipping; do not write both.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "recall-snapshots-click-to-do-off",
+   "title": "Recall: no snapshots; Click to Do overlay off (policy)",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "TurnOffSavingSnapshots",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "DisableClickToDo",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 11 24H2 (26100) and later",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "rayenghanmi/RyTuneX",
+    "semazurek/ET-Optimizer",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/AI.cs:30-103",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:249-252",
+    "semazurek_ET-Optimizer/ET/Form1.cs:7245-7280",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1907,1932"
+   ],
+   "benefit": "Complements the existing recall tweak (DisableAIDataAnalysis) with the documented snapshot policy and the Click to Do overlay policy. All four sources write both HKLM and HKCU; the HKLM value is enough.",
+   "caveat": "Do NOT add AllowRecallEnablement=0 from the same sources: optimizerDuck's own comment (AI.cs:37-40) says it removes the Recall bits on 26100.3915+, i.e. it toggles an optional Windows feature, which WinModes must not do.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "windows-agent-features-off",
+   "title": "Windows agent features off: Settings agent, agent connectors, agent workspaces, remote agent connectors",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "DisableSettingsAgent",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "DisableAgentConnectors",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "DisableAgentWorkspaces",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+     "name": "DisableRemoteAgentConnectors",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "Windows 11 25H2 / 26200+ (preview-era policies; not confirmed in Microsoft docs by these sources)",
+   "projects": [
+    "memstechtips/Winhance",
+    "semazurek/ET-Optimizer",
+    "rayenghanmi/RyTuneX"
+   ],
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1957-2032",
+    "semazurek_ET-Optimizer/ET/Form1.cs:7251-7258",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:48"
+   ],
+   "benefit": "Keeps Windows' own AI agent plumbing off.",
+   "caveat": "MEDIUM because the user's daily AI tools must keep working: 'agent connectors' is the Windows registry that MCP-style local connectors are published to. If Claude, Codex or another tool starts using it, this policy would block that path. Opt-in only, never in a default profile.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "windows-ai-apps-access-deny",
+   "title": "Deny apps access to Windows generative AI and system AI models (policy)",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy",
+     "name": "LetAppsAccessGenerativeAI",
+     "kind": "Number",
+     "value": "2",
+     "default": "absent (0 = user in control)"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy",
+     "name": "LetAppsAccessSystemAIModels",
+     "kind": "Number",
+     "value": "2",
+     "default": "absent (0 = user in control)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "medium",
+   "buildRange": "Windows 11 25H2+",
+   "projects": [
+    "memstechtips/Winhance",
+    "semazurek/ET-Optimizer"
+   ],
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:2164-2199",
+    "semazurek_ET-Optimizer/ET/Form1.cs:7342-7344"
+   ],
+   "benefit": "Blocks Store/packaged apps from calling the on-device Windows AI APIs.",
+   "caveat": "MEDIUM: any app that legitimately uses Windows AI APIs (Phi Silica, Windows ML generative features) is blocked. Winhance marks it IsGroupPolicy=true; 2 means Force Deny in the AppPrivacy policy convention (0 user, 1 allow, 2 deny).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "edge-ai-features-off",
+   "title": "Microsoft Edge: Copilot sidebar, page-context sharing, inline compose and AI themes off (browser policies)",
+   "category": "Search and AI",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "HubsSidebarEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "ComposeInlineEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "CopilotPageContext",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "CopilotCDPPageContext",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "EdgeEntraCopilotPageContext",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "Microsoft365CopilotChatIconEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "EdgeHistoryAISearchEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "ShareBrowsingHistoryWithCopilotSearchAllowed",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "AIGenThemesEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "GenAILocalFoundationalModelSettings",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0 = download the local model)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Edge 120+ on Windows 10/11",
+   "projects": [
+    "memstechtips/Winhance",
+    "semazurek/ET-Optimizer",
+    "rayenghanmi/RyTuneX",
+    "Greedeks/GTweak"
+   ],
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:2468-2732",
+    "semazurek_ET-Optimizer/ET/Form1.cs:7284-7300",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:43-45",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/InterfaceTweaks.cs:649-655"
+   ],
+   "benefit": "Edge keeps working (and WebView2 is untouched) but stops sending page content to Copilot and stops downloading the local AI model. WinModes already sets Edge StartupBoostEnabled/BackgroundModeEnabled.",
+   "caveat": "Edge shows 'managed by your organization'. Left out on purpose: BuiltInAIAPIsEnabled and DevToolsGenAiSettings (Winhance lines 2660/2708) because web developers may want the Prompt API and DevTools AI assistant.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "edge-nag-policies",
+   "title": "Microsoft Edge: no default-browser campaign, first-run page, shopping assistant, rewards or recommendations",
+   "category": "Ads and suggestions",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "DefaultBrowserSettingsCampaignEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "HideFirstRunExperience",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "ShowRecommendationsEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "EdgeShoppingAssistantEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "ShowMicrosoftRewards",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "PersonalizationReportingEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Edge",
+     "name": "UserFeedbackAllowed",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Edge 100+",
+   "projects": [
+    "semazurek/ET-Optimizer",
+    "Greedeks/GTweak"
+   ],
+   "evidence": [
+    "semazurek_ET-Optimizer/ET/Form1.cs:6010-6052",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/InterfaceTweaks.cs:649-651"
+   ],
+   "benefit": "Fewer Edge nags without touching Edge itself.",
+   "caveat": "Policy-managed banner in Edge; the user can no longer change the covered options in edge://settings. Only DefaultBrowserSettingsCampaignEnabled is confirmed by two sources (ET, GTweak).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "maps-updates-off",
+   "title": "Stop offline-maps downloads and the Maps update tasks",
+   "category": "System and background",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Maps",
+     "name": "AutoDownloadAndUpdateMapData",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SYSTEM\\Maps",
+     "name": "AutoUpdateEnabled",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    }
+   ],
+   "tasks": [
+    "\\Microsoft\\Windows\\Maps\\MapsToastTask",
+    "\\Microsoft\\Windows\\Maps\\MapsUpdateTask"
+   ],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "Greedeks/GTweak",
+    "itsfatduck/optimizerDuck",
+    "Sophia-Community/SophiApp"
+   ],
+   "evidence": [
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:540-565",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Storage/TaskStorage.cs:53-55",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:442,480-483",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Accessors.cs:86-100"
+   ],
+   "benefit": "No background map-data downloads or toast tasks.",
+   "caveat": "Breaks offline Maps updates for people who use the Maps app offline. optimizerDuck's bigger location tweak (DisableLocation, sensors, Wi-Fi Sense policies) is a different, medium-risk item and is not proposed.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "speech-model-update-off",
+   "title": "Stop automatic speech-model updates",
+   "category": "System and background",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Speech",
+     "name": "AllowSpeechModelUpdate",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    }
+   ],
+   "tasks": [
+    "\\Microsoft\\Windows\\Speech\\*"
+   ],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11",
+   "projects": [
+    "Greedeks/GTweak"
+   ],
+   "evidence": [
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:369-383",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Storage/TaskStorage.cs:46 (enumerates every task in \\Microsoft\\Windows\\Speech\\)"
+   ],
+   "benefit": "No background download of speech models.",
+   "caveat": "The exact task name is not spelled out in GTweak, which enumerates the folder at runtime: WinModes must enumerate the folder too and journal each task's previous state. Single source.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "telemetry-tasks-extra",
+   "title": "More telemetry scheduled tasks off: Autochk Proxy, BthSQM, MareBackup, StartupAppTask, Appraiser Exp, Error Reporting queue, DiskDiagnostic resolver",
+   "category": "Privacy and telemetry",
+   "hive": "Machine",
+   "values": [],
+   "tasks": [
+    "\\Microsoft\\Windows\\Autochk\\Proxy",
+    "\\Microsoft\\Windows\\Customer Experience Improvement Program\\BthSQM",
+    "\\Microsoft\\Windows\\Application Experience\\MareBackup",
+    "\\Microsoft\\Windows\\Application Experience\\StartupAppTask",
+    "\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser Exp",
+    "\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting",
+    "\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticResolver"
+   ],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 and 11 (some tasks absent on 24H2: skip missing tasks)",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "rayenghanmi/RyTuneX",
+    "Greedeks/GTweak",
+    "Sophia-Community/SophiApp",
+    "semazurek/ET-Optimizer"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:153-164,212-218",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:769-785",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Storage/TaskStorage.cs:8-44",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Accessors.cs:86-100"
+   ],
+   "benefit": "Extends task-ceip/task-appcompat/task-diskdiag/task-feedback. Each task is in at least two independent tools.",
+   "caveat": "Microsoft re-enables some of them on feature updates (drift check). Record the NotFound/Unknown/Disabled state separately (optimizerDuck TaskEnabledState) so undo does not re-enable a task that was already disabled or create one that does not exist. Left out on purpose: WinSAT, Sqm-Tasks, NetTrace, UsageAndQualityInsights, KernelCeipTask, SustainabilityTelemetry (only one source) and anything under Defender, UpdateOrchestrator, ExploitGuard, Edge update, ScheduledDefrag, SystemRestore.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "nvidia-telemetry-tasks-off",
+   "title": "NVIDIA telemetry scheduled tasks off (NvTmRep, NvTmRepOnLogon, NvTmMon)",
+   "category": "Privacy and telemetry",
+   "hive": "Machine",
+   "values": [],
+   "tasks": [
+    "\\NvTmRep_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}",
+    "\\NvTmRepOnLogon_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}",
+    "\\NvTmMon_{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}"
+   ],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any (only when the NVIDIA driver is installed)",
+   "projects": [
+    "rayenghanmi/RyTuneX",
+    "semazurek/ET-Optimizer",
+    "Greedeks/GTweak"
+   ],
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:2542-2550",
+    "semazurek_ET-Optimizer/ET/Form1.cs:6880-6895",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Storage/TaskStorage.cs:48-51"
+   ],
+   "benefit": "Removes NVIDIA's reporting tasks; the display driver and control panel keep working.",
+   "caveat": "Do not copy the same tools' NvTelemetryContainer service change (HKLM\\SYSTEM\\CurrentControlSet\\Services\\...Start=4): that lives under the Services hive and belongs to WinModes' ServiceTuner, if at all. Task names carry the vendor GUID; GTweak resolves them by prefix (TaskSchedulerManager.GetTaskFullPath).",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "cloud-clipboard-sync-off",
+   "title": "Do not sync the clipboard across devices",
+   "category": "Privacy and telemetry",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+     "name": "AllowCrossDeviceClipboard",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10 1809+ and Windows 11",
+   "projects": [
+    "rayenghanmi/RyTuneX"
+   ],
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1725-1728"
+   ],
+   "benefit": "Clipboard history stays local (Win+V keeps working locally).",
+   "caveat": "Single source. Do not pair it with EnableCdp=0 (RyTuneX :1759-1762): that policy disables the whole Connected Devices Platform and breaks Phone Link and Nearby Sharing.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "remote-assistance-off",
+   "title": "Disable Remote Assistance invitations",
+   "category": "System and background",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\Remote Assistance",
+     "name": "fAllowToGetHelp",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent (1)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "rayenghanmi/RyTuneX",
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:431-434",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:266"
+   ],
+   "benefit": "Closes an inbound support channel nobody uses on a dev/gaming machine.",
+   "caveat": "Remote Desktop is a separate setting and is not touched.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "onedrive-known-folder-redirect-block",
+   "title": "Prevent OneDrive from moving Desktop/Documents/Pictures (Known Folder Move) into the cloud",
+   "category": "Explorer and developer",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\OneDrive",
+     "name": "KFMBlockOptIn",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Windows 10/11 with OneDrive 19.x+",
+   "projects": [
+    "memstechtips/Winhance"
+   ],
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PrivacyOptimizations.cs:1776-1795"
+   ],
+   "benefit": "OneDrive stays installed and working, but cannot silently relocate the folders that hold repos and game saves, which changes their paths.",
+   "caveat": "Does not undo a redirect that already happened. Winhance also writes the HKCU copy of the same policy. Single source.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "bsod-technical-info",
+   "title": "Show the stop code and driver name on the blue screen",
+   "category": "Dev",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\CrashControl",
+     "name": "DisplayParameters",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "Sophia-Community/SophiApp"
+   ],
+   "evidence": [
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:1019-1022"
+   ],
+   "benefit": "Crash screen lists the bug-check parameters; helps diagnosing overclock/driver problems without opening dumps.",
+   "caveat": "Single source. Only changes what is displayed.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "verbose-boot-status",
+   "title": "Verbose messages during sign-in, sign-out, startup and shutdown",
+   "category": "Explorer and developer",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+     "name": "VerboseStatus",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0)"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "any",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "rayenghanmi/RyTuneX",
+    "semazurek/ET-Optimizer"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Customize/Categories/SystemFeatures.cs:131-145",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1048-1056",
+    "semazurek_ET-Optimizer/ET/Form1.cs:7784"
+   ],
+   "benefit": "Shows what Windows is waiting for when sign-in or shutdown hangs.",
+   "caveat": "Cosmetic. The value sits in the same key as the UAC values (Policies\\System): write only this value, never the whole key.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "wpbt-execution-off",
+   "title": "Block firmware (WPBT) from injecting executables at boot",
+   "category": "System and background",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager",
+     "name": "DisableWpbtExecution",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0)"
+    }
+   ],
+   "tasks": [],
+   "restart": "restart",
+   "risk": "medium",
+   "buildRange": "Windows 10 1703+ and Windows 11",
+   "projects": [
+    "rayenghanmi/RyTuneX"
+   ],
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:298-306",
+    "rayenghanmi_RyTuneX/Helpers/SystemStateDetector.cs:36-37"
+   ],
+   "benefit": "Stops OEM firmware from silently dropping software (typically bloatware) into Windows at boot; a small hardening step.",
+   "caveat": "MEDIUM: some OEM tools (for example vendor driver/utility installers) rely on WPBT to install. RyTuneX labels it only a 'Security Recommendation' (IntelligentOptimizationEngine.cs:1037-1042). Single source.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "visual-studio-telemetry-off",
+   "title": "Visual Studio: customer feedback and telemetry off (policy)",
+   "category": "Dev",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\VisualStudio\\Feedback",
+     "name": "DisableFeedbackDialog",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\VisualStudio\\Feedback",
+     "name": "DisableEmailInput",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\VisualStudio\\Feedback",
+     "name": "DisableScreenshotCapture",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Policies\\Microsoft\\VisualStudio\\SQM",
+     "name": "OptIn",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent"
+    },
+    {
+     "path": "SOFTWARE\\Microsoft\\VisualStudio\\Telemetry",
+     "name": "TurnOffSwitch",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent"
+    }
+   ],
+   "tasks": [],
+   "restart": "none",
+   "risk": "low",
+   "buildRange": "Visual Studio 2015-2022",
+   "projects": [
+    "rayenghanmi/RyTuneX",
+    "semazurek/ET-Optimizer"
+   ],
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:2494-2516",
+    "semazurek_ET-Optimizer/ET/Form1.cs:6959-6965"
+   ],
+   "benefit": "Dev-machine telemetry reduction that does not change how VS behaves.",
+   "caveat": "Dev tools must keep working: only the telemetry policy values are listed. The same functions also stop the VSStandardCollectorService150 service (under the Services hive) and set 'ConcurrentDownloads' (RyTuneX :2501,2515): both are intentionally left out. Apply only when Visual Studio is installed.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "nvidia-dynamic-pstate-hold",
+   "title": "NVIDIA: keep the GPU out of low-power P-states (DisableDynamicPstate)",
+   "category": "Gaming",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter index NNNN>",
+     "name": "DisableDynamicPstate",
+     "kind": "Number",
+     "value": "1",
+     "default": "absent (0)"
+    }
+   ],
+   "tasks": [],
+   "restart": "restart",
+   "risk": "medium",
+   "buildRange": "any with an NVIDIA display adapter",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "rayenghanmi/RyTuneX",
+    "nezhatweaks/nztsapp"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/Gpu.cs:221-229",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/Gpu.cs:18-58",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/Gpu.cs:118-134",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1301-1353",
+    "nezhatweaks_nztsapp/src/MainWindow.xaml.cs:66-69",
+    "nezhatweaks_nztsapp/src/NVIDIA.xaml.cs:32-33"
+   ],
+   "benefit": "Removes clock-ramp latency/stutter on spiky workloads; makes frame times steadier in some games.",
+   "caveat": "MEDIUM: higher idle power, heat and fan noise (laptops, hybrid graphics). The value lives under the display class key whose NNNN index must be resolved per adapter. optimizerDuck assumes Win32_VideoController 'VideoControllerN' equals subkey N-1, which is not guaranteed; resolve the adapter via PNPDeviceID -> HKLM\\SYSTEM\\CurrentControlSet\\Enum\\<id>\\Driver instead. Driver updates recreate the key (the value is lost), so it needs drift detection. This is the only GPU value all three sources agree on; their AMD/Intel lists are far more speculative.",
+   "alreadyInWinModes": false
+  },
+  {
+   "id": "amd-ulps-off",
+   "title": "AMD: disable Ultra Low Power State (EnableULPS=0)",
+   "category": "Gaming",
+   "hive": "Machine",
+   "values": [
+    {
+     "path": "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\<adapter index NNNN>",
+     "name": "EnableULPS",
+     "kind": "Number",
+     "value": "0",
+     "default": "absent/1"
+    }
+   ],
+   "tasks": [],
+   "restart": "restart",
+   "risk": "low",
+   "buildRange": "any with an AMD display adapter (relevant to multi-GPU/CrossFire and some hybrid laptops)",
+   "projects": [
+    "itsfatduck/optimizerDuck",
+    "rayenghanmi/RyTuneX",
+    "nezhatweaks/nztsapp"
+   ],
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/Gpu.cs:142-150",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1332",
+    "nezhatweaks_nztsapp/src/MainWindow.xaml.cs:70-73"
+   ],
+   "benefit": "Avoids secondary-GPU wake-up stalls on multi-GPU setups.",
+   "caveat": "On a single AMD GPU the effect is nil. The same sources also set DisablePowerGating, PP_GPUPowerDownEnabled, DisableDynamicPstate, clock-gating and ASPM values (optimizerDuck marks several of them Moderate): those are unverified and not proposed. Same adapter-index caveat as nvidia-dynamic-pstate-hold.",
+   "alreadyInWinModes": false
+  }
+ ],
+ "modeIdeas": [
+  {
+   "title": "Outcome taxonomy for every journaled step: Change / Skip / NotApplicable / Refused / Irreversible",
+   "kind": "restore-logic",
+   "how": "optimizerDuck records each provider step with a ChangeKind. Only Change carries compensation and gates revert persistence; Skip means the machine already matched (the provider reads state first and does not call the mutation); NotApplicable means nothing to act on; Refused means Windows said no (not a failure); Irreversible has no way back. A run whose only step is irreversible is a success, a run that recorded nothing is 'nothing to do'. Providers never both throw and record; partial work is persisted with CancellationToken.None.",
+   "evidence": [
+    "itsfatduck_optimizerDuck/AGENTS.md:56-66",
+    "itsfatduck_optimizerDuck/optimizerDuck/Services/System/Primitives/RegistryService.cs",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Execution/ChangeSet.cs"
+   ],
+   "applicableToWinModes": "Add these statuses to WinModes journal entries. The important one is Skip: if the live value already equals the mode target, write no undo entry, so revert never 'restores' a value the user had set before the mode. Report Refused (e.g. ACL denial on a protected key) separately from errors in the history page."
+  },
+  {
+   "title": "Read-back verification on revert, with 'unreadable is not absent'",
+   "kind": "restore-logic",
+   "how": "RegistryRevertStep re-reads after RestorePrevious/NoPreviousValue/RestoreKey/DeleteKey and throws StepExecutionException if the value differs, if the read itself failed, or if a supposedly deleted key still exists. Value comparison goes through RegistryValues.Equal(actual, expected, kind) so int/long/string kinds compare correctly. Registry kinds are serialised per kind (DWord->int, QWord->long, Binary->base64, MultiString->array) so the round trip is deterministic.",
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Revert/Steps/RegistryRevertStep.cs:117-118,127-187,252-332"
+   ],
+   "applicableToWinModes": "Verify after every undo and surface a mismatch ('Windows or another tool changed it back') instead of reporting success. Store the original value kind in the journal (see the ET lesson below)."
+  },
+  {
+   "title": "Crash-safe, append-only, LIFO revert store",
+   "kind": "restore-logic",
+   "how": "One JSON file per subject, written to a temp file with WriteThrough+Flush then File.Replace; a per-file SemaphoreSlim with 30 s timeout; stale .tmp swept at startup; SchemaVersion field; steps re-indexed without gaps; a re-apply or a recovered retry appends a new step (never overwrites), so LIFO revert still ends at the true original; an unknown persisted step type becomes a failing step with a clear message, never a silent skip.",
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Services/Revert/RevertManager.cs:26-130,695-701",
+    "itsfatduck_optimizerDuck/AGENTS.md:81-90"
+   ],
+   "applicableToWinModes": "Compare with the WinModes journal: check atomic replace, schema version, 'unknown entry type fails loudly', and that switching Code->Game without reverting appends instead of re-snapshotting values the first mode already changed (the baseline must stay the pre-mode state)."
+  },
+  {
+   "title": "Live state classification with accepted-value lists and a Windows-default fallback",
+   "kind": "ui",
+   "how": "RegistryToggle holds OnValues and OffValues as lists where null means 'value absent'; an absent value is classified through DefaultValue unless a list names null explicitly (e.g. BingSearchEnabled On=[1,null]). Optional bindings (IsOptional) do not decide the state. Dropdown settings show 'Custom/Not set' when no option matches. RyTuneX does the same with All(...) conjunctions and returns bool? (null = unknown, fall back to stored state). Winhance adds ResolveUnmatchedToDefault for bitfields (Win32PrioritySeparation 2 and 0x26 both mean 'Programs').",
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Customize/Models/RegistryToggle.cs:13-74",
+    "rayenghanmi_RyTuneX/Helpers/SystemStateDetector.cs:14-200",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Common/Models/SettingDefinition.cs:81-95"
+   ],
+   "applicableToWinModes": "Dashboard drift view: for every tweak classify live state as Mode target / Windows default / Custom / Unknown, treating 'absent' per the documented default, not as 'off'."
+  },
+  {
+   "title": "Registry watcher for external changes (drift while a mode is active)",
+   "kind": "trigger",
+   "how": "RegistryWatcher wraps RegNotifyChangeKeyValue per watched path (several paths, ConcurrentDictionary, re-armed in a loop) and raises RegistryKeyChanged(path); each customize setting declares GetWatchedRegistryPaths so the UI refreshes when another tool or Windows changes the key.",
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Services/System/RegistryWatcher.cs:1-90",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Customize/Categories/Gaming.cs:180"
+   ],
+   "applicableToWinModes": "While a mode is active, watch the keys WinModes wrote and flag or re-assert when Windows Update/Edge/an installer resets them. Cheaper and more precise than polling; watch only the few HKCU/HKLM keys of the active mode."
+  },
+  {
+   "title": "Compatibility conditions that fail open",
+   "kind": "safety",
+   "how": "Items carry Condition=typeof(ICondition): Windows 10/11, 11 24H2+, CPU brand, GPU brand (NVIDIA/AMD/Intel), minimum RAM, registry key exists, service exists, Recall installed. Only Unsupported blocks, and only when the item is neither applied nor hidden; Error and an unknown snapshot fail open. RyTuneX's policy table has MinWindowsBuild/MaxWindowsBuild; Winhance has SupportedBuildRanges and RequiresBattery/RequiresLid/RequiresDesktop/RequiresBrightnessSupport/RequiresHybridSleepCapable.",
+   "evidence": [
+    "itsfatduck_optimizerDuck/AGENTS.md:75-79",
+    "rayenghanmi_RyTuneX/Helpers/PolicyHelper.cs:60-70,2507-2533",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Common/Models/SettingDefinition.cs:12-26"
+   ],
+   "applicableToWinModes": "Add buildRange and requires[] (gpu:nvidia, battery, lid, edition, key-exists) to data/tweaks.json. Vendor tweaks (GPU class-key values) must be hidden unless that adapter exists."
+  },
+  {
+   "title": "Pre-flight 'is this machine safe to tweak' checks",
+   "kind": "safety",
+   "how": "SophiApp RequirementsService runs 15 ordered checks before enabling any control: supported architecture, newer app version, the app runs as the interactive user (the Explorer owner in the same session must equal the process owner, otherwise HKCU would belong to another account), footprints of 13 other tweakers (Win 10 Tweaker, Revision Tool, AtlasOS, BoosterX, WinClean, Tron, defendnot, RemoveWindowsAI, ...), non-empty hosts file, missing Store/CBS packages, missing Defender/SmartScreen/CompatTelRunner files and Defender health, Controlled Folder Access, pending reboot (CBS RebootPending/RebootInProgress/PackagesPending, WU PostRebootReporting/RebootRequired), BitLocker protection state, UEFI CA 2023 status, Windows version/build.",
+   "evidence": [
+    "Sophia-Community_SophiApp/src/SophiApp/Services/RequirementsService.cs:53-67,110-125,127-190,192-202,315-333,335-352"
+   ],
+   "applicableToWinModes": "WinModes preflight before the first activation (read-only): (1) elevated helper user equals interactive user, (2) pending-reboot keys, (3) Controlled Folder Access on (it can block writes to .wslconfig or user files), (4) foreign optimizer footprints present, so live values may already be non-default, (5) hosts file not empty. Show warnings, do not refuse silently."
+  },
+  {
+   "title": "Policy override scanner",
+   "kind": "ui",
+   "how": "RyTuneX's Policies page keeps a table of known Software\\Policies values (hive, path, value name, kind, MinWindowsBuild/MaxWindowsBuild), reports which are configured with their current value and kind, and can delete the override and clean empty parent policy keys.",
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/PolicyHelper.cs:10-120,2525-2700"
+   ],
+   "applicableToWinModes": "A read-only 'Policies set on this PC' view that separates values written by WinModes (journal) from foreign ones (other optimizers, GPO, MDM). It explains the 'managed by your organization' banner and lets the user spot conflicts before a mode applies. Never delete foreign values automatically."
+  },
+  {
+   "title": "Local Group Policy store can re-apply policy values",
+   "kind": "safety",
+   "how": "SophiApp deletes the registry value and then runs LGPO.exe to clear the same entry from the Local Group Policy Registry.pol database ('make changes visible in UI'), then optionally forces a policy update.",
+   "evidence": [
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:196-198,254-256,278-280",
+    "Sophia-Community_SophiApp/src/SophiApp/Services/GroupPolicyService.cs:16-17,77-105"
+   ],
+   "applicableToWinModes": "Before reverting a policy-backed tweak, detect whether %SystemRoot%\\System32\\GroupPolicy\\Machine\\Registry.pol (or User) already defines the same value; if it does, the next policy refresh may overwrite the restored registry value. Warn instead of shipping LGPO.exe."
+  },
+  {
+   "title": "Notify the shell after HKCU changes instead of restarting Explorer",
+   "kind": "display",
+   "how": "SystemRefreshService broadcasts WM_SETTINGCHANGE with SendMessageTimeout(SMTO_ABORTIFHUNG, 100 ms) (lParam 'TraySettings' for taskbar settings), WM_THEMECHANGED, SHChangeNotify(SHCNE_ASSOCCHANGED), refreshes desktop list views (LVM_REFRESH) and toggles desktop icon visibility by sending WM_COMMAND 0x7402 to SHELLDLL_DefView after reading its current visibility (IsWindowVisible).",
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Common/Helpers/SystemRefreshService.cs:94-189"
+   ],
+   "applicableToWinModes": "Use for live HKCU tweaks (taskbar, Explorer) and for a Game mode that hides desktop icons: read current visibility first, journal it, restore it exactly. Avoids taskkill explorer, which RyTuneX and GTweak use and which closes the user's open Explorer windows."
+  },
+  {
+   "title": "Startup apps via the StartupApproved flags, not by deleting Run entries",
+   "kind": "process-handling",
+   "how": "optimizerDuck and RyTuneX list Run/RunOnce (HKCU/HKLM, 32/64-bit) and Startup folders, and read the Task Manager flag in Explorer\\StartupApproved\\{Run,Run32,RunOnce,StartupFolder}: first byte 02 or 06 = enabled, 03 or 07 = disabled, 12-byte value with a FILETIME. Disabling writes 03 and leaves the Run value in place.",
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Services/UI/StartupManagerService.cs:158-210,690-794",
+    "rayenghanmi_RyTuneX/Helpers/StartupHelper.cs:11-44"
+   ],
+   "applicableToWinModes": "If a profile ever lists an app that should not auto-start for the session, the journaled change is one binary value under StartupApproved, reversible byte for byte, and it does not edit the Run key. Flag for review: the project rule 'never touch Run keys' should be read as 'never write the Run values', and only apps the user put in the profile may be touched."
+  },
+  {
+   "title": "Per-device USB selective suspend and adapter power saving with per-device capture",
+   "kind": "power",
+   "how": "optimizerDuck captures every USB device's MSPower_DeviceEnable state through root\\wmi, writes Enable=false, keeps a UsbPowerRevertStep with the previous state per InstanceName, handles partial failure (some devices refused) with a retry and a record naming the refusing devices, and records a Skip when everything already matches. RyTuneX only touches 'USB\\ROOT' hubs and also writes the USB selective-suspend powercfg setting (2a737441-1930-4402-8d77-b2bebba308a3 / 48e6b7a6-50f5-4782-a5d4-53bb8f07e226) for AC and DC. Sophia has the equivalent for network adapters ('allow the computer to turn off this device to save power').",
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/PowerManagement.cs:129-250",
+    "itsfatduck_optimizerDuck/optimizerDuck/Services/System/Primitives/UsbPowerService.cs",
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:1253-1287",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:1146-1149"
+   ],
+   "applicableToWinModes": "Game/Code-on-AC mode: USB selective suspend off for peripherals (latency), with journal rows per device so revert restores exactly what was found. Prefer the powercfg per-plan value on the mode's own plan (already in lessons-for-win-modes.md) and use WMI only for per-device flags."
+  },
+  {
+   "title": "Persistent per-executable priority via Image File Execution Options\\PerfOptions (and the runtime alternative)",
+   "kind": "process-handling",
+   "how": "RyTuneX, ET-Optimizer and nztsapp write HKLM\\...\\Image File Execution Options\\<exe>\\PerfOptions values CpuPriorityClass and IoPriority (no Debugger value), which Windows applies when the process starts. ET lowers game launchers (Battle.net, Steam, EpicGamesLauncher, EADesktop) to 5 and web helpers to 4; nztsapp lists installed games and sets CpuPriorityClass=6, IOPriority=3 for the chosen game. In contrast nztsapp's SmartTrimManager forces every process to High above 50% CPU and back to Normal otherwise, every 10 s.",
+   "evidence": [
+    "rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:510-516",
+    "semazurek_ET-Optimizer/ET/Form1.cs:6161-6180",
+    "nezhatweaks_nztsapp/src/CPUPriorityControl.xaml.cs:554-565",
+    "nezhatweaks_nztsapp/src/SmartTrimManager.cs:44-72"
+   ],
+   "applicableToWinModes": "For a Game mode, lowering launcher/overlay priority is a reasonable idea, but do it at runtime: SetPriorityClass on the running process, journal the previous class, restore it on revert, and only for processes the user listed. The numeric meaning of PerfOptions CpuPriorityClass is inferred from PROCESS_PRIORITY_CLASS (1 idle, 2 normal, 3 high, 4 realtime, 5 below normal, 6 above normal) and is not documented in these repos; ET's value 4 for csrss/dwm/wininit/lsass/svchost would then be Realtime, and 1 for lsass is Idle. Never write IFEO for system processes."
+  },
+  {
+   "title": "Per-game fullscreen-optimisation override with AppCompatFlags\\Layers",
+   "kind": "display",
+   "how": "nztsapp adds a game exe path to HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers (value name = exe path, data = compatibility flags such as '~ DISABLEDXMAXIMIZEDWINDOWEDMODE'), which is the per-exe form of 'Disable fullscreen optimizations'. The same file also writes it as a global environment value __COMPAT_LAYER under Session Manager\\Environment, which is the wrong scope.",
+   "evidence": [
+    "nezhatweaks_nztsapp/src/CPUPriorityControl.xaml.cs:233-270",
+    "nezhatweaks_nztsapp/src/WindowsUserControl.xaml.cs:314"
+   ],
+   "applicableToWinModes": "Game profile with an exe list: HKCU per-exe flag, journaled value-name-by-value-name, instead of the global GameDVR_FSEBehavior set. Never set __COMPAT_LAYER machine-wide."
+  },
+  {
+   "title": "Edit one key inside a composite value and keep the rest",
+   "kind": "restore-logic",
+   "how": "Winhance's RegistrySetting has CompositeStringKey (DirectXUserGlobalSettings is a 'SwapEffectUpgradeEnable=1;VRROptimizeEnable=1;AutoHDREnable=0;' string), BinaryByteIndex, ModifyByteOnly and BitMask (single bit of a binary byte). optimizerDuck and Sophia edit bit 2 of the string InitialKeyboardIndicators (NumLock) for both HKCU and HKU\\.DEFAULT. Winhance also has ApplyPerNetworkInterface and ApplyPerMonitor flags.",
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Common/Models/RegistrySetting.cs:5-19",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/GamingAndPerformanceOptimizations.cs:624-695",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Customize/Categories/SystemFeatures.cs:42-127"
+   ],
+   "applicableToWinModes": "If WinModes ever edits DirectX GPU preferences, UserPreferencesMask or NumLock bits, the journal must store the whole original value and, on revert, re-merge only the owned key/bit into the current value, so edits made meanwhile by other tools or Windows survive."
+  },
+  {
+   "title": "AC vs DC aware power recommendations and hardware gating",
+   "kind": "power",
+   "how": "Winhance's PowerCfg-backed settings carry PowerRecommendation (RecommendedOptionAC / RecommendedOptionDC) and PowerCfgSetting.RecommendedValueAC/DC and DefaultValueAC/DC, and gate laptop-only items with RequiresBattery, RequiresLid, RequiresDesktop and RequiresBrightnessSupport.",
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Common/Models/PowerRecommendation.cs:1-12",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Common/Models/SettingDefinition.cs:12-26",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PowerTemplates.cs:1-60"
+   ],
+   "applicableToWinModes": "Power block of a mode should hold separate AC and DC values (the 'on battery' trigger already exists); hide lid/brightness settings on desktops."
+  },
+  {
+   "title": "Expert power settings behind an 'advanced unlock'",
+   "kind": "safety",
+   "how": "Nine processor/cooling settings (boost mode, increase/decrease policy and thresholds, core parking min/max, EPP, system cooling policy) are marked RequiresAdvancedUnlock; they are hidden powercfg settings exposed by flipping the Attributes DWORD under HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\<subgroup>\\<setting> from 1 to 2. GTweak does the same for the console-lock display timeout.",
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/PowerOptimizations.cs (ids processor-*, system-cooling-policy)",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:353-356"
+   ],
+   "applicableToWinModes": "Keep such values out of default modes. If used, apply them with powercfg on the mode's own plan (setting a value by GUID needs no Attributes change once the plan exists)."
+  },
+  {
+   "title": "Risk and recommendation vocabulary",
+   "kind": "ui",
+   "how": "optimizerDuck: OptimizationRisk Safe/Moderate/Risky plus Flags tags (Security, Privacy, System, Performance, Latency, Disk, Ram, Display, Nvidia/Amd/Intel, Power, Network, NetworkRequired, Audio, Visual, Windows10Only, Windows11Only); customize settings use Recommendation On/Off/Depends/Experimental. RyTuneX: RiskLevel Safe/Moderate/Advanced/Caution, ScoreWeight and a per-category health score. Winhance: IsSubjectivePreference (no objectively better value), RecommendedToggleState/DefaultToggleState, RequiresConfirmation, RequiresAdvancedUnlock and badges Default/Recommended/Preference/Custom. Sophia has no risk label at all.",
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/UI/OptimizationRisk.cs:6-16",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/UI/OptimizationTags.cs:11-48",
+    "rayenghanmi_RyTuneX/Models/IntelligentOptimizationModels.cs:7-41,84-86",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Common/Models/SettingDefinition.cs:27-70"
+   ],
+   "applicableToWinModes": "Add a 'subjective' flag to tweaks (Explorer layout, audio ducking, VRR) so automatic modes never apply them without an explicit user choice, and show 'Windows default / Mode target / Custom' badges next to the live value."
+  },
+  {
+   "title": "Scan, analyse, recommend, preview, apply, verify, rollback pipeline",
+   "kind": "ui",
+   "how": "RyTuneX's Intelligent Optimization runs Scan -> Analyse -> Recommend -> Preview -> Apply -> Verify -> Rollback. Recommend is hardware-aware (RAM size, tags) and sets IsSelectedForApply; Preview returns count and expected score gain; Apply stores a pre-apply snapshot per item before executing; Verify sets VerificationStatus VerifiedActive / RequiresRestart / VerificationFailed.",
+   "evidence": [
+    "rayenghanmi_RyTuneX/Models/IntelligentOptimizationModels.cs:24-41",
+    "rayenghanmi_RyTuneX/Services/IntelligentOptimizationEngine.cs:1000-1119"
+   ],
+   "applicableToWinModes": "Mode activation as a dry-run first: list what will change (live -> target), apply, then verify by reading back and report RequiresRestart separately from VerifiedActive. Do not copy the score gamification."
+  },
+  {
+   "title": "Importable/exportable profile files with signature, validation and review diff",
+   "kind": "ui",
+   "how": "GTweak writes a JSON with header Software=GTweak, Author=Greedeks and one section per page (Confidentiality, Interface, Packages, Services, System); Validate returns Invalid/Empty/Valid; the import applies sections in order and defers the Defender entry to the end. Winhance's UnifiedConfigurationFile (Version 2.0) has Optimize/Customize feature groups with IsIncluded flags, and ConfigReviewDiff lists SettingId, CurrentValueDisplay, ConfigValueDisplay and IsReviewed for each item the user must confirm before import.",
+   "evidence": [
+    "Greedeks_GTweak/.Source/GTweak/Modules/Managers/JsonConfigManager.cs:12-132",
+    "Greedeks_GTweak/.Source/GTweak/Windows/ImportWindow.xaml.cs:100-160",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Common/Models/UnifiedConfigurationFile.cs:1-35",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Common/Models/ConfigReviewDiff.cs:1-50"
+   ],
+   "applicableToWinModes": "Shareable mode files: version header, schema validation, the protected.json blocklist enforced on import (a shared profile must not be able to carry a blocked item), and a review screen that shows live -> target for every row before anything is written."
+  },
+  {
+   "title": "First snapshot wins, and keep the value kind",
+   "kind": "restore-logic",
+   "how": "RyTuneX's ItemRollbackService stores a pre-apply snapshot only if none exists, but it stores a single boolean (PreApplyState) and undo runs the opposite hard-coded Enable/Disable method. ET-Optimizer appends a replay line to ProgramData\\ET-RegistryBackup.txt the first time a (path,name) is written ('DelRegistryValue' when absent, otherwise 'SetRegistryValue(path,name,currentValue,kind)'), but it uses the new write's kind, not the stored value's kind, and string values are not quoted, so string restores replay wrongly. GTweak's undo writes hard-coded 'defaults' (StickyKeys 507, Keyboard Response 58) that differ from Windows (510 / 126).",
+   "evidence": [
+    "rayenghanmi_RyTuneX/Services/ItemRollbackService.cs:25-57",
+    "semazurek_ET-Optimizer/ET/Form1.cs:1217-1280",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:184-185"
+   ],
+   "applicableToWinModes": "Confirms the WinModes design (journal the live value and its kind, first snapshot wins across modes, never write 'known defaults'). Add a test: a REG_SZ and a REG_DWORD with the same textual value round-trip with their original kind."
+  },
+  {
+   "title": "Restore point as a fallback, lifting the 24-hour throttle correctly",
+   "kind": "safety",
+   "how": "GTweak and optimizerDuck create a MODIFY_SETTINGS (type 12) restore point through root\\default SystemRestore. GTweak temporarily writes SystemRestorePointCreationFrequency=0 under HKLM\\...\\SystemRestore, deletes older GTweak points and deletes the frequency value afterwards. ET creates three restore points (APPLICATION_INSTALL, DEVICE_DRIVER_INSTALL, MODIFY_SETTINGS).",
+   "evidence": [
+    "Greedeks_GTweak/.Source/GTweak/Modules/Maintenance/SystemRestoreService.cs:25-75",
+    "itsfatduck_optimizerDuck/optimizerDuck/Services/System/SystemRestoreService.cs:19-33",
+    "semazurek_ET-Optimizer/ET/Form1.cs:1174-1215"
+   ],
+   "applicableToWinModes": "Optional 'create restore point before the first mode ever applied' with the frequency value journaled like any other registry value. Only a fallback; the journal stays the real undo."
+  },
+  {
+   "title": "Task Scheduler handling: absent, disabled and unknown are different states",
+   "kind": "restore-logic",
+   "how": "optimizerDuck's ScheduledTaskService returns TaskEnabledState Enabled/Disabled/NotFound/Unknown, records a step even for tasks already disabled or absent, and DisableTask skips what is not there. GTweak's GetExistingTasks filters the list before changing anything and IsTaskEnabled is true if any listed task is enabled. Sophia's accessor throws if none of the telemetry tasks exist.",
+   "evidence": [
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/SecurityAndPrivacy.cs:167-172",
+    "itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Models/ScheduledTask/TaskEnabledState.cs",
+    "Greedeks_GTweak/.Source/GTweak/Modules/Managers/TaskSchedulerManager.cs:12-60",
+    "Sophia-Community_SophiApp/src/SophiApp/Customizations/Accessors.cs:86-105"
+   ],
+   "applicableToWinModes": "Journal each task's previous enabled state (or NotFound) so revert re-enables only the tasks that were enabled before; treat folder-pattern tasks (Speech, NVIDIA GUID names) by enumeration at apply time."
+  },
+  {
+   "title": "Game audio and notification block for a Game mode",
+   "kind": "audio",
+   "how": "Winhance exposes Windows communication ducking as UserDuckingPreference 0/1/2/3 and notification sound as NOC_GLOBAL_SETTING_ALLOW_NOTIFICATION_SOUND, both per user (HKCU).",
+   "evidence": [
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/SoundOptimizations.cs:53-98",
+    "memstechtips_Winhance/src/Winhance.Core/Features/Optimize/Models/NotificationOptimizations.cs:44-62"
+   ],
+   "applicableToWinModes": "Game mode can set ducking to 'do nothing' and silence notification sounds (keeping toasts), and restore the exact previous values. Both are subjective preferences: opt-in per profile."
+  }
+ ],
+ "dangers": [
+  "ET-Optimizer disables Defender completely: Services Start=4 for WinDefend, WdFilter, WdNisDrv, WdNisSvc, Sense, MsSecFlt, SecurityHealthService, SgrmAgent and web-threat services, plus DisableAntiSpyware/RealtimeMonitoring/Spynet policies, Defender scheduled tasks, SmartScreen off, an IFEO Debugger on smartscreen.exe, UILockdown, and weakens file-attachment checks (HKCU Policies\\Attachments SaveZoneInformation=1, DefaultFileTypeRisk, LowRiskFileTypes including .exe/.bat/.msi). Evidence: semazurek_ET-Optimizer/ET/Form1.cs:7818-8002 (case 'Disable Windows Defender'), :7925-7936. BLOCKED.",
+  "ET-Optimizer disables Spectre/Meltdown mitigations (FeatureSettingsOverride=3, FeatureSettingsOverrideMask=3) and 'Process Mitigation'. Evidence: semazurek_ET-Optimizer/ET/Form1.cs:8003-8058. BLOCKED.",
+  "ET-Optimizer sets IFEO PerfOptions CpuPriorityClass=4 for csrss.exe, dwm.exe, wininit.exe, lsass.exe and svchost.exe (4 = Realtime if the PROCESS_PRIORITY_CLASS ordering applies), then lsass.exe/svchost.exe=1 (Idle) in another case; also IoPriority=4. Contradictory values on the same keys across cases, and the system can hang if realtime service hosts starve input. Evidence: semazurek_ET-Optimizer/ET/Form1.cs:6059-6190,7590-7605. Never touch the priority of system processes.",
+  "ET-Optimizer and RyTuneX put an Image File Execution Options 'Debugger' value (taskkill.exe / systray.exe) on CompatTelRunner.exe, DeviceCensus.exe, AggregatorHost.exe and others; nztsapp does it for a user-chosen process list. This hijacks the executable (a persistence technique antivirus products flag) and breaks whatever the binary also did. Evidence: semazurek_ET-Optimizer/ET/Form1.cs:7055,7087,7925; rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:501-507; nezhatweaks_nztsapp/src/Debloat.xaml.cs:363.",
+  "ET-Optimizer, RyTuneX and GTweak rewrite the hosts file with 0.0.0.0 entries for Microsoft telemetry hosts (GTweak backs up and restores the file, ET and RyTuneX do not). Evidence: semazurek_ET-Optimizer/ET/Form1.cs:319-364,7404-7440; rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:787-820; Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:277-340. WinModes must not edit files outside user data.",
+  "GTweak renames System32\\CompatTelRunner.exe as TrustedInstaller (takeown, icacls /setowner, /inheritance:r) and deletes and recreates the entire DiagTrack, dmwappushservice and diagsvc service keys from hard-coded registry dumps (ImagePath, FailureActions, TriggerInfo, Security descriptor). Evidence: Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:148-182,406-495. BLOCKED (system files, Services hive, no exact undo).",
+  "GTweak 'Windows telemetry' tweak also writes HKCU Policies\\Attachments SaveZoneInformation=1 (disables Mark-of-the-Web on downloads); it is hidden inside a privacy toggle. Evidence: Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ConfidentialityTweaks.cs:132,145. Same value in ET. BLOCKED: it weakens SmartScreen/Office protected view.",
+  "GTweak adds itself to Defender exclusions (Add-MpPreference -ExclusionProcess/-ExclusionPath) through TrustedInstaller at every start. Evidence: Greedeks_GTweak/.Source/GTweak/Modules/Common/RunGuard.cs:97 and Windows/LoadingWindow.xaml.cs:63. BLOCKED.",
+  "GTweak and nztsapp ship Defender, Firewall, UAC (EnableLUA=0, ConsentPromptBehaviorAdmin=0, PromptOnSecureDesktop=0) and exe-launch-warning (Internet Explorer Security DisableSecuritySettingsCheck, Zone 3 value 1806=0) switches; nztsapp bundles Ionut Bara's Windows Defender Remover (CC BY-NC) and VBS/HVCI keys; RyTuneX DisableVBS writes EnableVirtualizationBasedSecurity=0, HVCI, CredentialGuard, Lsa RunAsPPL=0 and bcdedit hypervisorlaunchtype off, which also breaks WSL2/Docker. Evidence: Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:189-271,389-405,495-506; nezhatweaks_nztsapp/src/SecurityUserControl.xaml.cs:13-41; rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:2246-2254. BLOCKED.",
+  "RyTuneX 'Disable Windows AI' deletes Windows.AI.MachineLearning.dll and SettingsHandlers_Copilot.dll after takeown/icacls, force-removes CBS packages (*UserExperience-AIX*, *CoreAI*) with DISM, removes AppX packages (*AiFabric*, *WindowsIntelligence*) for all users, edits System32\\IntegratedServicesRegionPolicySet.json, disables Recall via DISM and kills/restarts Explorer. Evidence: rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:28-244,123-165,246-264. BLOCKED (appx removal, optional features, system files).",
+  "RyTuneX uninstalls Microsoft Edge with an embedded RemoveEdge.ps1 (UninstallEdge, RemoveEdgeData) when the user removes 'Edge' from its app list; it also adds a firewall rule that blocks svchost's DiagTrack service, sets DontOfferThroughWUAU (Malicious Software Removal Tool via Windows Update) and offers Windows Update disable/security-only policies. Evidence: rayenghanmi_RyTuneX/Helpers/OptimizationOptions.cs:350-358,380-386; rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:721,763,1385-1570. BLOCKED (Edge/WebView2, firewall, Windows Update).",
+  "GTweak 'pause updates' writes fake Windows Update UX state (PausedFeatureStatus, PolicyState values, QualityUpdatePausePeriodInDays=447, ...) in addition to NoAutoUpdate/AUOptions; optimizerDuck sets FlightSettingsMaxPauseDays to 0xFFFFFFFF. Evidence: Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:635-697; itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/UserExperience.cs:169-190. BLOCKED (Windows Update).",
+  "Winhance exposes security-relevant switches as toggles (security-bitlocker-auto-encryption, security-smart-app-control, security-powershell-execution-policy, privacy-lock-screen DisableLockWorkstation under Winlogon). Winhance's own warning for DisableOverlays: it 'is known to break the Steam, Discord, and RTSS in-game overlays' (GamingAndPerformanceOptimizations.cs:819-823); do not offer hardware-overlay disabling in gaming profiles.",
+  "ET-Optimizer applies Services\\*\\Parameters ThreadPriority values (usbxhci, USBHUB3, NDIS, nvlddmkm, mouclass, kbdclass, DXGKrnl), kernel scheduler values set to the meaningless value 4 (DisableAutoBoost, IdealDpcRate, MinimumDpcRate, ThreadDpcEnable, ...), 'DirectX 11-12 Tweaks' under HKLM\\SOFTWARE\\Microsoft\\DirectX, MSMQ TcpNoDelay as a Nagle fix, SystemResponsiveness=0 (clamped by Windows) and a write to OEMInformation Manufacturer/SupportURL; most are placebo or undocumented and some are in the Services hive. Evidence: semazurek_ET-Optimizer/ET/Form1.cs:6057,6059-6190,8118-8119. Do not import.",
+  "nztsapp writes undocumented or non-existent PerfOptions values (GPUScheduling, HackFlags), HackFlags under Services\\*\\Parameters (intelppm, amdppm, pci, BasicRender, nvstor), MSI mode and interrupt affinity into HKLM\\SYSTEM\\CurrentControlSet\\Enum\\PCI\\<instance> (driver level), PlatformAoAcOverride (switches Modern Standby off), MMCSS service Start values and a system-wide __COMPAT_LAYER environment variable. Evidence: nezhatweaks_nztsapp/src/MainWindow.xaml.cs:160-169; nezhatweaks_nztsapp/src/MSI.xaml.cs:130-138; nezhatweaks_nztsapp/src/PowerPlan.xaml.cs:28-47; nezhatweaks_nztsapp/src/MMCSS.xaml.cs; nezhatweaks_nztsapp/src/WindowsUserControl.xaml.cs:314.",
+  "nztsapp SmartTrimManager sets every running process to High priority when its CPU is above a threshold and back to Normal otherwise, every 10 s with a 100 ms sleep per process, overriding any priority the user or an app chose and never restoring it. Evidence: nezhatweaks_nztsapp/src/SmartTrimManager.cs:44-85.",
+  "Inexact undo: RyTuneX undoes by calling the opposite method with hard-coded values (Win32PrioritySeparation back to 2, SystemResponsiveness back to 20, MenuShowDelay value deleted although Windows stores '400'); GTweak writes 507 for StickyKeys (Windows: 510); nztsapp stores a 'default' string per tweak by hand (and gets several wrong); Realtek audio idle-time bytes are overwritten with invented values. Evidence: rayenghanmi_RyTuneX/Helpers/OptimizeSystemHelper.cs:308-316,519-535,635-660; Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:184-185,327-351; nezhatweaks_nztsapp/src/MainWindow.xaml.cs:34-170.",
+  "Typos in value names: SophiApp's C# port writes ScoobeSystemSettingEnable, SubscribedContent-338389enable and SubscribedContent-353694Enable (the real names end in 'Enabled'), so those toggles silently do nothing. Always cross-check names against a second source. Evidence: Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:258,267,292.",
+  "optimizerDuck 'ConfigureServices' resets about 150 services to a hard-coded startup table (includes MpsSvc Automatic, wuauserv Manual, many Disabled) and is labelled Risky; GTweak groups service switches (MultimediaClassScheduler, Xbox, Bluetooth, HyperV, WindowsUpdate, WindowsStore) that would break WSL2/Docker, the Store or winget. Evidence: itsfatduck_optimizerDuck/optimizerDuck/Domain/Optimizations/Categories/BloatwareAndServices.cs:64-330; Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/ServicesTweaks.cs:15-50.",
+  "GTweak Realtek audio class-key values (matched by DriverDesc string), USB/modem switches and 'Teredo/6to4/ISATAP' netsh switches: borderline items that need per-device resolution and have no exact undo in the source. Evidence: Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:288-351,415-427.",
+  "Reserved Storage: Sophia uses Set-WindowsReservedStorageState and GTweak edits ReserveManager values (ShippedWithReserves, PassedPolicy, MiscPolicyInfo). It changes servicing behaviour of Windows Update and is a DISM/feature-level change, so it is not proposed as a tweak. Evidence: Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:1215-1220; Greedeks_GTweak/.Source/GTweak/Modules/Tweaks/SystemTweaks.cs:561-583.",
+  "Winlogon-hive items seen and deliberately skipped because of the project rule: Sophia FirstLogonAnimation (Winlogon EnableFirstLogonAnimation), SaveRestartableApps (HKCU Winlogon RestartApps), SigninInfo (Winlogon\\UserARSO OptOut); Winhance DisableLockWorkstation. Evidence: Sophia-Community_SophiApp/src/SophiApp/Customizations/Mutators.cs:690-697,194-209,1301-1305."
+ ],
+ "notes": "SCOPE. 8 repos read: 6 C# desktop tools (optimizerDuck WPF, RyTuneX WinUI 3, SophiApp WinUI/WPF, ET-Optimizer WinForms .NET 4.8, GTweak WPF, nztsapp WPF), Winhance (C# WinUI, only items missing from WinModes tweaks.json and tweaks-consensus.json were extracted) and XToolbox, which is Dart/Flutter and not a tweaker (an app catalogue plus a launcher for AME/Atlas/ReviOS playbooks; no registry tweaks, nothing to extract; README says END OF LIFE). The comparison below answers detection, undo, risk labels and presets.\n\nSTATE DETECTION. optimizerDuck: Optimizations are apply-once and 'applied' is inferred from the presence of the revert JSON file; Customize settings (Explorer, gaming, system) use live RegistryToggle.GetState with OnValues/OffValues/DefaultValue plus RegistryWatcher (RegNotifyChangeKeyValue) to react to outside changes. RyTuneX: SystemStateDetector.DetectState(tag) reads the registry/service state (All(...) conjunction, bool? with null = unknown, then falls back to the stored boolean). SophiApp: one Accessor per setting that reads registry/service/task/firewall state, one Mutator per setting; the UI is built from UIMarkup.json with per-edition flags. ET-Optimizer: no detection (apply-only; checkboxes start from fixed defaults). GTweak: Check() lambdas per toggle that OR several indicators (so a partially applied tweak shows as applied). nztsapp: reads per-game IFEO values only. Winhance: SettingStateResult with RawValues, EnabledValue/DisabledValue lists, badges Default/Recommended/Preference/Custom.\n\nUNDO. optimizerDuck is the only one with a true journal (registry previous value or absence, key creation, services, tasks, power plans, hibernation, USB devices, shell commands), LIFO, read-back verified, atomic JSON per subject. RyTuneX keeps only a boolean pre-apply state in HKLM\\SOFTWARE\\RyTuneX\\ItemBackups and runs the opposite hard-coded action. ET-Optimizer logs a replay line (first write wins) in ProgramData\\ET-RegistryBackup.txt but loses the value kind and string quoting. GTweak and nztsapp undo to hard-coded defaults (nztsapp: per-tweak (path, value, type, deleteOnRestore, default) tuple table). SophiApp flips between explicit enable/disable branches using Windows' real defaults (e.g. StickyKeys 510/506) and clears Local Group Policy entries with LGPO.exe. XToolbox has none.\n\nRISK LABELS. optimizerDuck Safe/Moderate/Risky + tag flags; RyTuneX Safe/Moderate/Advanced/Caution; Winhance IsSubjectivePreference/RequiresConfirmation/RequiresAdvancedUnlock; Sophia, GTweak, ET and nztsapp have none (nztsapp has 'Verified' vs 'Experimental' tabs; GTweak groups per page).\n\nPRESETS / PROFILES. None of them has a runtime mode switcher. Closest: GTweak JSON export/import with signature (Software/Author) and Defender entry applied last; Winhance UnifiedConfigurationFile v2.0 with per-feature IsIncluded and a ConfigReviewDiff review screen, Quick Actions that apply Recommended targets, and a generated autounattend.xml; RyTuneX 'Intelligent' recommend/preview; nztsapp 'Quick Boost', 'Optimize All', 'Restore All' and two bundled .pow power plans (Presets/NZTS_HP.pow, nztsxp.pow, binary, not opened); ET-Optimizer ships autounattend.xml and an ISO builder.\n\nLICENCES. optimizerDuck GPL-3.0; RyTuneX AGPL-3.0; SophiApp MIT; ET-Optimizer GPL-3.0; GTweak BSD-3-Clause; XToolbox GPL-2.0; nztsapp GPL-3.0 and bundles Windows Defender Remover (CC BY-NC); Winhance PolyForm Shield 1.0.0 (source-available, forbids using it to build a competing product): use it only as a fact source for registry names and never copy its code or catalogue structure.\n\nDIRECTION / DEFAULT CHECKS. Direction confirmed from at least two sources for the low-risk entries except those marked 'single source'. Known conflicts: Paint policy path (3 sources, 2 paths), ToggleKeys default (62 vs 58), StartupDelayInMSec default (Winhance says 0, the others and common knowledge say the key is absent and Windows waits about 10 s), Winhance's EnabledValue/DisabledValue naming is the toggle label, not the registry meaning. 'absent' in the default field means the value does not exist on a clean install; WinModes must journal the live value anyway.\n\nNOT PROPOSED ON PURPOSE (checked and dropped): NTFS last-access and 8.3 names (fsutil, default differs per build and volume size), NtfsMftZoneReservation, AutoEndTasks/LowLevelHooksTimeout/HungAppTimeout/WaitToKillAppTimeout (data-loss risk; RyTuneX uses 1000/2000/2000 ms), MouseHoverTime=0, GraphicsDrivers Power/Scheduler latency values, CABC (DisableCABC/CABCOption, single source, undocumented), DisableAutomaticRestartSignOn, EnableCdp=0, Reserved Storage, settings-sync policies (single source), PushToInstall (single source), Autologger sessions under HKLM\\SYSTEM\\CurrentControlSet\\Control\\WMI (optimizerDuck, RyTuneX, GTweak, ET all disable DiagTrack-Listener, SQMLogger and others; not in the Services hive, so it could be considered, but it is boot-time ETW configuration with medium risk and was left out).\n\nPROMPT-INJECTION CHECK. A grep over the 8 clones for instructions aimed at an AI found only repository-development files in optimizerDuck (AGENTS.md, .windsurfrules, opencode.jsonc, skills-lock.json, .agents/, .rtk/): ordinary contributor guidance for coding agents, no attempt to redirect this task; ignored except as design documentation (AGENTS.md lines 48-97 describe the execution/revert model and were read as data). No other hostile instructions seen. ET-Optimizer ships its own source twice (ET/Form1.cs and ET/Resources/Code.txt are byte-identical, used for an in-app 'show source' viewer). nztsapp commits binaries (UpdateExtractor.exe/.dll, NZTS_APP_v0.1.0.zip, .pow files); none were opened or executed.\n\nCAPABILITY NOTES FOR THE WINMODES TWEAK ENGINE. Several proposals need engine features data/tweaks.json does not have yet: (a) tweaks that create a key with only a default value (classic-context-menu, f1-help-off) and must delete keys they created; (b) a placeholder path for per-adapter display class keys; (c) task entries with folder wildcards (speech) or vendor GUID names (NVIDIA); (d) per-tweak buildRange/requires gating; (e) every proposed tweak is single-hive, so the user-hive part can stay in the app and the machine part in the elevated helper."
+}

@@ -58,8 +58,17 @@ foreach ($tweak in $tweaks) {
     foreach ($text in $tweak.title, $tweak.description, $tweak.warning, $tweak.category) {
         if ($text) { [void]$keys.Add($text) }
     }
+    foreach ($text in $tweak.partLabels) {
+        if ($text) { [void]$keys.Add($text) }
+    }
 }
-foreach ($mode in 'code', 'work', 'game') {
+$apps = Get-Content -LiteralPath (Join-Path $root 'data/apps.json') -Raw | ConvertFrom-Json
+foreach ($app in $apps) {
+    foreach ($text in $app.title, $app.why, $app.breaksIfRemoved, $app.category) {
+        if ($text) { [void]$keys.Add($text) }
+    }
+}
+foreach ($mode in 'code', 'work', 'game', 'focus', 'eco') {
     $profile = Get-Content -LiteralPath (Join-Path $root "profiles/$mode.json") -Raw | ConvertFrom-Json
     if ($profile.intent) { [void]$keys.Add($profile.intent) }
 }

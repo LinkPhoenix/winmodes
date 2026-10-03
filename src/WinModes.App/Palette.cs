@@ -20,6 +20,8 @@ internal static class Palette
     public static readonly Brush Container = Solid(0x60, 0xA5, 0xFA);
     public static readonly Brush Apps = Solid(0xC0, 0x84, 0xFC);
     public static readonly Brush Neutral = Solid(0x94, 0xA3, 0xB8);
+    // Preserve the official PayPal acceptance logo's white background in either theme.
+    public static readonly Brush PayPalLogoBackground = Solid(0xFF, 0xFF, 0xFF);
 
     // Usage left: comfortable above 60 %, amber around 30 %, red as it nears 0 %.
     private const double ComfortablePercent = 60;
@@ -65,7 +67,20 @@ internal static class Palette
         "CODE" => Gradient(Color.FromRgb(0x7C, 0x5C, 0xFC), Color.FromRgb(0x4F, 0x8B, 0xFF)),
         "WORK" => Gradient(Color.FromRgb(0x14, 0xB8, 0xA6), Color.FromRgb(0x22, 0xC5, 0x5E)),
         "GAME" => Gradient(Color.FromRgb(0xF9, 0x73, 0x16), Color.FromRgb(0xEC, 0x48, 0x99)),
+        "FOCUS" => Gradient(Color.FromRgb(0x38, 0xBD, 0xF8), Color.FromRgb(0x63, 0x66, 0xF1)),
+        "ECO" => Gradient(Color.FromRgb(0x84, 0xCC, 0x16), Color.FromRgb(0xFA, 0xCC, 0x15)),
         _ => Gradient(Color.FromRgb(0x64, 0x74, 0x8B), Color.FromRgb(0x94, 0xA3, 0xB8)),
+    };
+
+    /// <summary>One colour for a mode (where its gradient starts), for outlines and tints that a gradient cannot give.</summary>
+    public static Brush ModeColor(string mode) => mode.ToUpperInvariant() switch
+    {
+        "CODE" => BrandBrush,
+        "WORK" => Solid(0x14, 0xB8, 0xA6),
+        "GAME" => Solid(0xF9, 0x73, 0x16),
+        "FOCUS" => Solid(0x38, 0xBD, 0xF8),
+        "ECO" => Solid(0x84, 0xCC, 0x16),
+        _ => Neutral,
     };
 
     public static Brush Tint(Brush brush)

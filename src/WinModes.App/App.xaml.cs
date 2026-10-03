@@ -66,7 +66,7 @@ public partial class App : Application, IDisposable
 
         var store = new ProfileStore(Path.Combine(root, "profiles"));
         var policy = ProtectionPolicy.Load(Path.Combine(root, "data", "protected.json"));
-        var planner = new ModePlanner(new WindowsSystemProbe(), policy);
+        var planner = new ModePlanner(new WindowsSystemProbe(), policy, new Services.CatalogTweakProbe());
 
         AppServices.Initialize(store, planner, policy, Path.Combine(root, "profiles"));
 
@@ -122,6 +122,47 @@ public partial class App : Application, IDisposable
 
         _ = CheckForUpdatesAsync();
         WarnAboutBrokenStartup();
+        // A copy of a power plan left by a mode that never ended cleanly (a crash, a power cut) is removed once the PC has settled.
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(40));
+            try
+            {
+                await Services.ModeSwitcher.RemoveOrphanPowerPlansAsync();
+            }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or IOException)
+            {
+                // The plan list could not be read: try again at the next start.
+            }
+        });
+
+        // Reading the state of every Optimize setting takes a moment: do it once the PC has settled, so the page opens with it already read.
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(45));
+            try
+            {
+                await Services.OptimizeSnapshot.TakeAsync();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or System.Runtime.InteropServices.COMException)
+            {
+                // Nothing is kept: the page reads it when it is opened.
+            }
+        });
+
+        // The same for the apps of the PC (the Debloat page): two PowerShell commands, so a little later, when nothing else is loading.
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(60));
+            try
+            {
+                await Services.DebloatSnapshot.TakeAsync();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+            {
+                // Nothing is kept: the page reads it when it is opened.
+            }
+        });
 
         var autoMode = Services.AppSettings.Load().AutoActivateMode;
         if (autoMode is null || Services.ModeSwitcher.ActiveMode is not null)
@@ -152,7 +193,7 @@ public partial class App : Application, IDisposable
         var status = await Services.UpdateChecker.CheckAsync();
         if (status.IsNewer && _notifier is not null && _ledger.UpdateTag != status.LatestTag
             && _notifier.Show(Services.NoticeKind.Update, Loc.T("WinModes update available"),
-                Loc.F("Version {0} is out (you have v{1}). Click to see it on the About page.", status.LatestTag, AppInfo.Version),
+                Loc.F("Version {0} is out (you have v{1}). Click to see it on the About page.", status.LatestTag, AppInfo.FullVersion),
                 Forms.ToolTipIcon.Info, () => OpenPage(typeof(Pages.AboutPage)), durationMs: 8000))
         {
             _ledger.UpdateTag = status.LatestTag;
@@ -551,12 +592,42 @@ public partial class App : Application, IDisposable
         undo.Click += async (_, _) => await SwitchFromTrayAsync(Loc.T("Deactivate"), AppServices.Switcher.UndoAsync);
         menu.Items.Add(undo);
 
+        var automatic = new Forms.ToolStripMenuItem(Loc.T("Switch modes automatically")) { Checked = Services.AppSettings.Load().AutoSwitch.Enabled };
+        automatic.Click += (_, _) => Services.AutoSwitchSetup.SetEnabled(!Services.AppSettings.Load().AutoSwitch.Enabled);
+        menu.Items.Add(automatic);
+        if (_autoSwitcher is { } switcher && Services.AppSettings.Load().AutoSwitch.Enabled)
+        {
+            var pause = new Forms.ToolStripMenuItem(Loc.T(switcher.IsPaused ? "Resume automatic switching" : "Pause automatic switching for 1 hour"));
+            pause.Click += (_, _) =>
+            {
+                if (switcher.IsPaused)
+                {
+                    switcher.Resume();
+                }
+                else
+                {
+                    switcher.PauseFor(TimeSpan.FromHours(1));
+                }
+            };
+            menu.Items.Add(pause);
+        }
+
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add(Loc.T("Quit"), null, (_, _) => Shutdown());
+        menu.Items.Add(Loc.T("Quit"), null, (_, _) =>
+        {
+            if (Services.OperationStatus.Current?.IsRunning == true)
+            {
+                _window?.Show();
+                MessageBox.Show(Loc.T("An operation is still running. Wait for it to finish before quitting."), "WinModes",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            Shutdown();
+        });
     }
 
-    /// <summary>Runs a switch started outside the main window and reports the outcome in a notification.</summary>
-    internal async Task SwitchFromTrayAsync(string title, Func<Task<Services.SwitchReport>> action)
+    /// <summary>Runs a switch started outside the main window and reports the outcome in a notification. Returns whether it worked.</summary>
+    internal async Task<bool> SwitchFromTrayAsync(string title, Func<Task<Services.SwitchReport>> action)
     {
         try
         {
@@ -564,10 +635,12 @@ public partial class App : Application, IDisposable
             _notifier?.Show(report.Succeeded ? Services.NoticeKind.Mode : Services.NoticeKind.Problem, $"WinModes - {title}",
                 report.Succeeded ? string.Join("\n", report.Lines.Take(3)) : report.Lines[0],
                 report.Succeeded ? Forms.ToolTipIcon.Info : Forms.ToolTipIcon.Warning, durationMs: 4000);
+            return report.Succeeded;
         }
         catch (ProfileException ex)
         {
             _notifier?.Show(Services.NoticeKind.Problem, "WinModes", ex.Message, Forms.ToolTipIcon.Warning, durationMs: 4000);
+            return false;
         }
     }
 

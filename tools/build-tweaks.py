@@ -4,6 +4,11 @@ Each tweak is a list of registry values and scheduled tasks. The list of tools t
 setting comes from research/oss-optimizers/tweaks-consensus.json (code-verified survey); a tweak
 without a research id has no tool list and is never marked as recommended.
 
+tools/tweak-labels.json adds a plain-words text for each change of a tweak that has several.
+
+A second survey (research/oss-optimizers/round2-tweaks.json, from reading about forty more optimizers) adds
+settings of its own, with the projects that ship each one and where in their code it was seen.
+
 Run: python tools/build-tweaks.py
 """
 import json
@@ -123,7 +128,8 @@ TWEAKS = [
     tweak("recall", "Turn off Recall snapshots",
           "Windows does not save snapshots of the screen for Recall. Only matters on Copilot+ PCs.",
           SEARCH, [dword(HKLM, r"SOFTWARE\Policies\Microsoft\Windows\WindowsAI", "DisableAIDataAnalysis", 1)],
-          research="reg-recall"),
+          research="reg-recall",
+          warning="Snapshots that Recall already saved are removed when the policy takes effect."),
     tweak("windows-copilot", "Turn off Windows Copilot",
           "Policy that hides the Windows Copilot side panel. It does not affect Claude, Codex or any other AI tool.",
           SEARCH, [dword(HKCU, r"Software\Policies\Microsoft\Windows\WindowsCopilot", "TurnOffWindowsCopilot", 1)],
@@ -184,8 +190,29 @@ TWEAKS = [
           research="reg-longpaths"),
 ]
 
+# Second survey: curated by hand from the findings, with the texts shown in the app. The evidence stays in the research file.
+for item in json.loads((ROOT / "research/oss-optimizers/round2-tweaks.json").read_text(encoding="utf-8")):
+    TWEAKS.append({key: item[key] for key in (
+        "id", "title", "description", "category", "risk", "recommended", "restart", "warning", "tools", "values", "tasks")})
+
+# Third survey (components): written by hand, with the evidence in research/oss-optimizers/round3/components.json.
+TWEAKS.extend(json.loads((ROOT / "research/oss-optimizers/round3-tweaks.json").read_text(encoding="utf-8")))
+
 ids = [item["id"] for item in TWEAKS]
 assert len(ids) == len(set(ids)), "duplicate tweak id"
+
+# What each change of a tweak does, in plain words (values first, then tasks), so the Optimize page can let people pick part of a
+# tweak. A tweak with several changes must have one text for each; a tweak with one change needs none.
+LABELS = json.loads((ROOT / "tools/tweak-labels.json").read_text(encoding="utf-8"))
+for item in TWEAKS:
+    parts = len(item["values"]) + len(item["tasks"])
+    labels = LABELS.get(item["id"], [])
+    assert parts < 2 or len(labels) == parts, f"{item['id']}: {len(labels)} labels for {parts} changes"
+    assert parts >= 2 or not labels, f"{item['id']} has a single change and needs no labels"
+    if labels:
+        item["partLabels"] = labels
+unknown = set(LABELS) - set(ids)
+assert not unknown, f"labels for unknown tweaks: {sorted(unknown)}"
 target = ROOT / "data" / "tweaks.json"
 target.write_text(json.dumps(TWEAKS, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
 print(f"{len(TWEAKS)} tweaks written to {target}")

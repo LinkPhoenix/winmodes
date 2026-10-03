@@ -53,6 +53,10 @@ public partial class SettingsPage : Page
 
         // Setting the initial values raises the change events; only user changes are saved.
         _loaded = true;
+        if (LanguageChoice.SelectedItem is Language savedLanguage && savedLanguage.Code != Loc.Current)
+        {
+            LanguageNote.Text = Loc.F("{0} saved. Restart WinModes to use this language.", savedLanguage.Name);
+        }
         ShowStartupWarning();
     }
 
@@ -75,6 +79,25 @@ public partial class SettingsPage : Page
     private void OnChanged(object sender, RoutedEventArgs e) => Save();
 
     private void OnAutoModeChanged(object sender, SelectionChangedEventArgs e) => Save();
+
+    private void OnLanguageChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loaded || LanguageChoice.SelectedItem is not Language language)
+        {
+            return;
+        }
+
+        try
+        {
+            // Language is a UI preference; changing it must not update the Windows startup entry.
+            (AppSettings.Load() with { Language = language.Code }).SaveUiPreference();
+            LanguageNote.Text = Loc.F("{0} saved. Restart WinModes to use this language.", language.Name);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            LanguageNote.Text = Loc.F("The language could not be saved: {0}", ex.Message);
+        }
+    }
 
     private void Save()
     {

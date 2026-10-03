@@ -1,0 +1,33 @@
+[
+  {
+    "id": "onedrive-hide-nav-pane",
+    "title": "Hide OneDrive in File Explorer",
+    "description": "Removes the OneDrive entry from the navigation pane of File Explorer. OneDrive keeps working.",
+    "category": "Explorer and developer",
+    "risk": "low",
+    "recommended": false,
+    "restart": "explorer",
+    "warning": null,
+    "tools": ["Win11Debloat", "privacy.sexy"],
+    "values": [
+      { "hive": "User", "path": "Software\\Classes\\CLSID\\{018D5C66-4533-4307-9B53-224DE2ED1FE6}", "name": "System.IsPinnedToNameSpaceTree", "kind": "Number", "value": "0" },
+      { "hive": "User", "path": "Software\\Classes\\Wow6432Node\\CLSID\\{018D5C66-4533-4307-9B53-224DE2ED1FE6}", "name": "System.IsPinnedToNameSpaceTree", "kind": "Number", "value": "0" }
+    ],
+    "tasks": []
+  },
+  {
+    "id": "onedrive-sync-off",
+    "title": "Keep OneDrive from syncing and starting",
+    "description": "A policy that stops OneDrive from syncing and from starting, and hides it from File Explorer. Nothing is uninstalled; undo it to use OneDrive again.",
+    "category": "System and background",
+    "risk": "medium",
+    "recommended": false,
+    "restart": "sign-out",
+    "warning": "Files that are only in the cloud cannot be opened while this is on, and apps that save to OneDrive stop doing so.",
+    "tools": ["privacy.sexy", "RyTuneX"],
+    "values": [
+      { "hive": "Machine", "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\OneDrive", "name": "DisableFileSyncNGSC", "kind": "Number", "value": "1" }
+    ],
+    "tasks": []
+  }
+]

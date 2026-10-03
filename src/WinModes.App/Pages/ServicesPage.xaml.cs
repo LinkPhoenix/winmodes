@@ -1,8 +1,11 @@
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using WinModes.App.Controls;
 using WinModes.App.Services;
+using WinModes.Core;
 using WinModes.Core.Planning;
 using WinModes.Core.Tuning;
 
@@ -13,6 +16,7 @@ public partial class ServicesPage : Page
 {
     private IReadOnlyList<ServiceInfo> _services = [];
     private Dictionary<string, ServiceTweak> _tweaks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ObservableCollection<RowHolder<Row>> _rows = [];
     private bool _menuOpen;
     private bool _changing;
 
@@ -24,6 +28,7 @@ public partial class ServicesPage : Page
     public ServicesPage()
     {
         InitializeComponent();
+        Rows.ItemsSource = _rows;
         _timer.Tick += async (_, _) => await RefreshAsync();
         Loaded += async (_, _) =>
         {
@@ -44,25 +49,24 @@ public partial class ServicesPage : Page
         _refreshing = true;
         try
         {
-            (_services, _tweaks) = await Task.Run(() =>
-            {
-                var list = SystemMonitor.GetServices();
-                var tweaks = ServiceTuning.Store.Load().ToDictionary(tweak => tweak.Service, StringComparer.OrdinalIgnoreCase);
-                // Extract icons off the UI thread; the cache keeps later refreshes cheap.
-                foreach (var service in list)
-                {
-                    IconCache.Get(service.ExecutablePath);
-                }
-
-                return (list, tweaks);
-            });
+            (_services, _tweaks) = await Task.Run(() => (
+                SystemMonitor.GetServices(),
+                ServiceTuning.Store.Load().ToDictionary(tweak => tweak.Service, StringComparer.OrdinalIgnoreCase)));
             ApplyFilter();
+
+            // Rows first, icons when they are read: reading them is most of the time the page took to appear.
+            if (await IconCache.PreloadAsync(_services.Select(service => service.ExecutablePath)))
+            {
+                ApplyFilter();
+            }
         }
         finally
         {
             _refreshing = false;
         }
     }
+
+    private void OnSearchChanged(object sender, TextChangedEventArgs e) => ApplyFilter();
 
     private void OnFilterChanged(object sender, RoutedEventArgs e) => ApplyFilter();
 
@@ -74,23 +78,35 @@ public partial class ServicesPage : Page
             return;
         }
 
-        var search = SearchBox.Text.Trim();
+        var search = SearchMatcher.Terms(SearchBox.Text);
         var visible = _services
             .Where(service => RunningOnly.IsChecked != true || service.IsRunning)
             .Where(service => ProtectedOnly.IsChecked != true || AppServices.Policy.IsProtectedService(service.Name))
-            .Where(service => search.Length == 0
-                || service.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
-                || service.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase))
+            .Where(service => SearchMatcher.MatchesTerms(search, service.Name, service.DisplayName))
             .Select(ToRow)
             .ToList();
 
-        Rows.ItemsSource = visible;
+        _rows.Reconcile(visible, row => row.Name);
+        EmptyState.Visibility = _services.Count > 0 && visible.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        EmptyState.Hint = Loc.T("Try another search or clear filters.");
         Summary.Text =
             Loc.F("{0} of {1} services are running. Showing {2}. Right-click a service to start it, stop it or change its start type.",
                 _services.Count(service => service.IsRunning), _services.Count, visible.Count);
     }
 
-    private void OnMenuOpening(object sender, ContextMenuEventArgs e) => _menuOpen = true;
+    private void OnMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        // The menu belongs to the list: point it at the row under the pointer, or show nothing between rows.
+        var row = (e.OriginalSource as DependencyObject)?.FindAncestor<ContentPresenter>()?.Content as RowHolder<Row>;
+        if (row is null)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        Rows.ContextMenu!.DataContext = row.Data;
+        _menuOpen = true;
+    }
 
     private void OnMenuClosing(object sender, ContextMenuEventArgs e) => _menuOpen = false;
 
@@ -114,10 +130,18 @@ public partial class ServicesPage : Page
             return;
         }
 
+        if (!OperationStatus.TryBegin(Loc.F("Service change: {0}", row.Name), 1, out var operation))
+        {
+            ResultText.Text = Loc.T("Another operation is already running.");
+            ResultCard.Visibility = Visibility.Visible;
+            return;
+        }
         _changing = true;
         try
         {
             var report = await ServiceTuning.RunAsync(action, row.Name);
+            OperationStatus.Progress(operation, report.Results.Count, report.Summary);
+            OperationStatus.Complete(operation, report.Summary, failed: !report.Succeeded);
             ResultText.Text = report.Summary;
             ResultCard.Visibility = Visibility.Visible;
             // The menu is closed by now, whatever the closing event said.
@@ -126,6 +150,10 @@ public partial class ServicesPage : Page
         }
         finally
         {
+            if (OperationStatus.Current is { IsRunning: true } current && current.Id == operation)
+            {
+                OperationStatus.Complete(operation, Loc.T("The operation did not finish."), failed: true);
+            }
             _changing = false;
         }
     }
@@ -155,7 +183,7 @@ public partial class ServicesPage : Page
             AppServices.Policy.IsProtectedService(service.Name),
             _tweaks.GetValueOrDefault(service.Name)?.OriginalStartMode,
             ServiceTuning.Knowledge.Find(service.Name)?.Description is { Length: > 0 } description ? description : null,
-            IconCache.Get(service.ExecutablePath));
+            IconCache.Peek(service.ExecutablePath));
     }
 
     private sealed record Row(

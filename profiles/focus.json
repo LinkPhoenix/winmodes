@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "mode": "focus",
+  "generatedBy": "tools/build-profiles.ps1",
+  "label": "Focus",
+  "intent": "Distraction-free work or a presentation: notifications silenced, the screen and the PC stay awake on mains power, the dev stack left as it is. Add the chat and social apps to close in the mode editor.",
+  "power": {
+    "plan": "balanced",
+    "values": [
+      {
+        "setting": "display-off",
+        "ac": 0
+      },
+      {
+        "setting": "sleep-after",
+        "ac": 0
+      }
+    ],
+    "note": "The values are set on a copy of the plan, deleted when the mode ends."
+  },
+  "wsl": {
+    "running": true,
+    "docker": null
+  },
+  "apps": {
+    "close": [],
+    "launch": [],
+    "keepOpen": [],
+    "note": "Only apps the user listed here are closed or launched. Protected apps are never uninstalled or blocked.",
+    "suggestedToClose": []
+  },
+  "services": {
+    "stop": [],
+    "ensureRunning": []
+  },
+  "tweaks": [],
+  "tweakIds": [
+    "toast-notifications-global-off"
+  ]
+}
