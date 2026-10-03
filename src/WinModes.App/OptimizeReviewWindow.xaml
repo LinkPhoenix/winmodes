@@ -1,0 +1,38 @@
+<ui:FluentWindow x:Class="WinModes.App.OptimizeReviewWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:l="clr-namespace:WinModes.App.Localization"
+    Title="{l:T 'Review Optimize changes'}" Width="860" Height="660" MinWidth="560" MinHeight="420"
+    WindowStartupLocation="CenterOwner" ShowInTaskbar="False" WindowBackdropType="None"
+    Background="{DynamicResource ApplicationBackgroundBrush}" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <TextBlock Text="{l:T 'Review Optimize changes'}" FontSize="24" FontWeight="SemiBold" TextWrapping="Wrap"/>
+        <TextBlock x:Name="Summary" Grid.Row="1" Margin="0,10,0,16" TextWrapping="Wrap"/>
+        <ListBox Grid.Row="2" x:Name="Changes" Background="Transparent" BorderThickness="0"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.VirtualizationMode="Recycling"
+                 AutomationProperties.Name="{l:T 'Changes to review'}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,0,0,8" Padding="14" Style="{StaticResource CardBorderStyle}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding Label}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding Target}" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" Margin="0,6,0,0" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="{Binding Transition}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                            <TextBlock Text="{Binding Scope}" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0" Style="{StaticResource SecondaryTextStyle}"/>
+                            <TextBlock Text="{Binding Recovery}" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding Warning}" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style></ListBox.ItemContainerStyle>
+        </ListBox>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <ui:Button x:Name="CancelButton" Content="{l:T 'Cancel'}" IsCancel="True" Click="OnCancel"/>
+            <ui:Button Content="{l:T 'Apply reviewed changes'}" Appearance="Primary" Margin="8,0,0,0" Click="OnApply"/>
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>

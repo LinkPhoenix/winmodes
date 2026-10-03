@@ -67,7 +67,7 @@ internal static class ServiceTuning
             // Only the tweaks with a machine-wide part concern the helper. A target is "id" or "id#parts" (see TweakSelection).
             var forHelper = action switch
             {
-                TuneAction.Tweak => [.. targets.Where(target => TweakSelection.TryParse(target, out var selection)
+                TuneAction.Tweak or TuneAction.ReleasePolicy => [.. targets.Where(target => TweakSelection.TryParse(target, out var selection)
                     && Catalog.Find(selection.Id)?.NeedsElevationFor(selection.Parts) == true)],
                 TuneAction.Untweak => [.. targets.Where(target => TweakSelection.TryParse(target, out var selection) && ChangedByHelper(machineJournal, selection))],
                 _ => targets,
@@ -118,6 +118,10 @@ internal static class ServiceTuning
                 if (action == TuneAction.Tweak && Catalog.Find(selection.Id) is { } tweak && tweak.HasUserPartFor(selection.Parts))
                 {
                     results.Add(UserTweaks.Apply(tweak, selection.Parts));
+                }
+                else if (action == TuneAction.ReleasePolicy && Catalog.Find(selection.Id) is { } recoverable && recoverable.HasUserPartFor(selection.Parts))
+                {
+                    results.Add(UserTweaks.ReleasePolicy(recoverable, selection.Parts, new WinModes.Core.Planning.WindowsSystemProbe()));
                 }
                 else if (action == TuneAction.Untweak && journaled.Contains(selection.Id))
                 {

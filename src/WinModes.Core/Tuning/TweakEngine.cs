@@ -43,6 +43,7 @@ public sealed class TweakValueRecord
     public string? Previous { get; init; }
     public TweakValueKind WrittenKind { get; init; }
     public required string Written { get; init; }
+    public bool WrittenAbsent { get; init; }
 }
 
 /// <summary>Everything one applied tweak changed, so it can be undone exactly.</summary>
@@ -87,6 +88,44 @@ public sealed class TweakJournal(string filePath)
 /// </summary>
 public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, TweakJournal journal, bool machineScope)
 {
+    /// <summary>Reads technical values without changing the system. Errors remain distinct from absent values.</summary>
+    public IReadOnlyList<TweakPartObservation> ObserveParts(Tweak tweak) => ObserveParts(tweak, registry, tasks);
+
+    public static IReadOnlyList<TweakPartObservation> ObserveParts(Tweak tweak, IRegistryAccess registry, ITaskControl tasks)
+    {
+        ArgumentNullException.ThrowIfNull(tweak);
+        var observations = new List<TweakPartObservation>();
+        foreach (var part in tweak.Parts)
+        {
+            try
+            {
+                if (part.Kind == TweakPartKind.Task)
+                {
+                    observations.Add(tasks is ITaskObservation richer
+                        ? richer.Observe(part.Target, part.Index)
+                        : tasks.IsEnabled(part.Target) is { } enabled
+                            ? new(part.Index, !enabled, enabled ? "Enabled" : "Disabled", "Disabled", true)
+                            : new(part.Index, null, "Unavailable or unreadable", "Disabled", false));
+                    continue;
+                }
+
+                var value = tweak.Values[part.Index];
+                var live = registry.Read(value.Hive, value.Path, value.Name);
+                var desired = $"{value.Value} ({(value.Kind == TweakValueKind.Number ? "REG_DWORD" : "REG_SZ")})";
+                var actual = !live.Exists ? "Value absent" : live.Kind is null ? "Unsupported registry type"
+                    : $"{live.Value} ({(live.Kind == TweakValueKind.Number ? "REG_DWORD" : "REG_SZ")})";
+                observations.Add(new(part.Index, live.Exists && live.Kind is null ? null : live.Matches(value.Kind, value.Value),
+                    actual, desired, true, live.Exists && live.Kind is null ? "Unsupported registry type; left unchanged." : null, live.Exists));
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or SecurityException or IOException or InvalidOperationException or COMException)
+            {
+                observations.Add(new(part.Index, null, "Unreadable", part.Setting ?? "Disabled", true, ex.Message));
+            }
+        }
+
+        return observations;
+    }
+
     /// <summary>Compares the whole tweak, both scopes, with the live system. Read-only.</summary>
     public TweakState GetState(Tweak tweak)
     {
@@ -128,6 +167,52 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
     /// <summary>Ids this scope can undo.</summary>
     public IReadOnlyList<string> JournaledIds() => [.. journal.Load().Select(record => record.Id)];
 
+    /// <summary>The existing records for review of an undo. Reading them does not claim restoration will succeed.</summary>
+    public IReadOnlyList<TweakRecord> JournalRecords() => journal.Load();
+
+    /// <summary>Remove an explicitly selected supported policy, recording the live value before deletion.</summary>
+    public TuneResult ReleasePolicy(Tweak tweak, IReadOnlySet<int>? parts, WinModes.Core.Planning.ISystemProbe probe)
+    {
+        TuneResult Result(TuneOutcome outcome, string detail) => new(tweak.Id, TuneAction.ReleasePolicy, outcome, detail);
+        if (parts is null || parts.Count != 1 || HasUnknownPart(tweak, parts) || TweakGuard.Validate(tweak).Count > 0)
+            return Result(TuneOutcome.Skipped, "Select one supported policy value.");
+        var index = parts.Single();
+        if (index >= tweak.Values.Count || !InScope(tweak.Values[index]))
+            return Result(TuneOutcome.Skipped, "No documented recovery for this value.");
+        var environment = probe.GetPolicyEnvironment();
+        var value = tweak.Values[index];
+        if (!PolicyRecovery.Supports(value, environment)) return Result(TuneOutcome.Skipped, "No documented recovery for this value.");
+        if (!environment.CanReleaseValue(value)) return Result(TuneOutcome.Skipped, PolicyRecovery.Explain(environment));
+        try
+        {
+            var live = registry.Read(value.Hive, value.Path, value.Name);
+            if (!live.Exists || live.Kind is null) return Result(TuneOutcome.Skipped, "Value absent or unreadable; left unchanged.");
+            var records = journal.Load().ToList();
+            var record = records.FirstOrDefault(item => item.Id.Equals(tweak.Id, StringComparison.OrdinalIgnoreCase));
+            if (record?.Values.Any(item => IsSameValue(item, value)) == true)
+                return Result(TuneOutcome.Skipped, "Undo the recorded change before releasing this policy.");
+            if (record is null) records.Add(record = new TweakRecord { Id = tweak.Id });
+            record.AppliedUtc = DateTimeOffset.UtcNow;
+            var recovery = new TweakValueRecord { Hive = value.Hive, Path = value.Path, Name = value.Name,
+                Existed = true, PreviousKind = live.Kind, Previous = live.Value, WrittenKind = value.Kind, Written = "", WrittenAbsent = true };
+            record.Values.Add(recovery);
+            journal.Save(records);
+            // Recheck the exact value after journaling; do not overwrite a competing writer's choice.
+            if (registry.Read(value.Hive, value.Path, value.Name) != live)
+            {
+                record.Values.Remove(recovery);
+                if (record.Values.Count == 0 && record.DisabledTasks.Count == 0) records.Remove(record);
+                journal.Save(records);
+                return Result(TuneOutcome.Skipped, "The value changed during review; left unchanged. Refresh before trying again.");
+            }
+            registry.Delete(value.Hive, value.Path, value.Name);
+            return registry.Read(value.Hive, value.Path, value.Name).Exists
+                ? Result(TuneOutcome.Failed, "Windows retained or reapplied the policy. The recovery record was kept.")
+                : Result(TuneOutcome.Done, "Policy value removed and recorded. Other policies, edition limits or removed components may still restrict the feature.");
+        }
+        catch (Exception ex) when (IsAccessFailure(ex)) { return Result(TuneOutcome.Failed, ex.Message); }
+    }
+
     /// <param name="parts">The parts to apply (see <see cref="Tweak.Parts"/>); null applies the whole tweak.</param>
     public TuneResult Apply(Tweak tweak, IReadOnlySet<int>? parts = null)
     {
@@ -161,6 +246,9 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
             {
                 records.Add(record = new TweakRecord { Id = tweak.Id });
             }
+
+            if (record.Values.Any(existing => existing.WrittenAbsent && values.Any(value => IsSameValue(existing, value))))
+                return Result(TuneOutcome.Skipped, "Undo the recorded policy recovery before applying this setting again.");
 
             record.AppliedUtc = DateTimeOffset.UtcNow;
             var changes = 0;
@@ -274,7 +362,8 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
             foreach (var value in Enumerable.Reverse(values))
             {
                 // Someone else changed the value since: their choice wins.
-                if (!registry.Read(value.Hive, value.Path, value.Name).Matches(value.WrittenKind, value.Written))
+                var live = registry.Read(value.Hive, value.Path, value.Name);
+                if (value.WrittenAbsent ? live.Exists : !live.Matches(value.WrittenKind, value.Written))
                 {
                     leftAlone++;
                 }
@@ -286,6 +375,11 @@ public sealed class TweakEngine(IRegistryAccess registry, ITaskControl tasks, Tw
                 {
                     registry.Delete(value.Hive, value.Path, value.Name);
                 }
+
+                if ((value.WrittenAbsent ? !live.Exists : live.Matches(value.WrittenKind, value.Written))
+                    && registry.Read(value.Hive, value.Path, value.Name) is { } restored
+                    && (value.Existed ? !restored.Matches(value.PreviousKind!.Value, value.Previous!) : restored.Exists))
+                    return Result(TuneOutcome.Failed, "Windows did not restore the recorded value. The recovery record was kept.");
             }
 
             foreach (var task in disabledTasks.Where(task => tasks.IsEnabled(task) == false))

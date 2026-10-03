@@ -13,17 +13,24 @@ internal sealed class OptimizeSnapshot
     private string? _signature;
 
     private OptimizeSnapshot(
-        IReadOnlyList<ServiceInfo> services, IReadOnlyList<ServiceTweak> changedServices, Dictionary<string, IReadOnlyList<bool?>> states,
-        Dictionary<string, HashSet<int>> journaledParts, HashSet<string> undoable)
+        IReadOnlyList<ServiceInfo> services, IReadOnlyList<ServiceTweak> changedServices, Dictionary<string, IReadOnlyList<TweakPartObservation>> observations,
+        Dictionary<string, HashSet<int>> journaledParts, HashSet<string> undoable, IReadOnlyList<TweakRecord> records, PolicyEnvironment policyEnvironment)
     {
         Services = services;
         ChangedServices = changedServices;
-        States = states;
+        Observations = observations;
+        States = observations.ToDictionary(entry => entry.Key, entry => (IReadOnlyList<bool?>)entry.Value.Select(part => part.Applied).ToList());
+        CheckedUtc = DateTimeOffset.UtcNow;
         JournaledParts = journaledParts;
         Undoable = undoable;
+        Records = records;
+        PolicyEnvironment = policyEnvironment;
     }
 
     public static OptimizeSnapshot? Last { get; private set; }
+
+    public DateTimeOffset CheckedUtc { get; }
+    public Dictionary<string, IReadOnlyList<TweakPartObservation>> Observations { get; }
 
     public IReadOnlyList<ServiceInfo> Services { get; }
     public IReadOnlyList<ServiceTweak> ChangedServices { get; }
@@ -33,6 +40,8 @@ internal sealed class OptimizeSnapshot
 
     public Dictionary<string, HashSet<int>> JournaledParts { get; }
     public HashSet<string> Undoable { get; }
+    public IReadOnlyList<TweakRecord> Records { get; }
+    public PolicyEnvironment PolicyEnvironment { get; }
 
     /// <summary>Reads everything, the independent parts side by side, and keeps the result as <see cref="Last"/>.</summary>
     public static async Task<OptimizeSnapshot> TakeAsync()
@@ -40,12 +49,18 @@ internal sealed class OptimizeSnapshot
         // The program of each service is not needed here, and finding it costs a registry lookup per service.
         var services = Task.Run(() => SystemMonitor.GetServices(withExecutablePaths: false));
         var changed = Task.Run(ServiceTuning.Store.Load);
-        var states = Task.Run(() => ServiceTuning.Catalog.Tweaks.ToDictionary(tweak => tweak.Id, ServiceTuning.UserTweaks.GetPartStates));
+        var states = Task.Run(() =>
+        {
+            ISystemProbe probe = new WindowsSystemProbe();
+            return ServiceTuning.Catalog.Tweaks.ToDictionary(tweak => tweak.Id, probe.GetTweakObservations);
+        });
         var journaled = Task.Run(ServiceTuning.LoadJournaledParts);
         var undoable = Task.Run(ServiceTuning.LoadUndoableTweaks);
-        await Task.WhenAll(services, changed, states, journaled, undoable);
+        var records = Task.Run(() => (IReadOnlyList<TweakRecord>)[.. ServiceTuning.UserTweaks.JournalRecords(), .. new TweakJournal(WinModes.Core.Engine.AppPaths.MachineTweakJournal).Load()]);
+        var policyEnvironment = Task.Run(() => new WindowsSystemProbe().GetPolicyEnvironment());
+        await Task.WhenAll(services, changed, states, journaled, undoable, records, policyEnvironment);
 
-        var snapshot = new OptimizeSnapshot(services.Result, changed.Result, states.Result, journaled.Result, undoable.Result);
+        var snapshot = new OptimizeSnapshot(services.Result, changed.Result, states.Result, journaled.Result, undoable.Result, records.Result, policyEnvironment.Result);
         Last = snapshot;
         return snapshot;
     }
@@ -58,12 +73,12 @@ internal sealed class OptimizeSnapshot
     private string BuildSignature()
     {
         var text = new StringBuilder();
-        foreach (var (id, parts) in States.OrderBy(entry => entry.Key, StringComparer.Ordinal))
+        foreach (var (id, parts) in Observations.OrderBy(entry => entry.Key, StringComparer.Ordinal))
         {
             text.Append(id).Append(':');
             foreach (var state in parts)
             {
-                text.Append(state is null ? '-' : state.Value ? '1' : '0');
+                text.Append(state.Applied is null ? '-' : state.Applied.Value ? '1' : '0').Append(state.Actual).Append(state.Error).Append(state.IsAvailable);
             }
 
             text.Append(';');
@@ -87,7 +102,10 @@ internal sealed class OptimizeSnapshot
             text.Append(id).Append(':').Append(string.Join(',', parts.Order())).Append(';');
         }
 
-        text.Append('|').Append(string.Join(';', Undoable.Order(StringComparer.Ordinal)));
+        text.Append('|').Append(string.Join(';', Undoable.Order(StringComparer.Ordinal))).Append(PolicyEnvironment);
+        foreach (var record in Records) text.Append(record.Id).Append(record.AppliedUtc);
+        foreach (var target in PolicyEnvironment.LocalPolicyValues.Order(StringComparer.OrdinalIgnoreCase)) text.Append(target);
+        foreach (var target in PolicyEnvironment.DocumentedPolicyValues.Order(StringComparer.OrdinalIgnoreCase)) text.Append(target);
         return text.ToString();
     }
 }

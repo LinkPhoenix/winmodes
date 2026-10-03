@@ -115,6 +115,11 @@ static int Change(IReadOnlyList<ChangeGroup> groups, string root, WindowsService
     {
         switch (action)
         {
+            case TuneAction.ReleasePolicy:
+                results.AddRange(names.Select(name => TweakSelection.TryParse(name, out var selection) && catalog.Find(selection.Id) is { } tweak
+                    ? tweaks.ReleasePolicy(tweak, selection.Parts, new WindowsSystemProbe())
+                    : new TuneResult(name, action, TuneOutcome.Skipped, "Unknown tweak.")));
+                break;
             case TuneAction.Tweak:
                 // "id" or "id#0,2": a tweak, or some parts of it. Anything else, or an id the catalog does not list, does nothing.
                 results.AddRange(names.Select(name => TweakSelection.TryParse(name, out var selection) && catalog.Find(selection.Id) is { } tweak
