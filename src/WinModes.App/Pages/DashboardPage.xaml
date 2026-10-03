@@ -2,29 +2,24 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
+      xmlns:app="clr-namespace:WinModes.App"
       xmlns:controls="clr-namespace:WinModes.App.Controls"
       Title="{l:T 'Dashboard'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
 
-        <Grid Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="{l:T 'Dashboard'}" FontSize="28" FontWeight="SemiBold" />
-                <TextBlock Text="{l:T 'Live state of this PC. Figures refresh every few seconds.'}"
-                           Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
-            </StackPanel>
-            <Border Grid.Column="1" Style="{StaticResource ChipStyle}" VerticalAlignment="Top"
-                    Background="{DynamicResource ControlFillColorDefaultBrush}">
-                <StackPanel Orientation="Horizontal">
-                    <Ellipse x:Name="ActiveModeDot" Width="8" Height="8" Fill="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0" />
-                    <TextBlock x:Name="ActiveModeText" Text="{l:T 'Active mode: none'}" FontSize="12" FontWeight="SemiBold" />
-                </StackPanel>
-            </Border>
-        </Grid>
+        <controls:PageHeader Title="{l:T 'Dashboard'}" Icon="Home24" Accent="{x:Static app:Palette.BrandBrush}">
+            <TextBlock Text="{l:T 'Live state of this PC. Figures refresh every few seconds.'}"
+                       Style="{StaticResource SecondaryTextStyle}" />
+            <controls:PageHeader.Actions>
+                <Border Style="{StaticResource ChipStyle}" Background="{DynamicResource ControlFillColorDefaultBrush}">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse x:Name="ActiveModeDot" Width="8" Height="8" Fill="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBlock x:Name="ActiveModeText" Text="{l:T 'Active mode: none'}" FontSize="12" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+            </controls:PageHeader.Actions>
+        </controls:PageHeader>
 
         <!-- AI tools at a glance -->
         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
@@ -36,16 +31,15 @@
                 </Grid>
                 <TextBlock x:Name="AiEmpty" Text="{l:T 'No AI or coding tool is running.'}" Margin="0,12,0,0" Visibility="Collapsed"
                            Style="{StaticResource SecondaryTextStyle}" />
-                <ItemsControl x:Name="AiTools" Margin="0,12,-10,-10">
+                <ItemsControl x:Name="AiTools" Margin="0,12,0,0">
                     <ItemsControl.ItemsPanel>
-                        <!-- Tiles share the whole width; the page sets the column count from the number of tools. -->
                         <ItemsPanelTemplate>
-                            <UniformGrid Columns="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                            <controls:AdaptiveCardGrid MinItemWidth="270" MaxColumns="3" Spacing="10" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Button Margin="0,0,10,10" Padding="12,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                            <Button Padding="12,10" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
                                     Click="OnAiToolClick" AutomationProperties.Name="{Binding AccessibleName}"
                                     ToolTip="{l:T 'Open the AI tools page'}">
                                 <Grid>
@@ -82,8 +76,8 @@
         </Border>
 
         <!-- Vitals: gauge on the left, figures on the right, so the charts below stay in view. -->
-        <UniformGrid Rows="1" Margin="0,0,-12,12">
-            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0" Padding="18,16">
+        <controls:AdaptiveCardGrid MinItemWidth="300" MaxColumns="3" Spacing="12" Margin="0,0,0,12">
+            <Border Style="{StaticResource CardBorderStyle}" Padding="18,16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -108,7 +102,7 @@
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0" Padding="18,16">
+            <Border Style="{StaticResource CardBorderStyle}" Padding="18,16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -133,7 +127,7 @@
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0" Padding="18,16">
+            <Border Style="{StaticResource CardBorderStyle}" Padding="18,16">
                 <StackPanel VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
                         <Border Style="{StaticResource IconBadgeStyle}" Width="28" Height="28" Background="#33C084FC">
@@ -158,11 +152,11 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
-        </UniformGrid>
+        </controls:AdaptiveCardGrid>
 
         <!-- History, last 60 seconds -->
-        <UniformGrid Rows="1" Margin="0,0,-12,12">
-            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
+        <controls:AdaptiveCardGrid MinItemWidth="400" MaxColumns="2" Spacing="12" Margin="0,0,0,12">
+            <Border Style="{StaticResource CardBorderStyle}">
                 <StackPanel>
                     <Grid>
                         <TextBlock Text="{l:T 'CPU UTILIZATION'}" Style="{StaticResource CardCaptionStyle}" />
@@ -177,7 +171,7 @@
                     <controls:CoreBars x:Name="CoreBars" Margin="0,8,0,0" Height="26" Accent="#7C5CFC" ToolTip="{l:T 'Load of each logical processor'}" />
                 </StackPanel>
             </Border>
-            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
+            <Border Style="{StaticResource CardBorderStyle}">
                 <StackPanel>
                     <Grid>
                         <TextBlock Text="{l:T 'MEMORY UTILIZATION'}" Style="{StaticResource CardCaptionStyle}" />
@@ -205,11 +199,11 @@
                     </UniformGrid>
                 </StackPanel>
             </Border>
-        </UniformGrid>
+        </controls:AdaptiveCardGrid>
 
         <!-- GPU and disk, same 60-second window. Each card hides itself when Windows has no counter for it. -->
-        <UniformGrid x:Name="GpuDiskRow" Rows="1" Margin="0,0,-12,12">
-            <Border x:Name="GpuCard" Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
+        <controls:AdaptiveCardGrid x:Name="GpuDiskRow" MinItemWidth="400" MaxColumns="2" Spacing="12" Margin="0,0,0,12">
+            <Border x:Name="GpuCard" Style="{StaticResource CardBorderStyle}">
                 <StackPanel>
                     <Grid>
                         <TextBlock Text="{l:T 'GPU UTILIZATION'}" Style="{StaticResource CardCaptionStyle}" />
@@ -220,7 +214,7 @@
                                Style="{StaticResource SecondaryTextStyle}" />
                 </StackPanel>
             </Border>
-            <Border x:Name="DiskCard" Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
+            <Border x:Name="DiskCard" Style="{StaticResource CardBorderStyle}">
                 <StackPanel>
                     <Grid>
                         <TextBlock Text="{l:T 'DISK ACTIVITY'}" Style="{StaticResource CardCaptionStyle}" />
@@ -230,7 +224,7 @@
                     <TextBlock x:Name="DiskDetail" Text="{l:T 'All disks'}" FontSize="12" Margin="0,8,0,0" Style="{StaticResource SecondaryTextStyle}" />
                 </StackPanel>
             </Border>
-        </UniformGrid>
+        </controls:AdaptiveCardGrid>
 
         <Grid>
             <Grid.ColumnDefinitions>

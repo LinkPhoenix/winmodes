@@ -2,23 +2,20 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       Title="{l:T 'AI tools'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <StackPanel Margin="36,24,36,36" MaxWidth="1400">
-        <Grid Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="{l:T 'AI tools'}" FontSize="28" FontWeight="SemiBold" />
-                <TextBlock x:Name="Summary" Text="{l:T 'Looking for AI and coding tools…'}" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
-            </StackPanel>
-            <ui:Button x:Name="EndIdleButton" Grid.Column="1" Content="{l:T 'End idle sessions'}" Icon="{ui:SymbolIcon Broom24}"
-                       VerticalAlignment="Top" IsEnabled="False" Click="OnEndIdle"
-                       ToolTip="{l:T 'Ends project sessions that used no CPU for 30 minutes while WinModes was watching.'}" />
-        </Grid>
+        <controls:PageHeader Title="{l:T 'AI tools'}" Icon="Bot24" Accent="{x:Static app:Palette.Apps}">
+            <TextBlock x:Name="Summary" Text="{l:T 'Looking for AI and coding tools…'}" Style="{StaticResource SecondaryTextStyle}" />
+            <controls:PageHeader.Actions>
+                <ui:Button x:Name="EndIdleButton" Content="{l:T 'End idle sessions'}" Icon="{ui:SymbolIcon Broom24}"
+                           IsEnabled="False" Click="OnEndIdle"
+                           ToolTip="{l:T 'Ends project sessions that used no CPU for 30 minutes while WinModes was watching.'}" />
+            </controls:PageHeader.Actions>
+        </controls:PageHeader>
 
         <Border x:Name="EmptyState" Style="{StaticResource CardBorderStyle}" Padding="32" Visibility="Collapsed">
             <StackPanel HorizontalAlignment="Center">

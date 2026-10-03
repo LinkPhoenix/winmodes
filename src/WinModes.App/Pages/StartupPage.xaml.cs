@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using WinModes.App.Services;
+using WinModes.Core;
 using WinModes.Core.Apps;
 
 namespace WinModes.App.Pages;
@@ -38,10 +39,12 @@ public partial class StartupPage : Page
 
     private void ShowRows()
     {
-        var text = SearchBox.Text.Trim();
-        var shown = _rows.Where(row => text.Length == 0 || row.Name.Contains(text, StringComparison.CurrentCultureIgnoreCase)).ToList();
+        var terms = SearchMatcher.Terms(SearchBox.Text);
+        var shown = _rows.Where(row => SearchMatcher.MatchesTerms(terms, row.Name, row.Detail, row.SourceText)).ToList();
         Rows.ItemsSource = shown;
         EmptyText.Visibility = shown.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        EmptyText.Title = Loc.T(terms.Length == 0 ? "Nothing starts with Windows." : "Nothing matches.");
+        EmptyText.Hint = terms.Length == 0 ? "" : Loc.T("Try another search or clear filters.");
     }
 
     private void OnFilterChanged(object sender, TextChangedEventArgs e) => ShowRows();

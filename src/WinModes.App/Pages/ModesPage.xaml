@@ -2,29 +2,26 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       Title="{l:T 'Modes'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
 
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
 
-        <Grid Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="{l:T 'Modes'}" FontSize="28" FontWeight="SemiBold" />
-                <TextBlock x:Name="StatusText" Text="{l:T 'No mode is active. Windows is in its normal state.'}"
-                           Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                <ui:Button x:Name="UndoButton" Content="{l:T 'Undo active mode'}" Icon="{ui:SymbolIcon ArrowUndo24}"
-                           Margin="0,0,8,0" Visibility="Collapsed" Click="OnUndoClick" />
-                <ui:Button Content="{l:T 'Import mode'}" Icon="{ui:SymbolIcon ArrowDownload24}" Click="OnImportClick"
-                           ToolTip="{l:T 'Add a mode from a profile file. It is checked against the protection list first.'}" />
-            </StackPanel>
-        </Grid>
+        <controls:PageHeader Title="{l:T 'Modes'}" Icon="Flash24" Accent="{x:Static app:Palette.BrandBrush}">
+            <TextBlock x:Name="StatusText" Text="{l:T 'No mode is active. Windows is in its normal state.'}"
+                       Style="{StaticResource SecondaryTextStyle}" />
+            <controls:PageHeader.Actions>
+                <StackPanel Orientation="Horizontal">
+                    <ui:Button x:Name="UndoButton" Content="{l:T 'Undo active mode'}" Icon="{ui:SymbolIcon ArrowUndo24}"
+                               Margin="0,0,8,0" Visibility="Collapsed" Click="OnUndoClick" />
+                    <ui:Button Content="{l:T 'Import mode'}" Icon="{ui:SymbolIcon ArrowDownload24}" Click="OnImportClick"
+                               ToolTip="{l:T 'Add a mode from a profile file. It is checked against the protection list first.'}" />
+                </StackPanel>
+            </controls:PageHeader.Actions>
+        </controls:PageHeader>
 
         <!-- Automatic switching: the same switch as on the Automation page, here where the modes are -->
         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
@@ -68,15 +65,15 @@
         </Border>
 
         <!-- Mode cards -->
-        <ItemsControl x:Name="ModeCards" Margin="0,0,-12,0">
+        <ItemsControl x:Name="ModeCards">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <UniformGrid Columns="3" />
+                    <controls:AdaptiveCardGrid MinItemWidth="300" MaxColumns="3" Spacing="12" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border x:Name="Card" Style="{StaticResource CardBorderStyle}" Padding="0" Margin="0,0,12,12" MinHeight="270"
+                    <Border x:Name="Card" Style="{StaticResource CardBorderStyle}" Padding="0" MinHeight="270"
                             AutomationProperties.Name="{Binding AccessibleName}" ToolTip="{l:T 'Right-click to edit, export, duplicate or delete this mode'}">
                         <Border.ContextMenu>
                             <ContextMenu>

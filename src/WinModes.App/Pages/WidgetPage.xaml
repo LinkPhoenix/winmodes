@@ -18,9 +18,10 @@
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,14,0">
             <StackPanel Margin="0,0,0,36">
-                <TextBlock Text="{l:T 'Widget'}" FontSize="28" FontWeight="SemiBold" />
-                <TextBlock Text="{l:T 'A small panel with live figures, on your desktop or on the taskbar. Changes apply at once.'}"
-                           Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
+                <controls:PageHeader Title="{l:T 'Widget'}" Icon="PictureInPicture24" Accent="{x:Static app:Palette.Container}" Margin="0,0,0,0">
+                    <TextBlock Text="{l:T 'A small panel with live figures, on your desktop or on the taskbar. Changes apply at once.'}"
+                               Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+                </controls:PageHeader>
 
                 <controls:SettingSection Header="{l:T 'GENERAL'}" Icon="Settings24" Accent="{x:Static app:Palette.BrandBrush}">
                     <StackPanel>

@@ -613,7 +613,17 @@ public partial class App : Application, IDisposable
         }
 
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add(Loc.T("Quit"), null, (_, _) => Shutdown());
+        menu.Items.Add(Loc.T("Quit"), null, (_, _) =>
+        {
+            if (Services.OperationStatus.Current?.IsRunning == true)
+            {
+                _window?.Show();
+                MessageBox.Show(Loc.T("An operation is still running. Wait for it to finish before quitting."), "WinModes",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            Shutdown();
+        });
     }
 
     /// <summary>Runs a switch started outside the main window and reports the outcome in a notification. Returns whether it worked.</summary>

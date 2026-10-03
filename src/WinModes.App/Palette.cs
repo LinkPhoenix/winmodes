@@ -20,6 +20,8 @@ internal static class Palette
     public static readonly Brush Container = Solid(0x60, 0xA5, 0xFA);
     public static readonly Brush Apps = Solid(0xC0, 0x84, 0xFC);
     public static readonly Brush Neutral = Solid(0x94, 0xA3, 0xB8);
+    // Preserve the official PayPal acceptance logo's white background in either theme.
+    public static readonly Brush PayPalLogoBackground = Solid(0xFF, 0xFF, 0xFF);
 
     // Usage left: comfortable above 60 %, amber around 30 %, red as it nears 0 %.
     private const double ComfortablePercent = 60;

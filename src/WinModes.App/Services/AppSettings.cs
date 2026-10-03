@@ -24,6 +24,12 @@ internal sealed record AppSettings
     /// <summary>The close button hides the window and keeps the app in the notification area.</summary>
     public bool CloseToTray { get; init; } = true;
 
+    /// <summary>Last normal window bounds and whether it was maximized; not the minimized tray state.</summary>
+    public WindowPreferences? MainWindowPlacement { get; init; }
+
+    /// <summary>Application content scale, independent of Windows display scaling.</summary>
+    public int UiZoomPercent { get; init; } = 100;
+
     /// <summary>Ask before activating a mode.</summary>
     public bool ConfirmBeforeActivate { get; init; } = true;
 
@@ -90,6 +96,9 @@ internal sealed record AppSettings
     /// <summary>Look and content of the desktop widget.</summary>
     public WidgetSettings Widget { get; init; } = new();
 
+    /// <summary>Per-page list presentation choices; missing keys use the page's default.</summary>
+    public Dictionary<string, string> PageViewModes { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>Which notifications are shown, edited on the Notifications page.</summary>
     public NotificationSettings Notifications { get; init; } = new();
 
@@ -131,7 +140,12 @@ internal sealed record AppSettings
         }
     }
 
-    public void Save()
+    public void Save() => Save(syncStartupEntry: true);
+
+    /// <summary>Writes a UI-only preference without rewriting the Windows startup entry.</summary>
+    public void SaveUiPreference() => Save(syncStartupEntry: false);
+
+    private void Save(bool syncStartupEntry)
     {
         lock (CacheGate)
         {
@@ -140,7 +154,7 @@ internal sealed record AppSettings
         }
 
         // The Run entry carries the minimized flag, so keep it in step with the setting.
-        if (StartsWithWindows)
+        if (syncStartupEntry && StartsWithWindows)
         {
             SetStartWithWindows(true, StartMinimized);
         }

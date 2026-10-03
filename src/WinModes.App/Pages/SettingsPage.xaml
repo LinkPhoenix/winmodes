@@ -3,6 +3,8 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
       Title="{l:T 'Settings'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Page.Resources>
@@ -17,8 +19,9 @@
     </Page.Resources>
 
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <TextBlock Text="{l:T 'Settings'}" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock Text="{l:T 'Changes are saved as you make them.'}" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
+        <controls:PageHeader Title="{l:T 'Settings'}" Icon="Settings24" Accent="{x:Static app:Palette.Neutral}" Margin="0,0,0,4">
+            <TextBlock Text="{l:T 'Changes are saved as you make them.'}" Style="{StaticResource SecondaryTextStyle}" />
+        </controls:PageHeader>
 
         <TextBlock Text="{l:T 'STARTUP'}" Style="{StaticResource SectionTitleStyle}" />
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
@@ -118,11 +121,11 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="{l:T 'Language'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Applied the next time WinModes starts.'}"
+                            <TextBlock x:Name="LanguageNote" Text="{l:T 'Applied the next time WinModes starts.'}"
                                        FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
                         <ComboBox x:Name="LanguageChoice" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
-                                  DisplayMemberPath="Name" SelectionChanged="OnAutoModeChanged" AutomationProperties.Name="{l:T 'Language'}" />
+                                  DisplayMemberPath="Name" SelectionChanged="OnLanguageChanged" AutomationProperties.Name="{l:T 'Language'}" />
                     </Grid>
                 </Border>
                 <Border Style="{StaticResource RowStyle}" BorderThickness="0">

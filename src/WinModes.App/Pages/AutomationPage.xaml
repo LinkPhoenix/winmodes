@@ -19,9 +19,10 @@
     </Page.Resources>
 
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <TextBlock Text="{l:T 'Automation'}" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock Text="{l:T 'Let WinModes activate a mode by itself when a program starts, on battery, or at set hours. Off until you turn it on.'}"
-                   Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
+        <controls:PageHeader Title="{l:T 'Automation'}" Icon="ArrowSync24" Accent="{x:Static app:Palette.Start}" Margin="0,0,0,4">
+            <TextBlock Text="{l:T 'Let WinModes activate a mode by itself when a program starts, on battery, or at set hours. Off until you turn it on.'}"
+                       Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+        </controls:PageHeader>
 
         <controls:SettingSection Header="{l:T 'AUTOMATIC SWITCHING'}" Icon="ArrowSync24" Accent="{x:Static app:Palette.BrandBrush}">
             <StackPanel>

@@ -3,16 +3,19 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
       Title="{l:T 'Startup'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <TextBlock Text="{l:T 'Startup'}" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock x:Name="Summary" Text="{l:T 'Reading what starts with Windows…'}" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,4" TextWrapping="Wrap" />
+        <controls:PageHeader Title="{l:T 'Startup'}" Icon="Rocket24" Accent="{x:Static app:Palette.Power}" Margin="0,0,0,12">
+            <TextBlock x:Name="Summary" Text="{l:T 'Reading what starts with Windows…'}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+        </controls:PageHeader>
         <TextBlock Style="{StaticResource SecondaryTextStyle}" FontSize="12" Margin="0,0,0,16" TextWrapping="Wrap"
                    Text="{l:T 'Turning an item off here is the same as turning it off in Task Manager: nothing is deleted, and you can turn it back on at any time.'}" />
 
-        <ui:TextBox x:Name="SearchBox" PlaceholderText="{l:T 'Search startup items'}" Icon="{ui:SymbolIcon Search24}" Margin="0,0,0,12"
-                    TextChanged="OnFilterChanged" AutomationProperties.Name="{l:T 'Search startup items'}" />
+        <controls:SearchField x:Name="SearchBox" PlaceholderText="{l:T 'Search startup items'}" Margin="0,0,0,12"
+                              TextChanged="OnFilterChanged" AutomationProperties.Name="{l:T 'Search startup items'}" />
 
         <Border x:Name="ResultCard" Style="{StaticResource CardBorderStyle}" Padding="16,12" Margin="0,0,0,12" Visibility="Collapsed">
             <TextBlock x:Name="ResultText" TextWrapping="Wrap" />
@@ -20,8 +23,8 @@
 
         <Border Style="{StaticResource CardBorderStyle}" Padding="0">
             <StackPanel>
-                <TextBlock x:Name="EmptyText" Margin="20,16" Style="{StaticResource SecondaryTextStyle}" Visibility="Collapsed"
-                           Text="{l:T 'Nothing starts with Windows.'}" />
+                <controls:EmptyState x:Name="EmptyText" Visibility="Collapsed" Glyph="&#xE7C4;"
+                                     Title="{l:T 'Nothing starts with Windows.'}" Hint="{l:T 'Nothing matches the search.'}" />
                 <ItemsControl x:Name="Rows">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>

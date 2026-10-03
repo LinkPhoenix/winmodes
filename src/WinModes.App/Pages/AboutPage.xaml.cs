@@ -9,7 +9,6 @@ namespace WinModes.App.Pages;
 /// <summary>Version, where data is stored and third-party notices.</summary>
 public partial class AboutPage : Page
 {
-    private const string CoffeeUrl = "https://buymeacoffee.com/vckh76t96fh";
     private const string SourceUrl = "https://github.com/LinkPhoenix/winmodes";
 
     public AboutPage()
@@ -40,7 +39,7 @@ public partial class AboutPage : Page
         };
     }
 
-    private void OnBuyCoffee(object sender, RoutedEventArgs e) => Open(CoffeeUrl);
+    private void OnSupport(object sender, RoutedEventArgs e) => new SupportWindow { Owner = Window.GetWindow(this) }.ShowDialog();
 
     private readonly bool _loaded;
 

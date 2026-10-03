@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- WinForms is used only for the notification-area icon (WPF has none). -->
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>WinModes</AssemblyName>
@@ -15,6 +16,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\winmodes.ico" />
+    <Resource Include="Assets\paypal-logo-blue.jpg" />
   </ItemGroup>
 
   <ItemGroup>

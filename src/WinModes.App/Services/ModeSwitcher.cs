@@ -66,20 +66,32 @@ internal sealed partial class ModeSwitcher(ProtectionPolicy policy)
     public static event Action? Changed;
 
     /// <param name="automatic">The switch is made by automatic switching, which remembers it so it can undo it later.</param>
-    public Task<SwitchReport> ActivateAsync(ModeProfile profile, bool automatic = false) => RunExclusiveAsync(() => ActivateCoreAsync(profile, automatic));
+    public Task<SwitchReport> ActivateAsync(ModeProfile profile, bool automatic = false) => RunExclusiveAsync(Loc.F("Activate {0} mode", profile.Label), () => ActivateCoreAsync(profile, automatic));
 
-    public Task<SwitchReport> UndoAsync() => RunExclusiveAsync(UndoCoreAsync);
+    public Task<SwitchReport> UndoAsync() => RunExclusiveAsync(Loc.T("Undo mode"), UndoCoreAsync);
 
     /// <summary>The page, the tray, the hotkeys and the auto-switcher all end up here: one switch at a time.</summary>
-    private async Task<SwitchReport> RunExclusiveAsync(Func<Task<SwitchReport>> operation)
+    private async Task<SwitchReport> RunExclusiveAsync(string title, Func<Task<SwitchReport>> operation)
     {
-        var (ran, report) = await _switchGate.TryRunAsync(operation);
-        if (ran)
+        if (!OperationStatus.TryBegin(title, 0, out var statusId))
         {
-            Changed?.Invoke();
+            return new SwitchReport(false, [Loc.T("Another operation is already running.")]);
         }
-
-        return ran ? report! : new SwitchReport(false, [Loc.T("Another mode switch is already running. Wait for it to finish.")]);
+        try
+        {
+            var (ran, report) = await _switchGate.TryRunAsync(operation);
+            if (ran) { Changed?.Invoke(); }
+            var result = ran ? report! : new SwitchReport(false, [Loc.T("Another mode switch is already running. Wait for it to finish.")]);
+            OperationStatus.Complete(statusId, string.Join("\n", result.Lines), failed: !result.Succeeded);
+            return result;
+        }
+        finally
+        {
+            if (OperationStatus.Current is { IsRunning: true } current && current.Id == statusId)
+            {
+                OperationStatus.Complete(statusId, Loc.T("The operation did not finish."), failed: true);
+            }
+        }
     }
 
     private async Task<SwitchReport> ActivateCoreAsync(ModeProfile profile, bool automatic)

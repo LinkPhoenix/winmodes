@@ -11,6 +11,7 @@
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
                 <ResourceDictionary Source="Controls/SettingControls.xaml" />
+                <ResourceDictionary Source="Controls/PageControls.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Dark surfaces by default: near-black so the mode colours carry the interface. The light theme replaces these four at startup. -->

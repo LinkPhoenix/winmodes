@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using WinModes.App.Controls;
 using WinModes.App.Services;
+using WinModes.Core;
 using WinModes.Core.Planning;
 using WinModes.Core.Tuning;
 
@@ -65,6 +66,8 @@ public partial class ServicesPage : Page
         }
     }
 
+    private void OnSearchChanged(object sender, TextChangedEventArgs e) => ApplyFilter();
+
     private void OnFilterChanged(object sender, RoutedEventArgs e) => ApplyFilter();
 
     private void ApplyFilter()
@@ -75,17 +78,17 @@ public partial class ServicesPage : Page
             return;
         }
 
-        var search = SearchBox.Text.Trim();
+        var search = SearchMatcher.Terms(SearchBox.Text);
         var visible = _services
             .Where(service => RunningOnly.IsChecked != true || service.IsRunning)
             .Where(service => ProtectedOnly.IsChecked != true || AppServices.Policy.IsProtectedService(service.Name))
-            .Where(service => search.Length == 0
-                || service.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
-                || service.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase))
+            .Where(service => SearchMatcher.MatchesTerms(search, service.Name, service.DisplayName))
             .Select(ToRow)
             .ToList();
 
         _rows.Reconcile(visible, row => row.Name);
+        EmptyState.Visibility = _services.Count > 0 && visible.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        EmptyState.Hint = Loc.T("Try another search or clear filters.");
         Summary.Text =
             Loc.F("{0} of {1} services are running. Showing {2}. Right-click a service to start it, stop it or change its start type.",
                 _services.Count(service => service.IsRunning), _services.Count, visible.Count);
@@ -127,10 +130,18 @@ public partial class ServicesPage : Page
             return;
         }
 
+        if (!OperationStatus.TryBegin(Loc.F("Service change: {0}", row.Name), 1, out var operation))
+        {
+            ResultText.Text = Loc.T("Another operation is already running.");
+            ResultCard.Visibility = Visibility.Visible;
+            return;
+        }
         _changing = true;
         try
         {
             var report = await ServiceTuning.RunAsync(action, row.Name);
+            OperationStatus.Progress(operation, report.Results.Count, report.Summary);
+            OperationStatus.Complete(operation, report.Summary, failed: !report.Succeeded);
             ResultText.Text = report.Summary;
             ResultCard.Visibility = Visibility.Visible;
             // The menu is closed by now, whatever the closing event said.
@@ -139,6 +150,10 @@ public partial class ServicesPage : Page
         }
         finally
         {
+            if (OperationStatus.Current is { IsRunning: true } current && current.Id == operation)
+            {
+                OperationStatus.Complete(operation, Loc.T("The operation did not finish."), failed: true);
+            }
             _changing = false;
         }
     }

@@ -6,15 +6,17 @@
                  xmlns:pages="clr-namespace:WinModes.App.Pages"
                  Title="WinModes"
                  Icon="pack://application:,,,/Assets/winmodes.ico"
-                 Width="1240" Height="820" MinWidth="980" MinHeight="560"
+                 Width="1360" Height="900" MinWidth="980" MinHeight="560"
                  ExtendsContentIntoTitleBar="True"
                  WindowBackdropType="None"
                  Background="{StaticResource AppBackgroundBrush}"
-                 WindowStartupLocation="CenterScreen">
+                 WindowStartupLocation="CenterScreen"
+                 PreviewKeyDown="OnPreviewKeyDown">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- One row: pane toggle, icon, name and version on the left; the window buttons on the right. -->
@@ -28,7 +30,29 @@
                        Appearance="Transparent" BorderThickness="0" Click="OnTogglePane"
                        Icon="{ui:SymbolIcon Navigation24}" ToolTip="{l:T 'Open or close the menu'}"
                        AutomationProperties.Name="{l:T 'Toggle navigation'}" />
-            <ui:TitleBar x:Name="TitleBar" Grid.Column="1" />
+            <ui:TitleBar x:Name="TitleBar" Grid.Column="1">
+                <!-- TitleBar recognizes its content slots during native caption hit testing. -->
+                <ui:TitleBar.TrailingContent>
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
+                        <ui:Button x:Name="ZoomOutButton" Width="32" Height="36" Padding="0" Appearance="Transparent"
+                                   Content="−" Click="OnZoomOut" ToolTip="{l:T 'Zoom out (Ctrl+-)'}"
+                                   AutomationProperties.Name="{l:T 'Zoom out'}" />
+                        <ui:Button x:Name="ZoomResetButton" MinWidth="52" Height="36" Padding="4,0" Appearance="Transparent"
+                                   Content="100%" Click="OnZoomReset" ToolTip="{l:T 'Reset zoom (Ctrl+0)'}"
+                                   AutomationProperties.Name="{l:T 'Reset zoom'}" />
+                        <ui:Button x:Name="ZoomInButton" Width="32" Height="36" Padding="0" Appearance="Transparent"
+                                   Content="+" Click="OnZoomIn" ToolTip="{l:T 'Zoom in (Ctrl++)'}"
+                                   AutomationProperties.Name="{l:T 'Zoom in'}" />
+                        <ui:Button Width="36" Height="36" Padding="0" Appearance="Transparent"
+                                   Icon="{ui:SymbolIcon Settings24}" Click="OnConfiguration"
+                                   ToolTip="{l:T 'Configuration'}" AutomationProperties.Name="{l:T 'Configuration'}" />
+                        <ui:Button Width="36" Height="36" Padding="0" Appearance="Transparent" Icon="{ui:SymbolIcon Heart24}"
+                                   ToolTip="{l:T 'Support WinModes'}" AutomationProperties.Name="{l:T 'Support WinModes'}"
+                                   Click="OnSupport" />
+                    </StackPanel>
+                </ui:TitleBar.TrailingContent>
+            </ui:TitleBar>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0" IsHitTestVisible="False">
                 <Image Source="pack://application:,,,/Assets/winmodes.ico" Width="20" Height="20" />
                 <TextBlock Text="WinModes" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,0,0,0" />
@@ -46,25 +70,28 @@
                            IsBackButtonVisible="Collapsed"
                            IsPaneToggleVisible="False"
                            FrameMargin="0">
+            <ui:NavigationView.LayoutTransform>
+                <ScaleTransform x:Name="ContentZoom" />
+            </ui:NavigationView.LayoutTransform>
             <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItem Content="{l:T 'Dashboard'}" Icon="{ui:SymbolIcon Home24}"
+                <ui:NavigationViewItem Content="{l:T 'Dashboard'}" ToolTip="Ctrl+1" Icon="{ui:SymbolIcon Home24}"
                                        TargetPageType="{x:Type pages:DashboardPage}" />
-                <ui:NavigationViewItem Content="{l:T 'Modes'}" Icon="{ui:SymbolIcon Flash24}"
+                <ui:NavigationViewItem Content="{l:T 'Modes'}" ToolTip="Ctrl+2" Icon="{ui:SymbolIcon Flash24}"
                                        TargetPageType="{x:Type pages:ModesPage}" />
                 <ui:NavigationViewItemSeparator />
-                <ui:NavigationViewItem Content="{l:T 'Processes'}" Icon="{ui:SymbolIcon Apps24}"
+                <ui:NavigationViewItem Content="{l:T 'Processes'}" ToolTip="Ctrl+3" Icon="{ui:SymbolIcon Apps24}"
                                        TargetPageType="{x:Type pages:ProcessesPage}" />
-                <ui:NavigationViewItem Content="{l:T 'AI tools'}" Icon="{ui:SymbolIcon Bot24}"
+                <ui:NavigationViewItem Content="{l:T 'AI tools'}" ToolTip="Ctrl+4" Icon="{ui:SymbolIcon Bot24}"
                                        TargetPageType="{x:Type pages:AiToolsPage}" />
-                <ui:NavigationViewItem Content="{l:T 'Usage'}" Icon="{ui:SymbolIcon DataHistogram24}"
+                <ui:NavigationViewItem Content="{l:T 'Usage'}" ToolTip="Ctrl+5" Icon="{ui:SymbolIcon DataHistogram24}"
                                        TargetPageType="{x:Type pages:UsagePage}" />
-                <ui:NavigationViewItem Content="{l:T 'Services'}" Icon="{ui:SymbolIcon Server24}"
+                <ui:NavigationViewItem Content="{l:T 'Services'}" ToolTip="Ctrl+6" Icon="{ui:SymbolIcon Server24}"
                                        TargetPageType="{x:Type pages:ServicesPage}" />
-                <ui:NavigationViewItem Content="{l:T 'Optimize'}" Icon="{ui:SymbolIcon Wand24}"
+                <ui:NavigationViewItem Content="{l:T 'Optimize'}" ToolTip="Ctrl+7" Icon="{ui:SymbolIcon Wand24}"
                                        TargetPageType="{x:Type pages:OptimizePage}" NavigationCacheMode="Required" />
-                <ui:NavigationViewItem Content="{l:T 'Startup'}" Icon="{ui:SymbolIcon Rocket24}"
+                <ui:NavigationViewItem Content="{l:T 'Startup'}" ToolTip="Ctrl+8" Icon="{ui:SymbolIcon Rocket24}"
                                        TargetPageType="{x:Type pages:StartupPage}" />
-                <ui:NavigationViewItem Content="{l:T 'Debloat'}" Icon="{ui:SymbolIcon Broom24}"
+                <ui:NavigationViewItem Content="{l:T 'Debloat'}" ToolTip="Ctrl+9" Icon="{ui:SymbolIcon Broom24}"
                                        TargetPageType="{x:Type pages:DebloatPage}" NavigationCacheMode="Required" />
                 <ui:NavigationViewItemSeparator />
                 <ui:NavigationViewItem Content="{l:T 'Automation'}" Icon="{ui:SymbolIcon ArrowSync24}"
@@ -88,5 +115,27 @@
 
         <!-- First-run guide, created only when needed; it covers the pages but not the title bar. -->
         <ContentControl x:Name="OnboardingHost" Grid.Row="1" Visibility="Collapsed" Focusable="False" />
+        <Border x:Name="OperationStrip" Grid.Row="2" Visibility="Collapsed" Padding="16,8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock x:Name="OperationTitle" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock x:Name="OperationDetail" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <ProgressBar x:Name="OperationProgress" Height="3" Margin="0,5,16,0" />
+                </StackPanel>
+                <ui:Button Grid.Column="1" Content="{l:T 'History'}" Click="OnOperationHistory" Margin="8,0"
+                           VerticalAlignment="Center" Icon="{ui:SymbolIcon History24}" />
+                <ui:Button x:Name="DismissOperationButton" Grid.Column="2" Click="OnDismissOperation" Width="32"
+                           VerticalAlignment="Center" Appearance="Transparent" Icon="{ui:SymbolIcon Dismiss24}"
+                           ToolTip="{l:T 'Dismiss operation status'}" AutomationProperties.Name="{l:T 'Dismiss operation status'}" />
+            </Grid>
+        </Border>
     </Grid>
 </ui:FluentWindow>

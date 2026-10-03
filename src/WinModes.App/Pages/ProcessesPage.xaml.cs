@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using WinModes.App.Controls;
 using WinModes.App.Services;
+using WinModes.Core;
 using WinModes.Core.Planning;
 
 namespace WinModes.App.Pages;
@@ -80,6 +81,8 @@ public partial class ProcessesPage : Page
         }
     }
 
+    private void OnSearchChanged(object sender, TextChangedEventArgs e) => ShowRows();
+
     private void OnFilterChanged(object sender, RoutedEventArgs e) => ShowRows();
 
     private void OnSortClick(object sender, RoutedEventArgs e)
@@ -122,7 +125,7 @@ public partial class ProcessesPage : Page
         var children = ProcessSampler.BuildChildren(_nodes);
         var totals = new Dictionary<int, Totals>();
         var rows = new List<Row>();
-        var search = SearchBox.Text.Trim();
+        var search = SearchMatcher.Terms(SearchBox.Text);
 
         if (search.Length > 0 || ProtectedOnly.IsChecked == true)
         {
@@ -144,6 +147,8 @@ public partial class ProcessesPage : Page
         }
 
         _rows.Reconcile(rows, row => row.Pid);
+        EmptyState.Visibility = _nodes.Count > 0 && rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        EmptyState.Hint = Loc.T("Try another search or clear filters.");
         SortName.Content = Loc.T("Name") + Arrow("Name");
         SortPid.Content = "PID" + Arrow("Pid");
         SortCpu.Content = "CPU" + Arrow("Cpu");
@@ -234,10 +239,8 @@ public partial class ProcessesPage : Page
             node.WorkingDirectory);
     }
 
-    private static bool Matches(ProcessNode node, string search, CultureInfo culture) =>
-        node.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
-        || node.Pid.ToString(culture) == search
-        || node.CommandLine?.Contains(search, StringComparison.OrdinalIgnoreCase) == true;
+    private static bool Matches(ProcessNode node, IReadOnlyList<string> search, CultureInfo culture) =>
+        SearchMatcher.MatchesTerms(search, node.Name, node.Pid.ToString(culture), node.CommandLine);
 
     private string Arrow(string column) => column != _sortColumn ? "" : _sortDescending ? Descending : Ascending;
 

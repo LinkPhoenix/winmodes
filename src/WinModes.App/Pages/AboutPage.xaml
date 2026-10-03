@@ -3,11 +3,14 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
       Title="{l:T 'About'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <TextBlock Text="{l:T 'About'}" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock Text="{l:T 'Reversible Windows 11 modes for coding, work and gaming.'}" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,24" />
+        <controls:PageHeader Title="{l:T 'About'}" Icon="Info24" Accent="{x:Static app:Palette.Container}" Margin="0,0,0,24">
+            <TextBlock Text="{l:T 'Reversible Windows 11 modes for coding, work and gaming.'}" Style="{StaticResource SecondaryTextStyle}" />
+        </controls:PageHeader>
 
         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
             <Grid>
@@ -124,13 +127,13 @@
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="{l:T 'Support the project'}" FontWeight="SemiBold" />
-                    <TextBlock Text="{l:T 'WinModes is free for noncommercial use. If it helps you, you can buy the author a coffee.'}"
+                    <TextBlock Text="{l:T 'If WinModes helps you, you can support its development with a voluntary donation.'}"
                                FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button Content="{l:T 'Welcome guide'}" Icon="{ui:SymbolIcon Lightbulb24}" Margin="0,0,8,0" Click="OnShowGuide" />
                     <ui:Button Content="{l:T 'Source code'}" Icon="{ui:SymbolIcon Code24}" Margin="0,0,8,0" Click="OnOpenSource" />
-                    <ui:Button Content="{l:T 'Buy me a coffee'}" Icon="{ui:SymbolIcon DrinkCoffee24}" Appearance="Primary" Click="OnBuyCoffee" />
+                    <ui:Button Content="{l:T 'Support WinModes'}" Icon="{ui:SymbolIcon Heart24}" Appearance="Primary" Click="OnSupport" />
                 </StackPanel>
             </Grid>
         </Border>
