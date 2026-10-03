@@ -122,6 +122,24 @@ public sealed class AppRemovalTests : IDisposable
         Assert.Empty(PackageCommands.ParseList("not json"));
     }
 
+    [Theory]
+    [InlineData("[]", true)]
+    [InlineData("", false)]
+    [InlineData("not json", false)]
+    [InlineData("null", false)]
+    [InlineData("{}", false)]
+    [InlineData("[{}]", false)]
+    [InlineData("[{\"Name\":\"A.B\",\"FullName\":\"A.B_1_x64__x\"},{}]", false)]
+    [InlineData("{\"Name\":\"A.B\",\"FullName\":\"A.B_1_x64__x\"}", true)]
+    public void ACompleteInventory_DistinguishesEmptyFromFailedOrPartialOutput(string output, bool expected)
+    {
+        Assert.Equal(expected, PackageCommands.TryParseList(output, out var packages));
+        if (!expected)
+        {
+            Assert.Empty(packages);
+        }
+    }
+
     [Fact]
     public void AScript_IsHandedToPowerShellAsBase64OfUtf16()
     {

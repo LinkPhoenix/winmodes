@@ -86,6 +86,41 @@ public static class PackageCommands
         }
     }
 
+    /// <summary>Distinguishes a valid empty inventory from a failed or incomplete reading.</summary>
+    public static bool TryParseList(string json, out IReadOnlyList<InstalledPackage> packages)
+    {
+        ArgumentNullException.ThrowIfNull(json);
+        packages = [];
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            if (root.ValueKind is not (JsonValueKind.Array or JsonValueKind.Object))
+            {
+                return false;
+            }
+
+            var items = root.ValueKind == JsonValueKind.Array ? root.EnumerateArray().ToList() : [root];
+            var parsed = new List<InstalledPackage>(items.Count);
+            foreach (var item in items)
+            {
+                if (Read(item) is not { } package)
+                {
+                    return false;
+                }
+
+                parsed.Add(package);
+            }
+
+            packages = parsed;
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
     private static InstalledPackage? Read(JsonElement item)
     {
         if (item.ValueKind != JsonValueKind.Object)

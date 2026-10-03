@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using WinModes.App.Controls;
 using WinModes.App.Services;
+using WinModes.Core;
 using WinModes.Core.Apps;
 
 namespace WinModes.App.Pages;
@@ -40,10 +41,14 @@ public partial class DebloatPage : Page
     private OneDriveState? _oneDrive;
     private string? _selectedCategory;
     private bool _busy;
+    private bool _reading;
+    private bool _inventoryFresh;
+    private List<AppRow> _visibleRows = [];
 
     public DebloatPage()
     {
         InitializeComponent();
+        ViewMode.Mode = PageViewModeStore.Load("debloat", PageViewMode.Cards);
         Loaded += async (_, _) => await ReloadAsync();
     }
 
@@ -61,42 +66,82 @@ public partial class DebloatPage : Page
 
     /// <summary>
     /// Shows the apps of this PC. The page is kept between visits, so the last reading is shown at once and a new one replaces it only if
-    /// something changed. Ticks the user has made and not acted on are their work: they are left alone unless <paramref name="force"/> says the list was just changed.
+    /// something changed. Selection is preserved by package identity when the inventory is rebuilt.
     /// </summary>
     private async Task ReloadAsync(bool force = false)
     {
-        if (!force && _rows.Any(row => row.HasSelection))
+        if (_reading || _busy)
         {
             return;
         }
 
-        if (_shown is null)
+        _reading = true;
+        _inventoryFresh = false;
+        RefreshButton.IsEnabled = false;
+        UpdateRemoveButton();
+        try
         {
-            Headline.Text = Loc.T("Reading the apps of this PC…");
-            SubHeadline.Text = "";
-            if (DebloatSnapshot.Last is { } cached)
+
+            if (_shown is null)
             {
-                Show(cached);
+                Headline.Text = Loc.T("Reading the apps of this PC…");
+                SubHeadline.Text = "";
+                if (DebloatSnapshot.Last is { } cached)
+                {
+                    Show(cached);
+                }
+
+                if (OneDriveService.Last is { } cachedDrive)
+                {
+                    _oneDrive = cachedDrive;
+                    ShowOneDrive();
+                }
             }
 
-            if (OneDriveService.Last is { } cachedDrive)
+            var snapshot = await DebloatSnapshot.TakeAsync();
+            _inventoryFresh = snapshot.InventorySucceeded;
+            if (force || _shown is null || !snapshot.SameAs(_shown) || !snapshot.InventorySucceeded || !_shown.InventorySucceeded)
             {
-                _oneDrive = cachedDrive;
-                ShowOneDrive();
+                Show(snapshot);
             }
-        }
 
-        var snapshot = await DebloatSnapshot.TakeAsync();
-        if (force || ((_shown is null || !snapshot.SameAs(_shown)) && !_rows.Any(row => row.HasSelection)))
+            _shown = snapshot;
+            ReadStatus.Text = snapshot.InventorySucceeded
+                ? Loc.F("Checked at {0} · Windows AppX · current account", snapshot.CheckedUtc!.Value.ToLocalTime().ToString("t", System.Globalization.CultureInfo.CurrentCulture))
+                : snapshot.CheckedUtc is { } last
+                    ? Loc.F("Refresh failed · showing the reading from {0:g}", last.ToLocalTime())
+                    : Loc.T("Installation status unavailable · retry the reading");
+            ReadWarning.IsOpen = !snapshot.InventorySucceeded || !snapshot.NamesSucceeded;
+            ReadWarning.Message = Loc.T(!snapshot.InventorySucceeded
+                ? "Windows could not provide a complete app inventory. Removal is paused. Refresh to try again."
+                : "The package inventory is current, but some Start menu names could not be refreshed.");
+            UpdateRemoveButton();
+
+            // Counting the files that exist only online can take seconds: it comes after the list, which does not wait for it.
+            _oneDriveFresh = false;
+            _oneDrive = await OneDriveService.InspectAsync();
+            _oneDriveFresh = true;
+            ShowOneDrive();
+        }
+        finally
         {
-            Show(snapshot);
+            _reading = false;
+            RefreshButton.IsEnabled = true;
+            UpdateRemoveButton();
         }
+    }
 
-        // Counting the files that exist only online can take seconds: it comes after the list, which does not wait for it.
-        _oneDriveFresh = false;
-        _oneDrive = await OneDriveService.InspectAsync();
-        _oneDriveFresh = true;
-        ShowOneDrive();
+    private async void OnRefresh(object sender, RoutedEventArgs e) => await ReloadAsync(force: true);
+
+    private async void OnHelp(object sender, RoutedEventArgs e)
+    {
+        var help = new Wpf.Ui.Controls.MessageBox
+        {
+            Title = Loc.T("Reading app badges"),
+            Content = Loc.T("Installed describes the last complete Windows AppX inventory for your account. Safe to remove and Check first describe consequences, not whether you use an app. Protected apps are never removed by WinModes.\n\nRecovery badges show whether a separate Store or winget route is recorded. Local restore depends on the original files remaining on this PC. Recovery unverified does not mean permanent removal.\n\nSelect visible and Select safe results affect only the current results. Selections remain when you change filters; the review includes every selected package. Nothing is removed before you confirm."),
+            CloseButtonText = Loc.T("Close"),
+        };
+        await help.ShowDialogAsync();
     }
 
     private void Show(DebloatSnapshot snapshot)
@@ -105,6 +150,7 @@ public partial class DebloatPage : Page
         var installed = snapshot.Installed;
         var startNames = snapshot.StartNames;
         var open = _rows.Where(row => row.IsExpanded).Select(row => row.Entry.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var selected = _rows.SelectMany(row => row.SelectedPackages).Select(package => package.Package.FullName).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var byEntry = installed
             .Select(package => (Package: package, Entry: AppxService.Catalog.Find(package)))
             .Where(pair => pair.Entry is not null)
@@ -113,7 +159,8 @@ public partial class DebloatPage : Page
 
         // What can be removed first, then what the list covers but this PC does not have.
         _rows = [.. AppxService.Catalog.Entries
-            .Select(entry => new AppRow(entry, byEntry.GetValueOrDefault(entry.Id) ?? [], UpdateRemoveButton))
+            .Select(entry => new AppRow(entry, byEntry.GetValueOrDefault(entry.Id) ?? [], UpdateRemoveButton,
+                inventoryKnown: snapshot.CheckedUtc is not null, localRestorePackages: snapshot.LocalRestorePackages))
             .OrderByDescending(row => row.IsInstalled)
             .ThenBy(row => row.Entry.Tier)
             .ThenBy(row => row.Entry.Category, StringComparer.CurrentCultureIgnoreCase)
@@ -133,13 +180,18 @@ public partial class DebloatPage : Page
             row.IsExpanded = true;
         }
 
+        foreach (var package in _rows.SelectMany(row => row.Packages).Where(package => selected.Contains(package.Package.FullName)))
+        {
+            package.IsSelected = true;
+        }
+
         var present = _rows.Count(row => row.IsInstalled);
         var safe = _rows.Count(row => row is { IsInstalled: true, Entry.Tier: AppTier.Safe });
-        Headline.Text = present == 0 ? Loc.T("Nothing to remove") : Loc.N(present, "1 app can be removed", "{0} apps can be removed");
-        SubHeadline.Text = present == 0
+        Headline.Text = snapshot.CheckedUtc is null ? Loc.T("Installation status unavailable")
+            : present == 0 ? Loc.T("Nothing to remove") : Loc.N(present, "1 app can be removed", "{0} apps can be removed");
+        SubHeadline.Text = snapshot.CheckedUtc is null ? Loc.T("Refresh to read the apps installed for your account.") : present == 0
             ? Loc.T("None of the apps in the list of WinModes is installed for your account.")
-            : Loc.N(safe, "1 is safe for nearly everyone; the others are useful to some people, and what they do is written next to each one.",
-                "{0} are safe for nearly everyone; the others are useful to some people, and what they do is written next to each one.");
+            : Loc.F("{0} low-risk · {1} need review · protected apps stay untouched", safe, present - safe);
         ShowRows();
         ShowRemoved();
         _ = LoadIconsAsync([.. _rows, .. _others]);
@@ -245,13 +297,12 @@ public partial class DebloatPage : Page
             return;
         }
 
-        _busy = true;
-        ShowOneDrive();
-        ResultCard.Visibility = Visibility.Visible;
-        ResultText.Text = Loc.T("Uninstalling OneDrive…");
-        var reason = await OneDriveService.UninstallAsync();
-        _busy = false;
-        ResultText.Text = reason ?? Loc.T("OneDrive was uninstalled.");
+        await RunTrackedAsync(Loc.T("Uninstalling OneDrive…"), 1, async operation =>
+        {
+            var reason = await OneDriveService.UninstallAsync();
+            OperationStatus.Progress(operation, 1, reason ?? Loc.T("OneDrive was uninstalled."));
+            return (reason ?? Loc.T("OneDrive was uninstalled."), reason is not null);
+        });
         _oneDrive = await OneDriveService.InspectAsync();
         ShowOneDrive();
     }
@@ -263,13 +314,12 @@ public partial class DebloatPage : Page
             return;
         }
 
-        _busy = true;
-        ShowOneDrive();
-        ResultCard.Visibility = Visibility.Visible;
-        ResultText.Text = Loc.T("Installing OneDrive again…");
-        var reason = await OneDriveService.RestoreAsync();
-        _busy = false;
-        ResultText.Text = reason ?? Loc.T("OneDrive is installed again. Sign in to use it.");
+        await RunTrackedAsync(Loc.T("Installing OneDrive again…"), 1, async operation =>
+        {
+            var reason = await OneDriveService.RestoreAsync();
+            OperationStatus.Progress(operation, 1, reason ?? Loc.T("OneDrive is installed again. Sign in to use it."));
+            return (reason ?? Loc.T("OneDrive is installed again. Sign in to use it."), reason is not null);
+        });
         _oneDrive = await OneDriveService.InspectAsync();
         ShowOneDrive();
     }
@@ -277,15 +327,16 @@ public partial class DebloatPage : Page
     private void ShowRows()
     {
         // Filter events fire while the page is still being built.
-        if (Rows is null || SearchBox is null || ShowAbsent is null)
+        if (RowsList is null || SearchBox is null || ShowAbsent is null || StatusFilter is null || SortOrder is null || VisibleCount is null)
         {
             return;
         }
 
+        var terms = SearchMatcher.Terms(SearchBox.Text);
         var text = SearchBox.Text.Trim();
-        var showAbsent = ShowAbsent.IsChecked == true;
-        var matching = _rows.Where(row => (row.IsInstalled || showAbsent) && row.Matches(text)).ToList();
-        var matchingOthers = _others.Where(row => row.Matches(text)).ToList();
+        var showAbsent = ShowAbsent.IsChecked == true || StatusFilter.SelectedIndex == 2;
+        var matching = _rows.Where(row => (row.IsInstalled || !row.InventoryKnown || showAbsent) && row.Matches(terms) && MatchesStatus(row)).ToList();
+        var matchingOthers = _others.Where(row => row.Matches(terms) && MatchesStatus(row)).ToList();
 
         // The selected category can vanish after a removal (nothing of it is left on this PC).
         if (_selectedCategory is not null && matching.All(row => row.Entry.Category != _selectedCategory) && _rows.All(row => row.Entry.Category != _selectedCategory)
@@ -297,14 +348,31 @@ public partial class DebloatPage : Page
         // The other apps are listed under their own chip, and under "All" only when something is searched for.
         IEnumerable<AppRow> shown = _selectedCategory switch
         {
-            null => text.Length > 0 ? [.. matching, .. matchingOthers] : matching,
+            null => text.Length > 0 || StatusFilter.SelectedIndex == 5 ? [.. matching, .. matchingOthers] : matching,
             OthersCategory => matchingOthers,
             _ => matching.Where(row => row.Entry.Category == _selectedCategory),
         };
-        var shownRows = shown.ToList();
-        Rows.ItemsSource = shownRows;
+        var shownRows = (SortOrder.SelectedIndex switch
+        {
+            1 => shown.OrderBy(row => row.Title, StringComparer.CurrentCultureIgnoreCase),
+            2 => shown.OrderByDescending(row => row.Title, StringComparer.CurrentCultureIgnoreCase),
+            3 => shown.OrderBy(row => Loc.T(row.Entry.Category), StringComparer.CurrentCultureIgnoreCase).ThenBy(row => row.Title, StringComparer.CurrentCultureIgnoreCase),
+            _ => shown.OrderByDescending(row => row.IsInstalled).ThenBy(row => row.Entry.Tier).ThenBy(row => row.Title, StringComparer.CurrentCultureIgnoreCase),
+        }).ToList();
+        VisibleCount.Text = Loc.F("{0} shown", shownRows.Count);
+        _visibleRows = shownRows;
+        RowsList.ItemsSource = shownRows;
+        RowsCards.ItemsSource = shownRows;
+        RowsCompact.ItemsSource = shownRows;
+        RowsList.Visibility = ViewMode.Mode == PageViewMode.List ? Visibility.Visible : Visibility.Collapsed;
+        RowsCards.Visibility = ViewMode.Mode == PageViewMode.Cards ? Visibility.Visible : Visibility.Collapsed;
+        RowsCompact.Visibility = ViewMode.Mode == PageViewMode.Compact ? Visibility.Visible : Visibility.Collapsed;
         EmptyText.Visibility = shownRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        SelectSafe.IsEnabled = !_busy && _rows.Any(row => row is { IsInstalled: true, Entry.Tier: AppTier.Safe });
+        EmptyText.Hint = terms.Length > 0 || showAbsent
+            ? Loc.T("Try another search or clear filters.")
+            : Loc.T("Also show what is not installed") + ".";
+        SelectSafe.IsEnabled = !_busy && _inventoryFresh && shownRows.Any(row => row is { IsInstalled: true, IsOther: false, Entry.Tier: AppTier.Safe });
+        SelectVisible.IsEnabled = !_busy && _inventoryFresh && shownRows.Any(row => row is { IsInstalled: true, IsOther: false });
         ShowCategories(matching, matchingOthers);
         UpdateRemoveButton();
     }
@@ -315,12 +383,13 @@ public partial class DebloatPage : Page
         var known = Categories.Select(item => item.Category).ToList();
 
         // A category with nothing to show on this PC gets no chip, whatever the search says.
-        var showAbsent = ShowAbsent.IsChecked == true;
-        var present = _rows.Where(row => row.IsInstalled || showAbsent).Select(row => row.Entry.Category).Distinct(StringComparer.OrdinalIgnoreCase)
+        var showAbsent = ShowAbsent.IsChecked == true || StatusFilter.SelectedIndex == 2;
+        var present = _rows.Where(row => row.IsInstalled || !row.InventoryKnown || showAbsent).Select(row => row.Entry.Category).Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(category => known.FindIndex(name => name.Equals(category, StringComparison.OrdinalIgnoreCase)) is var index and >= 0 ? index : known.Count)
             .ToList();
         List<(string? Key, string Title, string Glyph, Brush Color, int Count)> entries =
-            [(null, Loc.T("All"), AllGlyph, Palette.BrandBrush, matching.Count)];
+            [(null, Loc.T("All"), AllGlyph, Palette.BrandBrush,
+                matching.Count + (SearchBox.Text.Trim().Length > 0 || StatusFilter.SelectedIndex == 5 ? matchingOthers.Count : 0))];
         foreach (var category in present)
         {
             var (glyph, color) = LookUp(category);
@@ -344,6 +413,13 @@ public partial class DebloatPage : Page
         }
 
         _selectedCategory = chip.Key;
+        ShowRows();
+        ListScroll.ScrollToTop();
+    }
+
+    private void OnViewModeChanged(object? sender, EventArgs e)
+    {
+        PageViewModeStore.Save("debloat", ViewMode.Mode);
         ShowRows();
         ListScroll.ScrollToTop();
     }
@@ -378,11 +454,32 @@ public partial class DebloatPage : Page
         }
 
         var selected = _rows.Count(row => row.HasSelection);
+        var packages = _rows.Sum(row => row.SelectedPackages.Count);
+        var hidden = _rows.Count(row => row.HasSelection && !_visibleRows.Contains(row));
+        var warnings = _rows.Count(row => row.HasSelection && (row.Entry.Tier != AppTier.Safe || !row.HasReinstallRoute));
         ActionBar.Visibility = selected > 0 ? Visibility.Visible : Visibility.Collapsed;
-        RemoveButton.IsEnabled = !_busy && selected > 0;
-        RemoveButton.Content = selected > 0 ? Loc.F("Remove selected ({0})", selected) : Loc.T("Remove selected");
+        RemoveButton.IsEnabled = !_busy && !_reading && _inventoryFresh && selected > 0;
+        RemoveButton.Content = selected > 0 ? Loc.F("Review removal ({0})", selected) : Loc.T("Review removal");
         ActionTitle.Text = Loc.N(selected, "1 app selected", "{0} apps selected");
+        ActionSummary.Text = Loc.F("{0} packages · {1} need attention · {2} hidden by filters", packages, warnings, hidden);
+        ShowSelection.Visibility = hidden > 0 ? Visibility.Visible : Visibility.Collapsed;
+        foreach (var row in _rows) row.SelectionAllowed = !_busy && !_reading && _inventoryFresh;
+        SelectSafe.IsEnabled = !_busy && !_reading && _inventoryFresh && _visibleRows.Any(row => row is { IsInstalled: true, IsOther: false, Entry.Tier: AppTier.Safe });
+        SelectVisible.IsEnabled = !_busy && !_reading && _inventoryFresh && _visibleRows.Any(row => row is { IsInstalled: true, IsOther: false });
     }
+
+    private bool MatchesStatus(AppRow row) => StatusFilter.SelectedIndex switch
+    {
+        1 => row.IsInstalled,
+        2 => row.InventoryKnown && !row.IsInstalled,
+        3 => row.IsInstalled && !row.IsOther && row.Entry.Tier == AppTier.Safe,
+        4 => !row.IsOther && row.Entry.Tier != AppTier.Safe,
+        5 => row.IsProtected,
+        6 => row.HasSelection,
+        _ => true,
+    };
+
+    private void OnCatalogFilterChanged(object sender, SelectionChangedEventArgs e) => ShowRows();
 
     private void OnFilterChanged(object sender, TextChangedEventArgs e) => ShowRows();
 
@@ -390,16 +487,34 @@ public partial class DebloatPage : Page
 
     private void OnSelectSafe(object sender, RoutedEventArgs e)
     {
-        foreach (var row in _rows.Where(row => row.IsInstalled))
+        if (_busy || _reading || !_inventoryFresh) return;
+        foreach (var row in _visibleRows.Where(row => row is { IsInstalled: true, IsOther: false, Entry.Tier: AppTier.Safe }))
         {
-            row.IsSelected = row.Entry.Tier == AppTier.Safe;
+            row.IsSelected = true;
         }
 
         UpdateRemoveButton();
     }
 
+    private void OnSelectVisible(object sender, RoutedEventArgs e)
+    {
+        if (_busy || _reading || !_inventoryFresh) return;
+        foreach (var row in _visibleRows.Where(row => row is { IsInstalled: true, IsOther: false })) row.IsSelected = true;
+        UpdateRemoveButton();
+    }
+
+    private void OnShowSelection(object sender, RoutedEventArgs e)
+    {
+        _selectedCategory = null;
+        SearchBox.Clear();
+        StatusFilter.SelectedIndex = 6;
+        ShowRows();
+        ListScroll.ScrollToTop();
+    }
+
     private void OnClearSelection(object sender, RoutedEventArgs e)
     {
+        if (_busy) return;
         foreach (var row in _rows)
         {
             row.IsSelected = false;
@@ -411,19 +526,15 @@ public partial class DebloatPage : Page
     private async void OnRemoveClick(object sender, RoutedEventArgs e)
     {
         var chosen = _rows.Where(row => row.HasSelection).ToList();
-        if (_busy || chosen.Count == 0)
+        if (_busy || _reading || !_inventoryFresh || chosen.Count == 0)
         {
             return;
         }
 
-        // An app with several packages may be removed in part: say which.
-        var lines = chosen.Select(row => (row.IsSelected || row.Packages.Count == 1 ? $"• {row.Title}" : $"• {row.Title} ({string.Join(", ", row.SelectedPackages.Select(package => package.Name))})")
-            + (row.Breaks is null ? "" : $": {row.Breaks}"));
         var confirm = new Wpf.Ui.Controls.MessageBox
         {
             Title = Loc.N(chosen.Count, "Remove 1 app?", "Remove {0} apps?"),
-            Content = string.Join("\n", lines) + "\n\n"
-                + Loc.T("They are removed for your account only and listed on this page, where Restore brings them back. Nothing is uninstalled for other users."),
+            Content = BuildRemovalReview(chosen),
             PrimaryButtonText = Loc.T("Remove"),
             CloseButtonText = Loc.T("Cancel"),
         };
@@ -432,31 +543,64 @@ public partial class DebloatPage : Page
             return;
         }
 
-        _busy = true;
-        UpdateRemoveButton();
-        var failures = new List<string>();
-        var done = 0;
-        foreach (var row in chosen)
+        var total = chosen.Sum(row => row.SelectedPackages.Count);
+        await RunTrackedAsync(Loc.T("Remove apps"), total, async operation =>
         {
-            foreach (var package in row.SelectedPackages.Select(item => item.Package))
+            var results = new List<string>();
+            var done = 0;
+            var completed = 0;
+            foreach (var row in chosen)
             {
-                Headline.Text = Loc.F("Removing {0}…", row.Title);
-                if (await AppxService.RemoveAsync(package) is { } reason)
+                foreach (var package in row.SelectedPackages.Select(item => item.Package).ToList())
                 {
-                    failures.Add($"{row.Title}: {reason}");
-                }
-                else
-                {
-                    done++;
+                    Headline.Text = Loc.F("Removing {0}…", row.Title);
+                    if (await AppxService.RemoveAsync(package) is { } reason)
+                    {
+                        results.Add(Loc.F("Failed: {0} · {1}", package.Name, reason));
+                    }
+                    else
+                    {
+                        done++;
+                        results.Add(Loc.F("Removed: {0}", package.Name));
+                    }
+                    OperationStatus.Progress(operation, ++completed, results[^1]);
                 }
             }
+            var summary = (done > 0 ? Loc.N(done, "1 package removed.", "{0} packages removed.") : Loc.T("Nothing was removed."))
+                + "\n" + string.Join("\n", results);
+            return (summary, done != total);
+        });
+        await ReloadAsync(force: true);
+    }
+
+    private static ScrollViewer BuildRemovalReview(IReadOnlyList<AppRow> chosen)
+    {
+        var content = new StackPanel { MaxWidth = 640 };
+        content.Children.Add(new TextBlock
+        {
+            Text = Loc.T("Removal affects your account only. WinModes records each package before removal. Local restore needs the package files to remain on this PC; reinstall routes are shown above. Other users are not changed."),
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 12),
+        });
+        foreach (var row in chosen)
+        {
+            var details = new StackPanel();
+            var card = new Border { Child = details, Margin = new Thickness(0, 0, 0, 8), Padding = new Thickness(12), CornerRadius = new CornerRadius(8) };
+            card.SetResourceReference(Border.BackgroundProperty, "ControlFillColorDefaultBrush");
+            content.Children.Add(card);
+            details.Children.Add(new TextBlock { Text = row.Title, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap });
+            details.Children.Add(new TextBlock { Text = string.Join(", ", row.SelectedPackages.Select(package => package.Name)),
+                FontSize = 11, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 4) });
+            var badges = new WrapPanel();
+            details.Children.Add(badges);
+            badges.Children.Add(new StatusBadge { Text = row.TierText, Glyph = row.TierGlyph, Tone = row.TierTone });
+            badges.Children.Add(new StatusBadge { Text = row.RecoveryText, Glyph = row.RecoveryGlyph, Tone = row.RecoveryTone });
+            details.Children.Add(new TextBlock { Text = row.Breaks ?? row.Why, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 4) });
+            details.Children.Add(new TextBlock { Text = row.RecoveryTip, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         }
 
-        _busy = false;
-        ResultCard.Visibility = Visibility.Visible;
-        ResultText.Text = (done > 0 ? Loc.N(done, "1 package removed.", "{0} packages removed.") : Loc.T("Nothing was removed."))
-            + (failures.Count > 0 ? "\n" + string.Join("\n", failures) : "");
-        await ReloadAsync(force: true);
+        return new ScrollViewer { Content = content, MaxHeight = 420, VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
     }
 
     private async void OnRestoreClick(object sender, RoutedEventArgs e)
@@ -466,13 +610,48 @@ public partial class DebloatPage : Page
             return;
         }
 
-        _busy = true;
-        ResultCard.Visibility = Visibility.Visible;
-        ResultText.Text = Loc.F("Restoring {0}…", row.Title);
-        var reason = await AppxService.RestoreAsync(row.App);
-        _busy = false;
-        ResultText.Text = reason ?? Loc.F("{0} is back.", row.Title);
+        await RunTrackedAsync(Loc.F("Restoring {0}…", row.Title), 1, async operation =>
+        {
+            var reason = await AppxService.RestoreAsync(row.App);
+            OperationStatus.Progress(operation, 1, reason ?? Loc.F("{0} is back.", row.Title));
+            return (reason ?? Loc.F("{0} is back.", row.Title), reason is not null);
+        });
         await ReloadAsync(force: true);
+    }
+
+    private async Task RunTrackedAsync(string title, int total, Func<Guid, Task<(string Summary, bool Failed)>> run)
+    {
+        ResultCard.Visibility = Visibility.Visible;
+        if (!OperationStatus.TryBegin(title, total, out var operation))
+        {
+            ResultText.Text = Loc.T("Another operation is already running.");
+            return;
+        }
+        _busy = true;
+        UpdateRemoveButton();
+        ShowOneDrive();
+        ResultText.Text = title;
+        try
+        {
+            var result = await run(operation);
+            ResultText.Text = result.Summary;
+            OperationStatus.Complete(operation, result.Summary, result.Failed);
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            ResultText.Text = Loc.T("The operation stopped unexpectedly. Refresh the inventory before trying again.");
+            OperationStatus.Complete(operation, ResultText.Text, failed: true);
+        }
+        finally
+        {
+            if (OperationStatus.Current is { IsRunning: true } current && current.Id == operation)
+            {
+                OperationStatus.Complete(operation, Loc.T("The operation did not finish."), failed: true);
+            }
+            _busy = false;
+            UpdateRemoveButton();
+            ShowOneDrive();
+        }
     }
 
     private void OnToggleDetails(object sender, RoutedEventArgs e)
@@ -515,6 +694,16 @@ public partial class DebloatPage : Page
         public InstalledPackage Package => package;
         public string Name => package.Name;
         public string VersionText => $"v{package.Version}";
+        public bool CanSelect
+        {
+            get;
+            set
+            {
+                if (field == value) return;
+                field = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanSelect)));
+            }
+        }
 
         /// <summary>Only an app made of several packages lets you pick; a single one follows the app.</summary>
         public Visibility ChoiceVisibility => hasChoice ? Visibility.Visible : Visibility.Collapsed;
@@ -554,14 +743,17 @@ public partial class DebloatPage : Page
         private ImageSource? _icon;
         private bool _isExpanded;
 
-        public AppRow(AppEntry entry, IReadOnlyList<InstalledPackage> packages, Action changed, bool isOther = false, bool isProtected = false)
+        public AppRow(AppEntry entry, IReadOnlyList<InstalledPackage> packages, Action changed, bool isOther = false, bool isProtected = false,
+            bool inventoryKnown = true, IReadOnlySet<string>? localRestorePackages = null)
         {
             Entry = entry;
             IsOther = isOther;
             IsProtected = isProtected;
+            InventoryKnown = inventoryKnown;
+            HasLocalRestore = packages.Count > 0 && packages.All(package => localRestorePackages?.Contains(package.FullName) == true);
             Packages = [.. packages.Select(package => new PackageRow(package, packages.Count > 1, () =>
             {
-                foreach (var name in (string[])[nameof(IsSelected), nameof(SelectionState)])
+                foreach (var name in (string[])[nameof(IsSelected), nameof(SelectionState), nameof(PendingVisibility)])
                 {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
                 }
@@ -587,19 +779,47 @@ public partial class DebloatPage : Page
         public bool IsProtected { get; }
 
         public bool IsInstalled => Packages.Count > 0;
+        public bool InventoryKnown { get; }
+        public bool HasLocalRestore { get; }
+        public bool HasReinstallRoute => Entry.Reinstall.Store is not null || Entry.Reinstall.Winget is not null;
+        public bool SelectionAllowed
+        {
+            get;
+            set
+            {
+                if (field == value) return;
+                field = value;
+                foreach (var package in Packages) package.CanSelect = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectionAllowed)));
+            }
+        }
         public string Title => Loc.T(Entry.Title);
         public string Why => Loc.T(Entry.Why);
         public Visibility WhyVisibility => Entry.Why.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
         public string? Breaks => string.IsNullOrWhiteSpace(Entry.BreaksIfRemoved) ? null : Loc.F("If removed: {0}", Loc.T(Entry.BreaksIfRemoved));
         public Visibility BreaksVisibility => Breaks is null ? Visibility.Collapsed : Visibility.Visible;
-        public string TierText => Loc.T(IsOther ? IsProtected ? "Protected" : "Not in the list" : !IsInstalled ? "Not installed" : Entry.Tier == AppTier.Safe ? "Safe" : "Check first");
-
-        public Brush TierTint => Palette.Tint(IsOther ? IsProtected ? Palette.Apps : Palette.Neutral : !IsInstalled ? Palette.Neutral : Entry.Tier == AppTier.Safe ? Palette.Start : Palette.Power);
+        public string InstallationText => Loc.T(!InventoryKnown ? "Unknown" : IsInstalled ? "Installed" : "Not installed");
+        public string InstallationGlyph => !InventoryKnown ? "" : IsInstalled ? "" : "";
+        public Brush InstallationTone => !InventoryKnown ? Palette.Power : IsInstalled ? Palette.Start : Palette.Neutral;
+        public string InstallationTip => Loc.T(!InventoryKnown ? "Windows has not returned a complete inventory. Refresh to check."
+            : IsInstalled ? "Found in the Windows AppX inventory for your account." : "Not found in the last complete Windows AppX inventory for your account.");
+        public string TierText => Loc.T(IsOther ? IsProtected ? "Protected" : "Managed in Windows" : Entry.Tier == AppTier.Safe ? "Safe to remove" : "Check first");
+        public string TierGlyph => IsProtected ? "" : IsOther ? "" : Entry.Tier == AppTier.Safe ? "" : "";
+        public Brush TierTone => IsProtected ? Palette.Apps : IsOther ? Palette.Neutral : Entry.Tier == AppTier.Safe ? Palette.Start : Palette.Power;
+        public string RecoveryText => Loc.T(HasReinstallRoute ? HasLocalRestore ? "Restore + reinstall" : "Reinstall available"
+            : HasLocalRestore ? "Local restore only" : "Recovery unverified");
+        public string RecoveryGlyph => HasReinstallRoute ? "" : "";
+        public Brush RecoveryTone => HasReinstallRoute ? Palette.Container : Palette.Power;
+        public string RecoveryTip => HasReinstallRoute ? ReinstallText + " " + Loc.T("Local restore also needs the original package files to remain on this PC.")
+            : Loc.T(HasLocalRestore ? "The package manifest is on this PC. Restore can use it while those files remain. No separate reinstall route is recorded."
+                : "No local package manifest or separate reinstall route has been verified. Recovery is not guaranteed.");
+        public Visibility RecoveryVisibility => IsOther ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility PendingVisibility => HasSelection ? Visibility.Visible : Visibility.Collapsed;
 
         public Visibility SelectionVisibility => IsInstalled && !IsOther ? Visibility.Visible : Visibility.Hidden;
 
         /// <summary>An app this PC does not have is shown faded: it is there to show what the list covers.</summary>
-        public double Emphasis => IsInstalled ? 1 : 0.55;
+        public double Emphasis => !InventoryKnown || IsInstalled ? 1 : 0.7;
 
         public ImageSource? Icon
         {
@@ -643,7 +863,7 @@ public partial class DebloatPage : Page
 
         public IEnumerable<string> PackagePatterns => Entry.Packages;
         public Visibility InstalledVisibility => IsInstalled ? Visibility.Visible : Visibility.Collapsed;
-        public Visibility AbsentVisibility => IsInstalled ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility AbsentVisibility => InventoryKnown && !IsInstalled ? Visibility.Visible : Visibility.Collapsed;
         public Visibility ChoiceHintVisibility => Packages.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
 
         public string TierExplanation => Loc.T(IsOther
@@ -695,13 +915,13 @@ public partial class DebloatPage : Page
 
         public string ExpanderTip => Loc.T(_isExpanded ? "Hide the details" : "Show the details");
 
-        public bool Matches(string text) =>
-            text.Length == 0
-            || Title.Contains(text, StringComparison.CurrentCultureIgnoreCase)
-            || Why.Contains(text, StringComparison.CurrentCultureIgnoreCase)
-            || Loc.T(Entry.Category).Contains(text, StringComparison.CurrentCultureIgnoreCase)
-            || Entry.Packages.Any(package => package.Contains(text, StringComparison.OrdinalIgnoreCase))
-            || Packages.Any(package => package.Name.Contains(text, StringComparison.OrdinalIgnoreCase));
+        public bool Matches(IReadOnlyList<string> terms) => SearchMatcher.MatchesTerms(
+            terms,
+            Title,
+            Why,
+            Loc.T(Entry.Category),
+            string.Join(" ", Entry.Packages),
+            string.Join(" ", Packages.Select(package => package.Name)));
     }
 
     private sealed class RemovedRow(RemovedApp app) : INotifyPropertyChanged
@@ -714,9 +934,12 @@ public partial class DebloatPage : Page
         public string Title => Loc.T(app.Title);
 
         public string Detail => Loc.F("Removed on {0}.", Date(app.RemovedUtc))
-            + (AppGuard.IsPackageFolder(app.InstallLocation) && System.IO.Directory.Exists(app.InstallLocation)
-                ? " " + Loc.T("Its files are still on the PC: Restore brings it back at once.")
-                : " " + Loc.T("Its files are gone: install it again from the Microsoft Store."));
+            + (CanRestore
+                ? " " + Loc.T("Its package manifest is still on this PC. Local restore is available.")
+                : " " + Loc.T("Local restore is unavailable. Check the recorded reinstall options."));
+        public bool CanRestore { get; } = AppGuard.IsPackageFolder(app.InstallLocation)
+            && System.IO.File.Exists(System.IO.Path.Combine(app.InstallLocation, "AppxManifest.xml"));
+        public string RestoreTip => Loc.T(CanRestore ? "Register this app again from its local package files." : "Local restore is unavailable because the package manifest could not be found.");
 
         private static string Date(DateTimeOffset utc) => utc.LocalDateTime.ToString("g", System.Globalization.CultureInfo.CurrentCulture);
 

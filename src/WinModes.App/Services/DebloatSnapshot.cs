@@ -1,4 +1,5 @@
 using System.Text;
+using System.IO;
 using WinModes.Core.Apps;
 
 namespace WinModes.App.Services;
@@ -10,28 +11,56 @@ namespace WinModes.App.Services;
 internal sealed class DebloatSnapshot
 {
     private string? _signature;
+    private static readonly object ReadLock = new();
+    private static Task<DebloatSnapshot>? _inFlight;
 
-    private DebloatSnapshot(IReadOnlyList<InstalledPackage> installed, IReadOnlyDictionary<string, string> startNames)
+    private DebloatSnapshot(IReadOnlyList<InstalledPackage> installed, IReadOnlyDictionary<string, string> startNames,
+        bool inventorySucceeded, bool namesSucceeded, DateTimeOffset? checkedUtc)
     {
         Installed = installed;
         StartNames = startNames;
+        InventorySucceeded = inventorySucceeded;
+        NamesSucceeded = namesSucceeded;
+        CheckedUtc = checkedUtc;
+        LocalRestorePackages = installed.Where(package => AppGuard.IsPackageFolder(package.InstallLocation)
+            && File.Exists(Path.Combine(package.InstallLocation, "AppxManifest.xml")))
+            .Select(package => package.FullName).ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
     public static DebloatSnapshot? Last { get; private set; }
 
     public IReadOnlyList<InstalledPackage> Installed { get; }
+    public bool InventorySucceeded { get; }
+    public bool NamesSucceeded { get; }
+    public DateTimeOffset? CheckedUtc { get; }
+    public IReadOnlySet<string> LocalRestorePackages { get; }
 
     /// <summary>The name that the Start menu shows, by package family.</summary>
     public IReadOnlyDictionary<string, string> StartNames { get; }
 
-    public static async Task<DebloatSnapshot> TakeAsync()
+    public static Task<DebloatSnapshot> TakeAsync()
+    {
+        lock (ReadLock)
+        {
+            return _inFlight is { IsCompleted: false } ? _inFlight : _inFlight = Task.Run(TakeCoreAsync);
+        }
+    }
+
+    private static async Task<DebloatSnapshot> TakeCoreAsync()
     {
         var installed = AppxService.ListAsync();
         var startNames = AppxService.StartAppNamesAsync();
         await Task.WhenAll(installed, startNames);
 
-        var snapshot = new DebloatSnapshot(installed.Result, startNames.Result);
-        Last = snapshot;
+        var snapshot = new DebloatSnapshot(
+            installed.Result.Succeeded ? installed.Result.Value : Last?.Installed ?? [],
+            startNames.Result.Succeeded ? startNames.Result.Value : Last?.StartNames ?? new Dictionary<string, string>(),
+            installed.Result.Succeeded, startNames.Result.Succeeded,
+            installed.Result.Succeeded ? DateTimeOffset.UtcNow : Last?.CheckedUtc);
+        if (snapshot.InventorySucceeded)
+        {
+            Last = snapshot;
+        }
         return snapshot;
     }
 
@@ -48,6 +77,7 @@ internal sealed class DebloatSnapshot
             text.Append(package.FullName).Append(';');
         }
 
+        text.Append('|').AppendJoin(';', LocalRestorePackages.Order(StringComparer.Ordinal));
         text.Append('|');
         foreach (var (family, name) in StartNames.OrderBy(entry => entry.Key, StringComparer.Ordinal))
         {

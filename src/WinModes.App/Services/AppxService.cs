@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using WinModes.Core;
 using WinModes.Core.Apps;
@@ -31,18 +32,34 @@ internal static partial class AppxService
     [GeneratedRegex("^[A-Za-z0-9]{12}$")]
     private static partial Regex StoreIdPattern();
 
-    /// <summary>The packages of the current user. Empty when PowerShell could not answer.</summary>
-    public static async Task<IReadOnlyList<InstalledPackage>> ListAsync()
+    /// <summary>A failed reading must never make installed apps appear absent.</summary>
+    public static async Task<InventoryRead<IReadOnlyList<InstalledPackage>>> ListAsync()
     {
         var (exitCode, output) = await RunAsync(PackageCommands.ListScript);
-        return exitCode == 0 ? PackageCommands.ParseList(output) : [];
+        IReadOnlyList<InstalledPackage> packages = [];
+        var succeeded = exitCode == 0 && PackageCommands.TryParseList(output, out packages);
+        return new(succeeded, packages);
     }
 
     /// <summary>The name Windows shows for each packaged app of the Start menu, by package family. Empty when PowerShell could not answer.</summary>
-    public static async Task<IReadOnlyDictionary<string, string>> StartAppNamesAsync()
+    public static async Task<InventoryRead<IReadOnlyDictionary<string, string>>> StartAppNamesAsync()
     {
         var (exitCode, output) = await RunAsync(PackageCommands.StartAppsScript);
-        return exitCode == 0 ? PackageCommands.ParseStartApps(output) : new Dictionary<string, string>();
+        var succeeded = false;
+        if (exitCode == 0)
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(output);
+                succeeded = document.RootElement.ValueKind is JsonValueKind.Array or JsonValueKind.Object;
+            }
+            catch (JsonException)
+            {
+                // Preserve the last names when the command output cannot be read.
+            }
+        }
+
+        return new(succeeded, succeeded ? PackageCommands.ParseStartApps(output) : new Dictionary<string, string>());
     }
 
     /// <summary>Removes one app for the current user. Returns null on success, or the reason it was not done.</summary>
@@ -151,3 +168,5 @@ internal static partial class AppxService
         }
     }
 }
+
+internal sealed record InventoryRead<T>(bool Succeeded, T Value);

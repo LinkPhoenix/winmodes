@@ -41,6 +41,15 @@ public sealed class AppCatalogDataTests
         Assert.True(withoutWarning.Count <= 8, $"Too many 'check first' apps without a warning: {string.Join(", ", withoutWarning)}");
     }
 
+    [Fact]
+    public void Paint3D_DoesNotReachTheCurrentPaintApp()
+    {
+        // Paint 3D (Microsoft.MSPaint) is a "safe" entry; the current Paint (Microsoft.Paint) must resolve to its own entry.
+        var paint = new InstalledPackage("Microsoft.Paint", "Microsoft.Paint_11.0.0.0_x64__8wekyb3d8bbwe", "Microsoft.Paint_8wekyb3d8bbwe", "11.0.0.0", @"C:\Program Files\WindowsApps\x", false, false);
+
+        Assert.Equal("paint", AppCatalog.Load(CatalogPath).Find(paint)?.Id);
+    }
+
     [Theory]
     [InlineData("Microsoft.WindowsStore")]
     [InlineData("Microsoft.DesktopAppInstaller")]
