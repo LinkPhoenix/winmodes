@@ -8,6 +8,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-10-03
+
 ### Added
 
 - Optimize: policy badges, blocked-setting filters, and a local policy diagnostic with reviewed, journaled recovery for supported registry policy values and an undo of each recovery.
@@ -281,7 +283,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Protection: blocklist for security, WSL, Docker, winget, the Microsoft Store, Edge and developer tools.
 - Pages: Dashboard, Services, History, Protection and About.
 
-[Unreleased]: https://github.com/LinkPhoenix/winmodes/compare/v0.9.2...HEAD
+[Unreleased]: https://github.com/LinkPhoenix/winmodes/compare/v0.9.3...HEAD
+[0.9.3]: https://github.com/LinkPhoenix/winmodes/compare/v0.9.2...v0.9.3
 [0.9.2]: https://github.com/LinkPhoenix/winmodes/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/LinkPhoenix/winmodes/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/LinkPhoenix/winmodes/compare/v0.8.0...v0.9.0
