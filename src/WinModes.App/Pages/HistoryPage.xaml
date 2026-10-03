@@ -3,71 +3,87 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-      Title="{l:T 'History'}"
-      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-    <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <TextBlock Text="{l:T 'History'}" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock x:Name="Summary" Text="{l:T 'Every mode switch is recorded here with the state it replaced.'}"
-                   Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,24" />
-
-        <Border x:Name="EmptyState" Style="{StaticResource CardBorderStyle}" Padding="32">
-            <StackPanel HorizontalAlignment="Center">
-                <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="40" HorizontalAlignment="Center"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="&#xE81C;" />
-                <TextBlock Text="{l:T 'No mode has been activated yet'}" FontSize="16" FontWeight="SemiBold"
-                           HorizontalAlignment="Center" Margin="0,12,0,0" />
-                <TextBlock Text="{l:T 'Activate a mode from the Modes page; the switch will appear here.'}"
-                           Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
+      Title="{l:T 'History'}" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <Grid Margin="36,24,36,36" MaxWidth="1100">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <controls:PageHeader Title="{l:T 'History'}" Icon="History24" Accent="{x:Static app:Palette.Container}" Margin="0,0,0,16">
+            <controls:PageHeader.Actions>
+                <ui:Button x:Name="RefreshButton" Content="{l:T 'Refresh'}" Icon="{ui:SymbolIcon ArrowClockwise24}" Click="OnRefresh" />
+            </controls:PageHeader.Actions>
+            <TextBlock Text="{l:T 'Mode journals and recovery records for optimizations and removed apps.'}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+        </controls:PageHeader>
+        <Border Grid.Row="1" x:Name="OperationPanel" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12" Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock x:Name="OperationTitle" FontWeight="SemiBold" AutomationProperties.LiveSetting="Polite" />
+                <TextBlock x:Name="OperationDetail" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                <ProgressBar x:Name="OperationProgress" Height="4" Margin="0,8,0,0" />
             </StackPanel>
         </Border>
-
-        <ItemsControl x:Name="Sessions">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <ui:CardExpander Margin="0,0,0,8" ContentPadding="0">
-                        <ui:CardExpander.Header>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="50" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Border Style="{StaticResource IconBadgeStyle}" Background="{Binding Accent}">
-                                    <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center"
-                                               Foreground="White" Text="{Binding Glyph}" />
-                                </Border>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding Subtitle}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                                </StackPanel>
-                                <Border Grid.Column="2" Style="{StaticResource ChipStyle}" Margin="0,0,16,0" Background="{Binding StatusTint}">
-                                    <TextBlock Text="{Binding Status}" FontSize="12" FontWeight="SemiBold" />
-                                </Border>
-                            </Grid>
-                        </ui:CardExpander.Header>
-                        <ItemsControl ItemsSource="{Binding Entries}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Padding="16,8" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding Detail}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                                            </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{Binding Outcome}" VerticalAlignment="Center"
-                                                       Foreground="{Binding OutcomeColor}" FontWeight="SemiBold" />
-                                        </Grid>
+        <WrapPanel Grid.Row="2" Margin="0,0,0,8">
+            <controls:SearchField x:Name="SearchBox" PlaceholderText="{l:T 'Search history'}" AutomationProperties.Name="{l:T 'Search history'}" Width="240" TextChanged="OnSearchChanged" Margin="0,0,12,8" />
+            <ComboBox x:Name="KindFilter" Width="190" SelectionChanged="OnKindChanged" AutomationProperties.Name="{l:T 'History category'}" SelectedIndex="0" Margin="0,0,12,8">
+                <ComboBoxItem Content="{l:T 'All records'}" /><ComboBoxItem Content="{l:T 'Modes'}" />
+                <ComboBoxItem Content="{l:T 'Optimize'}" /><ComboBoxItem Content="{l:T 'Debloat'}" />
+            </ComboBox>
+            <ui:Button Content="{l:T 'Modes'}" Click="OnModes" Margin="0,0,8,8" />
+            <ui:Button Content="{l:T 'Optimize'}" Click="OnOptimize" Margin="0,0,8,8" />
+            <ui:Button Content="{l:T 'Debloat'}" Click="OnDebloat" Margin="0,0,0,8" />
+        </WrapPanel>
+        <StackPanel Grid.Row="3" Margin="0,0,0,12">
+            <TextBlock x:Name="Summary" Style="{StaticResource SecondaryTextStyle}" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock x:Name="ReadStatus" Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0" />
+            <TextBlock Text="{l:T 'Recovery records are saved before changes and removed when restored. They do not prove success or current state. Mode records cover service changes.'}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" Margin="0,4,0,0" />
+        </StackPanel>
+        <ui:InfoBar Grid.Row="4" x:Name="ReadError" IsOpen="False" IsClosable="False" Severity="Warning" Title="{l:T 'Some history could not be read'}" Margin="0,0,0,12" />
+        <Grid Grid.Row="5">
+            <Border x:Name="EmptyState" Style="{StaticResource CardBorderStyle}" Padding="32" VerticalAlignment="Top" Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock x:Name="EmptyTitle" Text="{l:T 'No records yet'}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                    <TextBlock Text="{l:T 'Records appear after you use Modes, Optimize or Debloat.'}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+            <ListBox x:Name="Sessions" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch" /><Setter Property="Padding" Value="0" /><Setter Property="Margin" Value="0,0,0,8" /></Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <ui:CardExpander ContentPadding="0" IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
+                            <ui:CardExpander.Header>
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="50" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource IconBadgeStyle}" Background="{Binding Accent}">
+                                        <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="17" HorizontalAlignment="Center" Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}" Text="{Binding Glyph}" />
                                     </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ui:CardExpander>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </StackPanel>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Subtitle}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <Border Grid.Column="2" Style="{StaticResource ChipStyle}" Margin="0,0,16,0" Background="{Binding StatusTint}"><TextBlock Text="{Binding Status}" FontSize="12" FontWeight="SemiBold" /></Border>
+                                </Grid>
+                            </ui:CardExpander.Header>
+                            <ItemsControl ItemsSource="{Binding Entries}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="16,8" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Detail}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding Outcome}" Foreground="{Binding OutcomeColor}" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ui:CardExpander>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Grid>
 </Page>
