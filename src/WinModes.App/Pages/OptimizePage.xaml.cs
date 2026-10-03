@@ -443,6 +443,14 @@ public partial class OptimizePage : Page
         await RunAsync([.. groups.Where(group => group.Item2.Count > 0)]);
     }
 
+    private static string RestartRequirement(string requirement) => requirement switch
+    {
+        "restart" => Loc.T("Some saved settings take effect after Windows restarts."),
+        "sign-out" => Loc.T("Some saved settings take effect after you sign out and back in."),
+        "explorer" => Loc.T("Some saved settings appear in new File Explorer windows."),
+        _ => Loc.T("Settings without a restart requirement were saved; their live effects depend on Windows."),
+    };
+
     private List<OptimizeReviewItem> BuildReview(IReadOnlyList<Row> rows)
     {
         var review = new List<OptimizeReviewItem>();
@@ -579,13 +587,7 @@ public partial class OptimizePage : Page
             var changed = report.Results.Where(result => result.Outcome == TuneOutcome.Done).Select(result => result.Target).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var restarts = report.Results.Where(result => result.Outcome == TuneOutcome.Done && result.Action != TuneAction.Stop)
                 .Select(result => ServiceTuning.Catalog.Find(result.Target)?.Restart ?? "restart").Distinct().ToList();
-            _result.Requirements = string.Join(" ", restarts.Select(requirement => Loc.T(requirement switch
-            {
-                "restart" => "Some saved settings take effect after Windows restarts.",
-                "sign-out" => "Some saved settings take effect after you sign out and back in.",
-                "explorer" => "Some saved settings appear in new File Explorer windows.",
-                _ => "Settings without a restart requirement were saved; their live effects depend on Windows.",
-            })));
+            _result.Requirements = string.Join(" ", restarts.Select(RestartRequirement));
             OperationStatus.Progress(operation, report.Results.Count, report.Summary);
             OperationStatus.Complete(operation, report.Summary, !report.Succeeded || report.Results.Any(result => result.Outcome == TuneOutcome.Failed));
             ApplyFilter();

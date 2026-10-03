@@ -69,6 +69,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Optimize: warning filters include recommended settings with consequences, and summary/category counts match their recommendation and visible-row scope.
 - Window: zoom, configuration and support buttons in the header now receive mouse clicks instead of dragging the window.
 - Settings: language selection confirms the saved choice, preserves the pending choice when returning to the page and saves without changing the Windows startup entry.
+- Interface: new Help and no-results messages now appear in French, Spanish and Italian, along with the operation-in-progress prompt.
 
 - Debloat: failed or incomplete inventory reads keep the last valid reading and pause removal; details now open in Compact view and unavailable local restores are explained.
 

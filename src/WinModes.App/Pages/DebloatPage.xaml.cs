@@ -106,8 +106,9 @@ public partial class DebloatPage : Page
             }
 
             _shown = snapshot;
+            var checkedAt = snapshot.CheckedUtc?.ToLocalTime().ToString("t", System.Globalization.CultureInfo.CurrentCulture);
             ReadStatus.Text = snapshot.InventorySucceeded
-                ? Loc.F("Checked at {0} · Windows AppX · current account", snapshot.CheckedUtc!.Value.ToLocalTime().ToString("t", System.Globalization.CultureInfo.CurrentCulture))
+                ? Loc.F("Checked at {0} · Windows AppX · current account", checkedAt ?? Loc.T("Unknown"))
                 : snapshot.CheckedUtc is { } last
                     ? Loc.F("Refresh failed · showing the reading from {0:g}", last.ToLocalTime())
                     : Loc.T("Installation status unavailable · retry the reading");

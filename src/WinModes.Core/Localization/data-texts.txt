@@ -1,5 +1,5 @@
-# Texts translated when shown although no Loc call names them in the source: values of enumerations,
-# labels kept in tables and the one-line purpose of each Optimize category. One text per line.
+# Texts translated when selected at runtime rather than passed as a literal to Loc: values of
+# enumerations, labels kept in tables, and dynamic history and policy-recovery messages. One per line.
 Automatic
 Manual
 Disabled
@@ -28,3 +28,20 @@ Turn the hard disk off after
 Highest processor speed (%)
 Lowest processor speed (%)
 USB selective suspend (1 on, 0 off)
+{0} · {1}
+{0}: {1} — {2}
+Already set before WinModes. No previous value is recorded; an inverse value cannot be guessed safely.
+Current user
+Documented policy recovery available. The current value will be recorded before removing this one value.
+Incomplete
+Local policy files found. Matching values may be reapplied; each source is checked separately.
+Management indicators found. Resolve the policy with its owner before changing it.
+No local policy files or management indicators found. This does not prove which script set the value.
+Policy sources could not be checked. Recovery is unavailable.
+Policy value present. Its effect depends on the Windows edition and build. No verified recovery is offered for this value yet.
+Task absent
+The policy was removed by WinModes. Undo can restore its recorded value if it is still absent.
+This PC
+Undone
+Unsupported registry type
+WinModes has a recorded previous value. Use Undo to restore it.
