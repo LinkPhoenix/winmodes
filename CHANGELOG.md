@@ -8,6 +8,10 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+### Fixed
+
+- Debloat: the line under the title lines up with the title like on the other pages, and the description of an app that does not fit its card now ends with an ellipsis instead of being cut in the middle of a line.
+
 ## [0.9.3] - 2026-10-03
 
 ### Added

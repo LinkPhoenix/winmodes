@@ -110,6 +110,8 @@
 
         <StackPanel Margin="36,24,36,4" MaxWidth="1600">
             <controls:PageHeader Title="{l:T 'Debloat'}" Icon="Broom24" Accent="{x:Static app:Palette.Stop}" Margin="0">
+                <TextBlock Text="{l:T 'Review installed apps, removal consequences and recovery options for your account.'}"
+                           Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
                 <controls:PageHeader.Actions>
                     <StackPanel Orientation="Horizontal">
                         <ui:Button x:Name="RefreshButton" Content="{l:T 'Refresh'}" Icon="{ui:SymbolIcon ArrowClockwise24}" Click="OnRefresh" />
@@ -117,8 +119,6 @@
                     </StackPanel>
                 </controls:PageHeader.Actions>
             </controls:PageHeader>
-            <TextBlock Text="{l:T 'Review installed apps, removal consequences and recovery options for your account.'}"
-                       Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" Margin="0,8,0,0" />
             <WrapPanel Margin="0,14,0,0">
                 <controls:SearchField x:Name="SearchBox" PlaceholderText="{l:T 'Search apps'}" Width="240" Margin="0,0,16,8"
                                       TextChanged="OnFilterChanged" AutomationProperties.Name="{l:T 'Search apps'}" />
@@ -270,7 +270,7 @@
                                                 </Grid>
                                                 <StackPanel Grid.Column="2">
                                                     <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                                    <TextBlock Text="{Binding Why}" FontSize="12" TextWrapping="Wrap" MaxHeight="36" ToolTip="{Binding Why}"
+                                                    <TextBlock Text="{Binding Why}" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="36" ToolTip="{Binding Why}"
                                                                Style="{StaticResource SecondaryTextStyle}" Visibility="{Binding WhyVisibility}" />
                                                 </StackPanel>
                                                 <Button Grid.Column="3" Style="{StaticResource DetailsToggleStyle}" Click="OnToggleDetails"
