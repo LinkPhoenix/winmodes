@@ -27,7 +27,13 @@ public partial class UsagePage : Page
         TokensEnabled.IsChecked = AppSettings.Load().ReadTokenLogs;
         _loaded = true;
 
-        _timer.Tick += async (_, _) => await RefreshAsync();
+        _timer.Tick += async (_, _) =>
+        {
+            if (WinModes.App.Services.WindowActivity.IsShown(this))
+            {
+                await RefreshAsync();
+            }
+        };
         Loaded += async (_, _) =>
         {
             _timer.Start();

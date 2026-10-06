@@ -44,7 +44,7 @@ public partial class HistoryPage : Page
 
     private async Task RefreshAsync()
     {
-        if (_reading || !IsVisible) { return; }
+        if (_reading || !WinModes.App.Services.WindowActivity.IsShown(this)) { return; }
         _reading = true;
         RefreshButton.IsEnabled = false;
         try

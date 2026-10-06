@@ -228,7 +228,7 @@ public partial class ModesPage : Page
 
     private async Task RefreshAsync()
     {
-        if (_isBusy || !IsVisible)
+        if (_isBusy || !WinModes.App.Services.WindowActivity.IsShown(this))
         {
             return;
         }

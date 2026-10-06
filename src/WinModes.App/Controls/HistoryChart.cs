@@ -26,6 +26,7 @@ public sealed class HistoryChart : FrameworkElement
     private int _count;
     private int _next;
     private bool _isRendering;
+    private Window? _window;
 
     private Pen _linePen = CreatePen(Colors.MediumPurple, 1.6, 0xFF);
     private Pen _glowPen = CreatePen(Colors.MediumPurple, 5, 0x40);
@@ -60,7 +61,27 @@ public sealed class HistoryChart : FrameworkElement
         RebuildBrushes(Accent);
         // Redraw per frame only while the chart is on screen.
         IsVisibleChanged += (_, _) => UpdateRendering();
-        Unloaded += (_, _) => StopRendering();
+        // A minimized window leaves the chart "visible" for WPF, so its state is followed too.
+        Loaded += (_, _) =>
+        {
+            _window = Window.GetWindow(this);
+            if (_window is not null)
+            {
+                _window.StateChanged += OnWindowStateChanged;
+            }
+
+            UpdateRendering();
+        };
+        Unloaded += (_, _) =>
+        {
+            if (_window is not null)
+            {
+                _window.StateChanged -= OnWindowStateChanged;
+                _window = null;
+            }
+
+            StopRendering();
+        };
     }
 
     /// <summary>Adds a value (0-100). The oldest value is dropped once the window is full.</summary>
@@ -75,16 +96,19 @@ public sealed class HistoryChart : FrameworkElement
 
     private void UpdateRendering()
     {
-        if (IsVisible && !_isRendering)
+        var shown = WinModes.App.Services.WindowActivity.IsShown(this);
+        if (shown && !_isRendering)
         {
             CompositionTarget.Rendering += OnFrame;
             _isRendering = true;
         }
-        else if (!IsVisible)
+        else if (!shown)
         {
             StopRendering();
         }
     }
+
+    private void OnWindowStateChanged(object? sender, EventArgs e) => UpdateRendering();
 
     private void StopRendering()
     {

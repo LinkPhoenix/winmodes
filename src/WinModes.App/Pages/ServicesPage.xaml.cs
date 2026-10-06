@@ -41,7 +41,7 @@ public partial class ServicesPage : Page
     private async Task RefreshAsync()
     {
         // Rebuilding the rows would close the menu the user is reading.
-        if (_refreshing || _menuOpen || !IsVisible)
+        if (_refreshing || _menuOpen || !WinModes.App.Services.WindowActivity.IsShown(this))
         {
             return;
         }

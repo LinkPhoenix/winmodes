@@ -656,7 +656,12 @@ public partial class App : Application, IDisposable
         }
 
         _window.Show();
-        _window.WindowState = WindowState.Normal;
+        // Only a minimized window is restored: one that was maximized before it went to the tray stays maximized.
+        if (_window.WindowState == WindowState.Minimized)
+        {
+            _window.WindowState = WindowState.Normal;
+        }
+
         _window.Activate();
     }
 

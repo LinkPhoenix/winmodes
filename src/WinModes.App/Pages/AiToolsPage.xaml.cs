@@ -42,7 +42,7 @@ public partial class AiToolsPage : Page
     private async Task RefreshAsync()
     {
         // Rebuilding the cards would close an open menu under the pointer.
-        if (_refreshing || _menuOpen || !IsVisible)
+        if (_refreshing || _menuOpen || !WinModes.App.Services.WindowActivity.IsShown(this))
         {
             return;
         }

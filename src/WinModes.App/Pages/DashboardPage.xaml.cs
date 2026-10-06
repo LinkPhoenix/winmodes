@@ -53,7 +53,7 @@ public partial class DashboardPage : Page
 
     private async Task OnTickAsync()
     {
-        if (!IsVisible)
+        if (!WinModes.App.Services.WindowActivity.IsShown(this))
         {
             return;
         }

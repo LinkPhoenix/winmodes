@@ -10,6 +10,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Fixed
 
+- Window: while WinModes is minimized, the pages (Dashboard, Modes, Processes, Services, AI tools, Usage, History) and the charts no longer go on reading the PC and redrawing for a window nobody can see; the Dashboard used about ten times more processor time minimized than it needed.
+- Window: opening WinModes again from the tray keeps it maximized if it was maximized when it was sent to the tray, instead of shrinking it to its normal size.
 - Debloat: the line under the title lines up with the title like on the other pages, and the description of an app that does not fit its card now ends with an ellipsis instead of being cut in the middle of a line.
 
 ## [0.9.3] - 2026-10-03
