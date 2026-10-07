@@ -491,6 +491,11 @@
   "Sign in": "Iniciar sesión",
   "Sign in to {0}": "Iniciar sesión en {0}",
   "Sign out": "Cerrar sesión",
+  "Sign out of {0}?": "¿Cerrar sesión en {0}?",
+  "WinModes signs out of {0} on this PC.": "WinModes cierra la sesión de {0} en este PC.",
+  "The saved tokens are deleted from this PC.": "Los tokens guardados se eliminan de este PC.",
+  "The plan and the usage of this account are no longer shown until you sign in again.": "El plan y el uso de esta cuenta dejan de mostrarse hasta que vuelvas a iniciar sesión.",
+  "Your sign-ins in other tools, such as Claude Code or Codex, are not touched.": "Tus sesiones en otras herramientas, como Claude Code o Codex, no se modifican.",
   "Sign-in expired": "Sesión caducada",
   "Signed in as {0}. The usage is read online with this session.": "Sesión iniciada como {0}. El uso se lee en línea con esta sesión.",
   "Signed in. The usage is read online with this session.": "Sesión iniciada. El uso se lee en línea con esta sesión.",
@@ -1721,6 +1726,7 @@
   "{0} policy values present; {1} recovery options available; {2} matching local policy entries.": "{0} valores de directiva presentes; {1} opciones de recuperación disponibles; {2} entradas locales coincidentes.",
   "Local policy files found. Matching values may be reapplied; each source is checked separately.": "Hay archivos de directivas locales. Los valores coincidentes pueden volver a aplicarse; cada fuente se comprueba por separado.",
   "An operation is still running. Wait for it to finish before quitting.": "Hay una operación en curso. Espera a que termine antes de salir.",
+  "An operation is still running. Wait for it to finish before installing the update.": "Hay una operación en curso. Espera a que termine antes de instalar la actualización.",
   "Help": "Ayuda",
   "Nothing matches the search.": "No hay resultados que coincidan con la búsqueda."
 }

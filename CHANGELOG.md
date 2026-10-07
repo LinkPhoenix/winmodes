@@ -19,6 +19,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 - Widget: the plan and the usage of Claude, Codex and Grok now come only from your accounts, through the sign-in of WinModes; nothing is read any more from the files of Claude Code or Codex, and a plan whose account is not signed in is not listed.
 - Widget: the plan of a Claude account is read from the account itself, and a Grok account shows the tier of its plan.
+- Widget: Sign out now asks first, in a dialog in the style of the app that names the account and says what is deleted from this PC and what is left alone, instead of signing out at once.
 - Widget: Grok shows a second bar for the usage billed on demand when the account has set a cap.
 
 ### Removed
@@ -27,6 +28,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Fixed
 
+- About: Download and install works for a beta again; the update was refused with "The release name is not a version" as soon as the new version was a beta, so a beta build could only be updated by hand.
+- About: Download and install waits while a mode switch is running, before the download and again before the installer starts, instead of closing WinModes in the middle of the switch.
 - Window: while WinModes is minimized, the pages (Dashboard, Modes, Processes, Services, AI tools, Usage, History) and the charts no longer go on reading the PC and redrawing for a window nobody can see; the Dashboard used about ten times more processor time minimized than it needed.
 - Window: opening WinModes again from the tray keeps it maximized if it was maximized when it was sent to the tray, instead of shrinking it to its normal size.
 - Debloat: the line under the title lines up with the title like on the other pages, and the description of an app that does not fit its card now ends with an ellipsis instead of being cut in the middle of a line.

@@ -57,6 +57,24 @@ public sealed class ReleaseVersionTests
     public void TryParseRelease_RejectsMalformedBetaTags(string tag) =>
         Assert.False(ReleaseVersion.TryParseRelease(tag, out _, out _));
 
+    [Theory]
+    [InlineData("v0.9.3")]
+    [InlineData("0.9.3")]
+    [InlineData("v0.9.4-beta.20261007")]
+    [InlineData("v0.9.3-beta.20261002.2")]
+    public void IsReleaseTag_AcceptsStableAndBetaTags(string tag) =>
+        Assert.True(ReleaseVersion.IsReleaseTag(tag));
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("latest")]
+    [InlineData("v0.9.3-beta")]
+    [InlineData("v0.9.3/../../x")]
+    [InlineData("v0.9.3?x=1")]
+    public void IsReleaseTag_RejectsAnythingElse(string? tag) =>
+        Assert.False(ReleaseVersion.IsReleaseTag(tag));
+
     [Fact]
     public void TryParse_StaysStableOnly() =>
         Assert.False(ReleaseVersion.TryParse("v0.9.3-beta.20261002", out _));

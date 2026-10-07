@@ -9,38 +9,22 @@ using GlyphIcon = Wpf.Ui.Controls.SymbolIcon;
 namespace WinModes.App.Controls;
 
 /// <summary>
-/// What the sign-in dialog says before the browser opens: the tool's logo, what WinModes reads and keeps, and, for
-/// Claude, that Anthropic does not document this sign-in. Built in code to match the cards of the settings pages.
+/// What the sign-in and sign-out dialogs say before anything happens. Sign-in: the tool's logo, what WinModes reads and keeps, and,
+/// for Claude, that Anthropic does not document this sign-in. Sign-out: which account, what is deleted and what is left alone.
+/// Built in code to match the cards of the settings pages.
 /// </summary>
-internal static class SignInPrompt
+internal static class AccountPrompt
 {
     private const double ContentWidth = 400;
     private const double TileSize = 34;
     private const double LogoSize = 40;
 
-    public static FrameworkElement Create(AccountProvider provider, bool warnAboutRisk)
+    public static FrameworkElement CreateSignIn(AccountProvider provider, bool warnAboutRisk)
     {
         ArgumentNullException.ThrowIfNull(provider);
 
         var panel = new StackPanel { Width = ContentWidth };
-
-        var header = new Grid { Margin = new Thickness(0, 0, 0, 18) };
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        header.ColumnDefinitions.Add(new ColumnDefinition());
-        var logo = ToolIcons.For(provider.Tool);
-        header.Children.Add(Tile(logo, Glyph.Person24, Palette.BrandBrush, LogoSize));
-        var intro = new TextBlock
-        {
-            Text = Loc.F("WinModes opens your browser so you can sign in to {0}.", provider.DisplayName),
-            TextWrapping = TextWrapping.Wrap,
-            FontSize = 14,
-            FontWeight = FontWeights.SemiBold,
-            VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(14, 0, 0, 0),
-        };
-        Grid.SetColumn(intro, 1);
-        header.Children.Add(intro);
-        panel.Children.Add(header);
+        panel.Children.Add(Header(provider, Loc.F("WinModes opens your browser so you can sign in to {0}.", provider.DisplayName), detail: null));
 
         panel.Children.Add(Row(Glyph.Gauge24, Palette.Start, Loc.T("It reads only your plan usage.")));
         panel.Children.Add(Row(Glyph.PersonSwap24, Palette.Container, Loc.T("It uses a session of its own: the sign-in of Claude Code or Codex is not touched.")));
@@ -62,6 +46,41 @@ internal static class SignInPrompt
         }
 
         return panel;
+    }
+
+    /// <summary>The account that is about to be signed out (its email unless privacy mode hides it), and what that deletes and keeps.</summary>
+    public static FrameworkElement CreateSignOut(AccountProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+
+        var email = !Privacy.Enabled ? AccountSession.Email(provider) : null;
+        var panel = new StackPanel { Width = ContentWidth };
+        panel.Children.Add(Header(provider, Loc.F("WinModes signs out of {0} on this PC.", provider.DisplayName), string.IsNullOrEmpty(email) ? null : email));
+
+        panel.Children.Add(Row(Glyph.Delete24, Palette.Stop, Loc.T("The saved tokens are deleted from this PC.")));
+        panel.Children.Add(Row(Glyph.Gauge24, Palette.Power, Loc.T("The plan and the usage of this account are no longer shown until you sign in again.")));
+        panel.Children.Add(Row(Glyph.PersonSwap24, Palette.Container, Loc.T("Your sign-ins in other tools, such as Claude Code or Codex, are not touched.")));
+
+        return panel;
+    }
+
+    private static Grid Header(AccountProvider provider, string text, string? detail)
+    {
+        var header = new Grid { Margin = new Thickness(0, 0, 0, 18) };
+        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        header.ColumnDefinitions.Add(new ColumnDefinition());
+        header.Children.Add(Tile(ToolIcons.For(provider.Tool), Glyph.Person24, Palette.BrandBrush, LogoSize));
+
+        var intro = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(14, 0, 0, 0) };
+        intro.Children.Add(new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, FontSize = 14, FontWeight = FontWeights.SemiBold });
+        if (detail is not null)
+        {
+            intro.Children.Add(new TextBlock { Text = detail, TextTrimming = TextTrimming.CharacterEllipsis, Foreground = Palette.Neutral, Margin = new Thickness(0, 2, 0, 0) });
+        }
+
+        Grid.SetColumn(intro, 1);
+        header.Children.Add(intro);
+        return header;
     }
 
     private static Grid Row(Glyph glyph, Brush accent, string text, bool tile = true)

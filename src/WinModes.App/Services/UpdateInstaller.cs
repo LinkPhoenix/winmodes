@@ -51,7 +51,8 @@ internal static class UpdateInstaller
 
     private static async Task<string> DownloadAsync(string tag, string suffix, string folder, IProgress<double> progress, CancellationToken cancellation)
     {
-        if (!ReleaseVersion.TryParse(tag, out _))
+        // A beta tag is as valid as a stable one: the beta channel installs betas, and only a checked tag reaches the release address.
+        if (!ReleaseVersion.IsReleaseTag(tag))
         {
             throw new UpdateException(Loc.T("The release name is not a version."));
         }

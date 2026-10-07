@@ -129,6 +129,11 @@ public partial class AboutPage : Page
 
     private string? _latestTag;
 
+    private static string OperationRunningMessage => Loc.T("An operation is still running. Wait for it to finish before installing the update.");
+
+    /// <summary>The installer closes WinModes, as "Quit" does, so it waits for a running switch just like "Quit".</summary>
+    private static bool OperationRunning => Services.OperationStatus.Current?.IsRunning == true;
+
     private async void OnInstallUpdate(object sender, RoutedEventArgs e)
     {
         if (_latestTag is not { } tag)
@@ -139,6 +144,12 @@ public partial class AboutPage : Page
         if (!Services.UpdateInstaller.IsInstalledBuild)
         {
             await DownloadPortableAsync(tag);
+            return;
+        }
+
+        if (OperationRunning)
+        {
+            UpdateText.Text = OperationRunningMessage;
             return;
         }
 
@@ -160,6 +171,14 @@ public partial class AboutPage : Page
         {
             var progress = new Progress<double>(percent => UpdateText.Text = Loc.F("Downloading {0}: {1:0} %", tag, percent));
             var installer = await Services.UpdateInstaller.DownloadAsync(tag, progress, CancellationToken.None);
+
+            // The download takes a while: a mode switch may have started meanwhile, and closing WinModes would cut it short.
+            if (OperationRunning)
+            {
+                UpdateText.Text = OperationRunningMessage;
+                return;
+            }
+
             UpdateText.Text = Loc.T("Starting the installer...");
             Services.UpdateInstaller.Run(installer);
             Application.Current.Shutdown();

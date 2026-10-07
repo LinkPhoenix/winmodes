@@ -52,6 +52,12 @@ public static partial class ReleaseVersion
         return true;
     }
 
+    /// <summary>
+    /// True for the tag of any release WinModes publishes, stable or beta. It is the check to use before a tag goes into an address or
+    /// a file name: <see cref="TryParse"/> would turn every beta down, and a beta is a release the user may choose to install.
+    /// </summary>
+    public static bool IsReleaseTag(string? tag) => TryParseRelease(tag, out _, out _);
+
     /// <summary>The number of a beta from its day and revision, in the form <see cref="TryParseRelease"/> gives.</summary>
     public static long BetaNumber(int day, int revision = 1) => (day * (long)RevisionsPerDay) + revision;
 

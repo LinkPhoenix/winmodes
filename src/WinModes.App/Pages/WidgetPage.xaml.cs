@@ -121,22 +121,35 @@ public partial class WidgetPage : Page
                 : Loc.T("Signed in. The usage is read online with this session.");
     }
 
-    /// <summary>Signs out at once; signing in asks first, opens the browser and waits for it to come back.</summary>
+    /// <summary>Both directions ask first. Signing out deletes the tokens; signing in opens the browser and waits for it to come back.</summary>
     private async Task ToggleAccountAsync(AccountProvider provider)
     {
         if (AccountSession.IsSignedIn(provider))
         {
+            // The same themed dialog as the other confirmations of the app, with the logo, the account and what is deleted and kept.
+            var confirmSignOut = new Wpf.Ui.Controls.MessageBox
+            {
+                Title = Loc.F("Sign out of {0}?", provider.DisplayName),
+                Content = AccountPrompt.CreateSignOut(provider),
+                PrimaryButtonText = Loc.T("Sign out"),
+                CloseButtonText = Loc.T("Cancel"),
+            };
+            if (await confirmSignOut.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
+            {
+                return;
+            }
+
             AccountSession.SignOut(provider);
             SubscriptionMonitor.RefreshNow();
             ShowAccounts();
             return;
         }
 
-        // The same themed dialog as the other confirmations of the app, with the logo and what is read and kept.
+        // The same themed dialog, with the logo and what is read and kept.
         var consent = new Wpf.Ui.Controls.MessageBox
         {
             Title = Loc.F("Sign in to {0}", provider.DisplayName),
-            Content = SignInPrompt.Create(provider, warnAboutRisk: provider == AccountProvider.Claude),
+            Content = AccountPrompt.CreateSignIn(provider, warnAboutRisk: provider == AccountProvider.Claude),
             PrimaryButtonText = Loc.T("Open the browser"),
             CloseButtonText = Loc.T("Cancel"),
         };
