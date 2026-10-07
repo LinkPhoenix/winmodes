@@ -1,0 +1,125 @@
+<Page x:Class="WinModes.App.Pages.SoftwarePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:l="clr-namespace:WinModes.App.Localization"
+      xmlns:app="clr-namespace:WinModes.App"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:WinModes.App.Controls"
+      Title="{l:T 'Software'}" ScrollViewer.CanContentScroll="False" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <Grid Margin="36,24,36,24" MaxWidth="1360">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <controls:PageHeader Title="{l:T 'Software'}" Icon="Apps24" Accent="{x:Static app:Palette.Apps}" Margin="0,0,0,16">
+            <TextBlock Text="{l:T 'Choose your apps. Install one or a selection with WinGet.'}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+        </controls:PageHeader>
+        <Grid Grid.Row="1" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <WrapPanel>
+                <RadioButton x:Name="EverydayTab" GroupName="Audience" IsChecked="True" Checked="OnAudienceChanged" Content="{l:T 'Everyday'}" Padding="12,10" Margin="0,0,12,0" />
+                <RadioButton x:Name="CodingTab" GroupName="Audience" Checked="OnAudienceChanged" Content="{l:T 'Vibe coding &amp; AI'}" Padding="12,10" />
+            </WrapPanel>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                <ui:Button x:Name="DetectButton" Content="{l:T 'Check installed apps'}" Click="OnDetect" Icon="{ui:SymbolIcon ArrowSync24}" />
+                <TextBlock x:Name="ObservationText" Text="{l:T 'Not checked'}" Style="{StaticResource SecondaryTextStyle}" FontSize="11" HorizontalAlignment="Right" Margin="0,4,0,0" />
+            </StackPanel>
+        </Grid>
+        <Grid x:Name="Filters" Grid.Row="2" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="220" /></Grid.ColumnDefinitions>
+            <controls:SearchField x:Name="SearchBox" PlaceholderText="{l:T 'Search software'}" TextChanged="OnSearchChanged" AutomationProperties.Name="{l:T 'Search software'}" Margin="0,0,12,0" />
+            <ComboBox x:Name="CategoryBox" Grid.Column="1" SelectionChanged="OnCategoryChanged" AutomationProperties.Name="{l:T 'Software category'}" />
+        </Grid>
+        <TextBlock x:Name="Summary" Grid.Row="3" Style="{StaticResource SecondaryTextStyle}" Margin="0,0,0,10" TextWrapping="Wrap" />
+        <Grid x:Name="CatalogHost" Grid.Row="4">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,18,0">
+                <controls:SectionNav x:Name="CategoryNav" Width="205" Target="{Binding ElementName=CatalogScroll}" AutomationProperties.Name="{l:T 'Software categories'}" />
+            </ScrollViewer>
+            <ScrollViewer x:Name="CatalogScroll" Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl x:Name="Rows" AutomationProperties.Name="{l:T 'Software catalog'}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><controls:AdaptiveCardGrid MinItemWidth="280" MaxColumns="3" Spacing="12" MinItemHeight="260" /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" Loaded="OnCategoryHeaderLoaded" Unloaded="OnCategoryHeaderUnloaded" controls:SectionNav.Accent="{x:Static app:Palette.Apps}" />
+                                        <TextBlock Text="{Binding ItemCount}" Style="{StaticResource SecondaryTextStyle}" Margin="10,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                            <GroupStyle.Panel>
+                                <ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate>
+                            </GroupStyle.Panel>
+                            <GroupStyle.ContainerStyle>
+                                <Style TargetType="GroupItem"><Setter Property="Margin" Value="0,0,0,24" /></Style>
+                            </GroupStyle.ContainerStyle>
+                        </GroupStyle>
+                    </ItemsControl.GroupStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource CardBorderStyle}" Padding="18" AutomationProperties.Name="{Binding Name}">
+                                <Grid>
+                                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                        <Image Source="{Binding Logo}" Width="36" Height="36" Stretch="Uniform" VerticalAlignment="Top" AutomationProperties.Name="{Binding Name}" />
+                                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="15" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Category}" Style="{StaticResource SecondaryTextStyle}" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                        <CheckBox Grid.Column="2" IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanSelect}" VerticalAlignment="Top" AutomationProperties.Name="{Binding Name}" ToolTip="{l:T 'Select for installation'}" />
+                                    </Grid>
+                                    <WrapPanel Grid.Row="1" Margin="0,14,0,10">
+                                        <controls:StatusBadge Text="{Binding KindText}" Tone="{x:Static app:Palette.Neutral}" Margin="0,0,6,4" />
+                                        <controls:StatusBadge Text="{Binding InstallationText}" Glyph="{Binding InstallationGlyph}" Tone="{Binding InstallationTone}" Margin="0,0,6,4" ToolTip="{l:T 'Installed means WinGet or Windows matched this application. Not detected is not proof that an app is absent.'}" />
+                                        <controls:StatusBadge Text="{l:T 'Check first'}" Glyph="&#xE946;" Tone="{x:Static app:Palette.Power}" Visibility="{Binding NoteVisibility}" ToolTip="{Binding Note}" Margin="0,0,0,4" />
+                                    </WrapPanel>
+                                    <StackPanel Grid.Row="2" Margin="0,0,0,16">
+                                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding VersionText}" FontSize="12" Foreground="{x:Static app:Palette.Start}" Margin="0,6,0,0" />
+                                        <TextBlock Text="{Binding ResultText}" Style="{StaticResource SecondaryTextStyle}" FontSize="12" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <Grid Grid.Row="3">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,8,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding SourceText}" Style="{StaticResource SecondaryTextStyle}" FontSize="11" />
+                                            <TextBlock Text="{Binding PackageId}" Style="{StaticResource SecondaryTextStyle}" FontSize="10" TextTrimming="CharacterEllipsis" ToolTip="{Binding PackageId}" />
+                                        </StackPanel>
+                                        <ui:Button Grid.Column="1" Content="{l:T 'Install'}" Click="OnInstallOne" IsEnabled="{Binding CanSelect}" Visibility="{Binding InstallVisibility}" Icon="{ui:SymbolIcon ArrowDownload24}" />
+                                        <ui:Button Grid.Column="1" Content="{l:T 'Official guide'}" Click="OnOpenGuide" Visibility="{Binding GuideVisibility}" Icon="{ui:SymbolIcon Open24}" />
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <controls:EmptyState x:Name="Empty" Grid.Column="1" Visibility="Collapsed" Title="{l:T 'Nothing matches.'}" Hint="{l:T 'Try another search or clear filters.'}" />
+        </Grid>
+        <Border Grid.Row="5" Style="{StaticResource CardBorderStyle}" Padding="16,12" Margin="0,14,0,0">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <WrapPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="SelectionText" FontWeight="SemiBold" Margin="0,0,12,0" VerticalAlignment="Center" />
+                        <ui:Button x:Name="SelectVisibleButton" Content="{l:T 'Select visible'}" Click="OnSelectVisible" Appearance="Transparent" />
+                        <ui:Button x:Name="ClearButton" Content="{l:T 'Clear selection'}" Click="OnClearSelection" Appearance="Transparent" />
+                    </WrapPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <ui:Button x:Name="CancelButton" Content="{l:T 'Stop after current app'}" Click="OnCancel" Visibility="Collapsed" Margin="0,0,8,0" />
+                        <ui:Button x:Name="InstallSelected" Content="{l:T 'Install'}" Click="OnInstallSelection" Appearance="Primary" Icon="{ui:SymbolIcon ArrowDownload24}" />
+                    </StackPanel>
+                </Grid>
+                <ProgressBar x:Name="InstallProgress" Height="4" Visibility="Collapsed" Margin="0,10,0,0" />
+                <TextBlock x:Name="ActionStatus" Text="{l:T 'Select apps, then review before installing. Checking installed apps does not install or update anything.'}" Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                <Expander x:Name="ResultsPanel" Header="{l:T 'Installation results'}" Visibility="Collapsed" Margin="0,8,0,0">
+                    <ScrollViewer MaxHeight="140"><TextBlock x:Name="ResultsText" TextWrapping="Wrap" /></ScrollViewer>
+                </Expander>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

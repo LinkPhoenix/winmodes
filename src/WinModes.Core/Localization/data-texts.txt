@@ -45,3 +45,181 @@ This PC
 Undone
 Unsupported registry type
 WinModes has a recorded previous value. Use Undo to restore it.
+# Software catalog categories, descriptions, prerequisites and inventory errors.
+AI chat apps
+AI editors
+AI features may require an account or a paid plan.
+Account features depend on your Google plan.
+Add window layouts, a launcher and other Windows utilities.
+Ask questions, draft text and discuss ideas with ChatGPT.
+Benchmarks write test data. Installation does not start a benchmark.
+Beta software. Model access and billing depend on your provider.
+Bring game libraries together in one launcher.
+Browse package managers through a graphical interface.
+Browse the web with an independent, customizable browser.
+Browse through the Tor network with a dedicated browser.
+Browse with DuckDuckGo's privacy-focused Windows browser.
+Browse with Google's browser.
+Browse with Maxthon's tabs, account and workspace features.
+Browse with Microsoft's browser and integrated Windows features.
+Browse with Opera's sidebar and workspace features.
+Browse with an independent Firefox-based browser.
+Browse with an independent open-source browser and its own extension ecosystem.
+Browse with an open-source Chromium-based browser.
+Browse with built-in tracker and ad blocking.
+Browse with protections designed to reduce fingerprinting.
+Browsers
+Build and run local containers.
+CLI coding agents
+Capture screenshots and record your screen.
+Chat and call through the Matrix messaging network.
+Chat and share files with Telegram Desktop.
+Chat with Claude from the desktop app.
+Check account access and pricing with xAI before installing.
+Choose shared folders carefully. Changes and deletions can synchronize to other devices.
+Code editors
+Collect research sources and manage citations.
+Connect an ACP-compatible editor to Mistral Vibe.
+Connect to another computer for remote support.
+Connect your devices through a private network.
+Connect your notes in a local Markdown vault.
+Convert video files between formats.
+Create 3D models, animations and renders.
+Create bootable USB drives when you need them.
+Creating a USB drive erases its contents. Installation alone does not format a drive.
+Creative tools
+Customize a Firefox-based browser with flexible workspaces.
+Customize tabs, workspaces and your browsing layout.
+Design parametric 3D models and mechanical parts.
+Desktop access depends on your Proton plan.
+Desktop coding agents
+Develop RAW photos and organize your photography workflow.
+Developer essentials
+Diagnostics
+Draw vector illustrations and edit SVG files.
+Edit a project with an AI assistant built into the editor.
+Edit code in your terminal with an extensible open-source editor.
+Edit code with an open-source editor and integrated coding agents.
+Edit documents, spreadsheets and presentations on your desktop.
+Edit images with an open-source image editor.
+Edit photos and images with layers and effects.
+Edit text files and code with a compact editor.
+Edit videos with an open-source timeline editor.
+Editor bridge using vibe-acp. This is not the standalone interactive Vibe CLI.
+Editor integrations
+Explore local models and run them through a desktop interface.
+File sharing & network
+Find files quickly by name.
+Follow the official Windows setup guide, including its prerequisites and sign-in.
+Gaming
+Generate two-factor authentication codes on your desktop.
+Give tasks to AI teammates from the Grok Bot desktop app.
+Includes desktop access to Codex. Account features depend on your plan.
+Individual IDE licenses and AI features have their own terms.
+Inspect file, registry and process activity for troubleshooting.
+Inspect hardware specifications and sensor readings.
+Inspect running processes, handles and loaded libraries.
+Inspect your graphics card and its sensors.
+Inspect your processor, motherboard and memory.
+Install and manage games from your EA library.
+Install and manage games from your GOG library.
+Install and manage games from your Ubisoft library.
+Install and manage games in your Steam library.
+Install and manage your Epic Games library.
+Join video meetings and share your screen.
+Keep passwords in a local encrypted database.
+Listen to music and manage playlists with an audio player.
+Listen to music and podcasts on your desktop.
+Local AI
+Manage BitTorrent downloads with an open-source client.
+Manage GitHub repositories, issues and pull requests from your terminal.
+Manage JetBrains development tools and their updates.
+Manage Python tools, environments and dependencies.
+Manage archives with integration into Windows 11 menus.
+Manage compressed archives with a graphical file manager.
+Manage email accounts and calendars in one app.
+Manage passwords and aliases with Proton's password manager.
+Manage passwords in an encrypted vault.
+Measure disk read and write performance.
+Media & communication
+Models are downloaded separately and need disk space and suitable RAM or GPU memory.
+No package is currently available in the verified WinGet source. See the official guide.
+No verified standalone CLI package in WinGet. The official Windows setup uses uv; the ACP package is a different integration.
+Not currently available in the verified WinGet source. Remote access requires care.
+Notes & documents
+Official Windows app available from DeepSeek. No verified official WinGet package; similarly named community clients are different products.
+Open and create compressed archives.
+Organize browsing with vertical tabs and workspaces.
+Organize linked notes and outlines in a knowledge base.
+Organize notes and to-do lists with an open-source notebook.
+Organize your ebook library and convert ebook formats.
+Paint and illustrate with an open-source digital art studio.
+Passwords
+Play and organize music with a customizable audio player.
+Play video and audio files with an open-source media player.
+Play videos with a configurable Windows media player.
+Preview and rename groups of files using reusable rules.
+Provider access and billing depend on the model you choose.
+Read PDFs and ebooks with a lightweight viewer.
+Read disk health and temperature information.
+Read, annotate and edit PDF documents.
+Record and edit audio tracks.
+Record video and stream with customizable scenes.
+Requires access to GitHub Copilot.
+Requires an account and a subscription after the trial.
+Requires an account. Review network access before connecting devices.
+Review Docker's license and Windows requirements. Setup may require a restart.
+Review changes and work with Git repositories through a desktop app.
+Review upload settings before sharing a capture.
+Run JavaScript tools and npm packages with the LTS runtime.
+Run OpenCode directly in your terminal.
+Run Python scripts and development tools.
+Run supported Mistral, DeepSeek and other models locally on Windows.
+See which files and folders use your disk space.
+Send files between devices on your local network.
+Store passwords and share vaults with your family or team.
+Store passwords in a local encrypted database with plugins.
+Synchronize chosen files with encrypted cloud storage.
+Synchronize chosen folders between your devices.
+Synchronize files with your Nextcloud account or server.
+Talk with your communities by text, voice and video.
+Terminal agent. For the desktop experience with Codex, choose ChatGPT.
+Test APIs with collections stored in your project files.
+This browser does not install or include a VPN subscription.
+This is the desktop app; Claude Code has a separate setup guide.
+Track changes and work with Git repositories.
+Transfer files securely using SFTP and SCP.
+Transfer files using FTP, FTPS and SFTP.
+Use Chromium with Google-specific integrations removed.
+Use DeepSeek's official desktop agent for work with local files and projects.
+Use Firefox's extended-support release for a steadier update schedule.
+Use Google's official Gemini desktop app.
+Use Mistral's official coding assistant from your terminal.
+Use Opera's browser with gaming-oriented customization.
+Use Proton Mail and Calendar from your desktop.
+Use a Chromium-based browser with performance-oriented builds.
+Use a Firefox-based browser focused on privacy.
+Use a Firefox-based browser with performance-oriented builds.
+Use a coding agent with a choice of model providers, on the desktop or in a terminal.
+Use a general-purpose code editor with extensions.
+Use an open-source AI editor based on VS Code with a choice of model providers.
+Use an open-source desktop app for local models and compatible AI providers.
+Use an open-source distribution of VS Code without Microsoft's product customizations.
+Use open-source voice chat for groups and communities.
+Use private messaging linked to your phone.
+Use the modern PowerShell terminal and scripting runtime.
+Uses Open VSX. Some Microsoft extensions and services may not be available.
+Utilities
+WinGet could not read installed apps. Open WinGet once to review its source agreements, then try again.
+WinGet detection is unavailable. Check that App Installer is installed and try again.
+WinGet detection timed out. Try again.
+WinGet returned an invalid inventory.
+WinModes installs this app through WinGet only. UniGetUI manages its own settings and actions.
+Windows binaries are community builds. Review extension and update support.
+Work on a repository with Anthropic's coding agent.
+Work on code with OpenAI's coding agent.
+Work with GitHub's coding agent from your terminal.
+Work with an AI coding editor and its project assistant.
+Work with coding agents in a desktop workspace.
+Write documents, work with spreadsheets and create presentations.
+You may need a separate account for the coding provider you choose.

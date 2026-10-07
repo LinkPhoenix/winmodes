@@ -71,6 +71,10 @@ public sealed partial class ProtectionPolicy
     public bool IsProtectedApp(string appId) =>
         _startupPatterns.Any(pattern => FileSystemName.MatchesSimpleExpression(pattern, appId, ignoreCase: true));
 
+    /// <summary>Only additions from the built-in catalog are allowed, including protected daily tools. Upgrades and removals are never requested.</summary>
+    public static bool CanInstallSoftware(WinModes.Core.Software.SoftwareEntry entry) =>
+        WinModes.Core.Software.SoftwareCatalog.Entries.Contains(entry) && entry.WingetId is not null && entry.Source is "winget" or "msstore";
+
     /// <summary>True when the process belongs to a protected app, whatever id the profile gives the entry.</summary>
     public bool IsProtectedProcess(string processFileName)
     {

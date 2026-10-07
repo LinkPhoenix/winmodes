@@ -10,6 +10,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Added
 
+- Software: browse 126 apps in Everyday and Vibe coding & AI catalogs, jump between categories with a sidebar, and see official logos in a three-column grid; distinguish desktop apps, CLI tools and editor integrations, check installed versions, and review single or multiple installations through WinGet with per-app results. Official guides cover tools without a verified WinGet package.
 - Widget, Settings and Notifications: a list of the page's sections stays on the left; click one to jump to it, and the section you are reading is marked by a bar that slides along the list, and the page glides to the section, which fades in (skipped when Windows animations are off).
 - Widget: the taskbar can draw the limits of each plan as small rings with the percentage left inside, which take about half the width of the bars; choose Bars or Rings under Plan usage.
 - Widget: sign in to your xAI account to see the weekly usage of your SuperGrok plan next to Claude and Codex, with the Grok logo, in the widget on the desktop and on the taskbar; Grok has its own section on the Widget page to sign in or out and to show or hide it.
@@ -32,6 +33,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Widget: the options that read the usage online with the sign-in of Claude Code or Codex, the Check buttons and the Claude usage recording, now that every figure comes from your accounts; the recording row stays only while an older version left it set, to switch it off.
 
 ### Fixed
+
+- Software: recognize apps omitted from WinGet export, including Brave installed from its publisher, using the installed-app list and exact Windows registration matches; checking again preserves the current scroll position.
 
 - About: Download and install works for a beta again; the update was refused with "The release name is not a version" as soon as the new version was a beta, so a beta build could only be updated by hand.
 - About: Download and install waits while a mode switch is running, before the download and again before the installer starts, instead of closing WinModes in the middle of the switch.

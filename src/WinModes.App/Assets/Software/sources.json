@@ -1,0 +1,508 @@
+{
+  "firefox": {
+    "website": "https://www.mozilla.org/firefox/new/",
+    "asset": "https://www.firefox.com/media/img/favicons/firefox/browser/apple-touch-icon.79c2abeb4e35.png"
+  },
+  "brave": {
+    "website": "https://brave.com/download/",
+    "asset": "https://brave.com/static-assets/images/cropped-brave_appicon_release-32x32.png"
+  },
+  "obsidian": {
+    "website": "https://obsidian.md/download",
+    "asset": "https://obsidian.md/apple-touch-icon.png"
+  },
+  "joplin": {
+    "website": "https://joplinapp.org/help/install/",
+    "asset": "https://joplinapp.org/favicon.ico"
+  },
+  "libreoffice": {
+    "website": "https://www.libreoffice.org/download/",
+    "asset": "https://www.libreoffice.org/favicon.ico"
+  },
+  "vlc": {
+    "website": "https://www.videolan.org/vlc/",
+    "asset": "https://images.videolan.org/images/favicon.ico"
+  },
+  "spotify": {
+    "website": "https://www.spotify.com/download/windows/",
+    "asset": "https://www.scdn.co/i/_global/favicon.png"
+  },
+  "discord": {
+    "website": "https://discord.com/download",
+    "asset": "https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/62fddf0fde45a8baedcc7ee5_847541504914fd33810e70a0ea73177e%20(2)-1.png"
+  },
+  "7zip": {
+    "website": "https://www.7-zip.org/",
+    "asset": "https://www.7-zip.org/favicon.ico"
+  },
+  "powertoys": {
+    "website": "https://learn.microsoft.com/windows/powertoys/install",
+    "asset": "https://raw.githubusercontent.com/microsoft/PowerToys/main/src/settings-ui/Settings.UI/Assets/Settings/icon.ico"
+  },
+  "cursor": {
+    "website": "https://cursor.com/download",
+    "asset": "https://cursor.com/marketing-static/apple-touch-icon-light.png"
+  },
+  "t3": {
+    "website": "https://t3.codes/download",
+    "asset": "https://t3.codes/apple-touch-icon.png"
+  },
+  "opencode": {
+    "website": "https://opencode.ai/download",
+    "asset": "https://opencode.ai/apple-touch-icon-v3.png"
+  },
+  "codex": {
+    "website": "https://github.com/openai/codex",
+    "asset": "https://chatgpt.com/favicon.ico"
+  },
+  "claude-code": {
+    "website": "https://code.claude.com/docs/en/setup",
+    "asset": "https://claude.com/favicon.ico"
+  },
+  "grok-bot": {
+    "website": "https://x.ai/bot",
+    "asset": "https://x.ai/apple-icon.png?apple-icon.21lxxn22zx2o2.png?dpl=96ad47801a7053f9d26960bd6573a3f47264ee8e"
+  },
+  "chatgpt": {
+    "website": "https://chatgpt.com/download/",
+    "asset": "https://chatgpt.com/favicon.ico"
+  },
+  "claude": {
+    "website": "https://claude.com/download",
+    "asset": "https://assets.claude.com/95a868946ac8a31e5ff832e2899f294aa368b836.png?w=32&h=32"
+  },
+  "vscode": {
+    "website": "https://code.visualstudio.com/download",
+    "asset": "https://code.visualstudio.com/assets/apple-touch-icon.png"
+  },
+  "git": {
+    "website": "https://git-scm.com/downloads/win",
+    "asset": "https://git-scm.com/favicon.ico"
+  },
+  "node": {
+    "website": "https://nodejs.org/en/download",
+    "asset": "https://nodejs.org/static/images/favicons/favicon.png"
+  },
+  "docker": {
+    "website": "https://www.docker.com/products/docker-desktop/",
+    "asset": "https://www.docker.com/app/uploads/2024/02/cropped-docker-logo-favicon-32x32.png"
+  },
+  "chrome": {
+    "website": "https://www.google.com/chrome/",
+    "asset": "https://www.google.com/chrome/static/images/favicons/apple-icon-57x57.png"
+  },
+  "vivaldi": {
+    "website": "https://vivaldi.com/",
+    "asset": "https://vivaldi.com/wp-content/uploads/cropped-favicon-32x32.png"
+  },
+  "thunderbird": {
+    "website": "https://www.thunderbird.net/",
+    "asset": "https://www.thunderbird.net/media/img/thunderbird/ios-icon-180.png"
+  },
+  "signal": {
+    "website": "https://signal.org/",
+    "asset": "https://signal.org/assets/images/favicon/apple-touch-icon.png"
+  },
+  "telegram": {
+    "website": "https://desktop.telegram.org/",
+    "asset": "https://desktop.telegram.org/img/apple-touch-icon.png"
+  },
+  "sumatra": {
+    "website": "https://www.sumatrapdfreader.org/",
+    "asset": "https://www.sumatrapdfreader.org/favicon.ico"
+  },
+  "notepadplusplus": {
+    "website": "https://notepad-plus-plus.org/",
+    "asset": "https://notepad-plus-plus.org/apple-touch-icon.png"
+  },
+  "bitwarden": {
+    "website": "https://bitwarden.com/",
+    "asset": "https://bitwarden.com/favicon.png"
+  },
+  "keepassxc": {
+    "website": "https://keepassxc.org/",
+    "asset": "https://keepassxc.org/assets/img/apple-touch-icon-precomposed.png"
+  },
+  "peazip": {
+    "website": "https://peazip.github.io/",
+    "asset": "https://peazip.github.io/favicon.ico"
+  },
+  "everything": {
+    "website": "https://www.voidtools.com/",
+    "asset": "https://www.voidtools.com/favicon.ico"
+  },
+  "sharex": {
+    "website": "https://getsharex.com/",
+    "asset": "https://getsharex.com/favicon.ico"
+  },
+  "rufus": {
+    "website": "https://rufus.ie/",
+    "asset": "https://rufus.ie/favicon.ico"
+  },
+  "obs": {
+    "website": "https://obsproject.com/",
+    "asset": "https://obsproject.com/favicon-32x32.png"
+  },
+  "audacity": {
+    "website": "https://www.audacityteam.org/",
+    "asset": "https://www.audacityteam.org/apple-touch-icon.png"
+  },
+  "gimp": {
+    "website": "https://www.gimp.org/",
+    "asset": "https://www.gimp.org/images/wilber32.png"
+  },
+  "paintnet": {
+    "website": "https://www.getpaint.net/",
+    "asset": "https://paint.net/apple-touch-icon.png"
+  },
+  "inkscape": {
+    "website": "https://inkscape.org/",
+    "asset": "https://inkscape.org/favicon.ico"
+  },
+  "handbrake": {
+    "website": "https://handbrake.fr/",
+    "asset": "https://handbrake.fr/favicon.ico"
+  },
+  "steam": {
+    "website": "https://store.steampowered.com/",
+    "asset": "https://store.steampowered.com/favicon.ico"
+  },
+  "epic": {
+    "website": "https://store.epicgames.com/",
+    "asset": "https://static-assets-prod.epicgames.com/epic-store/static/favicon.ico"
+  },
+  "qbittorrent": {
+    "website": "https://www.qbittorrent.org/",
+    "asset": "https://www.qbittorrent.org/favicon.ico"
+  },
+  "rustdesk": {
+    "website": "https://rustdesk.com/",
+    "asset": "https://rustdesk.com/_astro/apple-touch-icon.DNoXgPv7.png"
+  },
+  "python": {
+    "website": "https://www.python.org/",
+    "asset": "https://www.python.org/static/favicon.ico"
+  },
+  "powershell": {
+    "website": "https://github.com/PowerShell/PowerShell",
+    "asset": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/assets/Powershell_256.png"
+  },
+  "opencode-cli": {
+    "website": "https://opencode.ai/docs/",
+    "asset": "https://opencode.ai/apple-touch-icon-v3.png"
+  },
+  "blender": {
+    "website": "https://www.blender.org/",
+    "asset": "https://www.blender.org/wp-content/themes/bthree/assets/icons/apple-touch-icon.png"
+  },
+  "calibre": {
+    "website": "https://calibre-ebook.com/",
+    "asset": "https://calibre-ebook.com/favicon.png"
+  },
+  "zotero": {
+    "website": "https://www.zotero.org/",
+    "asset": "https://www.zotero.org/favicon.ico"
+  },
+  "localsend": {
+    "website": "https://localsend.org/",
+    "asset": "https://localsend.org/apple-touch-icon.png"
+  },
+  "syncthing": {
+    "website": "https://syncthing.net/",
+    "asset": "https://syncthing.net/img/favicons/apple-touch-icon-57x57.png"
+  },
+  "winscp": {
+    "website": "https://winscp.net/",
+    "asset": "https://winscp.net/favicon.ico"
+  },
+  "tailscale": {
+    "website": "https://tailscale.com/",
+    "asset": "https://tailscale.com/favicon.png"
+  },
+  "playnite": {
+    "website": "https://playnite.link/",
+    "asset": "https://playnite.link/favicon.ico"
+  },
+  "gog": {
+    "website": "https://www.gog.com/galaxy",
+    "asset": "https://www.gogalaxy.com/favicons/apple-icon-57x57.png"
+  },
+  "wiztree": {
+    "website": "https://wiztreefree.com/",
+    "asset": "https://www.diskanalyzer.com/apple-touch-icon.png"
+  },
+  "hwinfo": {
+    "website": "https://www.hwinfo.com/",
+    "asset": "https://www.hwinfo.com/images/hwi_logo_flat_square_192.png"
+  },
+  "crystaldiskinfo": {
+    "website": "https://crystalmark.info/en/software/crystaldiskinfo/",
+    "asset": "https://crystalmark.info/favicon.ico"
+  },
+  "cpuz": {
+    "website": "https://www.cpuid.com/softwares/cpu-z.html",
+    "asset": "https://www.cpuid.com/medias/images/apple-touch-icon-precomposed.png"
+  },
+  "gpuz": {
+    "website": "https://www.techpowerup.com/gpuz/",
+    "asset": "https://tpucdn.com/apple-touch-icon-v1790929079.png"
+  },
+  "1password": {
+    "website": "https://1password.com/",
+    "asset": "https://1password.com/img/favicon/apple-touch-icon-v2.png"
+  },
+  "foobar": {
+    "website": "https://www.foobar2000.org/",
+    "asset": "https://www.foobar2000.org/favicon.ico"
+  },
+  "aimp": {
+    "website": "https://www.aimp.ru/",
+    "asset": "https://aimp.ru/v2/theme/images/tile120.png"
+  },
+  "zoom": {
+    "website": "https://zoom.us/",
+    "asset": "https://st1.zoom.us/homepage/20260930-1234/primary/favicon.ico"
+  },
+  "edge": {
+    "website": "https://www.microsoft.com/edge",
+    "asset": "https://explore.microsoft.com/apple-touch-icon.png"
+  },
+  "firefox-esr": {
+    "website": "https://www.mozilla.org/firefox/enterprise/",
+    "asset": "https://www.firefox.com/media/img/favicons/firefox/browser/apple-touch-icon.79c2abeb4e35.png"
+  },
+  "floorp": {
+    "website": "https://floorp.app/",
+    "asset": "https://floorp.app/favicon.ico"
+  },
+  "helium": {
+    "website": "https://helium.computer/",
+    "asset": "https://helium.computer/favicon.png"
+  },
+  "librewolf": {
+    "website": "https://librewolf.net/",
+    "asset": "https://librewolf.net/favicon.ico"
+  },
+  "mullvad-browser": {
+    "website": "https://mullvad.net/browser",
+    "asset": "https://mullvad.net/apple-touch-icon.png"
+  },
+  "tor": {
+    "website": "https://www.torproject.org/",
+    "asset": "https://www.torproject.org/static/images/favicon/favicon.png"
+  },
+  "waterfox": {
+    "website": "https://www.waterfox.net/",
+    "asset": "https://www.waterfox.com/favicons/apple-touch-icon.png"
+  },
+  "zen": {
+    "website": "https://zen-browser.app/",
+    "asset": "https://zen-browser.app/favicon.ico"
+  },
+  "ungoogled": {
+    "website": "https://github.com/Eloston/ungoogled-chromium",
+    "asset": "https://github.com/fluidicon.png"
+  },
+  "opera": {
+    "website": "https://www.opera.com/",
+    "asset": "https://cdn-production-opera-website.operacdn.com/staticfiles/assets/images/favicon/opera/apple-touch-icon.00d9278d6de6.png"
+  },
+  "opera-gx": {
+    "website": "https://www.opera.com/gx",
+    "asset": "https://cdn-production-opera-website.operacdn.com/staticfiles/assets/gx/images/welcomeGx/favicon/apple-touch-icon.16b2fb5b1ecc.png"
+  },
+  "onlyoffice": {
+    "website": "https://www.onlyoffice.com/desktop.aspx",
+    "asset": "https://static-site.onlyoffice.com/public/images/favicons/favicon16.png"
+  },
+  "pdfgear": {
+    "website": "https://www.pdfgear.com/",
+    "asset": "https://www.pdfgear.com/img/icon.png"
+  },
+  "logseq": {
+    "website": "https://logseq.com/",
+    "asset": "https://asset.logseq.com/static/img/logo.png"
+  },
+  "proton-pass": {
+    "website": "https://proton.me/pass",
+    "asset": "https://proton.me/favicon.ico"
+  },
+  "keepass": {
+    "website": "https://keepass.info/",
+    "asset": "https://keepass.info/favicon.ico"
+  },
+  "proton-authenticator": {
+    "website": "https://proton.me/authenticator",
+    "asset": "https://proton.me/favicon.ico"
+  },
+  "element": {
+    "website": "https://element.io/",
+    "asset": "https://element.io/assets-32bb636196f91ed59d7a49190e26b42c/5ef25c0d30ee3108da4c25e9/5f0e1754953989c7b1ecff5d_favicon.png"
+  },
+  "mumble": {
+    "website": "https://www.mumble.info/",
+    "asset": "https://www.mumble.info/css/apple-touch-icon.png"
+  },
+  "proton-mail": {
+    "website": "https://proton.me/mail",
+    "asset": "https://proton.me/favicon.ico"
+  },
+  "potplayer": {
+    "website": "https://potplayer.tv/",
+    "asset": "https://t1.kakaocdn.net/potplayer/main/img/player.png"
+  },
+  "nanazip": {
+    "website": "https://nanazip.org/",
+    "asset": "https://nanazip.org/NanaZip.ico"
+  },
+  "unigetui": {
+    "website": "https://devolutions.net/unigetui/",
+    "asset": "https://raw.githubusercontent.com/Devolutions/UniGetUI/main/media/Icon%20sizes/128.png"
+  },
+  "advanced-renamer": {
+    "website": "https://www.advancedrenamer.com/",
+    "asset": "https://www.advancedrenamer.com/img/apple-touch-icon.png"
+  },
+  "krita": {
+    "website": "https://krita.org/",
+    "asset": "https://krita.org/favicon.ico"
+  },
+  "kdenlive": {
+    "website": "https://kdenlive.org/",
+    "asset": "https://kdenlive.org/apple-touch-icon.png"
+  },
+  "darktable": {
+    "website": "https://www.darktable.org/",
+    "asset": "https://www.darktable.org/favicon.ico"
+  },
+  "freecad": {
+    "website": "https://www.freecad.org/",
+    "asset": "https://www.freecad.org/images/favicon.ico"
+  },
+  "ea": {
+    "website": "https://www.ea.com/ea-app",
+    "asset": "https://www.ea.com/assets/images/favicon.png"
+  },
+  "ubisoft": {
+    "website": "https://ubisoftconnect.com/",
+    "asset": "https://static-dm.ubisoft.com/ubisoft/prod/favicon-16x16.png"
+  },
+  "nextcloud": {
+    "website": "https://nextcloud.com/install/",
+    "asset": "https://nextcloud.com/c/uploads/2022/03/favicon.png"
+  },
+  "proton-drive": {
+    "website": "https://proton.me/drive",
+    "asset": "https://proton.me/favicon.ico"
+  },
+  "filezilla": {
+    "website": "https://filezilla-project.org/",
+    "asset": "https://filezilla-project.org/favicon.ico"
+  },
+  "process-explorer": {
+    "website": "https://learn.microsoft.com/sysinternals/downloads/process-explorer",
+    "extraction": "Icon resource from a Microsoft-signed executable; no executable was run.",
+    "asset": "https://download.sysinternals.com/files/ProcessExplorer.zip"
+  },
+  "process-monitor": {
+    "website": "https://learn.microsoft.com/sysinternals/downloads/procmon",
+    "extraction": "Icon resource from a Microsoft-signed executable; no executable was run.",
+    "asset": "https://download.sysinternals.com/files/ProcessMonitor.zip"
+  },
+  "crystaldiskmark": {
+    "website": "https://crystalmark.info/en/software/crystaldiskmark/",
+    "asset": "https://crystalmark.info/favicon.ico"
+  },
+  "vscodium": {
+    "website": "https://vscodium.com/",
+    "asset": "https://vscodium.com/img/apple-touch-icon.png"
+  },
+  "zed": {
+    "website": "https://zed.dev/",
+    "asset": "https://zed.dev/favicon_black_16.png"
+  },
+  "windsurf": {
+    "website": "https://windsurf.com/",
+    "asset": "https://devin.ai/apple-icon.png"
+  },
+  "void": {
+    "website": "https://voideditor.com/",
+    "asset": "https://voideditor.com/icon.png?fe8088bdbfb5a2cf"
+  },
+  "ollama": {
+    "website": "https://ollama.com/",
+    "asset": "https://ollama.com/public/apple-touch-icon.png"
+  },
+  "lmstudio": {
+    "website": "https://lmstudio.ai/",
+    "asset": "https://lmstudio.ai/assets/marketing/logo-192x192.png"
+  },
+  "jan": {
+    "website": "https://jan.ai/",
+    "asset": "https://www.jan.ai/favicon.ico"
+  },
+  "gemini": {
+    "website": "https://gemini.google/desktop/",
+    "asset": "https://gemini.google/images/spark_4c.png"
+  },
+  "copilot-cli": {
+    "website": "https://github.com/github/copilot-cli",
+    "asset": "https://github.com/fluidicon.png"
+  },
+  "mistral-vibe": {
+    "website": "https://docs.mistral.ai/vibe/code/cli/install-setup",
+    "asset": "https://docs.mistral.ai/favicons/apple-touch-icon.png"
+  },
+  "mistral-acp": {
+    "website": "https://github.com/mistralai/mistral-vibe",
+    "asset": "https://github.com/fluidicon.png"
+  },
+  "deepseek-harness": {
+    "website": "https://www.deepseek.com/en/download/",
+    "asset": "https://www.deepseek.com/favicon.ico"
+  },
+  "github-cli": {
+    "website": "https://cli.github.com/",
+    "asset": "https://github.githubassets.com/favicon.ico"
+  },
+  "github-desktop": {
+    "website": "https://desktop.github.com/",
+    "asset": "https://github.com/fluidicon.png"
+  },
+  "uv": {
+    "website": "https://docs.astral.sh/uv/",
+    "asset": "https://docs.astral.sh/static/apple-touch-icon.png"
+  },
+  "bruno": {
+    "website": "https://www.usebruno.com/",
+    "asset": "https://www.usebruno.com/favicon-48x48.png"
+  },
+  "neovim": {
+    "website": "https://neovim.io/",
+    "asset": "https://neovim.io/favicon.ico"
+  },
+  "jetbrains": {
+    "website": "https://www.jetbrains.com/toolbox-app/",
+    "asset": "https://www.jetbrains.com/apple-touch-icon.png?r=1234"
+  },
+  "duckduckgo": {
+    "website": "https://duckduckgo.com/app",
+    "asset": "https://duckduckgo.com/static-assets/favicons/DDG-iOS-icon_60x60.png"
+  },
+  "thorium": {
+    "website": "https://thorium.rocks/",
+    "asset": "https://thorium.rocks/apple-touch-icon.png"
+  },
+  "mercury": {
+    "website": "https://thorium.rocks/mercury",
+    "asset": "https://thorium.rocks/imgs/apple-touch-icon.png"
+  },
+  "palemoon": {
+    "website": "https://www.palemoon.org/",
+    "asset": "https://www.palemoon.org/favicon.ico"
+  },
+  "maxthon": {
+    "website": "https://www.maxthon.com/",
+    "asset": "https://www.maxthon.com/favicon.ico"
+  }
+}

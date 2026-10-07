@@ -10,6 +10,7 @@ namespace WinModes.Core.Planning;
 /// <summary>Reads service, process and WSL state from the local machine. Never changes anything.</summary>
 public sealed class WindowsSystemProbe : ISystemProbe
 {
+    public WinModes.Core.Software.SoftwareInventory GetSoftwareInventory() => WinModes.Core.Software.WindowsSoftwareInventory.Read();
     private static readonly string[] PolicyScopes = ["Machine", "User"];
     public WinModes.Core.Tuning.PolicyEnvironment GetPolicyEnvironment()
     {

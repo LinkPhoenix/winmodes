@@ -17,6 +17,7 @@
   <ItemGroup>
     <Resource Include="Assets\winmodes.ico" />
     <Resource Include="Assets\paypal-logo-blue.jpg" />
+    <Resource Include="Assets\Software\*.png" />
   </ItemGroup>
 
   <ItemGroup>

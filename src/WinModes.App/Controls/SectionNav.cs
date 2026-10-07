@@ -51,6 +51,7 @@ public sealed class SectionNav : Border
     private double _pinnedOffset;
     private readonly List<Entry> _entries = [];
     private List<FrameworkElement> _anchors = [];
+    private bool _explicitAnchors;
     private string _shown = "";
 
     public SectionNav()
@@ -80,6 +81,18 @@ public sealed class SectionNav : Border
 
     public static void SetAccent(DependencyObject element, Brush? value) => element.SetValue(AccentProperty, value);
 
+    /// <summary>Use realized template headers when sections are generated from a filtered catalog.</summary>
+    public void SetAnchors(IEnumerable<FrameworkElement> anchors)
+    {
+        _explicitAnchors = true;
+        _scrolling = false;
+        BeginAnimation(OffsetProperty, null);
+        _pinned = null;
+        _anchors = anchors.ToList();
+        _shown = "\0";
+        Refresh();
+    }
+
     private void Attach(ScrollViewer? old, ScrollViewer? now)
     {
         if (old is not null)
@@ -103,6 +116,7 @@ public sealed class SectionNav : Border
 
     private void OnTargetLoaded(object sender, RoutedEventArgs e)
     {
+        if (_explicitAnchors) { Refresh(); return; }
         _anchors = [];
         if (Target?.Content is DependencyObject content)
         {
