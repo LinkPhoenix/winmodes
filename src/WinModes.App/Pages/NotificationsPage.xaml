@@ -5,137 +5,150 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:app="clr-namespace:WinModes.App"
       xmlns:controls="clr-namespace:WinModes.App.Controls"
+      ScrollViewer.CanContentScroll="False"
       Title="{l:T 'Notifications'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
 
-    <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <controls:PageHeader Title="{l:T 'Notifications'}" Icon="Alert24" Accent="{x:Static app:Palette.Apps}" Margin="0,0,0,4">
-            <TextBlock Text="{l:T 'Choose what WinModes tells you about. Each notification is sent once and is not repeated when the app restarts. Changes are saved as you make them.'}"
-                       Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
-        </controls:PageHeader>
+    <!-- The page scrolls itself (the shell's scrolling is off) so the list of sections stays in view. -->
+    <Grid Margin="36,24,0,0" MaxWidth="1326">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <controls:SettingSection Header="{l:T 'GENERAL'}" Icon="AlertOn24" Accent="{x:Static app:Palette.BrandBrush}">
-            <StackPanel>
-                <controls:SettingRow Icon="Alert24" Accent="{x:Static app:Palette.BrandBrush}" Title="{l:T 'Notifications'}"
-                                     Description="{l:T 'Turns every optional notification off in one go. Errors and failed switches are still shown.'}">
-                    <ui:ToggleSwitch x:Name="Enabled" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Notifications'}" />
-                </controls:SettingRow>
-                <controls:SettingRow Icon="AlertOn24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Send a test notification'}"
-                                     Description="{l:T 'If nothing appears, check that Windows lets notifications through (Settings, System, Notifications) and that Focus is off.'}">
-                    <ui:Button Content="{l:T 'Send a test'}" Click="OnTest" AutomationProperties.Name="{l:T 'Send a test notification'}" />
-                </controls:SettingRow>
-            </StackPanel>
-        </controls:SettingSection>
+        <controls:SectionNav Target="{Binding ElementName=PageScroll}" Margin="0,72,18,0" />
 
-        <StackPanel x:Name="Options">
-            <controls:SettingSection Header="{l:T 'QUIET HOURS'}" Icon="WeatherMoon24" Accent="{x:Static app:Palette.Apps}">
-                <StackPanel>
-                    <controls:SettingRow Icon="WeatherMoon24" Accent="{x:Static app:Palette.Apps}" Title="{l:T 'Hold back notifications'}"
-                                         Description="{l:T 'Between these times nothing is shown except errors and the result of a mode switch you start. Limits are judged again when the quiet hours end, so none is missed.'}">
-                        <ui:ToggleSwitch x:Name="QuietOn" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Hold back notifications'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow x:Name="QuietTimesRow" Icon="Clock24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Quiet from'}"
-                                         Description="{l:T 'The start and the end of the quiet hours; the end can be the next morning.'}">
-                        <StackPanel Orientation="Horizontal">
-                            <ComboBox x:Name="QuietFrom" MinWidth="100" DisplayMemberPath="Label" SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Quiet from'}" />
-                            <TextBlock Text="{l:T 'to'}" VerticalAlignment="Center" Margin="10,0" Style="{StaticResource SecondaryTextStyle}" />
-                            <ComboBox x:Name="QuietTo" MinWidth="100" DisplayMemberPath="Label" SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Quiet until'}" />
+        <ScrollViewer x:Name="PageScroll" Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="0,0,14,0">
+            <StackPanel Margin="0,0,0,36" MaxWidth="1100">
+                <controls:PageHeader Title="{l:T 'Notifications'}" Icon="Alert24" Accent="{x:Static app:Palette.Apps}" Margin="0,0,0,4">
+                    <TextBlock Text="{l:T 'Choose what WinModes tells you about. Each notification is sent once and is not repeated when the app restarts. Changes are saved as you make them.'}"
+                               Style="{StaticResource SecondaryTextStyle}" TextWrapping="Wrap" />
+                </controls:PageHeader>
+
+                <controls:SettingSection Header="{l:T 'GENERAL'}" Icon="AlertOn24" Accent="{x:Static app:Palette.BrandBrush}">
+                    <StackPanel>
+                        <controls:SettingRow Icon="Alert24" Accent="{x:Static app:Palette.BrandBrush}" Title="{l:T 'Notifications'}"
+                                             Description="{l:T 'Turns every optional notification off in one go. Errors and failed switches are still shown.'}">
+                            <ui:ToggleSwitch x:Name="Enabled" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Notifications'}" />
+                        </controls:SettingRow>
+                        <controls:SettingRow Icon="AlertOn24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Send a test notification'}"
+                                             Description="{l:T 'If nothing appears, check that Windows lets notifications through (Settings, System, Notifications) and that Focus is off.'}">
+                            <ui:Button Content="{l:T 'Send a test'}" Click="OnTest" AutomationProperties.Name="{l:T 'Send a test notification'}" />
+                        </controls:SettingRow>
+                    </StackPanel>
+                </controls:SettingSection>
+
+                <StackPanel x:Name="Options">
+                    <controls:SettingSection Header="{l:T 'QUIET HOURS'}" Icon="WeatherMoon24" Accent="{x:Static app:Palette.Apps}">
+                        <StackPanel>
+                            <controls:SettingRow Icon="WeatherMoon24" Accent="{x:Static app:Palette.Apps}" Title="{l:T 'Hold back notifications'}"
+                                                 Description="{l:T 'Between these times nothing is shown except errors and the result of a mode switch you start. Limits are judged again when the quiet hours end, so none is missed.'}">
+                                <ui:ToggleSwitch x:Name="QuietOn" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Hold back notifications'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow x:Name="QuietTimesRow" Icon="Clock24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Quiet from'}"
+                                                 Description="{l:T 'The start and the end of the quiet hours; the end can be the next morning.'}">
+                                <StackPanel Orientation="Horizontal">
+                                    <ComboBox x:Name="QuietFrom" MinWidth="100" DisplayMemberPath="Label" SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Quiet from'}" />
+                                    <TextBlock Text="{l:T 'to'}" VerticalAlignment="Center" Margin="10,0" Style="{StaticResource SecondaryTextStyle}" />
+                                    <ComboBox x:Name="QuietTo" MinWidth="100" DisplayMemberPath="Label" SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Quiet until'}" />
+                                </StackPanel>
+                            </controls:SettingRow>
                         </StackPanel>
-                    </controls:SettingRow>
-                </StackPanel>
-            </controls:SettingSection>
+                    </controls:SettingSection>
 
-            <controls:SettingSection Header="{l:T 'PLAN LIMITS'}" Icon="Gauge24" Accent="{x:Static app:Palette.Start}">
-                <StackPanel>
-                    <controls:SettingRow x:Name="PlanNoteRow" Icon="Info24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Plan usage is off'}"
-                                         Description="{l:T 'The plan notifications need the plan usage, which is read only when it is turned on. Turn it on in the Widget page.'}">
-                        <ui:Button Content="{l:T 'Open the Widget page'}" Click="OnOpenWidget" AutomationProperties.Name="{l:T 'Open the Widget page'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="Gauge24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Running low at'}"
-                                         Description="{l:T 'A limit is announced when less than this share is left. It applies to the 5 hour and the weekly limits of both tools.'}">
-                        <ComboBox x:Name="LowPercent" MinWidth="170" DisplayMemberPath="Label"
-                                  SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Running low at'}" />
-                    </controls:SettingRow>
-                </StackPanel>
-            </controls:SettingSection>
+                    <controls:SettingSection Header="{l:T 'PLAN LIMITS'}" Icon="Gauge24" Accent="{x:Static app:Palette.Start}">
+                        <StackPanel>
+                            <controls:SettingRow x:Name="PlanNoteRow" Icon="Info24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Plan usage is off'}"
+                                                 Description="{l:T 'The plan notifications need the plan usage, which is read only when it is turned on. Turn it on in the Widget page.'}">
+                                <ui:Button Content="{l:T 'Open the Widget page'}" Click="OnOpenWidget" AutomationProperties.Name="{l:T 'Open the Widget page'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="Gauge24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Running low at'}"
+                                                 Description="{l:T 'A limit is announced when less than this share is left. It applies to the 5 hour and the weekly limits of both tools.'}">
+                                <ComboBox x:Name="LowPercent" MinWidth="170" DisplayMemberPath="Label"
+                                          SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Running low at'}" />
+                            </controls:SettingRow>
+                        </StackPanel>
+                    </controls:SettingSection>
 
-            <controls:SettingSection x:Name="ClaudeSection" Header="{l:T 'CLAUDE CODE'}" Icon="Sparkle24" Accent="{x:Static app:Palette.Power}">
-                <StackPanel>
-                    <controls:SettingRow Icon="Warning24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Running low'}"
-                                         Description="{l:T 'Once per limit cycle, with the time of the reset.'}">
-                        <ui:ToggleSwitch x:Name="ClaudeLow" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when Claude runs low'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="ErrorCircle24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Limit reached'}"
-                                         Description="{l:T 'When the limit is used up, with the time it resets.'}">
-                        <ui:ToggleSwitch x:Name="ClaudeReached" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when the Claude limit is reached'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="CheckmarkCircle24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Available again'}"
-                                         Description="{l:T 'When a limit you had used up starts over.'}">
-                        <ui:ToggleSwitch x:Name="ClaudeReset" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Tell me when Claude is available again'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="ArrowCounterclockwise24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Limit reset added'}"
-                                         Description="{l:T 'When the account gains a limit reset in reserve (the ↻ of the widget). Needs the online reading.'}">
-                        <ui:ToggleSwitch x:Name="ClaudeCredit" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Tell me when Claude gains a limit reset'}" />
-                    </controls:SettingRow>
-                </StackPanel>
-            </controls:SettingSection>
+                    <controls:SettingSection x:Name="ClaudeSection" Header="{l:T 'CLAUDE CODE'}" Icon="Sparkle24" Accent="{x:Static app:Palette.Power}">
+                        <StackPanel>
+                            <controls:SettingRow Icon="Warning24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Running low'}"
+                                                 Description="{l:T 'Once per limit cycle, with the time of the reset.'}">
+                                <ui:ToggleSwitch x:Name="ClaudeLow" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when Claude runs low'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="ErrorCircle24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Limit reached'}"
+                                                 Description="{l:T 'When the limit is used up, with the time it resets.'}">
+                                <ui:ToggleSwitch x:Name="ClaudeReached" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when the Claude limit is reached'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="CheckmarkCircle24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Available again'}"
+                                                 Description="{l:T 'When a limit you had used up starts over.'}">
+                                <ui:ToggleSwitch x:Name="ClaudeReset" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Tell me when Claude is available again'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="ArrowCounterclockwise24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Limit reset added'}"
+                                                 Description="{l:T 'When the account gains a limit reset in reserve (the ↻ of the widget). Needs the online reading.'}">
+                                <ui:ToggleSwitch x:Name="ClaudeCredit" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Tell me when Claude gains a limit reset'}" />
+                            </controls:SettingRow>
+                        </StackPanel>
+                    </controls:SettingSection>
 
-            <controls:SettingSection x:Name="CodexSection" Header="{l:T 'CODEX'}" Icon="Code24" Accent="{x:Static app:Palette.Container}">
-                <StackPanel>
-                    <controls:SettingRow Icon="Warning24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Running low'}"
-                                         Description="{l:T 'Once per limit cycle, with the time of the reset.'}">
-                        <ui:ToggleSwitch x:Name="CodexLow" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when Codex runs low'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="ErrorCircle24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Limit reached'}"
-                                         Description="{l:T 'When the limit is used up, with the time it resets.'}">
-                        <ui:ToggleSwitch x:Name="CodexReached" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when the Codex limit is reached'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="CheckmarkCircle24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Available again'}"
-                                         Description="{l:T 'When a limit you had used up starts over.'}">
-                        <ui:ToggleSwitch x:Name="CodexReset" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Tell me when Codex is available again'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="ArrowCounterclockwise24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Limit reset added'}"
-                                         Description="{l:T 'When the account gains a limit reset in reserve (the ↻ of the widget). Needs the online reading.'}">
-                        <ui:ToggleSwitch x:Name="CodexCredit" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Tell me when Codex gains a limit reset'}" />
-                    </controls:SettingRow>
-                </StackPanel>
-            </controls:SettingSection>
+                    <controls:SettingSection x:Name="CodexSection" Header="{l:T 'CODEX'}" Icon="Code24" Accent="{x:Static app:Palette.Container}">
+                        <StackPanel>
+                            <controls:SettingRow Icon="Warning24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Running low'}"
+                                                 Description="{l:T 'Once per limit cycle, with the time of the reset.'}">
+                                <ui:ToggleSwitch x:Name="CodexLow" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when Codex runs low'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="ErrorCircle24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Limit reached'}"
+                                                 Description="{l:T 'When the limit is used up, with the time it resets.'}">
+                                <ui:ToggleSwitch x:Name="CodexReached" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Warn when the Codex limit is reached'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="CheckmarkCircle24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Available again'}"
+                                                 Description="{l:T 'When a limit you had used up starts over.'}">
+                                <ui:ToggleSwitch x:Name="CodexReset" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Tell me when Codex is available again'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="ArrowCounterclockwise24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Limit reset added'}"
+                                                 Description="{l:T 'When the account gains a limit reset in reserve (the ↻ of the widget). Needs the online reading.'}">
+                                <ui:ToggleSwitch x:Name="CodexCredit" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Tell me when Codex gains a limit reset'}" />
+                            </controls:SettingRow>
+                        </StackPanel>
+                    </controls:SettingSection>
 
-            <controls:SettingSection Header="{l:T 'AI TOOLS'}" Icon="Bot24" Accent="{x:Static app:Palette.Apps}">
-                <StackPanel>
-                    <controls:SettingRow Icon="Memory16" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Alert when AI tools use too much memory'}"
-                                         Description="{l:T 'Shows a notification when all AI tools together reach the limit.'}">
-                        <ComboBox x:Name="AiAlert" MinWidth="170" DisplayMemberPath="Label"
-                                  SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'AI tools memory alert limit'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="DeveloperBoard24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Alert when one AI tool uses too much memory'}"
-                                         Description="{l:T 'Shows a notification when a single tool, all its sessions together, reaches the limit.'}">
-                        <ComboBox x:Name="AiToolAlert" MinWidth="170" DisplayMemberPath="Label"
-                                  SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Alert when one AI tool uses too much memory'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="Timer24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Idle session ended'}"
-                                         Description="{l:T 'When an idle AI session is closed. The automatic ending itself is chosen in Settings.'}">
-                        <ui:ToggleSwitch x:Name="IdleEnded" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Idle session ended'}" />
-                    </controls:SettingRow>
-                </StackPanel>
-            </controls:SettingSection>
+                    <controls:SettingSection Header="{l:T 'AI TOOLS'}" Icon="Bot24" Accent="{x:Static app:Palette.Apps}">
+                        <StackPanel>
+                            <controls:SettingRow Icon="Memory16" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Alert when AI tools use too much memory'}"
+                                                 Description="{l:T 'Shows a notification when all AI tools together reach the limit.'}">
+                                <ComboBox x:Name="AiAlert" MinWidth="170" DisplayMemberPath="Label"
+                                          SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'AI tools memory alert limit'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="DeveloperBoard24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Alert when one AI tool uses too much memory'}"
+                                                 Description="{l:T 'Shows a notification when a single tool, all its sessions together, reaches the limit.'}">
+                                <ComboBox x:Name="AiToolAlert" MinWidth="170" DisplayMemberPath="Label"
+                                          SelectionChanged="OnSelectionChanged" AutomationProperties.Name="{l:T 'Alert when one AI tool uses too much memory'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="Timer24" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Idle session ended'}"
+                                                 Description="{l:T 'When an idle AI session is closed. The automatic ending itself is chosen in Settings.'}">
+                                <ui:ToggleSwitch x:Name="IdleEnded" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Idle session ended'}" />
+                            </controls:SettingRow>
+                        </StackPanel>
+                    </controls:SettingSection>
 
-            <controls:SettingSection Header="{l:T 'WINMODES'}" Icon="Flash24" Accent="{x:Static app:Palette.Apps}">
-                <StackPanel>
-                    <controls:SettingRow Icon="Flash24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Mode switches'}"
-                                         Description="{l:T 'The result of a switch started from the tray, a shortcut, an automation rule or when WinModes starts. A failed switch is always shown.'}">
-                        <ui:ToggleSwitch x:Name="ModeChanges" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Mode switches'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="ArrowDownload24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Update available'}"
-                                         Description="{l:T 'Once for each new release.'}">
-                        <ui:ToggleSwitch x:Name="UpdateAvailable" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Update available'}" />
-                    </controls:SettingRow>
-                    <controls:SettingRow Icon="Person24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Sign-in expired'}"
-                                         Description="{l:T 'When Claude or ChatGPT ends the WinModes session, so the usage can no longer be read until you sign in again.'}">
-                        <ui:ToggleSwitch x:Name="SignInExpired" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Sign-in expired'}" />
-                    </controls:SettingRow>
+                    <controls:SettingSection Header="{l:T 'WINMODES'}" Icon="Flash24" Accent="{x:Static app:Palette.Apps}">
+                        <StackPanel>
+                            <controls:SettingRow Icon="Flash24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Mode switches'}"
+                                                 Description="{l:T 'The result of a switch started from the tray, a shortcut, an automation rule or when WinModes starts. A failed switch is always shown.'}">
+                                <ui:ToggleSwitch x:Name="ModeChanges" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Mode switches'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="ArrowDownload24" Accent="{x:Static app:Palette.Start}" Title="{l:T 'Update available'}"
+                                                 Description="{l:T 'Once for each new release.'}">
+                                <ui:ToggleSwitch x:Name="UpdateAvailable" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Update available'}" />
+                            </controls:SettingRow>
+                            <controls:SettingRow Icon="Person24" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Sign-in expired'}"
+                                                 Description="{l:T 'When Claude or ChatGPT ends the WinModes session, so the usage can no longer be read until you sign in again.'}">
+                                <ui:ToggleSwitch x:Name="SignInExpired" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Sign-in expired'}" />
+                            </controls:SettingRow>
+                        </StackPanel>
+                    </controls:SettingSection>
                 </StackPanel>
-            </controls:SettingSection>
-        </StackPanel>
-    </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </Page>

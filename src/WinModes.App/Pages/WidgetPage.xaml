@@ -10,13 +10,16 @@
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
 
     <!-- The page scrolls its options itself (the shell's scrolling is off) so the preview stays in view. -->
-    <Grid Margin="36,24,0,0" MaxWidth="1136">
+    <Grid Margin="36,24,0,0" MaxWidth="1326">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,14,0">
+        <controls:SectionNav Target="{Binding ElementName=PageScroll}" Margin="0,72,18,0" />
+
+        <ScrollViewer x:Name="PageScroll" Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="0,0,14,0">
             <StackPanel Margin="0,0,0,36">
                 <controls:PageHeader Title="{l:T 'Widget'}" Icon="PictureInPicture24" Accent="{x:Static app:Palette.Container}" Margin="0,0,0,0">
                     <TextBlock Text="{l:T 'A small panel with live figures, on your desktop or on the taskbar. Changes apply at once.'}"
@@ -189,7 +192,7 @@
             </StackPanel>
         </ScrollViewer>
 
-        <StackPanel Grid.Column="1" Margin="14,56,36,0" VerticalAlignment="Top">
+        <StackPanel Grid.Column="2" Margin="14,56,36,0" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal" Margin="4,20,0,10">
                 <ui:SymbolIcon Symbol="Eye24" FontSize="16" Foreground="{x:Static app:Palette.BrandBrush}" VerticalAlignment="Center" />
                 <TextBlock Text="{l:T 'PREVIEW'}" Style="{StaticResource CardCaptionStyle}" Margin="8,0,0,0" VerticalAlignment="Center" />

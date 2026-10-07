@@ -10,6 +10,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ### Added
 
+- Widget, Settings and Notifications: a list of the page's sections stays on the left; click one to jump to it, and the section you are reading is marked by a bar that slides along the list, and the page glides to the section, which fades in (skipped when Windows animations are off).
 - Widget: the taskbar can draw the limits of each plan as small rings with the percentage left inside, which take about half the width of the bars; choose Bars or Rings under Plan usage.
 - Widget: sign in to your xAI account to see the weekly usage of your SuperGrok plan next to Claude and Codex, with the Grok logo, in the widget on the desktop and on the taskbar; Grok has its own section on the Widget page to sign in or out and to show or hide it.
 - Widget: while you sign in to Claude, ChatGPT or Grok, a field accepts the code the provider shows (or the address the browser ended on) when your browser cannot come back to WinModes by itself, for example when it blocks the local address.

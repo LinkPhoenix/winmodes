@@ -5,6 +5,7 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:app="clr-namespace:WinModes.App"
       xmlns:controls="clr-namespace:WinModes.App.Controls"
+      ScrollViewer.CanContentScroll="False"
       Title="{l:T 'Settings'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Page.Resources>
@@ -18,264 +19,276 @@
         </Style>
     </Page.Resources>
 
-    <StackPanel Margin="36,24,36,36" MaxWidth="1100">
-        <controls:PageHeader Title="{l:T 'Settings'}" Icon="Settings24" Accent="{x:Static app:Palette.Neutral}" Margin="0,0,0,4">
-            <TextBlock Text="{l:T 'Changes are saved as you make them.'}" Style="{StaticResource SecondaryTextStyle}" />
-        </controls:PageHeader>
+    <!-- The page scrolls itself (the shell's scrolling is off) so the list of sections stays in view. -->
+    <Grid Margin="36,24,0,0" MaxWidth="1326">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <TextBlock Text="{l:T 'STARTUP'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <StackPanel>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{l:T 'Start with Windows'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Start WinModes automatically when you sign in.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="StartWithWindows" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Start with Windows'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{l:T 'Start minimized'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'When started with Windows, stay hidden in the notification area instead of opening the window.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="StartMinimized" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Start minimized'}" />
-                    </Grid>
-                </Border>
-            </StackPanel>
-        </Border>
+        <controls:SectionNav Target="{Binding ElementName=PageScroll}" Margin="0,72,18,0" />
 
-        <!-- Shown only when the startup entry points to a file that is gone. -->
-        <Border x:Name="StartupWarning" Style="{StaticResource CardBorderStyle}" Margin="0,10,0,0" Visibility="Collapsed" BorderThickness="1">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ui:SymbolIcon x:Name="StartupWarningIcon" Symbol="Warning24" FontSize="22" VerticalAlignment="Center" />
-                <StackPanel Grid.Column="1" Margin="14,0,16,0" VerticalAlignment="Center">
-                    <TextBlock Text="{l:T 'WinModes will not start with Windows'}" FontWeight="SemiBold" />
-                    <TextBlock Text="{l:T 'Its startup entry points to a file that no longer exists.'}"
-                               FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}" />
-                </StackPanel>
-                <ui:Button Grid.Column="2" Content="{l:T 'Use this copy of WinModes'}" Click="OnFixStartup" AutomationProperties.Name="{l:T 'Use this copy of WinModes'}" />
-            </Grid>
-        </Border>
+        <ScrollViewer x:Name="PageScroll" Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="0,0,14,0">
+            <StackPanel Margin="0,0,0,36" MaxWidth="1100">
+                <controls:PageHeader Title="{l:T 'Settings'}" Icon="Settings24" Accent="{x:Static app:Palette.Neutral}" Margin="0,0,0,4">
+                    <TextBlock Text="{l:T 'Changes are saved as you make them.'}" Style="{StaticResource SecondaryTextStyle}" />
+                </controls:PageHeader>
 
-        <TextBlock Text="{l:T 'WINDOW'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{l:T 'Keep running in the notification area'}" FontWeight="SemiBold" />
-                        <TextBlock Text="{l:T 'The close button hides the window; use Quit in the tray menu to exit. Turn off to exit when the window closes.'}"
-                                   FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                <TextBlock Text="{l:T 'STARTUP'}" Style="{StaticResource SectionTitleStyle}" controls:SectionNav.IsAnchor="True" controls:SectionNav.Icon="Rocket24" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                    <StackPanel>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{l:T 'Start with Windows'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Start WinModes automatically when you sign in.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="StartWithWindows" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Start with Windows'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{l:T 'Start minimized'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'When started with Windows, stay hidden in the notification area instead of opening the window.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="StartMinimized" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Start minimized'}" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="CloseToTray" Grid.Column="1" VerticalAlignment="Center"
-                                     Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Keep running in the notification area'}" />
-                </Grid>
-            </Border>
-        </Border>
+                </Border>
 
-        <TextBlock Text="{l:T 'DISPLAY'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <StackPanel>
-                <Border Style="{StaticResource RowStyle}">
+                <!-- Shown only when the startup entry points to a file that is gone. -->
+                <Border x:Name="StartupWarning" Style="{StaticResource CardBorderStyle}" Margin="0,10,0,0" Visibility="Collapsed" BorderThickness="1">
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{l:T 'Theme'}" FontWeight="SemiBold" />
-                            <TextBlock x:Name="ThemeNote" Text="{l:T 'Dark or light. Applied the next time WinModes starts.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                        <ui:SymbolIcon x:Name="StartupWarningIcon" Symbol="Warning24" FontSize="22" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Margin="14,0,16,0" VerticalAlignment="Center">
+                            <TextBlock Text="{l:T 'WinModes will not start with Windows'}" FontWeight="SemiBold" />
+                            <TextBlock Text="{l:T 'Its startup entry points to a file that no longer exists.'}"
+                                       FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}" />
                         </StackPanel>
-                        <ComboBox x:Name="Theme" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
-                                  DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged" AutomationProperties.Name="{l:T 'Theme'}" />
+                        <ui:Button Grid.Column="2" Content="{l:T 'Use this copy of WinModes'}" Click="OnFixStartup" AutomationProperties.Name="{l:T 'Use this copy of WinModes'}" />
                     </Grid>
                 </Border>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{l:T 'Language'}" FontWeight="SemiBold" />
-                            <TextBlock x:Name="LanguageNote" Text="{l:T 'Applied the next time WinModes starts.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ComboBox x:Name="LanguageChoice" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
-                                  DisplayMemberPath="Name" SelectionChanged="OnLanguageChanged" AutomationProperties.Name="{l:T 'Language'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{l:T 'Show AI memory on the tray icon'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'The notification-area icon shows the memory used by AI tools, in GB. Hover it for the detail per tool.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="ShowAiMemoryInTray" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show AI memory on the tray icon'}" />
-                    </Grid>
-                </Border>
-            </StackPanel>
-        </Border>
 
-        <TextBlock Text="{l:T 'PRIVACY'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{l:T 'Privacy mode'}" FontWeight="SemiBold" />
-                        <TextBlock Text="{l:T 'Hides project names, folders, command-line details and your account name, so you can share your screen or take a screenshot. Figures and tool names stay visible.'}"
-                                   FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                <TextBlock Text="{l:T 'WINDOW'}" Style="{StaticResource SectionTitleStyle}" controls:SectionNav.IsAnchor="True" controls:SectionNav.Icon="WindowApps24" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                    <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{l:T 'Keep running in the notification area'}" FontWeight="SemiBold" />
+                                <TextBlock Text="{l:T 'The close button hides the window; use Quit in the tray menu to exit. Turn off to exit when the window closes.'}"
+                                           FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                            </StackPanel>
+                            <ui:ToggleSwitch x:Name="CloseToTray" Grid.Column="1" VerticalAlignment="Center"
+                                             Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Keep running in the notification area'}" />
+                        </Grid>
+                    </Border>
+                </Border>
+
+                <TextBlock Text="{l:T 'DISPLAY'}" Style="{StaticResource SectionTitleStyle}" controls:SectionNav.IsAnchor="True" controls:SectionNav.Icon="PaintBrush24" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                    <StackPanel>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{l:T 'Theme'}" FontWeight="SemiBold" />
+                                    <TextBlock x:Name="ThemeNote" Text="{l:T 'Dark or light. Applied the next time WinModes starts.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ComboBox x:Name="Theme" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                                          DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged" AutomationProperties.Name="{l:T 'Theme'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{l:T 'Language'}" FontWeight="SemiBold" />
+                                    <TextBlock x:Name="LanguageNote" Text="{l:T 'Applied the next time WinModes starts.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ComboBox x:Name="LanguageChoice" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                                          DisplayMemberPath="Name" SelectionChanged="OnLanguageChanged" AutomationProperties.Name="{l:T 'Language'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{l:T 'Show AI memory on the tray icon'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'The notification-area icon shows the memory used by AI tools, in GB. Hover it for the detail per tool.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="ShowAiMemoryInTray" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show AI memory on the tray icon'}" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="PrivacyMode" Grid.Column="1" VerticalAlignment="Center"
-                                     Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Privacy mode'}" />
-                </Grid>
-            </Border>
-        </Border>
+                </Border>
 
-        <TextBlock Text="{l:T 'MODES'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <StackPanel>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{l:T 'Ask before activating a mode'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Show a summary of the changes and wait for your confirmation.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="ConfirmBeforeActivate" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Ask before activating a mode'}" />
-                    </Grid>
+                <TextBlock Text="{l:T 'PRIVACY'}" Style="{StaticResource SectionTitleStyle}" controls:SectionNav.IsAnchor="True" controls:SectionNav.Icon="LockClosed24" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                    <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{l:T 'Privacy mode'}" FontWeight="SemiBold" />
+                                <TextBlock Text="{l:T 'Hides project names, folders, command-line details and your account name, so you can share your screen or take a screenshot. Figures and tool names stay visible.'}"
+                                           FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                            </StackPanel>
+                            <ui:ToggleSwitch x:Name="PrivacyMode" Grid.Column="1" VerticalAlignment="Center"
+                                             Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Privacy mode'}" />
+                        </Grid>
+                    </Border>
                 </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{l:T 'Activate a mode when WinModes starts'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Windows asks for administrator permission each time. Skipped when a mode is already active.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ComboBox x:Name="AutoMode" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
-                                  DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
-                                  AutomationProperties.Name="{l:T 'Mode to activate when WinModes starts'}" />
-                    </Grid>
-                </Border>
-            </StackPanel>
-        </Border>
 
-        <TextBlock Text="{l:T 'SHORTCUTS AND IDLE SESSIONS'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <StackPanel>
-                <Border Style="{StaticResource RowStyle}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{l:T 'Global keyboard shortcuts'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Ctrl+Alt+1, 2, 3 activate the modes in the order of their cards; Ctrl+Alt+0 deactivates. They work from any app.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ui:ToggleSwitch x:Name="EnableHotkeys" Grid.Column="1" VerticalAlignment="Center"
-                                         Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Global keyboard shortcuts'}" />
-                    </Grid>
-                </Border>
-                <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
-                            <TextBlock Text="{l:T 'End idle AI sessions automatically'}" FontWeight="SemiBold" />
-                            <TextBlock Text="{l:T 'Off by default. Closes a project session, and everything it started, after it used no CPU for this long. Unsaved work in it is lost. Desktop apps are never closed.'}"
-                                       FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
-                        </StackPanel>
-                        <ComboBox x:Name="AutoEndIdle" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
-                                  DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
-                                  AutomationProperties.Name="{l:T 'End idle AI sessions automatically'}" />
-                    </Grid>
-                </Border>
-            </StackPanel>
-        </Border>
-
-        <TextBlock Text="{l:T 'WSL AND DOCKER'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{l:T 'Memory limit for WSL and Docker Desktop'}" FontWeight="SemiBold" />
-                        <TextBlock x:Name="WslNote" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
-                                   Text="{l:T 'Sets \'memory\' in your .wslconfig. It applies the next time WSL starts; a backup of the file is kept beside it.'}" />
+                <TextBlock Text="{l:T 'MODES'}" Style="{StaticResource SectionTitleStyle}" controls:SectionNav.IsAnchor="True" controls:SectionNav.Icon="Flash24" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                    <StackPanel>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{l:T 'Ask before activating a mode'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Show a summary of the changes and wait for your confirmation.'}" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="ConfirmBeforeActivate" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Ask before activating a mode'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{l:T 'Activate a mode when WinModes starts'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Windows asks for administrator permission each time. Skipped when a mode is already active.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ComboBox x:Name="AutoMode" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                                          DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
+                                          AutomationProperties.Name="{l:T 'Mode to activate when WinModes starts'}" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
-                    <ComboBox x:Name="WslMemory" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
-                              DisplayMemberPath="Label" SelectionChanged="OnWslMemoryChanged"
-                              AutomationProperties.Name="{l:T 'Memory limit for WSL and Docker Desktop'}" />
-                </Grid>
-            </Border>
-        </Border>
+                </Border>
 
-        <TextBlock Text="{l:T 'DATA'}" Style="{StaticResource SectionTitleStyle}" />
-        <Border Style="{StaticResource CardBorderStyle}" Padding="0">
-            <Border Style="{StaticResource RowStyle}" BorderThickness="0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{l:T 'Switch history'}" FontWeight="SemiBold" />
-                        <TextBlock x:Name="JournalPath" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                <TextBlock Text="{l:T 'SHORTCUTS AND IDLE SESSIONS'}" Style="{StaticResource SectionTitleStyle}" controls:SectionNav.IsAnchor="True" controls:SectionNav.Icon="Keyboard24" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                    <StackPanel>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{l:T 'Global keyboard shortcuts'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Ctrl+Alt+1, 2, 3 activate the modes in the order of their cards; Ctrl+Alt+0 deactivates. They work from any app.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="EnableHotkeys" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Global keyboard shortcuts'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="{l:T 'End idle AI sessions automatically'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Off by default. Closes a project session, and everything it started, after it used no CPU for this long. Unsaved work in it is lost. Desktop apps are never closed.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ComboBox x:Name="AutoEndIdle" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                                          DisplayMemberPath="Label" SelectionChanged="OnAutoModeChanged"
+                                          AutomationProperties.Name="{l:T 'End idle AI sessions automatically'}" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
-                    <ui:Button Grid.Column="1" Content="{l:T 'Open folder'}" Icon="{ui:SymbolIcon FolderOpen24}" Click="OnOpenJournal" />
-                </Grid>
-            </Border>
-        </Border>
+                </Border>
 
-        <TextBlock Margin="4,16,0,0" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
-                   Text="{l:T 'Automatic switching when a program starts is on the Automation page. Planned, not built yet: switching without a permission prompt.'}" />
-    </StackPanel>
+                <TextBlock Text="{l:T 'WSL AND DOCKER'}" Style="{StaticResource SectionTitleStyle}" controls:SectionNav.IsAnchor="True" controls:SectionNav.Icon="Server24" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                    <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{l:T 'Memory limit for WSL and Docker Desktop'}" FontWeight="SemiBold" />
+                                <TextBlock x:Name="WslNote" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
+                                           Text="{l:T 'Sets \'memory\' in your .wslconfig. It applies the next time WSL starts; a backup of the file is kept beside it.'}" />
+                            </StackPanel>
+                            <ComboBox x:Name="WslMemory" Grid.Column="1" MinWidth="170" VerticalAlignment="Center"
+                                      DisplayMemberPath="Label" SelectionChanged="OnWslMemoryChanged"
+                                      AutomationProperties.Name="{l:T 'Memory limit for WSL and Docker Desktop'}" />
+                        </Grid>
+                    </Border>
+                </Border>
+
+                <TextBlock Text="{l:T 'DATA'}" Style="{StaticResource SectionTitleStyle}" controls:SectionNav.IsAnchor="True" controls:SectionNav.Icon="Database24" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                    <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{l:T 'Switch history'}" FontWeight="SemiBold" />
+                                <TextBlock x:Name="JournalPath" FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                            </StackPanel>
+                            <ui:Button Grid.Column="1" Content="{l:T 'Open folder'}" Icon="{ui:SymbolIcon FolderOpen24}" Click="OnOpenJournal" />
+                        </Grid>
+                    </Border>
+                </Border>
+
+                <TextBlock Margin="4,16,0,0" FontSize="12" Style="{StaticResource SecondaryTextStyle}"
+                           Text="{l:T 'Automatic switching when a program starts is on the Automation page. Planned, not built yet: switching without a permission prompt.'}" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </Page>
