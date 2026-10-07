@@ -4,7 +4,11 @@ using System.Runtime.InteropServices;
 
 namespace WinModes.Core.Planning;
 
-/// <summary>One running process with its parent, load and launch details.</summary>
+/// <summary>
+/// One running process with its parent, load and launch details. <paramref name="PrivateMemoryMb"/> is the committed private memory;
+/// <paramref name="WorkingSetMb"/> is what the process holds in RAM, shared pages included, so the two differ. The working set, the handle count
+/// and the base priority come from data the sampler reads anyway: they cost no handle.
+/// </summary>
 public sealed record ProcessNode(
     int Pid,
     int ParentPid,
@@ -15,7 +19,10 @@ public sealed record ProcessNode(
     string? ExecutablePath,
     string? CommandLine,
     string? WorkingDirectory,
-    DateTime? StartTime);
+    DateTime? StartTime,
+    double WorkingSetMb = 0,
+    int Handles = 0,
+    int BasePriority = 0);
 
 /// <summary>
 /// Samples every process: parent links from a toolhelp snapshot, CPU from the time used since the previous
@@ -86,7 +93,10 @@ public sealed class ProcessSampler
                     cached.Info.Path,
                     cached.Info.CommandLine,
                     cached.Info.WorkingDirectory,
-                    start));
+                    start,
+                    (TryRead(() => (long?)process.WorkingSet64) ?? 0) / BytesPerMb,
+                    TryRead(() => (int?)process.HandleCount) ?? 0,
+                    link.BasePriority));
             }
         }
         finally
@@ -129,9 +139,9 @@ public sealed class ProcessSampler
         return parent.StartTime is null || node.StartTime is null || parent.StartTime <= node.StartTime;
     }
 
-    private static Dictionary<int, (int ParentPid, int Threads)> ReadParentsAndThreads()
+    private static Dictionary<int, (int ParentPid, int Threads, int BasePriority)> ReadParentsAndThreads()
     {
-        var result = new Dictionary<int, (int, int)>();
+        var result = new Dictionary<int, (int, int, int)>();
         var snapshot = CreateToolhelp32Snapshot(SnapshotProcesses, 0);
         if (snapshot == InvalidHandle)
         {
@@ -145,7 +155,7 @@ public sealed class ProcessSampler
             {
                 do
                 {
-                    result[(int)entry.ProcessId] = ((int)entry.ParentProcessId, (int)entry.Threads);
+                    result[(int)entry.ProcessId] = ((int)entry.ParentProcessId, (int)entry.Threads, entry.BasePriority);
                 }
                 while (Process32NextW(snapshot, ref entry));
             }

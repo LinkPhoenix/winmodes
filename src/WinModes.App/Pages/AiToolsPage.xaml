@@ -17,6 +17,19 @@
             </controls:PageHeader.Actions>
         </controls:PageHeader>
 
+        <!-- Shown instead of the list while the reading of the AI tools is turned off under Monitoring: nothing is read, no timer runs. -->
+        <Border x:Name="OffState" Style="{StaticResource CardBorderStyle}" Padding="32" Visibility="Collapsed">
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="40" HorizontalAlignment="Center"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="&#xE99A;" />
+                <TextBlock Text="{l:T 'The reading of AI tools is turned off'}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                <TextBlock Text="{l:T 'WinModes does not look for AI tools, so nothing is read and nothing runs for this page. Turn it on under Monitoring in Settings.'}"
+                           Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,4,0,0" />
+                <ui:Button Content="{l:T 'Monitoring settings'}" HorizontalAlignment="Center" Margin="0,16,0,0" Click="OnOpenMonitoring"
+                           AutomationProperties.Name="{l:T 'Monitoring settings'}" />
+            </StackPanel>
+        </Border>
+
         <Border x:Name="EmptyState" Style="{StaticResource CardBorderStyle}" Padding="32" Visibility="Collapsed">
             <StackPanel HorizontalAlignment="Center">
                 <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="40" HorizontalAlignment="Center"

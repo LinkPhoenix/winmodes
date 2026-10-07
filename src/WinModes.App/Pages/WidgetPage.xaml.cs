@@ -67,19 +67,51 @@ public partial class WidgetPage : Page
 
         Loaded += (_, _) =>
         {
+            ShowMonitoring();
             if (Application.Current is App app)
             {
+                // The preview is a widget on screen: while this page is open it asks for the figures it draws, and only those.
+                _previewing = true;
+                RequestPreviewFigures(AppSettings.Load());
                 app.Stats.Updated += OnStats;
             }
         };
         Unloaded += (_, _) =>
         {
             AccountSession.CancelSignIn();
+            _previewing = false;
             if (Application.Current is App app)
             {
                 app.Stats.Updated -= OnStats;
+                app.Stats.SetDemand(this, WinModes.Core.Monitoring.StatsSources.None);
             }
         };
+    }
+
+    private bool _previewing;
+
+    private void RequestPreviewFigures(AppSettings settings)
+    {
+        if (_previewing && Application.Current is App app)
+        {
+            app.Stats.SetDemand(this, settings.Demand(widgetShown: true).Resolve(settings.Monitoring.Allowed));
+        }
+    }
+
+    /// <summary>A block whose reading is turned off under Monitoring cannot be chosen here: it would never be drawn.</summary>
+    private void ShowMonitoring()
+    {
+        var monitoring = AppSettings.Load().Monitoring;
+        Gate(CpuSetting, ShowCpu, monitoring.Cpu);
+        Gate(MemorySetting, ShowMemory, monitoring.Memory);
+        Gate(NetworkSetting, ShowNetwork, monitoring.Network);
+        Gate(AiToolsSetting, ShowAiTools, monitoring.AiTools);
+    }
+
+    private static void Gate(Controls.SettingRow row, Wpf.Ui.Controls.ToggleSwitch toggle, bool read)
+    {
+        toggle.IsEnabled = read;
+        row.Description = read ? "" : Loc.T("Turned off under Monitoring in Settings: it is not read.");
     }
 
     private void OnStats(object? sender, StatsReading reading) => Preview.Show(reading);
@@ -269,7 +301,8 @@ public partial class WidgetPage : Page
     {
         var widget = settings.Widget;
         // The preview keeps its natural size so it always fits; the size option is described instead.
-        Preview.Apply(widget, scaled: false);
+        Preview.Apply(settings.DrawnWidget, scaled: false);
+        RequestPreviewFigures(settings);
         Preview.Opacity = Math.Clamp(widget.OpacityPercent, 40, 100) / 100d;
         var size = ScaleChoices.FirstOrDefault(choice => choice.Value == widget.ScalePercent)?.Label ?? Loc.T("Medium");
         var where = widget.Placement switch

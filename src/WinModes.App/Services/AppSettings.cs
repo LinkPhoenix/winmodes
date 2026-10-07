@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using Microsoft.Win32;
 using WinModes.Core;
+using WinModes.Core.Monitoring;
 
 namespace WinModes.App.Services;
 
@@ -104,6 +105,34 @@ internal sealed record AppSettings
 
     /// <summary>Automatic switching when a program starts. Off by default.</summary>
     public AutoSwitchSettings AutoSwitch { get; init; } = new();
+
+    /// <summary>What WinModes may read about this PC in the background, edited under Monitoring on the Settings page.</summary>
+    public MonitoringSettings Monitoring { get; init; } = new();
+
+    /// <summary>The optional columns of the Processes page.</summary>
+    public ProcessColumnSettings ProcessColumns { get; init; } = new();
+
+    /// <summary>The widget as it can be drawn: a block whose reading the user turned off under Monitoring is not shown.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public WidgetSettings DrawnWidget => Widget.Limited(Monitoring);
+
+    /// <summary>What the features that are on ask to read. <paramref name="widgetShown"/> is true when a widget, or the preview of one, is on screen.</summary>
+    public SamplingDemand Demand(bool widgetShown)
+    {
+        var widget = DrawnWidget;
+        return new SamplingDemand
+        {
+            Widget = widgetShown,
+            WidgetCpu = widget.ShowCpu,
+            WidgetMemory = widget.ShowMemory,
+            WidgetNetwork = widget.ShowNetwork,
+            WidgetAiTools = widget.ShowAiTools,
+            TrayMeter = ShowAiMemoryInTray,
+            AiMemoryAlerts = AiMemoryAlertGb > 0 || AiToolAlertGb > 0,
+            EndIdleSessions = AutoEndIdleMinutes > 0,
+            RecordUsage = RecordUsageHistory,
+        };
+    }
 
     /// <summary>Mode activated when the app starts; null means none.</summary>
     public string? AutoActivateMode { get; init; }
@@ -215,6 +244,52 @@ internal sealed record AutoSwitchSettings
     /// <summary>True when at least one rule can act (a rule switched off stays in the list but does nothing).</summary>
     [System.Text.Json.Serialization.JsonIgnore]
     public bool HasActiveRules => Rules.Any(rule => rule.Enabled);
+}
+
+/// <summary>
+/// What WinModes may read about this PC in the background. A switch that is off means nothing is read for it at all: no sampling, no
+/// timer, and what lives on it is hidden or does nothing. Everything may be read until the user says otherwise, but only while something
+/// shows it (the widget, the tray icon, an open page); the preparation of the slow pages is the one choice that starts off.
+/// </summary>
+internal sealed record MonitoringSettings
+{
+    public bool Cpu { get; init; } = true;
+
+    public bool Memory { get; init; } = true;
+
+    /// <summary>The speed of the network adapters.</summary>
+    public bool Network { get; init; } = true;
+
+    /// <summary>The GPU and disk counters of the Dashboard; the GPU one lists every engine of every process, so it is the heaviest read of the app.</summary>
+    public bool GpuDisk { get; init; } = true;
+
+    /// <summary>Finding the AI and coding tools among the processes and reading their memory and CPU: the tray figure, the alerts, idle sessions, usage history and the AI tools page.</summary>
+    public bool AiTools { get; init; } = true;
+
+    /// <summary>The processes and services counted and ranked on the Dashboard.</summary>
+    public bool Processes { get; init; } = true;
+
+    /// <summary>Read the state of the Optimize and Debloat pages once the PC has settled after the start, so they open already filled. Off: each page reads it when it is opened.</summary>
+    public bool PrepareInBackground { get; init; }
+
+    /// <summary>What the live sampler may read.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public StatsSources Allowed =>
+        (Cpu ? StatsSources.Cpu : 0) | (Memory ? StatsSources.Memory : 0) | (Network ? StatsSources.Network : 0) | (AiTools ? StatsSources.AiTools : 0);
+}
+
+/// <summary>The optional columns of the Processes page. Name, PID, CPU, memory, threads and command are always shown.</summary>
+internal sealed record ProcessColumnSettings
+{
+    /// <summary>What the process holds in RAM, shared pages included.</summary>
+    public bool WorkingSet { get; init; } = true;
+
+    public bool Handles { get; init; }
+
+    /// <summary>How long the process has been running.</summary>
+    public bool RunningFor { get; init; } = true;
+
+    public bool Priority { get; init; }
 }
 
 /// <summary>Where the widget is shown.</summary>
@@ -355,6 +430,15 @@ internal sealed record WidgetSettings
 
     /// <summary>Hide while a full-screen app (game, video, presentation) is in front.</summary>
     public bool HideOnFullScreen { get; init; } = true;
+
+    /// <summary>This widget with the blocks the user turned off under Monitoring taken out: a figure that is not read is not drawn.</summary>
+    public WidgetSettings Limited(MonitoringSettings monitoring) => this with
+    {
+        ShowCpu = ShowCpu && monitoring.Cpu,
+        ShowMemory = ShowMemory && monitoring.Memory,
+        ShowNetwork = ShowNetwork && monitoring.Network,
+        ShowAiTools = ShowAiTools && monitoring.AiTools,
+    };
 
     /// <summary>The widget cannot be dragged.</summary>
     public bool LockPosition { get; init; }

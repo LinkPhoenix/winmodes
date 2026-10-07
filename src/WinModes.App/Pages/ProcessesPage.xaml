@@ -4,6 +4,7 @@
       xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:app="clr-namespace:WinModes.App"
       xmlns:controls="clr-namespace:WinModes.App.Controls"
+      xmlns:services="clr-namespace:WinModes.App.Services"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       Title="{l:T 'Processes'}"
       ScrollViewer.CanContentScroll="False"
@@ -68,11 +69,14 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <controls:SearchField x:Name="SearchBox" PlaceholderText="{l:T 'Search by name, PID or command line'}"
                                   TextChanged="OnSearchChanged" AutomationProperties.Name="{l:T 'Search processes'}" />
             <CheckBox x:Name="ProtectedOnly" Grid.Column="1" Content="{l:T 'Protected only'}" Margin="16,0,0,0"
                       Checked="OnFilterChanged" Unchecked="OnFilterChanged" />
+            <ui:Button x:Name="ColumnsButton" Grid.Column="2" Content="{l:T 'Columns'}" Icon="{ui:SymbolIcon TableSettings24}" Margin="16,0,0,0"
+                       Click="OnColumnsClick" AutomationProperties.Name="{l:T 'Choose the columns'}" />
         </Grid>
         </StackPanel>
 
@@ -89,15 +93,32 @@
                             <ColumnDefinition Width="70" />
                             <ColumnDefinition Width="70" />
                             <ColumnDefinition Width="90" />
+                            <ColumnDefinition Width="{Binding WorkingSetColumn, Source={x:Static services:ProcessColumns.Shared}}" />
                             <ColumnDefinition Width="70" />
+                            <ColumnDefinition Width="{Binding HandlesColumn, Source={x:Static services:ProcessColumns.Shared}}" />
+                            <ColumnDefinition Width="{Binding RunningForColumn, Source={x:Static services:ProcessColumns.Shared}}" />
+                            <ColumnDefinition Width="{Binding PriorityColumn, Source={x:Static services:ProcessColumns.Shared}}" />
                             <ColumnDefinition Width="*" MinWidth="100" />
                         </Grid.ColumnDefinitions>
                         <Button x:Name="SortName" Style="{StaticResource SortHeaderStyle}" Tag="Name" HorizontalAlignment="Left" Click="OnSortClick" />
                         <Button x:Name="SortPid" Grid.Column="1" Style="{StaticResource SortHeaderStyle}" Tag="Pid" HorizontalAlignment="Right" Click="OnSortClick" />
                         <Button x:Name="SortCpu" Grid.Column="2" Style="{StaticResource SortHeaderStyle}" Tag="Cpu" HorizontalAlignment="Right" Click="OnSortClick" />
-                        <Button x:Name="SortMemory" Grid.Column="3" Style="{StaticResource SortHeaderStyle}" Tag="Memory" HorizontalAlignment="Right" Click="OnSortClick" />
-                        <Button x:Name="SortThreads" Grid.Column="4" Style="{StaticResource SortHeaderStyle}" Tag="Threads" HorizontalAlignment="Right" Click="OnSortClick" />
-                        <TextBlock Grid.Column="5" Text="{l:T 'Command'}" FontSize="12" FontWeight="SemiBold" Margin="20,4,0,4"
+                        <Button x:Name="SortMemory" Grid.Column="3" Style="{StaticResource SortHeaderStyle}" Tag="Memory" HorizontalAlignment="Right" Click="OnSortClick"
+                                ToolTip="{l:T 'Private memory: what the process has committed, shared pages left out.'}" />
+                        <Button x:Name="SortWorkingSet" Grid.Column="4" Style="{StaticResource SortHeaderStyle}" Tag="WorkingSet" HorizontalAlignment="Right" Click="OnSortClick"
+                                Visibility="{Binding WorkingSetVisibility, Source={x:Static services:ProcessColumns.Shared}}"
+                                ToolTip="{l:T 'Working set: what the process holds in RAM, shared pages included.'}" />
+                        <Button x:Name="SortThreads" Grid.Column="5" Style="{StaticResource SortHeaderStyle}" Tag="Threads" HorizontalAlignment="Right" Click="OnSortClick" />
+                        <Button x:Name="SortHandles" Grid.Column="6" Style="{StaticResource SortHeaderStyle}" Tag="Handles" HorizontalAlignment="Right" Click="OnSortClick"
+                                Visibility="{Binding HandlesVisibility, Source={x:Static services:ProcessColumns.Shared}}"
+                                ToolTip="{l:T 'Handles: files, keys and other objects the process holds open.'}" />
+                        <Button x:Name="SortRunning" Grid.Column="7" Style="{StaticResource SortHeaderStyle}" Tag="Running" HorizontalAlignment="Right" Click="OnSortClick"
+                                Visibility="{Binding RunningForVisibility, Source={x:Static services:ProcessColumns.Shared}}"
+                                ToolTip="{l:T 'How long the process has been running.'}" />
+                        <Button x:Name="SortPriority" Grid.Column="8" Style="{StaticResource SortHeaderStyle}" Tag="Priority" HorizontalAlignment="Right" Click="OnSortClick"
+                                Visibility="{Binding PriorityVisibility, Source={x:Static services:ProcessColumns.Shared}}"
+                                ToolTip="{l:T 'Priority class: how Windows ranks the process when the CPU is busy.'}" />
+                        <TextBlock Grid.Column="9" Text="{l:T 'Command'}" FontSize="12" FontWeight="SemiBold" Margin="20,4,0,4"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     </Grid>
                 </Border>
@@ -141,7 +162,11 @@
                                         <ColumnDefinition Width="70" />
                                         <ColumnDefinition Width="70" />
                                         <ColumnDefinition Width="90" />
+                                        <ColumnDefinition Width="{Binding WorkingSetColumn, Source={x:Static services:ProcessColumns.Shared}}" />
                                         <ColumnDefinition Width="70" />
+                                        <ColumnDefinition Width="{Binding HandlesColumn, Source={x:Static services:ProcessColumns.Shared}}" />
+                                        <ColumnDefinition Width="{Binding RunningForColumn, Source={x:Static services:ProcessColumns.Shared}}" />
+                                        <ColumnDefinition Width="{Binding PriorityColumn, Source={x:Static services:ProcessColumns.Shared}}" />
                                         <ColumnDefinition Width="*" MinWidth="100" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Orientation="Horizontal" Margin="{Binding Indent}" VerticalAlignment="Center">
@@ -166,9 +191,17 @@
                                                Foreground="{Binding CpuColor}" />
                                     <TextBlock Grid.Column="3" Text="{Binding MemoryText}" HorizontalAlignment="Right" VerticalAlignment="Center"
                                                FontWeight="SemiBold" Foreground="{Binding MemoryColor}" />
-                                    <TextBlock Grid.Column="4" Text="{Binding Threads}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                    <TextBlock Grid.Column="4" Text="{Binding WorkingSetText}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               Visibility="{Binding WorkingSetVisibility, Source={x:Static services:ProcessColumns.Shared}}" />
+                                    <TextBlock Grid.Column="5" Text="{Binding Threads}" HorizontalAlignment="Right" VerticalAlignment="Center"
                                                Style="{StaticResource SecondaryTextStyle}" />
-                                    <TextBlock Grid.Column="5" Text="{Binding Command}" Margin="20,0,0,0" VerticalAlignment="Center" FontSize="12"
+                                    <TextBlock Grid.Column="6" Text="{Binding HandlesText}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               Visibility="{Binding HandlesVisibility, Source={x:Static services:ProcessColumns.Shared}}" Style="{StaticResource SecondaryTextStyle}" />
+                                    <TextBlock Grid.Column="7" Text="{Binding RunningText}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               Visibility="{Binding RunningForVisibility, Source={x:Static services:ProcessColumns.Shared}}" Style="{StaticResource SecondaryTextStyle}" />
+                                    <TextBlock Grid.Column="8" Text="{Binding PriorityText}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               Visibility="{Binding PriorityVisibility, Source={x:Static services:ProcessColumns.Shared}}" Foreground="{Binding PriorityColor}" />
+                                    <TextBlock Grid.Column="9" Text="{Binding Command}" Margin="20,0,0,0" VerticalAlignment="Center" FontSize="12"
                                                TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" ToolTip="{Binding Command}"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                                 </Grid>

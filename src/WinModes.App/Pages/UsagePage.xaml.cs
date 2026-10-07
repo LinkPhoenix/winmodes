@@ -36,6 +36,7 @@ public partial class UsagePage : Page
         };
         Loaded += async (_, _) =>
         {
+            MonitoringGate.ApplyAiTools(Enabled);
             _timer.Start();
             await RefreshAsync();
         };

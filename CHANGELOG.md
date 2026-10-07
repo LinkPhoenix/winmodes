@@ -14,6 +14,8 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Widget: the taskbar can draw the limits of each plan as small rings with the percentage left inside, which take about half the width of the bars; choose Bars or Rings under Plan usage.
 - Widget: sign in to your xAI account to see the weekly usage of your SuperGrok plan next to Claude and Codex, with the Grok logo, in the widget on the desktop and on the taskbar; Grok has its own section on the Widget page to sign in or out and to show or hide it.
 - Widget: while you sign in to Claude, ChatGPT or Grok, a field accepts the code the provider shows (or the address the browser ended on) when your browser cannot come back to WinModes by itself, for example when it blocks the local address.
+- Settings: a Monitoring section turns off, one by one, the reading of the CPU, the memory, the network speed, the GPU and disk counters, the AI tools, and the processes and services of the Dashboard; a reading that is off is never taken, and what lives on it is hidden or greyed out (the Dashboard says that figures are off on purpose, and the AI tools page says that nothing runs for it).
+- Processes: new columns for the working set (what a process holds in RAM), the handles, how long each process has been running and its priority, with a Columns button to choose which ones are shown (the working set and the running time by default); each one can be sorted, and a collapsed parent adds up the working set and the handles of its children like the other figures.
 
 ### Changed
 
@@ -21,6 +23,9 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 - Widget: the plan of a Claude account is read from the account itself, and a Grok account shows the tier of its plan.
 - Widget: Sign out now asks first, in a dialog in the style of the app that names the account and says what is deleted from this PC and what is left alone, instead of signing out at once.
 - Widget: Grok shows a second bar for the usage billed on demand when the account has set a cap.
+- Widget: the CPU, the memory, the network speed and the AI tools are read one by one, and only what the widget, the tray icon or an alert shows; before, the four were read at each refresh whatever the widget drew, and a widget that shows only plans now reads nothing about the PC.
+- Widget: the one-line version follows the CPU, Memory and AI tools options of the page instead of always showing the three.
+- Settings: Optimize and Debloat are no longer read in the background about a minute after WinModes starts (that cost two PowerShell commands and a scan of every setting each time); each page reads its state when it is opened, and Prepare the slow pages under Monitoring brings the old behaviour back.
 
 ### Removed
 
@@ -30,6 +35,7 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 - About: Download and install works for a beta again; the update was refused with "The release name is not a version" as soon as the new version was a beta, so a beta build could only be updated by hand.
 - About: Download and install waits while a mode switch is running, before the download and again before the installer starts, instead of closing WinModes in the middle of the switch.
+- Processes: in privacy mode the search no longer matches the command line, which the list hides, so a hidden text cannot be found by typing it.
 - Window: while WinModes is minimized, the pages (Dashboard, Modes, Processes, Services, AI tools, Usage, History) and the charts no longer go on reading the PC and redrawing for a window nobody can see; the Dashboard used about ten times more processor time minimized than it needed.
 - Window: opening WinModes again from the tray keeps it maximized if it was maximized when it was sent to the tray, instead of shrinking it to its normal size.
 - Debloat: the line under the title lines up with the title like on the other pages, and the description of an app that does not fit its card now ends with an ellipsis instead of being cut in the middle of a line.

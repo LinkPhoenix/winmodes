@@ -47,6 +47,10 @@ public partial class WidgetView : UserControl
         MemoryRow.Visibility = Visible(settings.ShowMemory);
         NetworkRow.Visibility = Visible(settings.ShowNetwork);
         AiSection.Visibility = Visible(settings.ShowAiTools);
+        // The one-line version draws the same blocks: a figure that is not read is not shown there either.
+        (CompactCpuLabel.Visibility, CompactCpu.Visibility) = (Visible(settings.ShowCpu), Visible(settings.ShowCpu));
+        (CompactMemoryLabel.Visibility, CompactMemory.Visibility) = (Visible(settings.ShowMemory), Visible(settings.ShowMemory));
+        (CompactAiLabel.Visibility, CompactAi.Visibility) = (Visible(settings.ShowAiTools), Visible(settings.ShowAiTools));
         AiTools.Visibility = Visible(settings.ShowToolDetail);
         // No line above the AI block when it is the only thing shown.
         AiSeparator.Visibility = Visible(settings.ShowCpu || settings.ShowMemory || settings.ShowNetwork);

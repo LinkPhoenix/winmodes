@@ -136,8 +136,9 @@ public partial class App : Application, IDisposable
             }
         });
 
-        // Reading the state of every Optimize setting takes a moment: do it once the PC has settled, so the page opens with it already read.
-        _ = Task.Run(async () =>
+        // Reading the state of every Optimize setting takes a moment: when the user asked for it, do it once the PC has settled, so the page opens with it already read.
+        var prepare = Services.AppSettings.Load().Monitoring.PrepareInBackground;
+        _ = !prepare ? Task.CompletedTask : Task.Run(async () =>
         {
             await Task.Delay(TimeSpan.FromSeconds(45));
             try
@@ -151,7 +152,7 @@ public partial class App : Application, IDisposable
         });
 
         // The same for the apps of the PC (the Debloat page): two PowerShell commands, so a little later, when nothing else is loading.
-        _ = Task.Run(async () =>
+        _ = !prepare ? Task.CompletedTask : Task.Run(async () =>
         {
             await Task.Delay(TimeSpan.FromSeconds(60));
             try
@@ -277,7 +278,8 @@ public partial class App : Application, IDisposable
             _taskbarWidget = null;
         }
 
-        _taskbarWidget?.Apply(settings.Widget);
+        // What is drawn is what is read: a block the user turned off under Monitoring is left out.
+        _taskbarWidget?.Apply(settings.DrawnWidget);
 
         if (floating && _widget is null)
         {
@@ -306,10 +308,11 @@ public partial class App : Application, IDisposable
             _widget = null;
         }
 
-        _widget?.Apply(settings.Widget);
+        _widget?.Apply(settings.DrawnWidget);
         _liveStats.RefreshInterval = TimeSpan.FromSeconds(Math.Clamp(settings.Widget.RefreshSeconds, 1, 10));
 
-        if (!settings.ShowAiMemoryInTray)
+        var allowed = settings.Monitoring.Allowed;
+        if (!ShowsAiMemoryInTray(settings))
         {
             _trayMeter?.Reset();
         }
@@ -319,9 +322,11 @@ public partial class App : Application, IDisposable
         _autoSwitcher ??= new Services.AutoSwitcher(SwitchFromTrayAsync);
         _autoSwitcher.Apply(settings.AutoSwitch);
 
-        // Sample in the background only while a feature needs it.
-        var needed = settings.ShowAiMemoryInTray || settings.ShowDesktopWidget || settings.AiMemoryAlertGb > 0
-            || settings.AiToolAlertGb > 0 || settings.AutoEndIdleMinutes > 0 || settings.RecordUsageHistory;
+        // Read in the background only what a feature shows and the user allows: each source on its own, and no timer at all when nothing needs one.
+        var demand = settings.Demand(widgetShown: settings.ShowDesktopWidget);
+        _liveStats.Allowed = allowed;
+        _liveStats.SetDemand(this, demand.Resolve(allowed));
+        var needed = demand.NeedsTimer(allowed);
         if (!settings.RecordUsageHistory)
         {
             AppServices.Usage.Flush();
@@ -380,6 +385,9 @@ public partial class App : Application, IDisposable
         });
     }
 
+    /// <summary>The tray figure is the memory of the AI tools: it is drawn only while they are read.</summary>
+    private static bool ShowsAiMemoryInTray(Services.AppSettings settings) => settings.ShowAiMemoryInTray && settings.Monitoring.AiTools;
+
     private void OnStats(object? sender, Services.StatsReading reading)
     {
         const double MbPerGb = 1024;
@@ -387,7 +395,7 @@ public partial class App : Application, IDisposable
         const double RearmRatio = 0.9;
 
         var settings = Services.AppSettings.Load();
-        if (settings.ShowAiMemoryInTray)
+        if (ShowsAiMemoryInTray(settings))
         {
             _trayMeter?.Show(reading);
         }
@@ -404,7 +412,7 @@ public partial class App : Application, IDisposable
 
         CheckToolAlerts(reading, settings.AiToolAlertGb);
         EndIdleSessions(reading, settings.AutoEndIdleMinutes);
-        RecordUsage(reading, settings.RecordUsageHistory);
+        RecordUsage(reading, settings.RecordUsageHistory && settings.Monitoring.AiTools);
 
         if (settings.AiMemoryAlertGb <= 0)
         {

@@ -80,23 +80,23 @@
 
                 <controls:SettingSection Header="{l:T 'CONTENT'}" Icon="DataBarVertical24" Accent="{x:Static app:Palette.Container}">
                     <StackPanel>
-                        <controls:SettingRow Icon="DeveloperBoard24" Accent="{x:Static app:Palette.BrandBrush}" Title="CPU">
+                        <controls:SettingRow x:Name="CpuSetting" Icon="DeveloperBoard24" Accent="{x:Static app:Palette.BrandBrush}" Title="CPU">
                             <ui:ToggleSwitch x:Name="ShowCpu" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show CPU'}" />
                         </controls:SettingRow>
-                        <controls:SettingRow Icon="Memory16" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Memory'}">
+                        <controls:SettingRow x:Name="MemorySetting" Icon="Memory16" Accent="{x:Static app:Palette.Stop}" Title="{l:T 'Memory'}">
                             <ui:ToggleSwitch x:Name="ShowMemory" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show memory'}" />
                         </controls:SettingRow>
                         <controls:SettingRow Icon="DataLine24" Accent="{x:Static app:Palette.Apps}"
                                              Title="{l:T 'History graphs'}" Description="{l:T 'Small CPU and memory graphs under the bars.'}">
                             <ui:ToggleSwitch x:Name="ShowGraph" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'History graphs'}" />
                         </controls:SettingRow>
-                        <controls:SettingRow Icon="Wifi124" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Network speed'}">
+                        <controls:SettingRow x:Name="NetworkSetting" Icon="Wifi124" Accent="{x:Static app:Palette.Container}" Title="{l:T 'Network speed'}">
                             <ui:ToggleSwitch x:Name="ShowNetwork" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show network speed'}" />
                         </controls:SettingRow>
                         <controls:SettingRow Icon="Flash24" Accent="{x:Static app:Palette.Power}" Title="{l:T 'Active mode'}">
                             <ui:ToggleSwitch x:Name="ShowMode" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show active mode'}" />
                         </controls:SettingRow>
-                        <controls:SettingRow Icon="Bot24" Accent="{x:Static app:Palette.Apps}" Title="{l:T 'AI tools total'}">
+                        <controls:SettingRow x:Name="AiToolsSetting" Icon="Bot24" Accent="{x:Static app:Palette.Apps}" Title="{l:T 'AI tools total'}">
                             <ui:ToggleSwitch x:Name="ShowAiTools" Checked="OnChanged" Unchecked="OnChanged" AutomationProperties.Name="{l:T 'Show AI tools total'}" />
                         </controls:SettingRow>
                         <controls:SettingRow Icon="List24" Accent="{x:Static app:Palette.Neutral}" Title="{l:T 'Detail per AI tool'}">

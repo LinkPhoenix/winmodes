@@ -25,6 +25,7 @@ public partial class DashboardPage : Page
     private static readonly Brush InactiveDot = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
 
     private readonly SystemMonitor _monitor = new();
+    private MonitoringSettings _monitoring = new();
     private bool _gpuDiskRunning;
     private readonly DispatcherTimer _timer = new() { Interval = FastInterval };
     private readonly List<QuickMode> _modes;
@@ -44,6 +45,7 @@ public partial class DashboardPage : Page
         Loaded += async (_, _) =>
         {
             _tick = 0;
+            ApplyMonitoring();
             _timer.Start();
             await OnTickAsync();
         };
@@ -67,6 +69,7 @@ public partial class DashboardPage : Page
             _slowRefreshRunning = true;
             try
             {
+                // Returns at once when the processes and the AI tools are both turned off.
                 await RefreshProcessesAsync();
                 if (tick % ModesEveryTicks == 0)
                 {
@@ -80,35 +83,74 @@ public partial class DashboardPage : Page
         }
     }
 
+    /// <summary>
+    /// What the user turned off under Monitoring is not read and not shown: a card of a source that is off is hidden, so no counter is
+    /// touched for it, and a note says that something is hidden on purpose.
+    /// </summary>
+    private void ApplyMonitoring()
+    {
+        var monitoring = _monitoring = WinModes.App.Services.AppSettings.Load().Monitoring;
+        AiCard.Visibility = Shown(monitoring.AiTools);
+        CpuCard.Visibility = CpuChartCard.Visibility = Shown(monitoring.Cpu);
+        MemoryCard.Visibility = MemoryChartCard.Visibility = Shown(monitoring.Memory);
+        ProcessRows.Visibility = ServiceRows.Visibility = TopCard.Visibility = Shown(monitoring.Processes);
+        NetworkRows.Visibility = Shown(monitoring.Network);
+        CountsCard.Visibility = Shown(monitoring.Processes || monitoring.Network);
+        VitalsRow.Visibility = Shown(monitoring.Cpu || monitoring.Memory || monitoring.Processes || monitoring.Network);
+        HistoryRow.Visibility = Shown(monitoring.Cpu || monitoring.Memory);
+        GpuDiskRow.Visibility = Shown(monitoring.GpuDisk);
+
+        // The modes take the whole width when the list of consumers is gone.
+        Grid.SetColumn(QuickModesCard, monitoring.Processes ? 2 : 0);
+        Grid.SetColumnSpan(QuickModesCard, monitoring.Processes ? 1 : 3);
+
+        var anyOff = !(monitoring.Cpu && monitoring.Memory && monitoring.Network && monitoring.GpuDisk && monitoring.AiTools && monitoring.Processes);
+        MonitoringNote.Visibility = Shown(anyOff);
+    }
+
+    private static Visibility Shown(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
+
+    private void OnOpenMonitoring(object sender, RoutedEventArgs e) =>
+        (Application.Current.MainWindow as MainWindow)?.NavigateTo(typeof(SettingsPage));
+
     private void RefreshVitals()
     {
         try
         {
-            var cpu = _monitor.SampleCpuPercent();
-            var memory = SystemMonitor.SampleMemory();
             var culture = CultureInfo.CurrentCulture;
 
-            CoreBars.Show(_monitor.SampleCoresPercent());
-            var (down, up) = _monitor.SampleNetwork();
-            NetworkValue.Text = string.Create(culture, $"\u2193 {down:0.0}  \u2191 {up:0.0} Mb/s");
+            if (_monitoring.Cpu)
+            {
+                var cpu = _monitor.SampleCpuPercent();
+                CoreBars.Show(_monitor.SampleCoresPercent());
+                Smooth.To(CpuGauge, RingGauge.ValueProperty, cpu);
+                CpuValue.Text = string.Create(culture, $"{cpu:0} %");
+                Smooth.To(CpuBar, SegmentBar.ValueProperty, cpu);
+                CpuChart.Push(cpu);
+                CpuChartValue.Text = string.Create(culture, $"{cpu:0.0} %");
+            }
 
-            Smooth.To(CpuGauge, RingGauge.ValueProperty, cpu);
-            CpuValue.Text = string.Create(culture, $"{cpu:0} %");
-            Smooth.To(CpuBar, SegmentBar.ValueProperty, cpu);
-            CpuChart.Push(cpu);
-            CpuChartValue.Text = string.Create(culture, $"{cpu:0.0} %");
+            if (_monitoring.Network)
+            {
+                var (down, up) = _monitor.SampleNetwork();
+                NetworkValue.Text = string.Create(culture, $"\u2193 {down:0.0}  \u2191 {up:0.0} Mb/s");
+            }
 
-            Smooth.To(MemoryGauge, RingGauge.ValueProperty, memory.UsedPercent);
-            MemoryValue.Text = string.Create(culture, $"{memory.UsedPercent:0} %");
-            MemoryDetail.Text = string.Create(culture, $"{memory.UsedGb:0.0} / {memory.TotalGb:0.0} GB");
-            MemoryFree.Text = Loc.F("{0:0.0} GB available", memory.AvailableGb);
-            Smooth.To(MemoryBar, SegmentBar.ValueProperty, memory.UsedPercent);
-            MemoryChart.Push(memory.UsedPercent);
-            MemoryChartValue.Text = string.Create(culture, $"{memory.UsedPercent:0.0} %");
-            MemoryInUse.Text = string.Create(culture, $"{memory.UsedGb:0.0} GB");
-            MemoryAvailable.Text = string.Create(culture, $"{memory.AvailableGb:0.0} GB");
-            MemoryCommitted.Text = string.Create(culture, $"{memory.CommittedGb:0.0} / {memory.CommitLimitGb:0.0} GB");
-            MemoryCached.Text = string.Create(culture, $"{memory.CachedGb:0.0} GB");
+            if (_monitoring.Memory)
+            {
+                var memory = SystemMonitor.SampleMemory();
+                Smooth.To(MemoryGauge, RingGauge.ValueProperty, memory.UsedPercent);
+                MemoryValue.Text = string.Create(culture, $"{memory.UsedPercent:0} %");
+                MemoryDetail.Text = string.Create(culture, $"{memory.UsedGb:0.0} / {memory.TotalGb:0.0} GB");
+                MemoryFree.Text = Loc.F("{0:0.0} GB available", memory.AvailableGb);
+                Smooth.To(MemoryBar, SegmentBar.ValueProperty, memory.UsedPercent);
+                MemoryChart.Push(memory.UsedPercent);
+                MemoryChartValue.Text = string.Create(culture, $"{memory.UsedPercent:0.0} %");
+                MemoryInUse.Text = string.Create(culture, $"{memory.UsedGb:0.0} GB");
+                MemoryAvailable.Text = string.Create(culture, $"{memory.AvailableGb:0.0} GB");
+                MemoryCommitted.Text = string.Create(culture, $"{memory.CommittedGb:0.0} / {memory.CommitLimitGb:0.0} GB");
+                MemoryCached.Text = string.Create(culture, $"{memory.CachedGb:0.0} GB");
+            }
         }
         catch (Exception ex) when (ex is Win32Exception or System.Net.NetworkInformation.NetworkInformationException)
         {
@@ -119,7 +161,8 @@ public partial class DashboardPage : Page
     private async Task RefreshGpuDiskAsync()
     {
         // Performance counters can take tens of milliseconds: read them off the UI thread, one read at a time.
-        if (_gpuDiskRunning)
+        // Turned off: the counters are never opened.
+        if (_gpuDiskRunning || !_monitoring.GpuDisk)
         {
             return;
         }
@@ -155,29 +198,48 @@ public partial class DashboardPage : Page
 
     private async Task RefreshProcessesAsync()
     {
+        var monitoring = _monitoring;
+        if (!monitoring.Processes && !monitoring.AiTools)
+        {
+            return;
+        }
+
         try
         {
-            var (snapshot, rows, aiRows) = await Task.Run(() =>
+            var (snapshot, totalMemoryGb, rows, aiRows) = await Task.Run(() =>
             {
-                var sessions = AiToolCatalog.FindSessions(ProcessActions.Sample());
-                var aiList = BuildAiRows(sessions);
-                var groups = SystemMonitor.GetProcessGroups().Take(TopProcessCount).ToList();
-                var largest = groups.Count > 0 ? Math.Max(groups[0].PrivateMemoryMb, 1) : 1;
-                var culture = CultureInfo.CurrentCulture;
-                var list = groups.Select((group, index) => new ProcessRow(
-                    group.Name,
-                    group.Count > 1 ? $"×{group.Count}" : "",
-                    group.PrivateMemoryMb / largest * 100,
-                    FormatMemory(group.PrivateMemoryMb, culture),
-                    BarColors[index % BarColors.Length],
-                    IconCache.Get(group.ExecutablePath))).ToList();
-                return (SystemSnapshot.Capture(), list, aiList);
+                var aiList = monitoring.AiTools ? BuildAiRows(AiToolCatalog.FindSessions(ProcessActions.Sample())) : [];
+                var list = new List<ProcessRow>();
+                if (monitoring.Processes)
+                {
+                    var groups = SystemMonitor.GetProcessGroups().Take(TopProcessCount).ToList();
+                    var largest = groups.Count > 0 ? Math.Max(groups[0].PrivateMemoryMb, 1) : 1;
+                    var culture = CultureInfo.CurrentCulture;
+                    list = [.. groups.Select((group, index) => new ProcessRow(
+                        group.Name,
+                        group.Count > 1 ? $"×{group.Count}" : "",
+                        group.PrivateMemoryMb / largest * 100,
+                        FormatMemory(group.PrivateMemoryMb, culture),
+                        BarColors[index % BarColors.Length],
+                        IconCache.Get(group.ExecutablePath)))];
+                }
+
+                // Counting the processes and the running services is the costly part: only when that card is shown.
+                var counts = monitoring.Processes ? SystemSnapshot.Capture() : null;
+                return (counts, counts?.TotalMemoryGb ?? SystemMonitor.SampleMemory().TotalGb, list, aiList);
             });
 
-            ProcessValue.Text = snapshot.ProcessCount.ToString(CultureInfo.CurrentCulture);
-            ServiceValue.Text = snapshot.RunningServiceCount.ToString(CultureInfo.CurrentCulture);
-            TopProcesses.ItemsSource = rows;
-            ShowAiTools(aiRows, snapshot);
+            if (monitoring.Processes && snapshot is not null)
+            {
+                ProcessValue.Text = snapshot.ProcessCount.ToString(CultureInfo.CurrentCulture);
+                ServiceValue.Text = snapshot.RunningServiceCount.ToString(CultureInfo.CurrentCulture);
+                TopProcesses.ItemsSource = rows;
+            }
+
+            if (monitoring.AiTools)
+            {
+                ShowAiTools(aiRows, totalMemoryGb);
+            }
         }
         catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
         {
@@ -217,14 +279,14 @@ public partial class DashboardPage : Page
         })];
     }
 
-    private void ShowAiTools(List<AiToolRow> rows, SystemSnapshot snapshot)
+    private void ShowAiTools(List<AiToolRow> rows, double totalMemoryGb)
     {
         var culture = CultureInfo.CurrentCulture;
         AiTools.ItemsSource = rows;
         AiEmpty.Visibility = rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
         var totalMb = rows.Sum(row => row.MemoryMb);
-        var share = snapshot.TotalMemoryGb <= 0 ? 0 : totalMb / MbPerGb / snapshot.TotalMemoryGb * 100;
+        var share = totalMemoryGb <= 0 ? 0 : totalMb / MbPerGb / totalMemoryGb * 100;
         AiSummary.Text = rows.Count == 0
             ? ""
             : Loc.F("{0} in total, {1:0} % of this PC's memory", FormatMemory(totalMb, culture), share);

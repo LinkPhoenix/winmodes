@@ -10,11 +10,11 @@
         <!-- Compact mode: one line. -->
         <StackPanel x:Name="CompactPanel" Orientation="Horizontal" Visibility="Collapsed">
             <Ellipse x:Name="CompactModeDot" Width="9" Height="9" Margin="0,0,10,0" VerticalAlignment="Center" Visibility="Collapsed" />
-            <TextBlock Text="CPU" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
+            <TextBlock x:Name="CompactCpuLabel" Text="CPU" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
             <TextBlock x:Name="CompactCpu" Text="…" FontWeight="SemiBold" Margin="6,0,14,0" Foreground="#A78BFA" />
-            <TextBlock Text="RAM" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
+            <TextBlock x:Name="CompactMemoryLabel" Text="RAM" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
             <TextBlock x:Name="CompactMemory" Text="…" FontWeight="SemiBold" Margin="6,0,14,0" Foreground="#F472B6" />
-            <TextBlock Text="AI" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
+            <TextBlock x:Name="CompactAiLabel" Text="AI" FontSize="12" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
             <TextBlock x:Name="CompactAi" Text="…" FontWeight="SemiBold" Margin="6,0,0,0" />
             <!-- Usage left on the Claude and Codex plans: the tool's icon, then the share left. -->
             <ItemsControl x:Name="CompactPlans" Visibility="Collapsed" VerticalAlignment="Center">

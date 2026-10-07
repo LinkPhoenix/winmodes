@@ -212,6 +212,119 @@
                     </StackPanel>
                 </Border>
 
+                <TextBlock Text="{l:T 'MONITORING'}" Style="{StaticResource SectionTitleStyle}" controls:SectionNav.IsAnchor="True" controls:SectionNav.Icon="Gauge24" />
+                <TextBlock Margin="4,0,0,8" FontSize="12" TextWrapping="Wrap" Style="{StaticResource SecondaryTextStyle}"
+                           Text="{l:T 'Nothing is read while nothing shows it: the widget, the tray icon or an open page. Turn a reading off to stop it completely.'}" />
+                <Border Style="{StaticResource CardBorderStyle}" Padding="0">
+                    <StackPanel>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="{l:T 'CPU load'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Read how busy the processor is, for the widget and the Dashboard. Off: it is never read and the CPU figures are hidden.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="MonitorCpu" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnMonitoringChanged" Unchecked="OnMonitoringChanged" AutomationProperties.Name="{l:T 'CPU load'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="{l:T 'Memory'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Read how much memory the PC uses, for the widget and the Dashboard. Off: it is never read and the memory figures are hidden.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="MonitorMemory" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnMonitoringChanged" Unchecked="OnMonitoringChanged" AutomationProperties.Name="{l:T 'Memory'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="{l:T 'Network speed'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Read the download and upload speed of the network adapters. Off: the adapters are never listed.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="MonitorNetwork" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnMonitoringChanged" Unchecked="OnMonitoringChanged" AutomationProperties.Name="{l:T 'Network speed'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="{l:T 'GPU and disk'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'The GPU and disk counters of the Dashboard. The GPU counter lists every engine of every process: it is the heaviest reading of the app.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="MonitorGpuDisk" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnMonitoringChanged" Unchecked="OnMonitoringChanged" AutomationProperties.Name="{l:T 'GPU and disk'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="{l:T 'AI tools'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Look for AI and coding tools among the running programs and read the memory and CPU they use. The tray figure, the memory alerts, idle sessions, the usage history, the AI tools page and the AI blocks of the widget and the Dashboard depend on it.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="MonitorAiTools" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnMonitoringChanged" Unchecked="OnMonitoringChanged" AutomationProperties.Name="{l:T 'AI tools'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="{l:T 'Processes and services'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Count the processes and the running services and rank the biggest memory consumers on the Dashboard.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="MonitorProcesses" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnMonitoringChanged" Unchecked="OnMonitoringChanged" AutomationProperties.Name="{l:T 'Processes and services'}" />
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource RowStyle}" BorderThickness="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="{l:T 'Prepare the slow pages'}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{l:T 'Read the state of Optimize and Debloat in the background a minute after WinModes starts, so they open already filled. Off: each page reads it when you open it.'}"
+                                               FontSize="12" Style="{StaticResource SecondaryTextStyle}" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="PrepareInBackground" Grid.Column="1" VerticalAlignment="Center"
+                                                 Checked="OnMonitoringChanged" Unchecked="OnMonitoringChanged" AutomationProperties.Name="{l:T 'Prepare the slow pages'}" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
                 <TextBlock Text="{l:T 'SHORTCUTS AND IDLE SESSIONS'}" Style="{StaticResource SectionTitleStyle}" controls:SectionNav.IsAnchor="True" controls:SectionNav.Icon="Keyboard24" />
                 <Border Style="{StaticResource CardBorderStyle}" Padding="0">
                     <StackPanel>

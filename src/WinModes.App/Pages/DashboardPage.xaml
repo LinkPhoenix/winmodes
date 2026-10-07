@@ -4,6 +4,7 @@
       xmlns:l="clr-namespace:WinModes.App.Localization"
       xmlns:app="clr-namespace:WinModes.App"
       xmlns:controls="clr-namespace:WinModes.App.Controls"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       Title="{l:T 'Dashboard'}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <StackPanel Margin="36,24,36,36" MaxWidth="1100">
@@ -21,8 +22,22 @@
             </controls:PageHeader.Actions>
         </controls:PageHeader>
 
+        <!-- Shown only when a reading was turned off under Monitoring: what is missing is missing on purpose. -->
+        <Border x:Name="MonitoringNote" Style="{StaticResource CardBorderStyle}" Padding="16,10" Margin="0,0,0,12" Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{l:T 'Some figures are turned off under Monitoring, so they are not read.'}" VerticalAlignment="Center"
+                           Style="{StaticResource SecondaryTextStyle}" />
+                <ui:Button Grid.Column="1" Content="{l:T 'Monitoring settings'}" Click="OnOpenMonitoring" Margin="12,0,0,0"
+                           AutomationProperties.Name="{l:T 'Monitoring settings'}" />
+            </Grid>
+        </Border>
+
         <!-- AI tools at a glance -->
-        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
+        <Border x:Name="AiCard" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,12">
             <StackPanel>
                 <Grid>
                     <TextBlock Text="{l:T 'AI TOOLS'}" Style="{StaticResource CardCaptionStyle}" />
@@ -76,8 +91,8 @@
         </Border>
 
         <!-- Vitals: gauge on the left, figures on the right, so the charts below stay in view. -->
-        <controls:AdaptiveCardGrid MinItemWidth="300" MaxColumns="3" Spacing="12" Margin="0,0,0,12">
-            <Border Style="{StaticResource CardBorderStyle}" Padding="18,16">
+        <controls:AdaptiveCardGrid x:Name="VitalsRow" MinItemWidth="300" MaxColumns="3" Spacing="12" Margin="0,0,0,12">
+            <Border x:Name="CpuCard" Style="{StaticResource CardBorderStyle}" Padding="18,16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -102,7 +117,7 @@
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource CardBorderStyle}" Padding="18,16">
+            <Border x:Name="MemoryCard" Style="{StaticResource CardBorderStyle}" Padding="18,16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -127,23 +142,23 @@
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource CardBorderStyle}" Padding="18,16">
+            <Border x:Name="CountsCard" Style="{StaticResource CardBorderStyle}" Padding="18,16">
                 <StackPanel VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel x:Name="ProcessRows" Orientation="Horizontal">
                         <Border Style="{StaticResource IconBadgeStyle}" Width="28" Height="28" Background="#33C084FC">
                             <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="14" HorizontalAlignment="Center" Foreground="#C084FC" Text="&#xE71D;" />
                         </Border>
                         <TextBlock x:Name="ProcessValue" Text="…" FontSize="18" FontWeight="SemiBold" Margin="12,0,0,0" VerticalAlignment="Center" />
                         <TextBlock Text="{l:T 'processes'}" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <StackPanel x:Name="ServiceRows" Orientation="Horizontal" Margin="0,8,0,0">
                         <Border Style="{StaticResource IconBadgeStyle}" Width="28" Height="28" Background="#3334D399">
                             <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="14" HorizontalAlignment="Center" Foreground="#34D399" Text="&#xE912;" />
                         </Border>
                         <TextBlock x:Name="ServiceValue" Text="…" FontSize="18" FontWeight="SemiBold" Margin="12,0,0,0" VerticalAlignment="Center" />
                         <TextBlock Text="{l:T 'services running'}" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource SecondaryTextStyle}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <StackPanel x:Name="NetworkRows" Orientation="Horizontal" Margin="0,8,0,0">
                         <Border Style="{StaticResource IconBadgeStyle}" Width="28" Height="28" Background="#3360A5FA">
                             <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="14" HorizontalAlignment="Center" Foreground="#60A5FA" Text="&#xE774;" />
                         </Border>
@@ -155,8 +170,8 @@
         </controls:AdaptiveCardGrid>
 
         <!-- History, last 60 seconds -->
-        <controls:AdaptiveCardGrid MinItemWidth="400" MaxColumns="2" Spacing="12" Margin="0,0,0,12">
-            <Border Style="{StaticResource CardBorderStyle}">
+        <controls:AdaptiveCardGrid x:Name="HistoryRow" MinItemWidth="400" MaxColumns="2" Spacing="12" Margin="0,0,0,12">
+            <Border x:Name="CpuChartCard" Style="{StaticResource CardBorderStyle}">
                 <StackPanel>
                     <Grid>
                         <TextBlock Text="{l:T 'CPU UTILIZATION'}" Style="{StaticResource CardCaptionStyle}" />
@@ -171,7 +186,7 @@
                     <controls:CoreBars x:Name="CoreBars" Margin="0,8,0,0" Height="26" Accent="#7C5CFC" ToolTip="{l:T 'Load of each logical processor'}" />
                 </StackPanel>
             </Border>
-            <Border Style="{StaticResource CardBorderStyle}">
+            <Border x:Name="MemoryChartCard" Style="{StaticResource CardBorderStyle}">
                 <StackPanel>
                     <Grid>
                         <TextBlock Text="{l:T 'MEMORY UTILIZATION'}" Style="{StaticResource CardCaptionStyle}" />
@@ -234,7 +249,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Top memory consumers -->
-            <Border Style="{StaticResource CardBorderStyle}">
+            <Border x:Name="TopCard" Style="{StaticResource CardBorderStyle}">
                 <StackPanel>
                     <Grid>
                         <TextBlock Text="{l:T 'TOP MEMORY CONSUMERS'}" Style="{StaticResource CardCaptionStyle}" />
@@ -272,7 +287,7 @@
 
 
             <!-- Quick access to modes -->
-            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
+            <Border x:Name="QuickModesCard" Grid.Column="2" Style="{StaticResource CardBorderStyle}">
                 <StackPanel>
                     <TextBlock Text="{l:T 'MODES'}" Style="{StaticResource CardCaptionStyle}" />
                     <ItemsControl x:Name="QuickModes" Margin="0,8,0,0">

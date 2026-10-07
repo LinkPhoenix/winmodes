@@ -39,6 +39,14 @@ public partial class SettingsPage : Page
         AutoEndIdle.SelectedItem = idleChoices.FirstOrDefault(choice => choice.Gb == settings.AutoEndIdleMinutes) ?? idleChoices[0];
         JournalPath.Text = Privacy.Path(AppPaths.JournalDirectory);
         PrivacyMode.IsChecked = settings.PrivacyMode;
+        var monitoring = settings.Monitoring;
+        MonitorCpu.IsChecked = monitoring.Cpu;
+        MonitorMemory.IsChecked = monitoring.Memory;
+        MonitorNetwork.IsChecked = monitoring.Network;
+        MonitorGpuDisk.IsChecked = monitoring.GpuDisk;
+        MonitorAiTools.IsChecked = monitoring.AiTools;
+        MonitorProcesses.IsChecked = monitoring.Processes;
+        PrepareInBackground.IsChecked = monitoring.PrepareInBackground;
 
         var choices = new List<Choice> { new(null, Loc.T("None")) };
         choices.AddRange(ModeCatalog.Load().Select(entry => new Choice(entry.Profile.Mode, entry.Profile.Label)));
@@ -58,6 +66,19 @@ public partial class SettingsPage : Page
             LanguageNote.Text = Loc.F("{0} saved. Restart WinModes to use this language.", savedLanguage.Name);
         }
         ShowStartupWarning();
+        ShowMonitoringState();
+    }
+
+    /// <summary>The options that live on the AI tools cannot be used while their reading is off: they would never see anything.</summary>
+    private void ShowMonitoringState()
+    {
+        MonitoringGate.Apply(MonitorAiTools.IsChecked == true, ShowAiMemoryInTray, AutoEndIdle);
+    }
+
+    private void OnMonitoringChanged(object sender, RoutedEventArgs e)
+    {
+        Save();
+        ShowMonitoringState();
     }
 
     private void ShowStartupWarning()
@@ -120,6 +141,16 @@ public partial class SettingsPage : Page
             Language = (LanguageChoice.SelectedItem as Language)?.Code ?? Loc.DefaultLanguage,
             AutoEndIdleMinutes = (AutoEndIdle.SelectedItem as Limit)?.Gb ?? 0,
             AutoActivateMode = (AutoMode.SelectedItem as Choice)?.Mode,
+            Monitoring = new MonitoringSettings
+            {
+                Cpu = MonitorCpu.IsChecked == true,
+                Memory = MonitorMemory.IsChecked == true,
+                Network = MonitorNetwork.IsChecked == true,
+                GpuDisk = MonitorGpuDisk.IsChecked == true,
+                AiTools = MonitorAiTools.IsChecked == true,
+                Processes = MonitorProcesses.IsChecked == true,
+                PrepareInBackground = PrepareInBackground.IsChecked == true,
+            },
         }).Save();
         Privacy.Set(PrivacyMode.IsChecked == true);
         JournalPath.Text = Privacy.Path(AppPaths.JournalDirectory);

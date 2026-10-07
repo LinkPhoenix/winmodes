@@ -33,11 +33,24 @@ public partial class AiToolsPage : Page
         _timer.Tick += async (_, _) => await RefreshAsync();
         Loaded += async (_, _) =>
         {
+            // Turned off under Monitoring: the page says so and reads nothing, with no timer running.
+            var read = WinModes.App.Services.AppSettings.Load().Monitoring.AiTools;
+            OffState.Visibility = read ? Visibility.Collapsed : Visibility.Visible;
+            EndIdleButton.Visibility = read ? Visibility.Visible : Visibility.Collapsed;
+            if (!read)
+            {
+                Summary.Text = Loc.T("The reading of AI tools is turned off.");
+                return;
+            }
+
             _timer.Start();
             await RefreshAsync();
         };
         Unloaded += (_, _) => _timer.Stop();
     }
+
+    private void OnOpenMonitoring(object sender, RoutedEventArgs e) =>
+        (Application.Current.MainWindow as MainWindow)?.NavigateTo(typeof(SettingsPage));
 
     private async Task RefreshAsync()
     {

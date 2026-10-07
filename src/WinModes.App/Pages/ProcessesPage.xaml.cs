@@ -46,6 +46,8 @@ public partial class ProcessesPage : Page
     {
         InitializeComponent();
         Rows.ItemsSource = _rows;
+        ProcessColumns.Shared.Apply(AppSettings.Load().ProcessColumns);
+        BuildColumnsMenu();
         _timer.Tick += async (_, _) => await RefreshAsync();
         Loaded += async (_, _) =>
         {
@@ -78,6 +80,41 @@ public partial class ProcessesPage : Page
         finally
         {
             _refreshing = false;
+        }
+    }
+
+    /// <summary>One checkable entry per optional column; the menu stays open while columns are ticked.</summary>
+    private void BuildColumnsMenu()
+    {
+        var columns = ProcessColumns.Shared.Settings;
+        var menu = new ContextMenu { PlacementTarget = ColumnsButton, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
+        foreach (var (title, isOn, change) in new (string, bool, Func<ProcessColumnSettings, bool, ProcessColumnSettings>)[]
+        {
+            (Loc.T("Working set"), columns.WorkingSet, (settings, on) => settings with { WorkingSet = on }),
+            (Loc.T("Handles"), columns.Handles, (settings, on) => settings with { Handles = on }),
+            (Loc.T("Running for"), columns.RunningFor, (settings, on) => settings with { RunningFor = on }),
+            (Loc.T("Priority"), columns.Priority, (settings, on) => settings with { Priority = on }),
+        })
+        {
+            var item = new MenuItem { Header = title, IsCheckable = true, IsChecked = isOn, StaysOpenOnClick = true };
+            item.Click += (_, _) =>
+            {
+                var updated = change(ProcessColumns.Shared.Settings, item.IsChecked);
+                ProcessColumns.Shared.Apply(updated);
+                (AppSettings.Load() with { ProcessColumns = updated }).SaveUiPreference();
+                ShowRows();
+            };
+            menu.Items.Add(item);
+        }
+
+        ColumnsButton.ContextMenu = menu;
+    }
+
+    private void OnColumnsClick(object sender, RoutedEventArgs e)
+    {
+        if (ColumnsButton.ContextMenu is { } menu)
+        {
+            menu.IsOpen = true;
         }
     }
 
@@ -133,8 +170,8 @@ public partial class ProcessesPage : Page
             var matches = _nodes
                 .Where(node => search.Length == 0 || Matches(node, search, culture))
                 .Where(node => ProtectedOnly.IsChecked != true || AppServices.Policy.IsProtectedProcess(node.Name));
-            rows.AddRange(Sort(matches, node => new Totals(node.PrivateMemoryMb, node.CpuPercent, node.Threads, 0))
-                .Select(node => ToRow(node, level: 0, new Totals(node.PrivateMemoryMb, node.CpuPercent, node.Threads, 0), hasChildren: false, culture)));
+            rows.AddRange(Sort(matches, node => OwnTotals(node, 0))
+                .Select(node => ToRow(node, level: 0, OwnTotals(node, 0), hasChildren: false, culture)));
         }
         else
         {
@@ -153,7 +190,11 @@ public partial class ProcessesPage : Page
         SortPid.Content = "PID" + Arrow("Pid");
         SortCpu.Content = "CPU" + Arrow("Cpu");
         SortMemory.Content = Loc.T("Memory") + Arrow("Memory");
+        SortWorkingSet.Content = Loc.T("Working set") + Arrow("WorkingSet");
         SortThreads.Content = Loc.T("Threads") + Arrow("Threads");
+        SortHandles.Content = Loc.T("Handles") + Arrow("Handles");
+        SortRunning.Content = Loc.T("Running for") + Arrow("Running");
+        SortPriority.Content = Loc.T("Priority") + Arrow("Priority");
 
         var totalGb = _nodes.Sum(node => node.PrivateMemoryMb) / MbPerGb;
         Summary.Text = Loc.F("{0} processes use {1:0.0} GB of private memory. Showing {2}. Right-click a row for actions.", _nodes.Count, totalGb, rows.Count);
@@ -164,7 +205,7 @@ public partial class ProcessesPage : Page
         // A container's children are listed as roots, so they are not repeated under it.
         var kids = ContainerProcesses.Contains(node.Name) ? [] : children[node.Pid].ToList();
         var isExpanded = _expanded.Contains(node.Pid);
-        var own = new Totals(node.PrivateMemoryMb, node.CpuPercent, node.Threads, kids.Count);
+        var own = OwnTotals(node, kids.Count);
         var shown = kids.Count > 0 && !isExpanded ? Subtree(node, children, totals) : own;
         rows.Add(ToRow(node, level, shown, kids.Count > 0, culture));
 
@@ -184,7 +225,7 @@ public partial class ProcessesPage : Page
             return cached;
         }
 
-        var total = new Totals(node.PrivateMemoryMb, node.CpuPercent, node.Threads, 0);
+        var total = OwnTotals(node, 0);
         // Guard against a cycle left by PID reuse.
         cache[node.Pid] = total;
         if (!ContainerProcesses.Contains(node.Name))
@@ -192,13 +233,18 @@ public partial class ProcessesPage : Page
             foreach (var child in children[node.Pid])
             {
                 var sub = Subtree(child, children, cache);
-                total = new Totals(total.MemoryMb + sub.MemoryMb, total.Cpu + sub.Cpu, total.Threads + sub.Threads, total.Descendants + sub.Descendants + 1);
+                total = new Totals(
+                    total.MemoryMb + sub.MemoryMb, total.Cpu + sub.Cpu, total.Threads + sub.Threads, total.Descendants + sub.Descendants + 1,
+                    total.WorkingSetMb + sub.WorkingSetMb, total.Handles + sub.Handles);
             }
         }
 
         cache[node.Pid] = total;
         return total;
     }
+
+    private static Totals OwnTotals(ProcessNode node, int descendants) =>
+        new(node.PrivateMemoryMb, node.CpuPercent, node.Threads, descendants, node.WorkingSetMb, node.Handles);
 
     private IEnumerable<ProcessNode> Sort(IEnumerable<ProcessNode> nodes, Func<ProcessNode, Totals> totals) => (_sortColumn, _sortDescending) switch
     {
@@ -210,6 +256,15 @@ public partial class ProcessesPage : Page
         ("Cpu", true) => nodes.OrderByDescending(node => totals(node).Cpu),
         ("Threads", false) => nodes.OrderBy(node => totals(node).Threads),
         ("Threads", true) => nodes.OrderByDescending(node => totals(node).Threads),
+        ("WorkingSet", false) => nodes.OrderBy(node => totals(node).WorkingSetMb),
+        ("WorkingSet", true) => nodes.OrderByDescending(node => totals(node).WorkingSetMb),
+        ("Handles", false) => nodes.OrderBy(node => totals(node).Handles),
+        ("Handles", true) => nodes.OrderByDescending(node => totals(node).Handles),
+        // The oldest process first when ascending; an unknown start time goes last either way.
+        ("Running", false) => nodes.OrderBy(node => node.StartTime is null).ThenByDescending(node => node.StartTime ?? DateTime.MinValue),
+        ("Running", true) => nodes.OrderBy(node => node.StartTime is null).ThenBy(node => node.StartTime ?? DateTime.MaxValue),
+        ("Priority", false) => nodes.OrderBy(node => ProcessFacts.PriorityOf(node.BasePriority)),
+        ("Priority", true) => nodes.OrderByDescending(node => ProcessFacts.PriorityOf(node.BasePriority)),
         (_, false) => nodes.OrderBy(node => totals(node).MemoryMb),
         _ => nodes.OrderByDescending(node => totals(node).MemoryMb),
     };
@@ -236,11 +291,46 @@ public partial class ProcessesPage : Page
             isProtected,
             isProtected ? Visibility.Visible : Visibility.Collapsed,
             node.ExecutablePath,
-            node.WorkingDirectory);
+            node.WorkingDirectory,
+            DashboardPage.FormatMemory(shown.WorkingSetMb, culture),
+            shown.Handles.ToString("N0", culture),
+            FormatRunning(ProcessFacts.RunningFor(node.StartTime, DateTime.Now)),
+            PriorityName(ProcessFacts.PriorityOf(node.BasePriority)),
+            PriorityBrush(ProcessFacts.PriorityOf(node.BasePriority)));
     }
 
+    /// <summary>"3 d 4 h", "5 h 07", "12 min": the unit letters read the same in every language of the app, like on the Usage page.</summary>
+    private static string FormatRunning(TimeSpan? running) => running switch
+    {
+        null => "",
+        { TotalDays: >= 1 } days => $"{(int)days.TotalDays} d {days.Hours} h",
+        { TotalHours: >= 1 } hours => $"{(int)hours.TotalHours} h {hours.Minutes:00}",
+        { TotalMinutes: >= 1 } minutes => $"{(int)minutes.TotalMinutes} min",
+        _ => "< 1 min",
+    };
+
+    private static string PriorityName(ProcessPriority priority) => priority switch
+    {
+        ProcessPriority.Idle => Loc.T("Idle"),
+        ProcessPriority.BelowNormal => Loc.T("Below normal"),
+        ProcessPriority.Normal => Loc.T("Normal"),
+        ProcessPriority.AboveNormal => Loc.T("Above normal"),
+        ProcessPriority.High => Loc.T("High"),
+        ProcessPriority.Realtime => Loc.T("Realtime"),
+        _ => "",
+    };
+
+    /// <summary>A priority other than the usual one is worth noticing: a raised one in amber, realtime in red.</summary>
+    private static Brush PriorityBrush(ProcessPriority priority) => priority switch
+    {
+        ProcessPriority.AboveNormal or ProcessPriority.High => Palette.Power,
+        ProcessPriority.Realtime => Palette.Stop,
+        _ => Palette.Neutral,
+    };
+
+    // In privacy mode the command line is hidden from the list, so it is also left out of the search: a hidden text must not be findable.
     private static bool Matches(ProcessNode node, IReadOnlyList<string> search, CultureInfo culture) =>
-        SearchMatcher.MatchesTerms(search, node.Name, node.Pid.ToString(culture), node.CommandLine);
+        SearchMatcher.MatchesTerms(search, node.Name, node.Pid.ToString(culture), Privacy.Enabled ? null : node.CommandLine);
 
     private string Arrow(string column) => column != _sortColumn ? "" : _sortDescending ? Descending : Ascending;
 
@@ -301,12 +391,13 @@ public partial class ProcessesPage : Page
 
     private void OnCopyCommand(object sender, RoutedEventArgs e) => ProcessActions.Copy(RowOf(sender)?.Command);
 
-    private sealed record Totals(double MemoryMb, double Cpu, int Threads, int Descendants);
+    private sealed record Totals(double MemoryMb, double Cpu, int Threads, int Descendants, double WorkingSetMb = 0, int Handles = 0);
 
     private sealed record Row(
         int Pid, string Name, Thickness Indent, string Chevron, Visibility ChevronVisibility, string ChildText,
         string CpuText, Brush CpuColor, string MemoryText, Brush MemoryColor, string Threads, string Command,
-        ImageSource? Icon, Visibility GlyphVisibility, bool IsProtected, Visibility ProtectedVisibility, string? Path, string? Folder)
+        ImageSource? Icon, Visibility GlyphVisibility, bool IsProtected, Visibility ProtectedVisibility, string? Path, string? Folder,
+        string WorkingSetText, string HandlesText, string RunningText, string PriorityText, Brush PriorityColor)
     {
         public bool HasPath => Path is not null;
         public bool HasFolder => Folder is not null;

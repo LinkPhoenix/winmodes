@@ -57,6 +57,7 @@ public partial class NotificationsPage : Page
 
         // Setting the initial values raises the change events; only user changes are saved.
         _loaded = true;
+        Loaded += (_, _) => MonitoringGate.ApplyAiTools(AiAlert, AiToolAlert, IdleEnded);
     }
 
     private static void Show(Wpf.Ui.Controls.ToggleSwitch low, Wpf.Ui.Controls.ToggleSwitch reached, Wpf.Ui.Controls.ToggleSwitch reset, Wpf.Ui.Controls.ToggleSwitch credit, string tool, AppSettings settings)
