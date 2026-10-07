@@ -61,8 +61,7 @@ internal static class SupportInfo
         Line("Screens", string.Join(", ", Forms.Screen.AllScreens.Select(screen => $"{screen.Bounds.Width}x{screen.Bounds.Height}{(screen.Primary ? " primary" : "")}")));
         Line("Taskbar", $"alignment {TaskbarSetting("TaskbarAl", "1 = centred, 0 = left")}, on all displays {TaskbarSetting("MMTaskbarEnabled", "1 = yes")}");
         Line("Widget", $"shown {OnOff(settings.ShowDesktopWidget)}, {settings.Widget.Placement}, side {settings.Widget.TaskbarSide}, plans {OnOff(settings.Widget.ShowSubscriptions)}");
-        Line("Claude Code / Codex files", $"{File.Exists(Subscriptions.DefaultClaudeSettings)} / {Directory.Exists(Subscriptions.DefaultCodexHome)}");
-        Line("WinModes sign-in Claude / Codex", $"{AccountSession.IsSignedIn(AccountProvider.Claude)} / {AccountSession.IsSignedIn(AccountProvider.ChatGpt)}");
+        Line("WinModes sign-in Claude / Codex / Grok", $"{AccountSession.IsSignedIn(AccountProvider.Claude)} / {AccountSession.IsSignedIn(AccountProvider.ChatGpt)} / {AccountSession.IsSignedIn(AccountProvider.Grok)}");
         Line("Notifications", $"{OnOff(settings.Notifications.Enabled)}, quiet hours {OnOff(settings.Notifications.QuietHoursOn)}");
         Line("Token statistics", OnOff(settings.ReadTokenLogs));
         Line("Start with Windows", $"{OnOff(AppSettings.StartsWithWindows)} ({AppSettings.StartupState})");

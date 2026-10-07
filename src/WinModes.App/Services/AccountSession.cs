@@ -43,6 +43,26 @@ internal static class AccountSession
     /// <summary>Stops the sign-in being waited for, if any (the page was left); it ends as timed out.</summary>
     public static void CancelSignIn() => Interlocked.Exchange(ref _pendingSignIn, null)?.Cancel();
 
+    /// <summary>The sign-in being waited for, which a pasted answer can finish.</summary>
+    private sealed class ManualAnswer(string state)
+    {
+        public string State { get; } = state;
+
+        public TaskCompletionSource<string> Code { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    private static ManualAnswer? _manualAnswer;
+
+    /// <summary>
+    /// Finishes the sign-in being waited for with an answer the user pasted (the redirect address or the code the provider shows).
+    /// False when no sign-in is waiting or the answer is not one of this sign-in: it is then ignored and the wait goes on.
+    /// </summary>
+    public static bool SubmitCode(string? pasted)
+    {
+        var waiting = Volatile.Read(ref _manualAnswer);
+        return waiting is not null && CallbackInput.Parse(pasted).CodeFor(waiting.State) is { } code && waiting.Code.TrySetResult(code);
+    }
+
     /// <summary>Opens the provider's sign-in in the browser and waits for the browser to come back to this PC.</summary>
     public static async Task<SignInOutcome> SignInAsync(AccountProvider provider)
     {
@@ -65,7 +85,7 @@ internal static class AccountSession
         CallbackListener listener;
         try
         {
-            listener = new CallbackListener(provider.CallbackPort, provider.CallbackPath, provider.DisplayName);
+            listener = new CallbackListener(provider.CallbackPort, provider.CallbackPath, provider.DisplayName, provider.CallbackHost);
         }
         catch (HttpListenerException)
         {
@@ -85,7 +105,24 @@ internal static class AccountSession
                 return SignInOutcome.Failed;
             }
 
-            var result = await listener.WaitAsync(state, SignInTimeout, cancellation);
+            // The browser comes back to this PC by itself, or the user pastes the code the provider shows when it cannot.
+            var manual = new ManualAnswer(state);
+            Volatile.Write(ref _manualAnswer, manual);
+            CallbackResult? result;
+            try
+            {
+                using var stopWaiting = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+                var local = listener.WaitAsync(state, SignInTimeout, stopWaiting.Token);
+                var first = await Task.WhenAny(local, manual.Code.Task);
+                result = first == local ? await local : new CallbackResult(await manual.Code.Task, null);
+                await stopWaiting.CancelAsync();
+                await local;
+            }
+            finally
+            {
+                Interlocked.CompareExchange(ref _manualAnswer, null, manual);
+            }
+
             if (result is null)
             {
                 return SignInOutcome.TimedOut;

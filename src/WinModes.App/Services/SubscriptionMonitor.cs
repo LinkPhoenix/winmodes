@@ -5,10 +5,10 @@ using WinModes.Core.Usage;
 namespace WinModes.App.Services;
 
 /// <summary>
-/// Keeps the last known plan and usage limits of Codex and Claude for the widget. Local files are read in the
-/// background, at most once per <see cref="RefreshInterval"/>, and only while something asks for them. When the
-/// user turned the online reading on, the providers are also asked, at most once per <see cref="OnlineInterval"/> each: a
-/// provider that fails or refuses is asked less and less often, and for as long as it says when it sends a Retry-After.
+/// Keeps the last known plan and usage limits of Claude, Codex and Grok for the widget. Every figure comes from the provider itself,
+/// asked with the sign-in of WinModes (never from the files of Claude Code, Codex or Grok), at most once per
+/// <see cref="OnlineInterval"/> for each provider and only while something asks for them: a provider that fails or refuses is
+/// asked less and less often, and for as long as it says when it sends a Retry-After. An account that is not signed in is not shown.
 /// </summary>
 internal static class SubscriptionMonitor
 {
@@ -17,18 +17,24 @@ internal static class SubscriptionMonitor
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan LongestBackoff = TimeSpan.FromHours(1);
 
+    // The plan of a Claude account changes rarely and costs one more request: it is asked again after this long.
+    private static readonly TimeSpan ClaudePlanLifetime = TimeSpan.FromHours(6);
+
     // No redirect is followed, so the sign-in header can never be sent to another host.
     private static readonly HttpClient Http = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = RequestTimeout };
 
     private static DateTime _lastRefreshUtc = DateTime.MinValue;
     private static readonly PollBackoff ClaudePoll = new(OnlineInterval, LongestBackoff);
     private static readonly PollBackoff CodexPoll = new(OnlineInterval, LongestBackoff);
-    private static SubscriptionStatus? _onlineClaude;
-    private static SubscriptionStatus? _onlineCodex;
+    private static readonly PollBackoff GrokPoll = new(OnlineInterval, LongestBackoff);
+    private static SubscriptionStatus? _claude;
+    private static SubscriptionStatus? _codex;
+    private static SubscriptionStatus? _grok;
+    private static (string Plan, DateTimeOffset At)? _claudePlan;
     private static int _refreshing;
-    private static (bool ClaudeOnline, bool CodexOnline, bool Claude, bool Codex) _choice = (false, false, true, true);
+    private static (bool Claude, bool Codex, bool Grok) _choice = (true, true, true);
 
-    /// <summary>Last statuses read; empty until the first read ends or when no plan is recorded on this PC.</summary>
+    /// <summary>Last statuses read; empty until the first read ends or while no wanted account is signed in.</summary>
     public static IReadOnlyList<SubscriptionStatus> Current { get; private set; } = [];
 
     /// <summary>False until the first read has ended, so "nothing found" is not shown too early.</summary>
@@ -40,13 +46,14 @@ internal static class SubscriptionMonitor
         _lastRefreshUtc = DateTime.MinValue;
         ClaudePoll.Reset();
         CodexPoll.Reset();
+        GrokPoll.Reset();
     }
 
     /// <summary>Returns what is known now and starts a background read when it is getting old.</summary>
-    public static IReadOnlyList<SubscriptionStatus> Get(bool claudeOnline, bool codexOnline, bool claudeWanted = true, bool codexWanted = true)
+    public static IReadOnlyList<SubscriptionStatus> Get(bool claudeWanted = true, bool codexWanted = true, bool grokWanted = true)
     {
         // A changed choice is applied at once instead of waiting for the next read.
-        var choice = (claudeOnline, codexOnline, claudeWanted, codexWanted);
+        var choice = (claudeWanted, codexWanted, grokWanted);
         if (choice != _choice)
         {
             _choice = choice;
@@ -60,47 +67,63 @@ internal static class SubscriptionMonitor
             {
                 try
                 {
-                    var claude = claudeWanted ? Subscriptions.ReadClaude(Subscriptions.DefaultClaudeSettings, ClaudeStatusLine.DefaultRecordPath) : null;
-                    var codex = codexWanted ? Subscriptions.ReadCodex(Subscriptions.DefaultCodexHome) : null;
-                    // Signing in to WinModes is the consent to ask: such a tool is read online with its own session whatever the
-                    // option says. A tool whose online reading is off, or that is not shown, is not asked and keeps no online figure.
-                    var claudeSigned = claudeWanted && AccountSession.IsSignedIn(AccountProvider.Claude);
-                    var codexSigned = codexWanted && AccountSession.IsSignedIn(AccountProvider.ChatGpt);
-                    var askClaude = (claudeOnline && claudeWanted) || claudeSigned;
-                    var askCodex = (codexOnline && codexWanted) || codexSigned;
+                    var now = DateTimeOffset.UtcNow;
+                    var askClaude = claudeWanted && AccountSession.IsSignedIn(AccountProvider.Claude);
+                    var askCodex = codexWanted && AccountSession.IsSignedIn(AccountProvider.ChatGpt);
+                    var askGrok = grokWanted && AccountSession.IsSignedIn(AccountProvider.Grok);
+
+                    // Signing out, or hiding a plan, drops its figures at once.
                     if (!askClaude)
                     {
-                        _onlineClaude = null;
+                        (_claude, _claudePlan) = (null, null);
                     }
 
                     if (!askCodex)
                     {
-                        _onlineCodex = null;
+                        _codex = null;
                     }
 
-                    var now = DateTimeOffset.UtcNow;
-                    // A failed request keeps the previous online figures; they are dated in the widget.
+                    if (!askGrok)
+                    {
+                        _grok = null;
+                    }
+
+                    // A failed request keeps the previous figures; they are dated in the widget.
                     if (askCodex && CodexPoll.IsDue(now))
                     {
-                        var request = codexSigned
-                            ? await AccountSession.TokensAsync(AccountProvider.ChatGpt) is { } own ? OnlineUsage.CodexRequestFor(own.AccessToken, own.AccountId) : null
-                            : OnlineUsage.CodexRequest(OnlineUsage.DefaultCodexAuth);
+                        var request = await AccountSession.TokensAsync(AccountProvider.ChatGpt) is { } own ? OnlineUsage.CodexRequestFor(own.AccessToken, own.AccountId) : null;
                         var answer = await AskAsync(request, json => OnlineUsage.ParseCodex(json, now));
                         answer.Settle(CodexPoll, now);
-                        _onlineCodex = answer.Value ?? _onlineCodex;
+                        _codex = answer.Value ?? _codex;
                     }
 
                     if (askClaude && ClaudePoll.IsDue(now))
                     {
-                        var request = claudeSigned
-                            ? await AccountSession.TokensAsync(AccountProvider.Claude) is { } own ? OnlineUsage.ClaudeRequestFor(own.AccessToken) : null
-                            : OnlineUsage.ClaudeRequest(OnlineUsage.DefaultClaudeCredentials, now);
-                        var answer = await AskAsync(request, json => OnlineUsage.ParseClaude(json, claude?.Plan ?? Loc.T("Plan unknown"), now));
+                        var tokens = await AccountSession.TokensAsync(AccountProvider.Claude);
+                        if (tokens is not null && (_claudePlan is not { } known || now - known.At > ClaudePlanLifetime)
+                            && await AskTextAsync(OnlineUsage.ClaudeProfileRequestFor(tokens.AccessToken)) is { } profile
+                            && Subscriptions.ClaudePlanFromProfile(profile) is { } plan)
+                        {
+                            _claudePlan = (plan, now);
+                        }
+
+                        var request = tokens is null ? null : OnlineUsage.ClaudeRequestFor(tokens.AccessToken);
+                        var answer = await AskAsync(request, json => OnlineUsage.ParseClaude(json, _claudePlan?.Plan ?? Loc.T("Plan unknown"), now));
                         answer.Settle(ClaudePoll, now);
-                        _onlineClaude = answer.Value ?? _onlineClaude;
+                        _claude = answer.Value ?? _claude;
                     }
 
-                    Current = [.. new[] { claudeWanted ? Newest(_onlineClaude, claude) : null, codexWanted ? Newest(_onlineCodex, codex) : null }.OfType<SubscriptionStatus>()];
+                    if (askGrok && GrokPoll.IsDue(now))
+                    {
+                        var tokens = await AccountSession.TokensAsync(AccountProvider.Grok);
+                        var request = tokens is { AccountId: { Length: > 0 } userId } ? OnlineUsage.GrokRequestFor(tokens.AccessToken, userId) : null;
+                        var plan = tokens is null ? null : AccountProvider.GrokPlanName(tokens.AccessToken);
+                        var answer = await AskAsync(request, json => OnlineUsage.ParseGrok(json, plan ?? Loc.T("Plan unknown"), now));
+                        answer.Settle(GrokPoll, now);
+                        _grok = answer.Value ?? _grok;
+                    }
+
+                    Current = [.. new[] { askClaude ? _claude : null, askCodex ? _codex : null, askGrok ? _grok : null }.OfType<SubscriptionStatus>()];
                     HasRead = true;
                 }
                 finally
@@ -112,12 +135,6 @@ internal static class SubscriptionMonitor
 
         return Current;
     }
-
-    /// <summary>The online figure unless a local record is more recent (a session wrote one since the last request).</summary>
-    private static SubscriptionStatus? Newest(SubscriptionStatus? online, SubscriptionStatus? local) =>
-        online is null ? local
-        : local?.Primary is not null && local.SeenAt > online.SeenAt ? local with { ResetCredits = online.ResetCredits, ModelLimits = online.ModelLimits, Extra = online.Extra }
-        : online;
 
     /// <summary>What a request to a provider gave: the figures, or a failure with the wait the provider asked for.</summary>
     private sealed record Answer(SubscriptionStatus? Value, bool Failed, TimeSpan? RetryAfter)
@@ -147,13 +164,7 @@ internal static class SubscriptionMonitor
 
         try
         {
-            using var message = new HttpRequestMessage(HttpMethod.Get, request.Address);
-            foreach (var (name, value) in request.Headers)
-            {
-                message.Headers.TryAddWithoutValidation(name, value);
-            }
-
-            using var response = await Http.SendAsync(message);
+            using var response = await SendAsync(request);
             if (!response.IsSuccessStatusCode)
             {
                 var asked = response.Headers.TryGetValues("Retry-After", out var values) ? PollBackoff.ParseRetryAfter(values.FirstOrDefault(), DateTimeOffset.UtcNow) : null;
@@ -167,5 +178,30 @@ internal static class SubscriptionMonitor
         {
             return new Answer(null, true, null);
         }
+    }
+
+    /// <summary>The body of a successful answer, or null; a failure here only means the plan name stays unknown for now.</summary>
+    private static async Task<string?> AskTextAsync(UsageRequest request)
+    {
+        try
+        {
+            using var response = await SendAsync(request);
+            return response.IsSuccessStatusCode ? await response.Content.ReadAsStringAsync() : null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            return null;
+        }
+    }
+
+    private static async Task<HttpResponseMessage> SendAsync(UsageRequest request)
+    {
+        using var message = new HttpRequestMessage(HttpMethod.Get, request.Address);
+        foreach (var (name, value) in request.Headers)
+        {
+            message.Headers.TryAddWithoutValidation(name, value);
+        }
+
+        return await Http.SendAsync(message);
     }
 }

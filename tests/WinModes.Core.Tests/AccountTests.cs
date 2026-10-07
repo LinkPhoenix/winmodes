@@ -53,6 +53,80 @@ public sealed class AccountTests
         Assert.Equal("http://localhost:1455/auth/callback", AccountProvider.ChatGpt.RedirectUri);
     }
 
+    [Theory]
+    [InlineData("http://127.0.0.1:56121/callback?code=abc&state=s1", "abc")]
+    [InlineData("http://127.0.0.1:56121/callback?state=s1&code=a%2Bb", "a+b")]
+    [InlineData("code=abc&state=s1", "abc")]
+    [InlineData("  abc  ", "abc")]
+    [InlineData("abc#s1", "abc")]
+    public void PastedAnswer_GivesTheCodeOfThisSignIn(string pasted, string code) =>
+        Assert.Equal(code, CallbackInput.Parse(pasted).CodeFor("s1"));
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("http://127.0.0.1:56121/callback?code=abc&state=other")]
+    [InlineData("http://127.0.0.1:56121/callback?code=abc")]
+    [InlineData("code=abc")]
+    [InlineData("abc#other")]
+    [InlineData("http://127.0.0.1:56121/callback?access_token=t&state=s1")]
+    public void PastedAnswer_FromAnotherSignInOrWithoutACodeIsRefused(string pasted) =>
+        Assert.Null(CallbackInput.Parse(pasted).CodeFor("s1"));
+
+    [Fact]
+    public void PastedAnswer_TheQueryWinsAsAWholeOverTheFragment()
+    {
+        var mixed = CallbackInput.Parse("http://127.0.0.1:56121/callback?state=s1#code=other");
+
+        Assert.Null(mixed.CodeFor("s1"));
+    }
+
+    [Fact]
+    public void Grok_AuthorizeUrlUsesTheLoopbackAddressXaiRegistered()
+    {
+        var url = AccountProvider.Grok.BuildAuthorizeUrl("c", "s").AbsoluteUri;
+
+        Assert.StartsWith("https://auth.x.ai/oauth2/authorize?", url);
+        Assert.Contains("client_id=b1a00492-073a-47ea-816f-4c329264a828", url);
+        Assert.Contains("code_challenge_method=S256", url);
+        Assert.Contains("nonce=", url);
+        Assert.Contains("grok-cli%3Aaccess", url);
+        Assert.Equal("http://127.0.0.1:56121/callback", AccountProvider.Grok.RedirectUri);
+        Assert.Contains("redirect_uri=http%3A%2F%2F127.0.0.1%3A56121%2Fcallback", url);
+    }
+
+    [Fact]
+    public void Grok_TokenRequestsAreFormEncodedAndTheIdentityComesFromTheIdToken()
+    {
+        var exchange = AccountProvider.Grok.ExchangeRequest("the-code", "the-state", "the-verifier");
+        var refresh = AccountProvider.Grok.RefreshRequest("old-refresh");
+
+        Assert.Equal("https://auth.x.ai/oauth2/token", exchange.Address.AbsoluteUri);
+        Assert.Equal("application/x-www-form-urlencoded", exchange.ContentType);
+        Assert.Contains("grant_type=authorization_code", exchange.Body);
+        Assert.Contains("code_verifier=the-verifier", exchange.Body);
+        Assert.Contains("grant_type=refresh_token", refresh.Body);
+
+        static string Segment(string json) => Convert.ToBase64String(Encoding.UTF8.GetBytes(json)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        var idToken = $"{Segment("{}")}.{Segment("""{"sub":"user-42","email":"Me@Example.com"}""")}.signature";
+        var tokens = AccountProvider.Grok.ParseTokens($$"""{"access_token":"a","refresh_token":"r","expires_in":3600,"id_token":"{{idToken}}"}""", Now);
+
+        Assert.NotNull(tokens);
+        Assert.Equal("user-42", tokens.AccountId);
+        Assert.Equal("me@example.com", tokens.Email);
+        Assert.Equal(Now.AddHours(1), tokens.ExpiresAt);
+    }
+
+    [Fact]
+    public void Grok_PlanIsTheTierOfTheAccessToken()
+    {
+        static string Token(string claims) => $"{Convert.ToBase64String(Encoding.UTF8.GetBytes("{}")).TrimEnd('=')}.{Convert.ToBase64String(Encoding.UTF8.GetBytes(claims)).TrimEnd('=').Replace('+', '-').Replace('/', '_')}.sig";
+
+        Assert.Equal("Tier 1", AccountProvider.GrokPlanName(Token("""{"tier":1,"sub":"u"}""")));
+        Assert.Null(AccountProvider.GrokPlanName(Token("""{"sub":"u"}""")));
+        Assert.Null(AccountProvider.GrokPlanName(Token("""{"tier":"gold"}""")));
+        Assert.Null(AccountProvider.GrokPlanName("not a token"));
+    }
+
     [Fact]
     public void Claude_TokenRequestsAreJson()
     {

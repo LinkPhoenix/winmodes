@@ -20,10 +20,10 @@ public sealed class CallbackListener : IDisposable
     private readonly string _accountName;
 
     /// <exception cref="HttpListenerException">The port is used by another program.</exception>
-    public CallbackListener(int port, string path, string accountName)
+    public CallbackListener(int port, string path, string accountName, string host = "localhost")
     {
         (_path, _accountName) = (path, accountName);
-        _listener.Prefixes.Add($"http://localhost:{port}/");
+        _listener.Prefixes.Add($"http://{host}:{port}/");
         _listener.Start();
     }
 

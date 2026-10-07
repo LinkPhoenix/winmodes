@@ -8,6 +8,22 @@ To publish a release, list the changes under **Unreleased**, then run `pwsh -NoP
 
 ## [Unreleased]
 
+### Added
+
+- Widget: the taskbar can draw the limits of each plan as small rings with the percentage left inside, which take about half the width of the bars; choose Bars or Rings under Plan usage.
+- Widget: sign in to your xAI account to see the weekly usage of your SuperGrok plan next to Claude and Codex, with the Grok logo, in the widget on the desktop and on the taskbar; Grok has its own section on the Widget page to sign in or out and to show or hide it.
+- Widget: while you sign in to Claude, ChatGPT or Grok, a field accepts the code the provider shows (or the address the browser ended on) when your browser cannot come back to WinModes by itself, for example when it blocks the local address.
+
+### Changed
+
+- Widget: the plan and the usage of Claude, Codex and Grok now come only from your accounts, through the sign-in of WinModes; nothing is read any more from the files of Claude Code or Codex, and a plan whose account is not signed in is not listed.
+- Widget: the plan of a Claude account is read from the account itself, and a Grok account shows the tier of its plan.
+- Widget: Grok shows a second bar for the usage billed on demand when the account has set a cap.
+
+### Removed
+
+- Widget: the options that read the usage online with the sign-in of Claude Code or Codex, the Check buttons and the Claude usage recording, now that every figure comes from your accounts; the recording row stays only while an older version left it set, to switch it off.
+
 ### Fixed
 
 - Window: while WinModes is minimized, the pages (Dashboard, Modes, Processes, Services, AI tools, Usage, History) and the charts no longer go on reading the PC and redrawing for a window nobody can see; the Dashboard used about ten times more processor time minimized than it needed.

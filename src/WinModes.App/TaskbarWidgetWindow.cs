@@ -58,6 +58,7 @@ internal sealed class TaskbarWidgetWindow : Window
     private readonly TextBlock _ai = new();
     private readonly PlanCell _claude;
     private readonly PlanCell _codex;
+    private readonly PlanCell _grok;
     private readonly StackPanel _modeCell;
     private readonly StackPanel _cpuCell;
     private readonly StackPanel _netCell;
@@ -86,6 +87,7 @@ internal sealed class TaskbarWidgetWindow : Window
         _dim = Palette.Neutral;
         _claude = new PlanCell("Claude", _text, _dim, () => HoverContent.Current("Claude", _settings));
         _codex = new PlanCell("Codex", _text, _dim, () => HoverContent.Current("Codex", _settings));
+        _grok = new PlanCell("Grok", _text, _dim, () => HoverContent.Current("Grok", _settings));
 
         Title = "WinModes taskbar widget";
         WindowStyle = WindowStyle.None;
@@ -176,9 +178,10 @@ internal sealed class TaskbarWidgetWindow : Window
 
         ToolIcons.Remember(reading.AiTools);
         var now = DateTimeOffset.Now;
-        var statuses = SubscriptionMonitor.Get(_settings.ClaudeOnline, _settings.CodexOnline, _settings.ShowClaudePlan, _settings.ShowCodexPlan);
-        _claude.Show(statuses.FirstOrDefault(status => status.Tool == "Claude"), now, culture, _settings.ShowResetCredits);
-        _codex.Show(statuses.FirstOrDefault(status => status.Tool == "Codex"), now, culture, _settings.ShowResetCredits);
+        var statuses = SubscriptionMonitor.Get(_settings.ShowClaudePlan, _settings.ShowCodexPlan, _settings.ShowGrokPlan);
+        _claude.Show(statuses.FirstOrDefault(status => status.Tool == "Claude"), now, culture, _settings.ShowResetCredits, _settings.PlanStyle);
+        _codex.Show(statuses.FirstOrDefault(status => status.Tool == "Codex"), now, culture, _settings.ShowResetCredits, _settings.PlanStyle);
+        _grok.Show(statuses.FirstOrDefault(status => status.Tool == "Grok"), now, culture, _settings.ShowResetCredits, _settings.PlanStyle);
 
         Redock();
     }
@@ -218,6 +221,11 @@ internal sealed class TaskbarWidgetWindow : Window
         if (settings.ShowSubscriptions && settings.ShowCodexPlan)
         {
             cells.Add((_codex.Root, KeptAlways));
+        }
+
+        if (settings.ShowSubscriptions && settings.ShowGrokPlan)
+        {
+            cells.Add((_grok.Root, KeptAlways));
         }
 
         _row.Children.Clear();
@@ -461,14 +469,17 @@ internal sealed class TaskbarWidgetWindow : Window
     {
         private readonly string _tool;
         private readonly Brush _dim;
+        private readonly Brush _ink;
         private readonly Image _icon = new() { Width = 16, Height = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0) };
         private readonly TextBlock _name;
         private readonly TextBlock _credits;
         private readonly Row[] _rows = [new Row(), new Row()];
+        private readonly Ring[] _rings = [new Ring(), new Ring()];
+        private readonly StackPanel _ringBox;
 
         public PlanCell(string tool, Brush text, Brush dim, Func<SubscriptionStatus?> current)
         {
-            (_tool, _dim) = (tool, dim);
+            (_tool, _dim, _ink) = (tool, dim, text);
             // An almost invisible fill so the gaps between the bars take the mouse too: the hover card must not flicker across them.
             var grid = new Grid { Margin = new Thickness(CellMargin, 0, CellMargin, 0), VerticalAlignment = VerticalAlignment.Center, Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)) };
             HoverCard.Attach(grid, () => HoverContent.Plan(tool, current()));
@@ -510,14 +521,34 @@ internal sealed class TaskbarWidgetWindow : Window
                 }
             }
 
+            // The ring layout: one ring per limit side by side on a single line, in the place of the two bar rows.
+            _ringBox = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Visibility = Visibility.Collapsed };
+            foreach (var ring in _rings)
+            {
+                _ringBox.Children.Add(ring.Root);
+            }
+
+            Grid.SetColumn(_ringBox, 1);
+            Grid.SetColumnSpan(_ringBox, 3);
+            Grid.SetRowSpan(_ringBox, 2);
+            grid.Children.Add(_ringBox);
+
             Root = grid;
         }
 
         public UIElement Root { get; }
 
-        public void Show(SubscriptionStatus? status, DateTimeOffset now, CultureInfo culture, bool showCredits)
+        public void Show(SubscriptionStatus? status, DateTimeOffset now, CultureInfo culture, bool showCredits, PlanStyle style)
         {
-            var icon = ToolIcons.For(_tool);
+            var asRings = style == PlanStyle.Rings;
+            _ringBox.Visibility = asRings ? Visibility.Visible : Visibility.Collapsed;
+            foreach (var row in _rows)
+            {
+                row.Window.Visibility = row.Value.Visibility = asRings ? Visibility.Collapsed : Visibility.Visible;
+            }
+
+            // The taskbar follows the Windows theme, not the app's: the Grok mark takes the ink of the text next to it.
+            var icon = _tool == "Grok" && _ink is SolidColorBrush { Color: var ink } ? ToolIcons.GrokMark(ink) : ToolIcons.For(_tool);
             _icon.Source = icon;
             _icon.Visibility = icon is null ? Visibility.Collapsed : Visibility.Visible;
             _name.Visibility = icon is null ? Visibility.Visible : Visibility.Collapsed;
@@ -526,8 +557,16 @@ internal sealed class TaskbarWidgetWindow : Window
             for (var index = 0; index < _rows.Length; index++)
             {
                 var row = _rows[index];
+                var known = limits[index] is { } found && !found.HasReset(now) ? found : null;
+                _rings[index].Show(known, index == 0, _dim, culture);
+                if (asRings)
+                {
+                    row.Track.Visibility = Visibility.Collapsed;
+                    continue;
+                }
+
                 // A limit that started over since it was recorded no longer holds. With no figure at all one dash is enough.
-                if (limits[index] is not { } limit || limit.HasReset(now))
+                if (known is not { } limit)
                 {
                     row.Window.Text = "";
                     // Only the first line carries the dash; a second limit that is not known leaves its line empty.
@@ -551,6 +590,53 @@ internal sealed class TaskbarWidgetWindow : Window
 
             _credits.Text = showCredits && status?.ResetCredits is { } credits && credits > 0 ? string.Create(culture, $"↻ {credits}") : "";
             _credits.Visibility = _credits.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>One limit as a ring that empties as the limit is used, with the percentage left inside.</summary>
+        private sealed class Ring
+        {
+            private const double Size = 26;
+            private const double Thickness = 3;
+
+            // The dash of a stroke is counted in thicknesses; the ellipse is drawn on the middle of its stroke, hence Size - Thickness.
+            private const double Circumference = Math.PI * (Size - Thickness) / Thickness;
+
+            private readonly Ellipse _arc = new()
+            {
+                Width = Size, Height = Size, StrokeThickness = Thickness, StrokeDashCap = PenLineCap.Flat,
+                RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new RotateTransform(-90),
+            };
+
+            private readonly Ellipse _track = new() { Width = Size, Height = Size, StrokeThickness = Thickness, Stroke = new SolidColorBrush(Color.FromArgb(0x33, 0x80, 0x80, 0x80)) };
+            private readonly TextBlock _value = new() { FontSize = 9, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+
+            public Ring()
+            {
+                Root = new Grid { Width = Size, Height = Size, Margin = new Thickness(0, 0, 5, 0), Children = { _track, _arc, _value } };
+            }
+
+            public UIElement Root { get; }
+
+            public void Show(LimitWindow? limit, bool first, Brush dim, CultureInfo culture)
+            {
+                // A second limit that is not known leaves no ring; with no figure at all the first one is an empty ring and a dash.
+                Root.Visibility = limit is null && !first ? Visibility.Collapsed : Visibility.Visible;
+                if (limit is not { } known)
+                {
+                    _arc.Visibility = Visibility.Collapsed;
+                    _value.Text = "–";
+                    _value.Foreground = dim;
+                    return;
+                }
+
+                var left = Math.Clamp(known.RemainingPercent, 0, 100);
+                var brush = Palette.RemainingBrush(left);
+                _arc.Visibility = left > 0 ? Visibility.Visible : Visibility.Collapsed;
+                _arc.Stroke = brush;
+                _arc.StrokeDashArray = left >= 100 ? null : new DoubleCollection { Circumference * left / 100, Circumference };
+                _value.Text = string.Create(culture, $"{left:0}");
+                _value.Foreground = brush;
+            }
         }
 
         private sealed class Row

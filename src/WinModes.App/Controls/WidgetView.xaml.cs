@@ -96,7 +96,7 @@ public partial class WidgetView : UserControl
         ToolIcons.Remember(reading.AiTools);
 
         var now = DateTimeOffset.Now;
-        var statuses = SubscriptionMonitor.Get(_settings.ClaudeOnline, _settings.CodexOnline, _settings.ShowClaudePlan, _settings.ShowCodexPlan);
+        var statuses = SubscriptionMonitor.Get(_settings.ShowClaudePlan, _settings.ShowCodexPlan, _settings.ShowGrokPlan);
         var rows = statuses.Select(known =>
         {
             var status = _settings.ShowResetCredits ? known : known with { ResetCredits = null };

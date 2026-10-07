@@ -220,6 +220,9 @@ internal sealed record AutoSwitchSettings
 /// <summary>Where the widget is shown.</summary>
 internal enum WidgetPlacement { Desktop, Taskbar, Both }
 
+/// <summary>How the taskbar widget draws the limits of a plan: a bar and a percentage for each, or one small ring each with the percentage inside.</summary>
+internal enum PlanStyle { Bars, Rings }
+
 /// <summary>The notices wanted for one tool. Low is null until chosen, so the older alert choice of the widget still applies.</summary>
 internal sealed record ToolNotices
 {
@@ -248,6 +251,8 @@ internal sealed record NotificationSettings
 
     public ToolNotices Codex { get; init; } = new();
 
+    public ToolNotices Grok { get; init; } = new();
+
     public bool UpdateAvailable { get; init; } = true;
 
     public bool SignInExpired { get; init; } = true;
@@ -269,7 +274,7 @@ internal sealed record NotificationSettings
     /// <summary>Whether it is quiet now. The plan watcher then waits instead of announcing: the notice comes when the quiet ends.</summary>
     public bool IsQuietNow() => QuietHoursOn && WinModes.Core.Notifications.QuietHours.IsQuiet(QuietFrom, QuietTo, TimeOnly.FromDateTime(DateTime.Now));
 
-    public ToolNotices For(string tool) => tool == "Claude" ? Claude : Codex;
+    public ToolNotices For(string tool) => tool switch { "Claude" => Claude, "Grok" => Grok, _ => Codex };
 
     /// <summary>What the plan notices have to send for a tool, the widget's older alert choice standing in for "running low" until chosen.</summary>
     public WinModes.Core.Notifications.PlanNoticeChoice ChoiceFor(string tool, WidgetSettings widget)
@@ -280,7 +285,7 @@ internal sealed record NotificationSettings
 
     public bool LowFor(string tool, WidgetSettings widget) => For(tool).Low ?? LegacyLow(tool, widget);
 
-    private static bool LegacyLow(string tool, WidgetSettings widget) => (tool == "Claude" ? widget.ClaudeAlert : widget.CodexAlert) ?? true;
+    private static bool LegacyLow(string tool, WidgetSettings widget) => (tool switch { "Claude" => widget.ClaudeAlert, "Grok" => null, _ => widget.CodexAlert }) ?? true;
 }
 
 /// <summary>Options of the desktop widget, edited on the Widget page.</summary>
@@ -321,6 +326,13 @@ internal sealed record WidgetSettings
 
     public bool ShowCodexPlan { get; init; } = true;
 
+    /// <summary>Grok is read only with the sign-in of WinModes: it keeps no usage file on this PC.</summary>
+    public bool ShowGrokPlan { get; init; } = true;
+
+    /// <summary>Bars (default) or rings; the rings take about half the width on the taskbar.</summary>
+    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+    public PlanStyle PlanStyle { get; init; }
+
     /// <summary>Show how many limit resets the account has in reserve, when the online reading gives it.</summary>
     public bool ShowResetCredits { get; init; } = true;
 
@@ -328,28 +340,9 @@ internal sealed record WidgetSettings
     // now owns it (see NotificationSettings), so an existing choice is kept without a migration.
     public bool PlanAlert { get; init; }
 
-    /// <summary>
-    /// Also ask Anthropic and OpenAI for the usage, with the sign-in Claude Code and Codex keep on this PC.
-    /// Off by default: it reads their sign-in files and uses endpoints that are not part of a public API.
-    /// Before each tool had its own choice this was shared.
-    /// </summary>
-    public bool ReadUsageOnline { get; init; }
-
-    // Per-tool choices. Null means "never chosen": the shared value above applies, so nothing is lost when the app
-    // is updated. The Widget page saves them explicitly.
-    public bool? ReadClaudeOnline { get; init; }
-
-    public bool? ReadCodexOnline { get; init; }
-
     public bool? ClaudeAlert { get; init; }
 
     public bool? CodexAlert { get; init; }
-
-    [System.Text.Json.Serialization.JsonIgnore]
-    public bool ClaudeOnline => ReadClaudeOnline ?? ReadUsageOnline;
-
-    [System.Text.Json.Serialization.JsonIgnore]
-    public bool CodexOnline => ReadCodexOnline ?? ReadUsageOnline;
 
     /// <summary>Seconds between two refreshes: 1, 3 or 5.</summary>
     public int RefreshSeconds { get; init; } = 3;

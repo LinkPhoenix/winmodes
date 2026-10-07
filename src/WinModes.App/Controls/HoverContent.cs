@@ -146,7 +146,7 @@ internal static class HoverContent
 
     private static Grid Header(string tool, SubscriptionStatus? status)
     {
-        var accent = tool == "Claude" ? Palette.Power : Palette.Container;
+        var accent = tool switch { "Claude" => Palette.Power, "Grok" => Palette.Apps, _ => Palette.Container };
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition());
@@ -160,7 +160,7 @@ internal static class HoverContent
             Background = Palette.Tint(accent),
             Child = logo is not null
                 ? new Image { Source = logo, Width = 22, Height = 22, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }
-                : new GlyphIcon { Symbol = tool == "Claude" ? Glyph.Sparkle24 : Glyph.Code24, Foreground = accent, FontSize = 20, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center },
+                : new GlyphIcon { Symbol = tool switch { "Claude" => Glyph.Sparkle24, "Grok" => Glyph.Bot24, _ => Glyph.Code24 }, Foreground = accent, FontSize = 20, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center },
         };
         grid.Children.Add(tile);
 

@@ -453,7 +453,7 @@ public partial class App : Application, IDisposable
     {
         var settings = Services.AppSettings.Load();
         var widget = settings.Widget;
-        var statuses = Services.SubscriptionMonitor.Get(widget.ClaudeOnline, widget.CodexOnline, widget.ShowClaudePlan, widget.ShowCodexPlan);
+        var statuses = Services.SubscriptionMonitor.Get(widget.ShowClaudePlan, widget.ShowCodexPlan, widget.ShowGrokPlan);
         // During the quiet hours nothing is decided: the limits are judged again when they end, so no notice is lost.
         if (!Services.SubscriptionMonitor.HasRead || _notifier is null || settings.Notifications.IsQuietNow())
         {

@@ -31,7 +31,7 @@ public sealed class ClaudeStatusLineTests : IDisposable
 
         Assert.Equal("Opus  |  5 h: 77 % left  |  week: 59 % left", ClaudeStatusLine.Line(StatusJson, limits));
 
-        var status = Subscriptions.ReadClaude(Path.Combine(_directory, "missing.json"), record);
+        var status = new SubscriptionStatus("Claude", "Pro", limits.FiveHour ?? limits.SevenDay, limits.FiveHour is null ? null : limits.SevenDay, limits.SeenAt);
         Assert.NotNull(status);
         Assert.Equal(new LimitWindow(23.5, 300, DateTimeOffset.FromUnixTimeSeconds(1738425600)), status.Primary);
         var (value, detail, _) = Subscriptions.Describe(status, Now, CultureInfo.InvariantCulture);

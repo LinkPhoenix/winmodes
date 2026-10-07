@@ -36,6 +36,44 @@ public sealed class OnlineUsageTests : IDisposable
     }
 
     [Fact]
+    public void GrokAnswer_GivesTheWeeklyCredits()
+    {
+        var status = OnlineUsage.ParseGrok(
+            """{"config":{"creditUsagePercent":37.5,"currentPeriod":{"type":"USAGE_PERIOD_TYPE_WEEKLY","end":"2026-10-08T00:00:00Z"}}}""", "SuperGrok", Now);
+
+        Assert.NotNull(status);
+        Assert.Equal("Grok", status.Tool);
+        Assert.Equal("SuperGrok", status.Plan);
+        Assert.Equal(new LimitWindow(37.5, 10080, new DateTimeOffset(2026, 10, 8, 0, 0, 0, TimeSpan.Zero)), status.Primary);
+        Assert.Null(status.Secondary);
+    }
+
+    [Fact]
+    public void GrokAnswer_WithoutPercentIsUnused_AndOtherPeriodsAreIgnored()
+    {
+        var unused = OnlineUsage.ParseGrok("""{"config":{"currentPeriod":{"type":"USAGE_PERIOD_TYPE_WEEKLY"}}}""", "SuperGrok", Now);
+        var monthly = OnlineUsage.ParseGrok("""{"config":{"creditUsagePercent":10,"currentPeriod":{"type":"USAGE_PERIOD_TYPE_MONTHLY"}}}""", "SuperGrok", Now);
+
+        Assert.Equal(0, unused!.Primary!.UsedPercent);
+        Assert.Null(unused.Primary.ResetsAt);
+        Assert.Null(monthly);
+        Assert.Null(OnlineUsage.ParseGrok("not json", "SuperGrok", Now));
+        Assert.Null(OnlineUsage.ParseGrok("""{"config":{"creditUsagePercent":"x","currentPeriod":{"type":"USAGE_PERIOD_TYPE_WEEKLY"}}}""", "SuperGrok", Now));
+    }
+
+    [Fact]
+    public void GrokRequest_CarriesTheTokenAndTheCliHeadersToXaiOnly()
+    {
+        var request = OnlineUsage.GrokRequestFor("access", "user-1");
+
+        Assert.Equal("cli-chat-proxy.grok.com", request.Address.Host);
+        Assert.Equal("Bearer access", request.Headers["Authorization"]);
+        Assert.Equal("user-1", request.Headers["x-userid"]);
+        Assert.Equal("xai-grok-cli", request.Headers["x-xai-token-auth"]);
+        Assert.Throws<ArgumentException>(() => OnlineUsage.GrokRequestFor("access", ""));
+    }
+
+    [Fact]
     public void ClaudeAnswer_GivesBothWindows()
     {
         var status = OnlineUsage.ParseClaude(
@@ -130,23 +168,29 @@ public sealed class OnlineUsageTests : IDisposable
     [Fact]
     public void Requests_GoOnlyToTheProviderWithItsOwnSignIn()
     {
-        var codex = OnlineUsage.CodexRequest(Write("auth.json", """{"tokens":{"access_token":"codex-token","account_id":"account-1"}}"""));
-        var claude = OnlineUsage.ClaudeRequest(
-            Write("credentials.json", $$"""{"claudeAiOauth":{"accessToken":"claude-token","expiresAt":{{Now.AddHours(1).ToUnixTimeMilliseconds()}} } }"""), Now);
+        var codex = OnlineUsage.CodexRequestFor("codex-token", "account-1");
+        var claude = OnlineUsage.ClaudeRequestFor("claude-token");
+        var profile = OnlineUsage.ClaudeProfileRequestFor("claude-token");
 
-        Assert.Equal("chatgpt.com", codex!.Address.Host);
+        Assert.Equal("chatgpt.com", codex.Address.Host);
         Assert.Equal("Bearer codex-token", codex.Headers["Authorization"]);
         Assert.Equal("account-1", codex.Headers["ChatGPT-Account-Id"]);
-        Assert.Equal("api.anthropic.com", claude!.Address.Host);
+        Assert.Equal("api.anthropic.com", claude.Address.Host);
         Assert.Equal("Bearer claude-token", claude.Headers["Authorization"]);
+        Assert.Equal("/api/oauth/profile", profile.Address.AbsolutePath);
+        Assert.Equal("api.anthropic.com", profile.Address.Host);
+        Assert.Throws<ArgumentException>(() => OnlineUsage.ClaudeRequestFor(""));
     }
 
     [Fact]
-    public void MissingOrExpiredSignIn_GivesNoRequest()
+    public void GrokAnswer_ShowsTheOnDemandSpendAsAnExtraBar()
     {
-        Assert.Null(OnlineUsage.CodexRequest(Path.Combine(_directory, "none.json")));
-        Assert.Null(OnlineUsage.CodexRequest(Write("key.json", """{"OPENAI_API_KEY":"k","tokens":null}""")));
-        Assert.Null(OnlineUsage.ClaudeRequest(
-            Write("old.json", $$"""{"claudeAiOauth":{"accessToken":"t","expiresAt":{{Now.AddMinutes(-1).ToUnixTimeMilliseconds()}} } }"""), Now));
+        var status = OnlineUsage.ParseGrok(
+            """{"config":{"creditUsagePercent":10,"currentPeriod":{"type":"USAGE_PERIOD_TYPE_WEEKLY"},"onDemandCap":{"val":"2000"},"onDemandUsed":{"val":500}}}""", "Tier 3", Now);
+
+        Assert.Equal(new ExtraUsage(5m, 20m, "USD"), status!.Extra);
+        Assert.Equal(25, status.Extra!.UsedPercent);
+        Assert.Null(OnlineUsage.ParseGrok(
+            """{"config":{"currentPeriod":{"type":"USAGE_PERIOD_TYPE_WEEKLY"},"onDemandCap":{"val":0},"onDemandUsed":{"val":0}}}""", "Tier 3", Now)!.Extra);
     }
 }

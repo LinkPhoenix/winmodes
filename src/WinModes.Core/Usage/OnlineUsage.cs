@@ -7,14 +7,14 @@ namespace WinModes.Core.Usage;
 public sealed record UsageRequest(Uri Address, IReadOnlyDictionary<string, string> Headers);
 
 /// <summary>
-/// Opt-in online reading of the plan usage, with the sign-in Claude Code and Codex already keep on this PC.
-/// The token is read when a request is built, sent only to the provider that issued it, and never stored,
-/// logged or refreshed here. An expired sign-in gives no request: the tool itself renews it when it runs.
+/// The plan usage, asked to each provider with the sign-in of WinModes itself. The token is read when a request is built, sent
+/// only to the provider that issued it, and renewed by the app. Nothing is read from the files of Claude Code, Codex or Grok.
 /// </summary>
 public static class OnlineUsage
 {
     private const string CodexTool = "Codex";
     private const string ClaudeTool = "Claude";
+    private const string GrokTool = "Grok";
     private const string UserAgent = "WinModes";
     private const int SecondsPerMinute = 60;
     private const int FiveHourMinutes = 300;
@@ -29,51 +29,15 @@ public static class OnlineUsage
     // The same endpoint, also asked for the limit resets the account has in reserve and without the spend block.
     private static readonly Uri ClaudeAddressWithResets = new("https://api.anthropic.com/api/oauth/usage?cedar_ember=1");
 
-    public static string DefaultCodexAuth { get; } = Path.Combine(Subscriptions.DefaultCodexHome, "auth.json");
+    // The profile of the account, where Claude Code itself reads the organization type and the rate limit tier of the plan.
+    private static readonly Uri ClaudeProfileAddress = new("https://api.anthropic.com/api/oauth/profile");
 
-    public static string DefaultClaudeCredentials { get; } =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude", ".credentials.json");
+    // The billing endpoint the Grok CLI reads its weekly credits from. xAI does not document it; OpenCodex and Grok Build read it too.
+    private static readonly Uri GrokAddress = new("https://cli-chat-proxy.grok.com/v1/billing?format=credits");
 
-    public static UsageRequest? CodexRequest(string authPath)
-    {
-        using var document = Open(authPath);
-        if (document is null || !document.RootElement.TryGetProperty("tokens", out var tokens) || tokens.ValueKind != JsonValueKind.Object
-            || Text(tokens, "access_token") is not { Length: > 0 } token)
-        {
-            return null;
-        }
-
-        var headers = new Dictionary<string, string> { ["Authorization"] = $"Bearer {token}", ["User-Agent"] = UserAgent };
-        if (Text(tokens, "account_id") is { Length: > 0 } account)
-        {
-            headers["ChatGPT-Account-Id"] = account;
-        }
-
-        return new UsageRequest(CodexAddress, headers);
-    }
-
-    public static UsageRequest? ClaudeRequest(string credentialsPath, DateTimeOffset now)
-    {
-        using var document = Open(credentialsPath);
-        if (document is null || !document.RootElement.TryGetProperty("claudeAiOauth", out var oauth) || oauth.ValueKind != JsonValueKind.Object
-            || Text(oauth, "accessToken") is not { Length: > 0 } token)
-        {
-            return null;
-        }
-
-        if (oauth.TryGetProperty("expiresAt", out var expires) && expires.ValueKind == JsonValueKind.Number
-            && UsageNumbers.FromUnixMilliseconds(expires) is { } expiry && expiry <= now)
-        {
-            return null;
-        }
-
-        return new UsageRequest(ClaudeAddress, new Dictionary<string, string>
-        {
-            ["Authorization"] = $"Bearer {token}",
-            ["anthropic-beta"] = "oauth-2025-04-20",
-            ["User-Agent"] = UserAgent,
-        });
-    }
+    // Headers the Grok CLI sends with that request: without them the endpoint refuses the token.
+    private const string GrokClientVersion = "1.0.46";
+    private const string WeeklyPeriod = "USAGE_PERIOD_TYPE_WEEKLY";
 
     /// <summary>A Codex request with the token of WinModes' own sign-in; the token is sent only to the provider that issued it.</summary>
     public static UsageRequest CodexRequestFor(string accessToken, string? accountId)
@@ -98,6 +62,110 @@ public static class OnlineUsage
             ["anthropic-beta"] = "oauth-2025-04-20",
             ["User-Agent"] = UserAgent,
         });
+    }
+
+    /// <summary>A Grok request with the token of WinModes' own sign-in; <paramref name="userId"/> is the subject of its id token.</summary>
+    public static UsageRequest GrokRequestFor(string accessToken, string userId)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(accessToken);
+        ArgumentException.ThrowIfNullOrEmpty(userId);
+        return new UsageRequest(GrokAddress, new Dictionary<string, string>
+        {
+            ["Authorization"] = $"Bearer {accessToken}",
+            ["x-xai-token-auth"] = "xai-grok-cli",
+            ["x-authenticateresponse"] = "authenticate-response",
+            ["x-userid"] = userId,
+            ["x-grok-client-version"] = GrokClientVersion,
+            ["User-Agent"] = UserAgent,
+        });
+    }
+
+    /// <summary>
+    /// Reads the weekly credits of a SuperGrok account: { config: { creditUsagePercent, currentPeriod: { type, end } } }.
+    /// A missing percent is 0 (protobuf leaves out a default value). Null when the answer is not a weekly period.
+    /// </summary>
+    public static SubscriptionStatus? ParseGrok(string json, string plan, DateTimeOffset now)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Object
+                || !document.RootElement.TryGetProperty("config", out var config) || config.ValueKind != JsonValueKind.Object
+                || !config.TryGetProperty("currentPeriod", out var period) || period.ValueKind != JsonValueKind.Object
+                || Text(period, "type") != WeeklyPeriod)
+            {
+                return null;
+            }
+
+            var used = 0.0;
+            if (config.TryGetProperty("creditUsagePercent", out var percent))
+            {
+                var parsed = percent.ValueKind switch
+                {
+                    JsonValueKind.Number => UsageNumbers.Percent(percent),
+                    JsonValueKind.String when double.TryParse(percent.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var text) && double.IsFinite(text) => text,
+                    _ => null,
+                };
+                if (parsed is not { } value)
+                {
+                    return null;
+                }
+
+                used = value;
+            }
+
+            DateTimeOffset? resetsAt = period.TryGetProperty("end", out var end)
+                ? end.ValueKind switch
+                {
+                    JsonValueKind.String when DateTimeOffset.TryParse(end.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date) => date,
+                    JsonValueKind.Number when end.TryGetDouble(out var seconds) => UsageNumbers.FromUnixSeconds(seconds),
+                    _ => null,
+                }
+                : null;
+            return new SubscriptionStatus(GrokTool, plan, new LimitWindow(used, SevenDayMinutes, resetsAt), null, now, Extra: GrokOnDemand(config));
+        }
+        catch (Exception ex) when (ex is JsonException or FormatException or InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>The request for the profile of a Claude account, which holds the name of its plan.</summary>
+    public static UsageRequest ClaudeProfileRequestFor(string accessToken)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(accessToken);
+        return new UsageRequest(ClaudeProfileAddress, new Dictionary<string, string>
+        {
+            ["Authorization"] = $"Bearer {accessToken}",
+            ["anthropic-beta"] = "oauth-2025-04-20",
+            ["User-Agent"] = UserAgent,
+        });
+    }
+
+    /// <summary>
+    /// Usage billed beyond the plan ("on demand"): spent and cap, as { val } amounts in cents. Null when the cap is 0, which is the
+    /// case of an account that did not turn it on.
+    /// </summary>
+    private static ExtraUsage? GrokOnDemand(JsonElement config)
+    {
+        const decimal CentsPerUnit = 100;
+
+        decimal? Amount(string name)
+        {
+            if (!config.TryGetProperty(name, out var block) || block.ValueKind != JsonValueKind.Object || !block.TryGetProperty("val", out var value))
+            {
+                return null;
+            }
+
+            return value.ValueKind switch
+            {
+                JsonValueKind.Number when value.TryGetDecimal(out var number) && number >= 0 => number,
+                JsonValueKind.String when decimal.TryParse(value.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var text) && text >= 0 => text,
+                _ => null,
+            };
+        }
+
+        return Amount("onDemandCap") is { } cap && cap > 0 ? new ExtraUsage((Amount("onDemandUsed") ?? 0) / CentsPerUnit, cap / CentsPerUnit, "USD") : null;
     }
 
     /// <summary>Reads Codex's answer; null when it is not the expected shape.</summary>
@@ -275,63 +343,6 @@ public static class OnlineUsage
         return new LimitWindow(usedPercent, minutes, resetsAt);
     }
 
-    /// <summary>Whether a Claude sign-in exists and is still valid. Only its state and expiry are returned, never the token.</summary>
-    public static SignInCheck InspectClaudeSignIn(string credentialsPath, DateTimeOffset now)
-    {
-        using var document = Open(credentialsPath);
-        if (document is null)
-        {
-            return new SignInCheck(File.Exists(credentialsPath) ? SignInState.Unusable : SignInState.Missing);
-        }
-
-        if (!document.RootElement.TryGetProperty("claudeAiOauth", out var oauth) || oauth.ValueKind != JsonValueKind.Object
-            || Text(oauth, "accessToken") is not { Length: > 0 })
-        {
-            return new SignInCheck(SignInState.Unusable);
-        }
-
-        var expiry = oauth.TryGetProperty("expiresAt", out var expires) && expires.ValueKind == JsonValueKind.Number
-            ? UsageNumbers.FromUnixMilliseconds(expires)
-            : null;
-        return expiry is { } at && at <= now ? new SignInCheck(SignInState.Expired, at) : new SignInCheck(SignInState.Valid, expiry);
-    }
-
-    /// <summary>Whether a Codex sign-in exists. Codex gives no expiry here: a stale token shows as a failed request.</summary>
-    public static SignInCheck InspectCodexSignIn(string authPath)
-    {
-        if (!File.Exists(authPath))
-        {
-            return new SignInCheck(SignInState.Missing);
-        }
-
-        return CodexRequest(authPath) is null ? new SignInCheck(SignInState.Unusable) : new SignInCheck(SignInState.Valid);
-    }
-
     private static string? Text(JsonElement element, string name) =>
         element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
-
-    private static JsonDocument? Open(string path)
-    {
-        try
-        {
-            if (!File.Exists(path))
-            {
-                return null;
-            }
-
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            var document = JsonDocument.Parse(stream);
-            if (document.RootElement.ValueKind == JsonValueKind.Object)
-            {
-                return document;
-            }
-
-            document.Dispose();
-            return null;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
-        {
-            return null;
-        }
-    }
 }

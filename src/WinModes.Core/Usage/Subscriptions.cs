@@ -47,19 +47,11 @@ public sealed record SubscriptionStatus(string Tool, string Plan, LimitWindow? P
     IReadOnlyList<ModelLimit>? ModelLimits = null, ExtraUsage? Extra = null);
 
 /// <summary>
-/// Reads the plan and the usage limits that Codex and Claude Code already keep on this PC. Nothing is asked
-/// online and no credential file is opened: Codex writes its limits in its session logs, Claude Code keeps the
-/// plan (not the usage) in its settings file.
+/// Words for the plan and the usage limits the providers give to the sign-in of WinModes. Nothing is read from the files
+/// of Claude Code or Codex: the figures come from the providers' own answers (see <see cref="OnlineUsage"/>).
 /// </summary>
 public static partial class Subscriptions
 {
-    private const string CodexTool = "Codex";
-    private const string ClaudeTool = "Claude";
-    private const string RateLimitsKey = "\"rate_limits\"";
-    private const int RecentFiles = 12;
-    private const int TailBytes = 512 * 1024;
-    private static readonly string[] CodexSessionFolders = ["sessions", "archived_sessions"];
-
     private static readonly Dictionary<string, string> CodexPlans = new(StringComparer.OrdinalIgnoreCase)
     {
         ["free"] = "Free", ["go"] = "Go", ["plus"] = "Plus", ["pro"] = "Pro", ["prolite"] = "Pro Lite",
@@ -73,113 +65,36 @@ public static partial class Subscriptions
 
     public static string DefaultCodexHome { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".codex");
 
-    public static string DefaultClaudeSettings { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude.json");
-
-    /// <summary>The most recent limits Codex recorded, or null when it never recorded any.</summary>
-    public static SubscriptionStatus? ReadCodex(string codexHome)
-    {
-        try
-        {
-            return CodexSessionFolders
-                .Select(folder => new DirectoryInfo(Path.Combine(codexHome, folder)))
-                .Where(folder => folder.Exists)
-                .SelectMany(folder => folder.EnumerateFiles("*.jsonl", SearchOption.AllDirectories))
-                .OrderByDescending(file => file.LastWriteTimeUtc)
-                .Take(RecentFiles)
-                .Select(file => LastRecord(file.FullName))
-                .Where(status => status is not null)
-                .MaxBy(status => status!.SeenAt);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            return null;
-        }
-    }
-
-    /// <summary>Reads one line of a Codex session log; null when it carries no usable limits.</summary>
-    public static SubscriptionStatus? ParseCodexRecord(string line)
-    {
-        ArgumentNullException.ThrowIfNull(line);
-        try
-        {
-            using var document = JsonDocument.Parse(line);
-            var root = document.RootElement;
-            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object
-                || !payload.TryGetProperty("rate_limits", out var limits) || limits.ValueKind != JsonValueKind.Object)
-            {
-                return null;
-            }
-
-            DateTimeOffset? seenAt = root.TryGetProperty("timestamp", out var stamp) && stamp.ValueKind == JsonValueKind.String
-                && DateTimeOffset.TryParse(stamp.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed) ? parsed : null;
-            var plan = limits.TryGetProperty("plan_type", out var planType) && planType.ValueKind == JsonValueKind.String ? planType.GetString() : null;
-            var primary = Window(limits, "primary", seenAt);
-            var secondary = Window(limits, "secondary", seenAt);
-            return primary is null && secondary is null && plan is null
-                ? null
-                : new SubscriptionStatus(CodexTool, CodexPlanName(plan), primary ?? secondary, primary is null ? null : secondary, seenAt);
-        }
-        catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException)
-        {
-            return null;
-        }
-    }
-
-    /// <summary>The Claude plan from Claude Code's settings file; null when no subscription is recorded.</summary>
     /// <summary>
-    /// The Claude plan with the limits recorded by the WinModes status line, when it is installed in Claude Code.
+    /// The Claude plan from the profile the account gives (<c>/api/oauth/profile</c>): the organization type and the rate limit
+    /// tier, the same two fields Claude Code keeps in its own settings. Null when the answer holds no known subscription.
     /// </summary>
-    public static SubscriptionStatus? ReadClaude(string settingsPath, string limitsRecordPath)
-    {
-        var plan = ReadClaude(settingsPath);
-        var limits = ClaudeStatusLine.Load(limitsRecordPath);
-        if (limits is null)
-        {
-            return plan;
-        }
-
-        return new SubscriptionStatus(ClaudeTool, plan?.Plan ?? Loc.T("Plan unknown"),
-            limits.FiveHour ?? limits.SevenDay, limits.FiveHour is null ? null : limits.SevenDay, limits.SeenAt);
-    }
-
-    public static SubscriptionStatus? ReadClaude(string settingsPath)
+    public static string? ClaudePlanFromProfile(string json)
     {
         try
         {
-            if (!File.Exists(settingsPath))
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Object || !document.RootElement.TryGetProperty("organization", out var organization)
+                || organization.ValueKind != JsonValueKind.Object)
             {
                 return null;
             }
 
-            using var stream = new FileStream(settingsPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            using var document = JsonDocument.Parse(stream);
-            return ParseClaude(document.RootElement);
+            string? Text(string name) => organization.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+
+            if (Text("organization_type") is not { Length: > 0 } type || !ClaudePlans.TryGetValue(type, out var plan))
+            {
+                return null;
+            }
+
+            // "default_claude_max_5x" -> "Max 5x".
+            var multiplier = TierMultiplier().Match(Text("rate_limit_tier") ?? "");
+            return multiplier.Success ? $"{plan} {multiplier.Groups[1].Value}" : plan;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException)
         {
             return null;
         }
-    }
-
-    public static SubscriptionStatus? ParseClaude(JsonElement settings)
-    {
-        if (settings.ValueKind != JsonValueKind.Object || !settings.TryGetProperty("oauthAccount", out var account) || account.ValueKind != JsonValueKind.Object)
-        {
-            return null;
-        }
-
-        string? Text(string name) => account.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
-
-        var type = Text("organizationType");
-        var tier = Text("userRateLimitTier") is { Length: > 0 } own ? own : Text("organizationRateLimitTier");
-        if (string.IsNullOrEmpty(type) || !ClaudePlans.TryGetValue(type, out var plan))
-        {
-            return null;
-        }
-
-        // "default_claude_max_5x" -> "Max 5x".
-        var multiplier = TierMultiplier().Match(tier ?? "");
-        return new SubscriptionStatus(ClaudeTool, multiplier.Success ? $"{plan} {multiplier.Groups[1].Value}" : plan, null, null, null);
     }
 
     /// <summary>
@@ -191,7 +106,7 @@ public static partial class Subscriptions
         ArgumentNullException.ThrowIfNull(status);
         if (status.Primary is not { } primary)
         {
-            return ("", Loc.T("Usage is not stored on this PC"), null);
+            return ("", "", null);
         }
 
         string Local(DateTimeOffset moment) => moment.ToOffset(now.Offset).ToString("d MMM HH:mm", culture);
@@ -238,50 +153,6 @@ public static partial class Subscriptions
         string.IsNullOrWhiteSpace(raw) ? Loc.T("Plan unknown")
         : known.TryGetValue(raw, out var name) ? name
         : CultureInfo.InvariantCulture.TextInfo.ToTitleCase(raw.Replace('_', ' '));
-
-    private static LimitWindow? Window(JsonElement limits, string name, DateTimeOffset? seenAt)
-    {
-        if (!limits.TryGetProperty(name, out var window) || window.ValueKind != JsonValueKind.Object
-            || !window.TryGetProperty("used_percent", out var used) || used.ValueKind != JsonValueKind.Number
-            || UsageNumbers.Percent(used) is not { } usedPercent)
-        {
-            return null;
-        }
-
-        double? Number(string property) => window.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number) && double.IsFinite(number) ? number : null;
-
-        // Newer logs give the reset as a Unix time, older ones as seconds counted from the record.
-        DateTimeOffset? resetsAt = Number("resets_at") is { } unix ? UsageNumbers.FromUnixSeconds(unix)
-            : Number("resets_in_seconds") is { } seconds && seenAt is { } seen ? UsageNumbers.AddSeconds(seen, seconds)
-            : null;
-        return new LimitWindow(usedPercent, UsageNumbers.Minutes(Number("window_minutes") ?? 0), resetsAt);
-    }
-
-    /// <summary>The last limits written in a session log. Only the end of the file is read: logs grow to many megabytes.</summary>
-    private static SubscriptionStatus? LastRecord(string path)
-    {
-        try
-        {
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            var length = (int)Math.Min(stream.Length, TailBytes);
-            stream.Seek(-length, SeekOrigin.End);
-            var buffer = new byte[length];
-            stream.ReadExactly(buffer);
-
-            // The first line of the tail may be cut: it then fails to parse and is skipped.
-            return Encoding.UTF8.GetString(buffer)
-                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                .Reverse()
-                .Where(line => line.Contains(RateLimitsKey, StringComparison.Ordinal))
-                .Select(ParseCodexRecord)
-                .FirstOrDefault(status => status is not null);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            return null;
-        }
-    }
 
     [GeneratedRegex(@"_(\d+x)$")]
     private static partial Regex TierMultiplier();

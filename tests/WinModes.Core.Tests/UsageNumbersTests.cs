@@ -41,20 +41,11 @@ public sealed class UsageNumbersTests : IDisposable
     }
 
     [Fact]
-    public void CodexRecord_SurvivesOutOfRangeResetTimes()
+    public void CodexAnswer_SurvivesOutOfRangeResetTimes()
     {
-        var status = Subscriptions.ParseCodexRecord(
-            """{"timestamp":"2026-10-01T10:00:00Z","payload":{"rate_limits":{"primary":{"used_percent":7,"window_minutes":1e300,"resets_in_seconds":1e300}}}}""");
+        var status = OnlineUsage.ParseCodex(
+            """{"plan_type":"pro","rate_limit":{"primary_window":{"used_percent":7,"limit_window_seconds":1e300,"reset_at":1e300}}}""", Now);
 
         Assert.Equal(new LimitWindow(7, 0, null), status?.Primary);
-    }
-
-    [Fact]
-    public void ClaudeRequest_IgnoresAnExpiryItCannotRead()
-    {
-        var path = Path.Combine(_directory, "credentials.json");
-        File.WriteAllText(path, """{"claudeAiOauth":{"accessToken":"t","expiresAt":1e300}}""");
-
-        Assert.NotNull(OnlineUsage.ClaudeRequest(path, Now));
     }
 }

@@ -20,6 +20,7 @@ public partial class WidgetPage : Page
         new((int)WidgetPlacement.Both, Loc.T("On both")),
     ];
     private static readonly Option[] SideChoices = [new((int)TaskbarSide.Auto, Loc.T("Automatic")), new((int)TaskbarSide.Left, Loc.T("Left")), new((int)TaskbarSide.Right, Loc.T("Right"))];
+    private static readonly Option[] PlanStyleChoices = [new((int)PlanStyle.Bars, Loc.T("Bars")), new((int)PlanStyle.Rings, Loc.T("Rings"))];
     private static readonly Option[] MaxToolChoices = [new(2, "2"), new(4, "4"), new(6, "6"), new(10, "10")];
 
     private readonly bool _loaded;
@@ -41,10 +42,9 @@ public partial class WidgetPage : Page
         ShowAiTools.IsChecked = widget.ShowAiTools;
         ShowToolDetail.IsChecked = widget.ShowToolDetail;
         ShowSubscriptions.IsChecked = widget.ShowSubscriptions;
-        ReadClaudeOnline.IsChecked = widget.ClaudeOnline;
-        ReadCodexOnline.IsChecked = widget.CodexOnline;
         ShowClaudePlan.IsChecked = widget.ShowClaudePlan;
         ShowCodexPlan.IsChecked = widget.ShowCodexPlan;
+        ShowGrokPlan.IsChecked = widget.ShowGrokPlan;
         ShowResetCredits.IsChecked = widget.ShowResetCredits;
         ShowClaudeUsage();
         ShowAccounts();
@@ -58,6 +58,7 @@ public partial class WidgetPage : Page
         Select(MaxTools, MaxToolChoices, widget.MaxTools);
         Select(Place, PlaceChoices, (int)widget.Placement);
         Select(Side, SideChoices, (int)widget.TaskbarSide);
+        Select(PlanStyleBox, PlanStyleChoices, (int)widget.PlanStyle);
         ShowPlaceOptions(widget.Placement);
 
         // Setting the initial values raises the change events; only user changes are saved.
@@ -87,6 +88,8 @@ public partial class WidgetPage : Page
 
     private void OnCodexAccount(object sender, RoutedEventArgs e) => _ = ToggleAccountAsync(AccountProvider.ChatGpt);
 
+    private void OnGrokAccount(object sender, RoutedEventArgs e) => _ = ToggleAccountAsync(AccountProvider.Grok);
+
     /// <summary>The logos of the two tools, as they look on the taskbar and in the widget; the glyphs stay when a tool is not found.</summary>
     private void ShowToolLogos()
     {
@@ -94,28 +97,16 @@ public partial class WidgetPage : Page
         var codex = ToolIcons.For("Codex");
         (ClaudeSection.Picture, ClaudeAccountRow.Picture) = (claude, claude);
         (CodexSection.Picture, CodexAccountRow.Picture) = (codex, codex);
+        var grok = ToolIcons.For("Grok");
+        (GrokSection.Picture, GrokAccountRow.Picture) = (grok, grok);
     }
-
-    private string? _claudeOnlineText;
-    private string? _codexOnlineText;
 
     private void ShowAccounts()
     {
         ShowToolLogos();
         ShowAccount(AccountProvider.Claude, ClaudeAccountRow, ClaudeAccountButton);
         ShowAccount(AccountProvider.ChatGpt, CodexAccountRow, CodexAccountButton);
-
-        // Signed in, WinModes reads online with its own session whatever the option says: the option would only mislead.
-        _claudeOnlineText ??= ClaudeOnlineRow.Description;
-        _codexOnlineText ??= CodexOnlineRow.Description;
-        ShowOnlineOption(ClaudeOnlineRow, ReadClaudeOnline, AccountSession.IsSignedIn(AccountProvider.Claude), _claudeOnlineText);
-        ShowOnlineOption(CodexOnlineRow, ReadCodexOnline, AccountSession.IsSignedIn(AccountProvider.ChatGpt), _codexOnlineText);
-    }
-
-    private static void ShowOnlineOption(Controls.SettingRow row, Wpf.Ui.Controls.ToggleSwitch toggle, bool signedIn, string original)
-    {
-        toggle.IsEnabled = !signedIn;
-        row.Description = signedIn ? Loc.T("Not needed while WinModes is signed in: it reads the usage with its own session.") : original;
+        ShowAccount(AccountProvider.Grok, GrokAccountRow, GrokAccountButton);
     }
 
     private static void ShowAccount(AccountProvider provider, Controls.SettingRow row, Wpf.Ui.Controls.Button button)
@@ -154,10 +145,21 @@ public partial class WidgetPage : Page
             return;
         }
 
-        var (row, button) = provider == AccountProvider.Claude ? (ClaudeAccountRow, ClaudeAccountButton) : (CodexAccountRow, CodexAccountButton);
+        var (row, button) = provider == AccountProvider.Claude ? (ClaudeAccountRow, ClaudeAccountButton)
+            : provider == AccountProvider.Grok ? (GrokAccountRow, GrokAccountButton) : (CodexAccountRow, CodexAccountButton);
         button.IsEnabled = false;
         row.Description = Loc.T("Waiting for you to sign in, in your browser…");
-        var outcome = await AccountSession.SignInAsync(provider);
+        row.Footer = CodeEntry();
+        SignInOutcome outcome;
+        try
+        {
+            outcome = await AccountSession.SignInAsync(provider);
+        }
+        finally
+        {
+            row.Footer = null;
+        }
+
         ShowAccounts();
         if (outcome == SignInOutcome.SignedIn)
         {
@@ -174,68 +176,71 @@ public partial class WidgetPage : Page
         };
     }
 
-    private async void OnCheckClaude(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// The way out when the browser cannot come back to this PC (it blocks the local address, or the provider shows a code instead):
+    /// the code, or the address the browser ended on, pasted here finishes the same sign-in.
+    /// </summary>
+    private static Grid CodeEntry()
     {
-        CheckClaudeButton.IsEnabled = false;
-        try
+        var hint = new TextBlock { Text = Loc.T("If your browser shows a code instead of coming back to WinModes, paste it here."), TextWrapping = TextWrapping.Wrap, Foreground = Palette.Neutral };
+        var box = new Wpf.Ui.Controls.TextBox { MinWidth = 240, Margin = new Thickness(0, 8, 8, 0), };
+        System.Windows.Automation.AutomationProperties.SetName(box, Loc.T("Sign-in code"));
+        var use = new Wpf.Ui.Controls.Button { Content = Loc.T("Use this code"), Margin = new Thickness(0, 8, 0, 0) };
+        var refused = new TextBlock { Text = Loc.T("This is not the code of this sign-in."), Foreground = Palette.Stop, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 6, 0, 0) };
+        void Submit()
         {
-            var readOnline = ReadClaudeOnline.IsChecked == true;
-            var signedIn = AccountSession.IsSignedIn(AccountProvider.Claude);
-            var items = await Task.Run(() => ProviderCheck.Claude(Subscriptions.DefaultClaudeSettings, ClaudeStatusLineSetup.DefaultSettingsPath,
-                ClaudeStatusLine.DefaultRecordPath, OnlineUsage.DefaultClaudeCredentials, ClaudeStatusLine.DefaultCallPath, readOnline, DateTimeOffset.UtcNow, signedIn));
-            ClaudeCheck.Show(items);
+            refused.Visibility = AccountSession.SubmitCode(box.Text) ? Visibility.Collapsed : Visibility.Visible;
         }
-        finally
-        {
-            CheckClaudeButton.IsEnabled = true;
-        }
-    }
 
-    private async void OnCheckCodex(object sender, RoutedEventArgs e)
-    {
-        CheckCodexButton.IsEnabled = false;
-        try
+        use.Click += (_, _) => Submit();
+        box.KeyDown += (_, e) =>
         {
-            var readOnline = ReadCodexOnline.IsChecked == true;
-            var signedIn = AccountSession.IsSignedIn(AccountProvider.ChatGpt);
-            var items = await Task.Run(() => ProviderCheck.Codex(Subscriptions.DefaultCodexHome, OnlineUsage.DefaultCodexAuth, readOnline, DateTimeOffset.UtcNow, signedIn));
-            CodexCheck.Show(items);
-        }
-        finally
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                Submit();
+            }
+        };
+
+        var entry = new Grid();
+        entry.ColumnDefinitions.Add(new ColumnDefinition());
+        entry.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        entry.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        entry.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        entry.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        Grid.SetColumnSpan(hint, 2);
+        Grid.SetRow(box, 1);
+        Grid.SetRow(use, 1);
+        Grid.SetColumn(use, 1);
+        Grid.SetRow(refused, 2);
+        Grid.SetColumnSpan(refused, 2);
+        foreach (var element in new UIElement[] { hint, box, use, refused })
         {
-            CheckCodexButton.IsEnabled = true;
+            entry.Children.Add(element);
         }
+
+        return entry;
     }
 
     private const string StatusLineFileName = "WinModes.StatusLine.exe";
-    private static string RecordClaudeText => Loc.T("Claude Code gives the usage of your plan only to its status line. This adds a WinModes status line to Claude Code's settings (a backup is kept); it records the 5-hour and weekly usage for the widget and shows them in Claude Code. Updated while a Claude Code session is open.");
 
-    private static string OtherStatusLineText => Loc.T("Claude Code already has a status line of its own, so WinModes leaves it alone. To record the usage, remove it from Claude Code's settings first.");
-
+    /// <summary>
+    /// Older versions could add a WinModes status line to Claude Code to record the usage. Nothing reads that record any more: the
+    /// row exists only while it is still set, so it can be switched off and removed from Claude Code's settings.
+    /// </summary>
     private void ShowClaudeUsage()
     {
-        var state = ClaudeStatusLineSetup.Read(ClaudeStatusLineSetup.DefaultSettingsPath);
-        ClaudeUsage.IsChecked = state == ClaudeStatusLineSetup.State.Ours;
-        ClaudeUsage.IsEnabled = state != ClaudeStatusLineSetup.State.Other;
-        ClaudeUsageRow.Description = state == ClaudeStatusLineSetup.State.Other ? OtherStatusLineText : RecordClaudeText;
+        var recorded = ClaudeStatusLineSetup.Read(ClaudeStatusLineSetup.DefaultSettingsPath) == ClaudeStatusLineSetup.State.Ours;
+        ClaudeUsage.IsChecked = recorded;
+        ClaudeUsageRow.Visibility = recorded ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void OnClaudeUsageClicked(object sender, RoutedEventArgs e)
     {
         try
         {
-            var settingsPath = ClaudeStatusLineSetup.DefaultSettingsPath;
-            if (ClaudeUsage.IsChecked == true)
+            if (ClaudeUsage.IsChecked != true)
             {
-                var program = System.IO.Path.Combine(AppContext.BaseDirectory, StatusLineFileName);
-                if (System.IO.File.Exists(program))
-                {
-                    ClaudeStatusLineSetup.Install(settingsPath, ClaudeStatusLineSetup.CommandFor(program, ShortPath));
-                }
-            }
-            else
-            {
-                ClaudeStatusLineSetup.Remove(settingsPath);
+                ClaudeStatusLineSetup.Remove(ClaudeStatusLineSetup.DefaultSettingsPath);
             }
         }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
@@ -246,18 +251,6 @@ public partial class WidgetPage : Page
         // Show what the settings really say, whatever was clicked.
         ShowClaudeUsage();
     }
-
-    /// <summary>The 8.3 form of a folder, or null when the volume keeps none.</summary>
-    private static string? ShortPath(string path)
-    {
-        const int MaxPath = 1024;
-        var buffer = new char[MaxPath];
-        var length = GetShortPathName(path, buffer, MaxPath);
-        return length is > 0 and < MaxPath ? new string(buffer, 0, length) : null;
-    }
-
-    [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
-    private static extern int GetShortPathName(string longPath, [System.Runtime.InteropServices.Out] char[] shortPath, int size);
 
     private void ShowPreview(AppSettings settings)
     {
@@ -323,6 +316,7 @@ public partial class WidgetPage : Page
             {
                 Placement = (WidgetPlacement)((Place.SelectedItem as Option)?.Value ?? (int)WidgetPlacement.Desktop),
                 TaskbarSide = (TaskbarSide)((Side.SelectedItem as Option)?.Value ?? (int)TaskbarSide.Auto),
+                PlanStyle = (PlanStyle)((PlanStyleBox.SelectedItem as Option)?.Value ?? (int)PlanStyle.Bars),
                 AlwaysOnTop = AlwaysOnTop.IsChecked == true,
                 OpacityPercent = (int)OpacitySlider.Value,
                 ScalePercent = (Scale.SelectedItem as Option)?.Value ?? 100,
@@ -333,10 +327,9 @@ public partial class WidgetPage : Page
                 ShowAiTools = ShowAiTools.IsChecked == true,
                 ShowToolDetail = ShowToolDetail.IsChecked == true,
                 ShowSubscriptions = ShowSubscriptions.IsChecked == true,
-                ReadClaudeOnline = ReadClaudeOnline.IsChecked == true,
-                ReadCodexOnline = ReadCodexOnline.IsChecked == true,
                 ShowClaudePlan = ShowClaudePlan.IsChecked == true,
                 ShowCodexPlan = ShowCodexPlan.IsChecked == true,
+                ShowGrokPlan = ShowGrokPlan.IsChecked == true,
                 ShowResetCredits = ShowResetCredits.IsChecked == true,
                 MaxTools = (MaxTools.SelectedItem as Option)?.Value ?? 4,
                 RefreshSeconds = (Refresh.SelectedItem as Option)?.Value ?? 3,
