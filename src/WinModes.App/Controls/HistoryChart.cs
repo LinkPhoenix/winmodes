@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace WinModes.App.Controls;
@@ -9,7 +10,7 @@ namespace WinModes.App.Controls;
 /// translucent strokes (no bitmap effect). Between two samples the curve scrolls on every frame,
 /// so it moves continuously instead of jumping once per sample (at most 30 images a second).
 /// </summary>
-public sealed class HistoryChart : FrameworkElement
+public sealed class HistoryChart : Control
 {
     private const int VisibleSamples = 60;
     // One extra sample waits just outside the right edge and slides in.
@@ -58,6 +59,7 @@ public sealed class HistoryChart : FrameworkElement
     public HistoryChart()
     {
         SnapsToDevicePixels = true;
+        Background = Brushes.Transparent;
         RebuildBrushes(Accent);
         // Redraw per frame only while the chart is on screen.
         IsVisibleChanged += (_, _) => UpdateRendering();
@@ -146,7 +148,6 @@ public sealed class HistoryChart : FrameworkElement
 
         var bounds = new Rect(0.5, 0.5, width - 1, height - 1);
         drawingContext.PushClip(new RectangleGeometry(bounds, CornerRadius, CornerRadius));
-        DrawGrid(drawingContext, width, height, phase * step);
 
         if (_count > 1)
         {
@@ -155,20 +156,6 @@ public sealed class HistoryChart : FrameworkElement
 
         drawingContext.Pop();
         drawingContext.DrawRoundedRectangle(null, _borderPen, bounds, CornerRadius, CornerRadius);
-    }
-
-    private void DrawGrid(DrawingContext drawingContext, double width, double height, double scroll)
-    {
-        // Vertical lines travel with the data, like a paper chart recorder.
-        for (var x = width - scroll % GridCell; x > 0; x -= GridCell)
-        {
-            drawingContext.DrawLine(_gridPen, new Point(x, 0), new Point(x, height));
-        }
-
-        for (var y = height; y > 0; y -= GridCell)
-        {
-            drawingContext.DrawLine(_gridPen, new Point(0, Math.Round(y) + 0.5), new Point(width, Math.Round(y) + 0.5));
-        }
     }
 
     private void DrawSeries(DrawingContext drawingContext, double width, double height, double step, double phase)
