@@ -35,7 +35,7 @@
                 <TextBlock Style="{StaticResource GlyphTextStyle}" FontSize="40" HorizontalAlignment="Center"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="&#xE99A;" />
                 <TextBlock Text="{l:T 'No AI tool is running'}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,12,0,0" />
-                <TextBlock Text="{l:T 'Claude, Codex, Cursor, VS Code, T3 Code, OpenCode, Windsurf, Ollama and LM Studio are recognised.'}"
+                <TextBlock Text="{l:T 'Claude, Codex, Cursor, VS Code, T3 Code, OpenCode, Windsurf, Ollama, LM Studio, Vibe, Mistral and Mistral Vibe are recognised.'}"
                            Style="{StaticResource SecondaryTextStyle}" HorizontalAlignment="Center" Margin="0,4,0,0" />
             </StackPanel>
         </Border>
@@ -44,7 +44,7 @@
             <StackPanel>
                 <TextBlock Text="{l:T 'MCP SERVERS RUNNING IN SEVERAL SESSIONS'}" Style="{StaticResource CardCaptionStyle}" />
                 <TextBlock x:Name="DuplicateSummary" FontSize="12" Margin="0,4,0,6" Style="{StaticResource SecondaryTextStyle}" />
-                <ItemsControl x:Name="Duplicates">
+                <ItemsControl x:Name="Duplicates" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="0,6,0,0">
