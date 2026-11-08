@@ -25,7 +25,7 @@
             <StackPanel>
                 <controls:EmptyState x:Name="EmptyText" Visibility="Collapsed" Glyph="&#xE7C4;"
                                      Title="{l:T 'Nothing starts with Windows.'}" Hint="{l:T 'Nothing matches the search.'}" />
-                <ItemsControl x:Name="Rows">
+                <ItemsControl x:Name="Rows" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border Padding="20,10" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
