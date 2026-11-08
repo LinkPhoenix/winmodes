@@ -18,8 +18,8 @@ public sealed class HistoryChart : Control
     private const double GridCell = 18;
     private const double CornerRadius = 4;
 
-    // The scroll is slow (one grid cell takes seconds), so 30 images a second look the same as 60 for half the work.
-    private static readonly TimeSpan FrameInterval = TimeSpan.FromMilliseconds(33);
+    // The scroll is slow (one grid cell takes seconds), so 20 images a second look the same as 30 for less work.
+    private static readonly TimeSpan FrameInterval = TimeSpan.FromMilliseconds(50);
 
     private readonly double[] _samples = new double[Capacity];
     private readonly Stopwatch _sinceLastSample = new();
