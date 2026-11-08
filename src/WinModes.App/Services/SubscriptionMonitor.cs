@@ -13,12 +13,12 @@ namespace WinModes.App.Services;
 internal static class SubscriptionMonitor
 {
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromMinutes(1);
-    private static readonly TimeSpan OnlineInterval = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan OnlineInterval = TimeSpan.FromMinutes(10);
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan LongestBackoff = TimeSpan.FromHours(1);
 
     // The plan of a Claude account changes rarely and costs one more request: it is asked again after this long.
-    private static readonly TimeSpan ClaudePlanLifetime = TimeSpan.FromHours(6);
+    private static readonly TimeSpan ClaudePlanLifetime = TimeSpan.FromHours(12);
 
     // No redirect is followed, so the sign-in header can never be sent to another host.
     private static readonly HttpClient Http = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = RequestTimeout };
