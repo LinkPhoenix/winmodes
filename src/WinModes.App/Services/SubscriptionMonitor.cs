@@ -21,7 +21,11 @@ internal static class SubscriptionMonitor
     private static readonly TimeSpan ClaudePlanLifetime = TimeSpan.FromHours(12);
 
     // No redirect is followed, so the sign-in header can never be sent to another host.
-    private static readonly HttpClient Http = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = RequestTimeout };
+    private static readonly HttpClient Http = new(new HttpClientHandler { AllowAutoRedirect = false, MaxConnectionsPerServer = 10 }) 
+    { 
+        Timeout = RequestTimeout,
+        DefaultRequestHeaders = { { "User-Agent", "WinModes" } }
+    };
 
     private static DateTime _lastRefreshUtc = DateTime.MinValue;
     private static readonly PollBackoff ClaudePoll = new(OnlineInterval, LongestBackoff);
