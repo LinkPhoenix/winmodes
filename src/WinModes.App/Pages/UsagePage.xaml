@@ -61,7 +61,7 @@
         </Border>
 
         <Border x:Name="ListCard" Style="{StaticResource CardBorderStyle}" Padding="0" Visibility="Collapsed">
-            <ItemsControl x:Name="Rows">
+            <ItemsControl x:Name="Rows" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AppCardStrokeBrush}">
