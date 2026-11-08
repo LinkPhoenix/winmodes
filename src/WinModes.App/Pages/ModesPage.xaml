@@ -54,7 +54,7 @@
         <Border x:Name="ResultCard" Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16" Visibility="Collapsed">
             <StackPanel>
                 <TextBlock x:Name="ResultTitle" FontWeight="SemiBold" />
-                <ItemsControl x:Name="ResultLines" Margin="0,6,0,0">
+                <ItemsControl x:Name="ResultLines" Margin="0,6,0,0" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding}" Style="{StaticResource SecondaryTextStyle}" Margin="0,2" />
