@@ -163,6 +163,8 @@ public sealed class HistoryChart : Control
         // The newest sample starts one step beyond the right edge and reaches it when the next one is due.
         var newestX = width + step * (1 - phase);
         var firstX = newestX - (_count - 1) * step;
+        // Pre-compute height scaling factor to avoid division in the loop
+        var heightScale = height / 100.0;
 
         var line = new StreamGeometry();
         var area = new StreamGeometry();
@@ -173,7 +175,7 @@ public sealed class HistoryChart : Control
             for (var i = 0; i < _count; i++)
             {
                 var value = _samples[(_next - _count + i + Capacity) % Capacity];
-                var point = new Point(firstX + i * step, height - value / 100 * height);
+                var point = new Point(firstX + i * step, height - value * heightScale);
                 if (i == 0)
                 {
                     lineContext.BeginFigure(point, isFilled: false, isClosed: false);
